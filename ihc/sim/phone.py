@@ -98,6 +98,8 @@ class SimPhone:
         right_button: str = "home",
         middle_button: str = "app_switcher",
         open_delay: float = 0.35,
+        web_hover: bool = False,
+        web_heartbeat: float | None = 0.25,
         clock: Callable[[], float] = time.monotonic,
     ):
         self.model = model
@@ -126,6 +128,17 @@ class SimPhone:
         self.url = "example.com"
         self.web_listeners: list[Callable[[str, dict], None]] = []  # (url, event) from web pages
         self.web_clicks: list[tuple[float, float]] = []
+        # The calibration page (web/calibrate.html): it numbers and times its events, sends a
+        # heartbeat every `web_heartbeat` s while shown and, if Safari reports hover (unverified on
+        # iPhones, hence `web_hover`), hover positions at most every 100 ms. Time passes for it
+        # through tick().
+        self.web_hover = web_hover
+        self.web_heartbeat = web_heartbeat
+        self._web_seq = 0
+        self._web_loaded = 0.0
+        self._web_beat_at = math.inf
+        self._web_seen = (math.nan, math.nan)  # pointer position at the previous tick
+        self._web_moved_at = -math.inf  # latest hover report
         self.actions: list[str] = []
         self._last_click = (0.0, 0.0)
         self.version = 0
@@ -293,11 +306,50 @@ class SimPhone:
             self.url = url
             self.web_clicks.clear()
             if CALIBRATION_PATH in url:
-                W, H = self.model.width_pt, self.model.height_pt
-                self._web_event({"type": "hello", "screen_w": W, "screen_h": H, "inner_w": W,
-                                 "inner_h": H - self.top - self.bottom_inset - SAFARI_BAR_H, "ua": "SimPhone Safari"})
+                self._web_seq, self._web_loaded = 0, self._clock()
+                self._web_beat_at = self._web_loaded + (self.web_heartbeat or math.inf)
+                self._web_event(self._web_hello())
+
+    def calibration_page_rect(self) -> tuple[float, float, float, float]:
+        """(left, top, right, bottom) of the calibration page on the screen, in points."""
+        return 0.0, self.top, float(self.model.width_pt), self.top + self._web_page_h()
+
+    def _web_page_h(self) -> float:
+        return self.model.height_pt - self.top - self.bottom_inset - SAFARI_BAR_H
+
+    def _web_hello(self) -> dict:
+        W, H = self.model.width_pt, self.model.height_pt
+        ev = {"type": "hello", "screen_w": W, "screen_h": H, "inner_w": W, "inner_h": self._web_page_h(),
+              "ua": "SimPhone Safari"}
+        if self.web_heartbeat:
+            ev["heartbeat_ms"] = round(self.web_heartbeat * 1000)
+        return ev
+
+    def _web_shown(self) -> bool:
+        return (self.screen == "Safari" and CALIBRATION_PATH in self.url and self.overlay is None
+                and not self.locked and not self.accessory_prompt)
+
+    def tick(self) -> None:
+        """Time passing for the calibration page while Safari shows it: heartbeats and hover reports."""
+        with self._lock:
+            if not self._web_shown():
+                return
+            now = self._clock()
+            if now >= self._web_beat_at:
+                self._web_beat_at = now + self.web_heartbeat
+                self._web_event(self._web_hello())
+            if self.web_hover and self.chip is not None:
+                x, y = self.chip.pointer.x, self.chip.pointer.y
+                moved, self._web_seen = (x, y) != self._web_seen, (x, y)
+                left, top, right, bottom = self.calibration_page_rect()
+                if moved and now - self._web_moved_at >= 0.1 and top <= y <= bottom:
+                    self._web_moved_at = now
+                    self._web_event({"type": "move", "x": round(x, 2), "y": round(y - top, 2)})
 
     def _web_event(self, event: dict) -> None:
+        """An event of the page Safari shows, numbered and timed as web/calibrate.html does."""
+        self._web_seq += 1
+        event = {**event, "seq": self._web_seq, "t": round((self._clock() - self._web_loaded) * 1000, 1)}
         if event["type"] == "click":
             self.web_clicks.append((event["x"], event["y"]))
             self._changed()
@@ -534,7 +586,7 @@ class SimPhone:
             els.append(Element("caption", 16, H - self.bottom_inset - 40, W - 32, 24,
                                f"taps {len(taps)} · hits {hits} · mean error {mean:.1f} pt"))
         elif self.screen == "Safari" and CALIBRATION_PATH in self.url:
-            page_h = H - self.top - self.bottom_inset - SAFARI_BAR_H
+            page_h = self._web_page_h()
             els.append(Element("page", 0, self.top, W, page_h, "iphone-hid calibration", "web",
                                data={"clicks": self.web_clicks[-6:], "top": self.top}))
             els.append(Element("field", 16, H - self.bottom_inset - SAFARI_BAR_H + 6, W - 32, 38, self.url, "noop"))

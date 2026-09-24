@@ -9,7 +9,7 @@ tested exactly and fast.
 from __future__ import annotations
 
 from collections import Counter
-from typing import Sequence
+from typing import Callable, Sequence
 
 from ..hid import protocol as p
 from ..hid.base import HidStatusError, HidTimeout
@@ -21,6 +21,7 @@ from .phone import SimPhone
 class VirtualClock:
     def __init__(self, t: float = 1000.0):
         self.t = t
+        self.tickers: list[Callable[[], None]] = []  # called after every sleep: what happens with time
 
     def __call__(self) -> float:
         return self.t
@@ -28,6 +29,8 @@ class VirtualClock:
     def sleep(self, s: float) -> None:
         if s > 0:
             self.t += s
+            for tick in self.tickers:
+                tick()
 
 
 class DirectHid:
@@ -103,5 +106,6 @@ def direct_phone(model: str = "iphone-15", *, bridge: bool = False, **phone_opti
     chip.pointer.history.clear()
     phone = SimPhone(get_model(model), clock=clock, **phone_options)
     phone.attach(chip)
+    clock.tickers.append(phone.tick)
     # each command costs the wire time of an 11-byte frame at 9600 baud
     return phone, chip, DirectHid(chip, clock, wire_s=11 * 10 / 9600), clock

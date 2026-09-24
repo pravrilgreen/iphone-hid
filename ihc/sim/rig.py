@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import threading
+from dataclasses import dataclass, field
 
 from ..hid.fake import FakeBackend, FakeChip, SimPointer
 from ..input.pointer import DirectionModel, PointerCalibration, RunModel
@@ -18,8 +19,10 @@ class SimRig:
     hid: FakeBackend
     phone: SimPhone
     capture: SimHdmiCapture
+    stop: threading.Event = field(default_factory=threading.Event, repr=False)
 
     def close(self) -> None:
+        self.stop.set()
         self.capture.close()
         self.hid.close()
 
@@ -52,7 +55,15 @@ def make_rig(
     hid = FakeBackend(chip, simulate_timing=simulate_timing, timeout=timeout, trace=trace)
     capture = SimHdmiCapture(phone, chip.pointer, size=capture_size, fps=fps, latency=latency,
                              pointer_visible=pointer_visible)
-    return SimRig(id, chip, hid, phone, capture)
+    rig = SimRig(id, chip, hid, phone, capture)
+    threading.Thread(target=_tick, args=(phone, rig.stop), name=f"{id}-phone", daemon=True).start()
+    return rig
+
+
+def _tick(phone: SimPhone, stop: threading.Event) -> None:
+    """Time passing on the phone (the calibration page's heartbeats)."""
+    while not stop.wait(0.05):
+        phone.tick()
 
 
 def exact_calibration(pointer: SimPointer, base: PointerCalibration | None = None) -> PointerCalibration:
