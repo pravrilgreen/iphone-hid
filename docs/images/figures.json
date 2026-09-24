@@ -1,41 +1,68 @@
 {
   "calibration": {
-    "clicks": 111,
+    "clicks": 120,
     "validation": {
       "mean": 0.45,
       "max": 0.86,
       "n": 8
     },
-    "caption": "111 clicks, validation error max 0.86 pt"
+    "caption": "120 clicks, validation error max 0.86 pt"
   },
   "accuracy": {
     "Absolute": {
-      "max_error_pt": 0.25,
-      "p95_error_pt": 0.25,
+      "max_error_pt": 0.17,
+      "p95_error_pt": 0.17,
       "median_s": 0.18,
-      "calibration_s": 5.6,
+      "calibration_s": 7.5,
       "mode": "absolute"
     },
     "Relative\nTracking 0.4": {
       "max_error_pt": 0.5,
       "p95_error_pt": 0.5,
-      "median_s": 1.46,
-      "calibration_s": 44.2,
+      "median_s": 1.49,
+      "calibration_s": 51.7,
       "mode": "relative"
     },
     "Relative\nTracking 1.0": {
       "max_error_pt": 0.83,
       "p95_error_pt": 0.8,
-      "median_s": 1.26,
-      "calibration_s": 42.5,
+      "median_s": 1.28,
+      "calibration_s": 48.2,
       "mode": "relative"
     },
     "Relative\nTracking 2.5": {
-      "max_error_pt": 0.46,
-      "p95_error_pt": 0.41,
-      "median_s": 1.42,
-      "calibration_s": 43.0,
+      "max_error_pt": 0.72,
+      "p95_error_pt": 0.72,
+      "median_s": 1.22,
+      "calibration_s": 48.2,
       "mode": "relative"
+    }
+  },
+  "timing": {
+    "CH9329, no pace check": {
+      "max_error_pt": 11.82,
+      "redos": 0,
+      "failed": 0
+    },
+    "CH9329, pace checked (1.5 ms)": {
+      "max_error_pt": 1.25,
+      "redos": 71,
+      "failed": 0
+    },
+    "ESP32 bridge, timed on the chip": {
+      "max_error_pt": 0.78,
+      "redos": 0,
+      "failed": 0
+    },
+    "20 ms pace": {
+      "max_error_pt": 31.1,
+      "redos": 0,
+      "failed": 0
+    },
+    "30 ms pace (multiple of 15 ms)": {
+      "max_error_pt": 0.75,
+      "redos": 0,
+      "failed": 0
     }
   }
 }

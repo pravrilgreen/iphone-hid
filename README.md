@@ -122,10 +122,13 @@ ways to do that. Calibration picks the right one for each phone automatically.
 ![The calibration page](docs/images/calibration-page.png)
 
 The box opens a small web page in Safari on the phone (via Spotlight). The page reports exactly where
-each click lands. From click to click the box measures how far the pointer really travels, and checks
-whether the phone follows absolute positioning. Calibration takes seconds in absolute mode and under a
-minute in relative mode. It never clicks outside the page, and it is validated with random taps before it
-is saved. Redo it only if the phone's Tracking Speed setting changes.
+each click lands, numbers its events and sends a heartbeat, so the box can tell a click that missed from
+one whose report is merely late. From click to click the box measures how far the pointer really travels,
+and checks whether the phone follows absolute positioning. Calibration takes seconds in absolute mode and
+under a minute in relative mode. It never clicks blindly: every move is sized so that even the fastest
+possible pointer stays on the page, and a lost or late event stops the calibration instead of letting it
+click on. The result is validated with taps from the centre outwards and refused if any lands more than
+3 pt off. Redo it only if the phone's Tracking Speed setting changes.
 
 ## No lost commands
 
@@ -178,10 +181,10 @@ Measured by the simulator (random targets across the whole screen, four configur
 
 | Mode | Worst tap error | Time per tap (median) | Calibration time |
 |---|---|---|---|
-| Absolute pointer | 0.25 pt | 0.18 s | about 6 s |
-| Relative, slow Tracking Speed (0.4) | 0.5 pt | 1.46 s | about 44 s |
-| Relative, default Tracking Speed (1.0) | 0.83 pt | 1.26 s | about 43 s |
-| Relative, fast Tracking Speed (2.5) | 0.46 pt | 1.42 s | about 43 s |
+| Absolute pointer | 0.17 pt | 0.18 s | about 8 s |
+| Relative, slow Tracking Speed (0.4) | 0.5 pt | 1.49 s | about 52 s |
+| Relative, default Tracking Speed (1.0) | 0.83 pt | 1.28 s | about 48 s |
+| Relative, fast Tracking Speed (2.5) | 0.72 pt | 1.22 s | about 48 s |
 
 The target is 95% of taps within 4 pt (about 5 pixels on a 1080p capture). On a real phone, relative mode
 is the one to watch: its accuracy depends on how repeatable iOS pointer acceleration is, which only the
@@ -255,7 +258,7 @@ click away.
 
 | Metric | Target | On the simulator |
 |---|---|---|
-| Tap accuracy | 95% within 4 pt | absolute ≤ 0.3 pt; relative ≤ 1 pt |
+| Tap accuracy | 95% within 4 pt | absolute ≤ 0.2 pt; relative ≤ 1 pt |
 | Time per tap | < 1.5 s | absolute ≈ 0.2 s; relative 1.2–1.5 s |
 | Video latency to the browser (LAN) | < 0.25 s | to be measured on hardware |
 | Commands lost without notice | 0 | every command acknowledged; failures are redone or reported |

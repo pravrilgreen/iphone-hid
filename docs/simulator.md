@@ -46,10 +46,13 @@ Có hai cách chạy:
 
 | Cấu hình | Sai số tap tối đa | Thời gian mỗi tap | Hiệu chỉnh |
 |---|---|---|---|
-| Tuyệt đối | 0,25 pt | 0,16 s | 5 s, 20 click |
-| Tương đối, Tracking 0,4–2,5, iPhone SE / 15 / 15 Pro Max | 0,45–1,0 pt | median 1,2–1,5 s (max 2 s) | 42–51 s |
+| Tuyệt đối | 0,17 pt | 0,18 s | khoảng 8 s |
+| Tương đối, Tracking 0,4–2,5, iPhone SE / 15 / 15 Pro Max | 0,5–1,0 pt | median 1,2–1,5 s | 48–52 s |
 
-Tất cả 100% trúng mục tiêu; không có cú click nào khi hiệu chỉnh rơi ngoài trang.
+Tất cả 100% trúng mục tiêu. Hiệu chỉnh không bao giờ click ra ngoài trang, kể cả khi mất sự kiện, sự kiện tới
+muộn, 20% sự kiện bị rơi, gia tốc mạnh (tới 10 lần), Tracking 0,25–8, hay bản đồ tuyệt đối sai: trong những
+trường hợp đó nó dừng lại và báo lỗi, hoặc chuyển sang chế độ tương đối. Ngoại lệ duy nhất là vài click trên
+thanh trạng thái khi đang tìm trang, lúc Safari không báo sự kiện di chuột (`tests/test_calibration.py`).
 
 ## Giả định đang dùng, phải kiểm chứng trên phần cứng
 

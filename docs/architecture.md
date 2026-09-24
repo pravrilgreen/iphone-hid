@@ -52,7 +52,14 @@ sim: iPhone mô phỏng (UI, con trỏ, Safari, HDMI + MJPEG) cắm vào đúng 
    (vài giây).
 4. Nếu không, host đo mô hình tương đối (khoảng 1 phút).
 
-Mọi cú click khi hiệu chỉnh đều được giữ trong vùng trang, không bao giờ chạm thanh của Safari.
+Hiệu chỉnh không bao giờ click "mù":
+- trang đánh số (`seq`), đóng dấu thời gian (`t`) mọi sự kiện và gửi `hello` định kỳ (heartbeat). Một sự kiện
+  trang tạo ra *sau* cú click mà tới trước click đó chứng minh click đã trượt; thiếu số thứ tự (mất sự kiện)
+  hoặc trả lời muộn thì dừng hiệu chỉnh;
+- lúc tìm trang, con trỏ không bao giờ xuống quá giới hạn (đầu trang không thấp hơn 20% màn hình), và mỗi
+  bước được tính để cả con trỏ nhanh nhất có thể vẫn ở trên giới hạn đó;
+- mỗi đoạn chạy khi đo chỉ được gửi nếu trường hợp xấu nhất vẫn dừng cách mép trang 6%;
+- kết quả được kiểm tra bằng các tap từ giữa ra ngoài, lệch quá 3 pt thì không nhận.
 
 ### 3.2 Chế độ tương đối: neo góc + chạy từng trục
 
