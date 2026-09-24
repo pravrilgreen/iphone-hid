@@ -79,3 +79,11 @@ def test_parse_args_helper():
         hidtest.parse_args("1 2 3", spec)
     with pytest.raises(ValueError):
         hidtest.parse_args("c=1", spec)
+
+
+def test_bridge_info_and_chip_timed_run(capsys):
+    assert run(["--fake", "--fake-bridge", "--no-log", "info; run 10 0 5 interval=20"]) == 0
+    out = capsys.readouterr().out
+    assert "chip ihc bridge v1.0" in out and "chip-timed runs yes" in out and "ran 5 x (10, 0) every 20 ms" in out
+    assert run(["--fake", "--no-log", "run 10 0 5"]) == 1  # a CH9329 cannot
+    assert "does not time runs itself" in capsys.readouterr().out

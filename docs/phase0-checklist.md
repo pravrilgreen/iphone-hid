@@ -258,10 +258,14 @@ Tăng dần số card (1, 2, 3...), thử cả cổng USB 2 và USB 3.
 - **L1.** Lightning Digital AV Adapter → capture card: `capture_check.py snapshot` và `probe`. Mong đợi có
   hình. **Ghi lại:** độ phân giải, độ trễ (theo cách ở T6).
 - **L2.** ESP32 BLE: nạp firmware theo [README firmware](../firmware/esp32_ble_hid/README.md), ghép
-  Bluetooth, rồi chạy `hidtest --port <cổng DevKit> "info; move 100 0; type abc"`. Làm lại T1 (bấm
-  **Hiệu chỉnh**) để biết BLE có theo chuột tuyệt đối không.
+  Bluetooth, rồi chạy `hidtest --port <cổng DevKit> "info; move 100 0; run 20 0 10; type abc"`. Dòng
+  `bridge:` của `info` phải có `chip-timed runs yes` và `link period` (connection interval iOS cấp, thường 15
+  hoặc 30 ms). Làm lại T1 (bấm **Calibrate**) để biết BLE có theo chuột tuyệt đối không; ở chế độ tương đối,
+  hiệu chỉnh tự chọn nhịp là bội số của link period.
   **Ghi lại:**
-  - kết quả;
+  - kết quả, link period;
+  - link period có đổi không sau khi khoá/mở máy, sau vài phút không dùng (trạng thái máy báo "recalibrate" nếu
+    đổi);
   - có tự kết nối lại sau khi tắt/bật Bluetooth, khởi động lại iPhone hoặc ESP32 không.
 - **L3 (tham khảo).** Lightning to USB 3 Camera Adapter + CH9329: HID có dây có chạy không.
 
