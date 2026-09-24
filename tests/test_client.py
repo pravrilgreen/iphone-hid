@@ -240,10 +240,15 @@ def test_farm_discover_finds_announced_boxes(hosts, monkeypatch):
         except IhcError:
             pytest.skip("no multicast on this network")
         with farm:
-            assert hosts[0].url in farm.urls
-            assert {d.id for d in farm.devices()} >= {"sim-01", "sim-02"}
+            assert hosts[0].url in farm.urls  # (other boxes on this network may answer too)
+            ours = next(h for h in farm.hosts if h.base_url == hosts[0].url)
+            assert {d.id for d in ours.devices()} >= {"sim-01", "sim-02"}
     finally:
         ann.close()
     monkeypatch.setattr(discovery, "discover", lambda wait: [])
     with pytest.raises(IhcError, match="no ihc box"):
         Farm.discover(wait=0.1)
+    # a stale announcement (the box is gone) is left out
+    monkeypatch.setattr(discovery, "discover", lambda wait: [f"http://127.0.0.1:{free_port()}", hosts[1].url])
+    with Farm.discover(wait=0.1) as farm:
+        assert farm.urls == [hosts[1].url]

@@ -224,6 +224,13 @@ class RemoteDevice:
         return data["result"]
 
 
+def _answers(base_url: str, timeout: float = 2.0) -> bool:
+    try:
+        return httpx.get(f"{base_url.rstrip('/')}/api/health", timeout=timeout).status_code == 200
+    except httpx.HTTPError:
+        return False
+
+
 class Farm:
     """The phones of one or more hosts: Farm("http://host-a:8000", "http://host-b:8000"), or every
     box on the local network: Farm.discover()."""
@@ -239,7 +246,7 @@ class Farm:
         package). IhcError when none answers within `wait` seconds."""
         from .discovery import discover
 
-        urls = discover(wait)
+        urls = [u for u in discover(wait) if _answers(u)]  # an announcement can outlive its box
         if not urls:
             raise IhcError(f"no ihc box answered on the local network within {wait:.0f} s "
                            "(is zeroconf installed, and are the boxes on this subnet?)")
