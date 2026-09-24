@@ -20,7 +20,8 @@
  * HID 1.11 specification and HID Usage Tables; no code was copied. Whether iOS follows an
  * absolute pointer over Bluetooth LE is unproven.
  *
- * BLE: one Report Map with report ids (collections of the active profile).
+ * BLE: one Report Map for the collections of the active profile, with report ids when it has
+ *      several collections and without any when it has one (hid_map_build()).
  * USB: one HID interface per collection group, without report ids except the "extras"
  *      interface (consumer + system), the layout real keyboards, PiKVM and Aiden use.
  */
@@ -55,6 +56,7 @@ typedef enum {
 
 #define HID_ABS_REPORT_LEN 6u
 #define HID_ABS_LOGICAL_MAX 32767u
+#define HID_ABS_CENTRE 16384u /* idle position of the absolute pointer, see hid_coll_idle_report() */
 
 /* Worst case: every collection with report ids. */
 #define HID_DESC_MAX 400u
@@ -71,6 +73,36 @@ const char *hid_coll_name(hid_coll_t c);
  */
 size_t hid_desc_build(uint8_t *out, size_t cap, unsigned mask, bool with_ids);
 
+/*
+ * The idle input value of collection `c` (nothing pressed, no movement): what a readable input
+ * report holds before the first report and after a new connection. Writes hid_coll_input_len(c)
+ * bytes and returns that length; 0 for an invalid collection or `cap` too small.
+ * All zero, except the absolute pointer: every absolute report is a position, and X = Y = 0
+ * sends the phone's pointer to the top-left corner. Its idle value is the centre of the screen
+ * (HID_ABS_CENTRE, HID_ABS_CENTRE) with no button and no wheel movement.
+ */
+size_t hid_coll_idle_report(hid_coll_t c, uint8_t *out, size_t cap);
+
+/* ---- BLE Report Map ------------------------------------------------------------------------ */
+
+/*
+ * HID over GATT carries one Report Map for every collection. With several collections, each one
+ * has its Report ID and its characteristics' Report Reference descriptors say that id. With
+ * exactly one collection, the map has NO Report ID item and the Report References say id 0.
+ * Reason: on iOS 13.2.3 a single-collection map that declared a Report ID had its notifications
+ * ignored; removing the Report ID item fixed it, and maps with several collections, each with an
+ * id, worked (Apple Developer Forums thread 126757).
+ */
+bool hid_map_uses_ids(unsigned mask);
+/*
+ * Report Reference id of collection `c` in the map of `mask`: 0 when `c` is the map's only
+ * collection, otherwise hid_coll_report_id(c). A collection outside `mask` keeps its own id (not
+ * in the map, never notified), so no two report characteristics share an id and a type.
+ */
+uint8_t hid_map_report_id(unsigned mask, hid_coll_t c);
+/* hid_desc_build(out, cap, mask, hid_map_uses_ids(mask)). */
+size_t hid_map_build(uint8_t *out, size_t cap, unsigned mask);
+
 /* ---- profiles: which collections a CH9329 work mode exposes -------------------------------- */
 
 typedef enum {
@@ -85,12 +117,39 @@ typedef enum {
     HID_POINTERS_REL_AND_ABS = 0,
     HID_POINTERS_REL_ONLY = 1,
     HID_POINTERS_ABS_ONLY = 2,
+    HID_POINTERS_COUNT = 3,
 } hid_pointers_t;
 
 hid_profile_t ch9329_profile_for_work_mode(uint8_t work_mode);
 const char *hid_profile_name(hid_profile_t profile);
 /* Collections of a profile given the pointer selection. Never empty. */
 unsigned hid_profile_collections(hid_profile_t profile, hid_pointers_t pointers);
+
+/* ---- descriptor identity ------------------------------------------------------------------- */
+
+/*
+ * iOS caches HID descriptors: over USB by device identity (VID, PID, serial number), over BLE for
+ * the life of the bond. A phone that saw one build may apply that cached descriptor to another
+ * build with other collections. The firmware therefore appends a tag naming the collection set
+ * to the device name (BLE name, USB product string) and to the serial number:
+ *
+ *   composite (0x00/0x03)  "RA" relative + absolute   "R" relative only   "A" absolute only
+ *   keyboard-only (0x01)   "K" (no pointer: the same descriptor whatever the pointer choice)
+ *   mouse-only (0x02)      "MRA"                      "MR"                "MA"
+ *
+ * Two builds share a tag exactly when they expose the same collections. A new USB interface
+ * order or report layout needs a new PID as well (Kconfig); over BLE the tag makes a stale
+ * pairing visible, but only Forget + re-pairing clears iOS's cache (see README).
+ * Out-of-range arguments are treated like hid_profile_collections() treats them.
+ */
+#define HID_IDENTITY_TAG_MAX 3u
+const char *hid_identity_tag(hid_profile_t profile, hid_pointers_t pointers);
+/*
+ * "<base>-<tag>" into `out`, NUL-terminated (just "<tag>" if `base` is NULL or empty). `base` is
+ * shortened when needed so the tag always fits. Returns the length, or 0 (out = "" when cap > 0)
+ * if `cap` cannot hold "-<tag>" and the NUL.
+ */
+size_t hid_identity_string(char *out, size_t cap, const char *base, hid_profile_t profile, hid_pointers_t pointers);
 
 /*
  * The keyboard-only profile exists for a reported iOS behaviour: with AssistiveTouch on and a

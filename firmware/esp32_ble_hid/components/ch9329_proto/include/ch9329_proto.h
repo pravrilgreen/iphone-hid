@@ -57,7 +57,8 @@ extern "C" {
  *   byte 3  output: 0x01 Bluetooth LE, 0x02 USB (TinyUSB), 0x7F host simulator, 0x00 unknown
  *   byte 4  HID collections of the running profile: bit0 keyboard, bit1 relative mouse,
  *           bit2 consumer, bit3 system, bit4 absolute pointer (hid_report_map.h HID_COLL_*)
- *   byte 5  vendor features: bit0 SEND_MS_REL_RUN (0x30)
+ *   byte 5  vendor features: bit0 SEND_MS_REL_RUN (0x30), bit1 its quarter-millisecond interval
+ *           flag, bit2 its E7 "played off schedule" status (all three, or none without a clock)
  *   byte 6-7 report period: how often the phone actually takes a HID report, u16 little-endian
  *           (byte 6 low) in units of 0.25 ms; 0 = unknown / not connected. BLE: the current
  *           connection interval (60 = 15 ms); USB: the interrupt IN endpoints' polling interval
@@ -69,7 +70,9 @@ extern "C" {
 #define CH9329_OUTPUT_BLE 0x01u
 #define CH9329_OUTPUT_USB 0x02u
 #define CH9329_OUTPUT_SIM 0x7Fu
-#define CH9329_FEATURE_REL_RUN 0x01u
+#define CH9329_FEATURE_REL_RUN 0x01u            /* SEND_MS_REL_RUN */
+#define CH9329_FEATURE_REL_RUN_QUARTER_MS 0x02u /* ... interval in 0.25 ms units (flags bit 7) */
+#define CH9329_FEATURE_REL_RUN_LATE 0x04u       /* ... answers E7 when a report went out late */
 #define CH9329_PERIOD_UNITS_PER_MS 4u /* GET_INFO bytes 6-7 count 0.25 ms */
 
 enum ch9329_cmd {
@@ -87,18 +90,35 @@ enum ch9329_cmd {
     CH9329_CMD_RESET = 0x0F,
     /*
      * Vendor extension (not in the WCH protocol; a real CH9329 answers E3):
-     * SEND_MS_REL_RUN  dx int8, dy int8, count u8 (1..255), interval_ms u8, buttons u8
-     * Emits `count` relative mouse reports {buttons, dx, dy, 0}, report i at t0 + i * interval_ms
-     * (t0 = when the frame is executed), timed on the bridge. The run owns `count` slots: it
-     * ends at t0 + count * interval_ms, so a run queued behind it starts exactly one interval
-     * after this run's last report (the host sends a whole move as back-to-back runs).
-     * Replies once, at the end: 00 when every report was delivered (same rule as
-     * SEND_MS_REL_DATA), E6 at the first one that was not (the rest are not sent), E5 for
-     * count 0, buttons > 7 or (count - 1) * interval_ms > 2000.
+     * SEND_MS_REL_RUN  dx int8, dy int8, count u8 (1..255), interval u8, flags u8
+     *   flags bit 0-2  buttons (bit0 L, bit1 R, bit2 M)
+     *   flags bit 3-6  reserved, must be 0 (else E5)
+     *   flags bit 7    interval in 0.25 ms units (0..63.75 ms); clear: whole milliseconds
+     *                  (0..255 ms), the original encoding, so old hosts are unaffected
+     * Emits `count` relative mouse reports {buttons, dx, dy, 0}, report i at t0 + i * interval
+     * (t0 = when the frame is executed), timed on the bridge's microsecond clock. The run owns
+     * `count` slots: it ends at t0 + count * interval, so a run queued behind it starts exactly
+     * one interval after this run's last report (the host sends a whole move as back-to-back
+     * runs). A slot that has passed (slow link) is sent at once, never skipped; the schedule is
+     * not shifted.
+     * Replies once, after the last slot:
+     *   00  every report was delivered (same rule as SEND_MS_REL_DATA) and each one was
+     *       accepted by the link at most ch9329_options_t.run_late_us after its slot;
+     *   E7  every report was delivered, but at least one was accepted later than that: the
+     *       phone saw uneven spacing, so the host must not take the landing point as exact;
+     *   E6  a report was not delivered: the run stopped there, the rest were not sent (E6 wins
+     *       over E7);
+     *   E5  count 0, a reserved flag bit set, or (count - 1) * interval > 2000 ms (real time,
+     *       whichever unit).
      */
     CH9329_CMD_SEND_MS_REL_RUN = 0x30,
 };
 #define CH9329_REL_RUN_MAX_MS 2000u
+#define CH9329_REL_RUN_BUTTONS 0x07u    /* flags: buttons */
+#define CH9329_REL_RUN_RESERVED 0x78u   /* flags: must be 0 */
+#define CH9329_REL_RUN_QUARTER_MS 0x80u /* flags: interval counts 0.25 ms */
+/* Default late threshold (ch9329_options_t.run_late_us): two 1 ms FreeRTOS ticks, see README. */
+#define CH9329_RUN_LATE_DEFAULT_US 2000u
 
 enum ch9329_status {
     CH9329_STATUS_OK = 0x00,
@@ -108,6 +128,8 @@ enum ch9329_status {
     CH9329_STATUS_BAD_SUM = 0xE4,
     CH9329_STATUS_BAD_PARAM = 0xE5,
     CH9329_STATUS_EXEC_FAILED = 0xE6,
+    /* Vendor (SEND_MS_REL_RUN only): every report delivered, at least one of them late. */
+    CH9329_STATUS_RUN_LATE = 0xE7,
 };
 
 /* SEND_KB_MEDIA_DATA sub-report ids (first data byte). */
@@ -214,10 +236,18 @@ typedef struct {
     bool (*persist_store)(void *ctx, const ch9329_persist_t *p);
     /* RESET was accepted: the platform restarts once the reply (if any) has left the wire. */
     void (*request_restart)(void *ctx);
-    /* Clock and sleep for SEND_MS_REL_RUN (any monotonic ms counter). Both NULL: the command is
-     * answered E3 (not supported) and GET_INFO does not advertise it. */
-    uint32_t (*clock_ms)(void *ctx);
-    void (*sleep_until_ms)(void *ctx, uint32_t t_ms);
+    /* Clock and sleep for SEND_MS_REL_RUN: any monotonic microsecond counter (wrap-around after
+     * 2^32 us is handled). sleep_until_us returns at or after t_us, as close to it as the
+     * platform can (the firmware sleeps in 1 ms ticks, then spins on its microsecond timer).
+     * Both NULL: the command is answered E3 (not supported) and GET_INFO does not advertise it. */
+    uint32_t (*clock_us)(void *ctx);
+    void (*sleep_until_us)(void *ctx, uint32_t t_us);
+    /* Optional, SEND_MS_REL_RUN lateness: clock_us() value at which the link ACCEPTED the report
+     * the last report callback answered OK for (BLE: notification queued for the next
+     * connection event; USB: report placed in the endpoint, before the phone read it, since
+     * waiting for the next poll is the link's own grid, not lateness). NULL: the core reads
+     * clock_us() once the callback has returned. */
+    uint32_t (*accepted_us)(void *ctx);
 } ch9329_sink_t;
 
 typedef struct {
@@ -228,6 +258,9 @@ typedef struct {
     /* Added to the configured packet interval before a partial frame is declared timed out.
      * The firmware uses it to cover UART/USB delivery granularity; host tests use 0. */
     uint32_t rx_slack_ms;
+    /* SEND_MS_REL_RUN: a report accepted by the link more than this many microseconds after its
+     * slot makes the run answer E7. 0 = CH9329_RUN_LATE_DEFAULT_US. */
+    uint32_t run_late_us;
 } ch9329_options_t;
 
 /* ---- incremental frame parser ------------------------------------------------------------ */
@@ -289,7 +322,9 @@ typedef struct {
     uint32_t hid_sent;        /* HID reports the sink accepted (answered OK) */
     uint32_t hid_failed;      /* HID commands answered E6 (work mode, link, or sink failure) */
     uint32_t abs_dropped;     /* SEND_MS_ABS_DATA accepted and ignored (no absolute pointer) */
-    uint32_t runs;            /* SEND_MS_REL_RUN commands executed completely */
+    uint32_t runs;            /* SEND_MS_REL_RUN commands executed completely (00 or E7) */
+    uint32_t runs_late;       /* ... of which answered E7 (a report later than run_late_us) */
+    uint32_t late_max_us;     /* largest lateness of any run report so far */
 } ch9329_core_stats_t;
 
 typedef struct {

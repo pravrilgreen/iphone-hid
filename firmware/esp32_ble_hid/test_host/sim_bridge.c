@@ -33,7 +33,10 @@
  *                        --not-ready (no phone connected at boot)
  *
  * RESET is simulated as a reboot of the core: the stored configuration becomes active, as on
- * the ESP32. SEND_MS_REL_RUN (0x30) runs on the real monotonic clock. GET_INFO reports output
+ * the ESP32. SEND_MS_REL_RUN (0x30) runs on the real monotonic clock in microseconds (0.25 ms
+ * intervals included). Its late threshold (E7) is SIM_RUN_LATE_US = 10 ms instead of the
+ * firmware's 2 ms: a Linux host under load can oversleep by a few ms, and the e2e test checks the
+ * E7 path with "delay" values far above that. GET_INFO reports output
  * 0x7F (simulator), the collections of the running work mode with both pointers, and the report
  * period set by "period" (independent of "ready": the firmware keeps its connection interval
  * while a report type is unsubscribed or the buffers are stalled).
@@ -57,6 +60,7 @@
 #include "hid_report_map.h"
 
 enum { K_KB = 0, K_MOUSE, K_CONSUMER, K_SYSTEM, K_ABS, K_COUNT };
+#define SIM_RUN_LATE_US 10000u /* see the header comment */
 static const char *const KIND_NAMES[K_COUNT] = {"kb", "mouse", "consumer", "system", "abs"};
 static const char *const KIND_TAGS[K_COUNT] = {"KB", "MOUSE", "CONSUMER", "SYSTEM", "ABS"};
 
@@ -76,11 +80,16 @@ typedef struct {
     uint64_t blocked_ms; /* total time spent inside simulated sink delays */
 } sim_t;
 
-static uint64_t mono_ms(void)
+static uint64_t mono_us(void)
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (uint64_t)ts.tv_sec * 1000u + (uint64_t)ts.tv_nsec / 1000000u;
+    return (uint64_t)ts.tv_sec * 1000000u + (uint64_t)ts.tv_nsec / 1000u;
+}
+
+static uint64_t mono_ms(void)
+{
+    return mono_us() / 1000u;
 }
 
 /* The core's clock: monotonic time minus time spent blocked in the sink (see the header). */
@@ -89,11 +98,16 @@ static uint32_t core_now(const sim_t *s)
     return (uint32_t)(mono_ms() - s->blocked_ms);
 }
 
-static void sleep_ms(unsigned ms)
+static void sleep_us(uint64_t us)
 {
-    struct timespec ts = {.tv_sec = (time_t)(ms / 1000u), .tv_nsec = (long)(ms % 1000u) * 1000000L};
+    struct timespec ts = {.tv_sec = (time_t)(us / 1000000u), .tv_nsec = (long)(us % 1000000u) * 1000L};
     while (nanosleep(&ts, &ts) != 0 && errno == EINTR) {
     }
+}
+
+static void sleep_ms(unsigned ms)
+{
+    sleep_us((uint64_t)ms * 1000u);
 }
 
 static void log_bytes(sim_t *s, const char *tag, const uint8_t *b, size_t n)
@@ -177,17 +191,19 @@ static uint8_t cb_abs(void *ctx, const uint8_t r[CH9329_ABS_REPORT_LEN])
 static uint32_t cb_clock(void *ctx)
 {
     (void)ctx;
-    return (uint32_t)mono_ms();
+    return (uint32_t)mono_us();
 }
 
-/* SEND_MS_REL_RUN pacing: a real sleep, counted as blocked time like a slow BLE buffer. */
-static void cb_sleep_until(void *ctx, uint32_t t_ms)
+/* SEND_MS_REL_RUN pacing: a real sleep, counted as blocked time like a slow BLE buffer. The
+ * report's lateness is measured when deliver() returns (no accepted_us: the simulated link
+ * accepts a report at the end of its "delay"). */
+static void cb_sleep_until(void *ctx, uint32_t t_us)
 {
     sim_t *s = ctx;
     const uint64_t t0 = mono_ms();
-    const int32_t wait = (int32_t)(t_ms - (uint32_t)t0);
+    const int32_t wait = (int32_t)(t_us - (uint32_t)mono_us());
     if (wait > 0) {
-        sleep_ms((unsigned)wait);
+        sleep_us((uint64_t)wait);
         s->blocked_ms += mono_ms() - t0;
     }
 }
@@ -305,7 +321,8 @@ static bool read_controls(sim_t *s, char *buf, size_t cap, size_t *used)
 
 static void boot(ch9329_core_t *core, const ch9329_sink_t *sink)
 {
-    ch9329_core_init(core, sink, NULL);
+    const ch9329_options_t opt = {.run_late_us = SIM_RUN_LATE_US};
+    ch9329_core_init(core, sink, &opt);
     const hid_profile_t profile = ch9329_profile_for_work_mode(ch9329_cfg_work_mode(core->active.cfg));
     ch9329_core_set_link_info(core, CH9329_OUTPUT_SIM,
                               (uint8_t)hid_profile_collections(profile, HID_POINTERS_REL_AND_ABS));
@@ -364,8 +381,8 @@ int main(int argc, char **argv)
         .persist_load = cb_load,
         .persist_store = cb_store,
         .request_restart = cb_restart,
-        .clock_ms = cb_clock,
-        .sleep_until_ms = cb_sleep_until,
+        .clock_us = cb_clock,
+        .sleep_until_us = cb_sleep_until,
     };
     static ch9329_core_t core;
     boot(&core, &sink);

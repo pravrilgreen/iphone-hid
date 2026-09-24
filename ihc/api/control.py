@@ -10,15 +10,21 @@ is never reordered with the moves around it:
   or lost;
 - absolute moves keep only the newest position (one report per tick), a button change goes out at
   once; key-state reports and actions go out one by one, never merged;
-- the op queue is bounded: when it is full, the socket is not read (backpressure, nothing dropped);
+- the op queue is bounded: when it is full, the socket is not read (backpressure);
+- input that waited more than STALE seconds for the device (a REST action, a calibration held it)
+  is dropped instead of being replayed late onto whatever screen shows by then: motion, wheel,
+  button and key presses; releases always go out (in order), so nothing stays held. The client
+  gets a {"t": "dropped"} message;
 - when the connection ends, everything is released.
 """
 
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import math
+import time
 from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -29,6 +35,8 @@ from . import actions
 TICK = 0.016
 MAX_OPS = 512
 MAX_DELTA = 100_000
+STALE = 0.5
+SENT, LATE, FAILED = "sent", "late", "failed"
 
 
 @dataclass(eq=False)
@@ -47,6 +55,7 @@ class Op:
     name: str = ""
     run: Callable | None = None
     body: Any = None
+    at: float = field(default_factory=time.monotonic)  # when it was queued
 
     def take(self) -> tuple[int, int, int]:
         """The next report's share of the pending movement (each value within +-127)."""
@@ -81,11 +90,12 @@ class LiveSession:
     """One /control connection. `send` delivers a JSON-able dict to the client."""
 
     def __init__(self, device, send: Callable[[dict], Awaitable[None]], *, tick: float = TICK,
-                 max_ops: int = MAX_OPS):
+                 max_ops: int = MAX_OPS, stale: float = STALE):
         self.device = device
         self._send = send
         self.tick = tick
         self.max_ops = max_ops
+        self.stale = stale
         self._ops: deque[Op] = deque()
         self._wake = asyncio.Event()
         self._space = asyncio.Event()
@@ -93,6 +103,9 @@ class LiveSession:
         self._executor = ThreadPoolExecutor(1, thread_name_prefix=f"live-{device.id}")
         self._queued_buttons = 0  # after every queued op has run
         self._sent_buttons = 0  # as last sent to the device
+        self._sent_mods, self._sent_keys = 0, []  # keyboard state as last sent
+        self._drops, self._drop_note_at = 0, -math.inf
+        self._touched = False  # anything was sent to the device
         self._last_report_at = -math.inf
         self._tasks: list[asyncio.Task] = []
         self._last_error_at = -math.inf
@@ -114,12 +127,14 @@ class LiveSession:
         for t in self._tasks:
             t.cancel()
         self._ops.clear()
-        fut = self._executor.submit(self.device.release_all)
+        # a session that never sent anything cannot have left anything held
+        fut = self._executor.submit(self.device.release_all) if self._touched else None
         self._executor.shutdown(wait=False)
-        try:
-            await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(fut)), 10.0)
-        except Exception:  # TimeoutError, HidError: nothing more can be done from here
-            pass
+        if fut is not None:
+            try:
+                await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(fut)), 10.0)
+            except Exception:  # TimeoutError, HidError: nothing more can be done from here
+                pass
         await asyncio.gather(*self._tasks, return_exceptions=True)
 
     # -- input ----------------------------------------------------------------------------------
@@ -134,7 +149,7 @@ class LiveSession:
                 buttons = _int(msg, "buttons", self._queued_buttons, 0, 7)
                 if dx or dy or wheel:
                     tail = self._ops[-1] if self._ops else None
-                    if tail is not None and tail.kind == "move":
+                    if tail is not None and tail.kind == "move" and not self._stale(tail):
                         tail.dx, tail.dy, tail.wheel = tail.dx + dx, tail.dy + dy, tail.wheel + wheel
                         self._count("coalesced")
                     else:
@@ -150,7 +165,7 @@ class LiveSession:
                 tail = self._ops[-1] if self._ops else None
                 # never into a button change: the press must land where it was made
                 if (tail is not None and tail.kind == "abs" and not tail.urgent and buttons == self._queued_buttons
-                        and abs(tail.wheel + wheel) <= 127):
+                        and abs(tail.wheel + wheel) <= 127 and not self._stale(tail)):
                     tail.x, tail.y, tail.wheel = x, y, tail.wheel + wheel
                     self._count("coalesced")
                     self._wake.set()
@@ -212,54 +227,138 @@ class LiveSession:
                     self._wake.clear()
                     try:
                         await asyncio.wait_for(self._wake.wait(), delay)
-                    except TimeoutError:
+                    except asyncio.TimeoutError:  # not the builtin TimeoutError before Python 3.11
                         pass
                     continue
             if op.kind == "move":
+                if self._stale(op):
+                    self._popleft()
+                    await self._dropped()
+                    continue
                 dx, dy, wheel = op.take()
                 if op.empty:
                     self._popleft()
                 self._last_report_at = loop.time()
-                await self._report(self.device.live_mouse, dx, dy, self._sent_buttons, wheel)
+                if await self._report(self.device.live_mouse, dx, dy, self._sent_buttons, wheel,
+                                      deadline=op.at + self.stale) == LATE:
+                    await self._dropped()
                 continue
             self._popleft()
             if op.kind == "buttons":
-                self._sent_buttons = op.buttons
-                await self._report(self.device.live_mouse, 0, 0, op.buttons, 0)
+                await self._buttons(op, lambda b: (self.device.live_mouse, 0, 0, b, 0))
             elif op.kind == "abs":
-                self._sent_buttons = op.buttons
                 self._last_report_at = loop.time()
                 live_abs = getattr(self.device, "live_abs", None)
                 if live_abs is None:
                     await self._error("this device has no absolute pointer")
                 elif op.wheel:
-                    await self._report(live_abs, op.x, op.y, op.buttons, op.wheel)
+                    await self._buttons(op, lambda b: (live_abs, op.x, op.y, b, op.wheel), motion=True)
                 else:
-                    await self._report(live_abs, op.x, op.y, op.buttons)
+                    await self._buttons(op, lambda b: (live_abs, op.x, op.y, b), motion=True)
             elif op.kind == "keys":
-                await self._report(self.device.live_keys, op.mods, op.keys)
+                await self._keys(op)
             elif op.kind == "release":
-                self._sent_buttons = 0
+                self._sent_buttons, self._sent_mods, self._sent_keys = 0, 0, []
                 await self._report(self.device.release_all)
             elif op.kind == "sync":
                 await self._emit({"t": "result", "id": op.id, "ok": True, "result": {"reports": self.totals["reports"]}})
             elif op.kind == "action":
                 await self._action(op)
 
+    # Presses and motion may be dropped when late; the releases an op carries always go out.
+
+    async def _buttons(self, op: Op, report: Callable[[int], tuple], *, motion: bool = False) -> None:
+        """A report setting the buttons to op.buttons (`report(buttons)` -> (fn, *args))."""
+        sent = self._sent_buttons
+        keep = op.buttons & sent  # the new state without its presses
+        if op.buttons == keep and (op.buttons != sent or not motion):
+            outcome = await self._report(*report(op.buttons))  # only releases: never dropped
+        else:
+            outcome = LATE if self._stale(op) else await self._report(*report(op.buttons), deadline=op.at + self.stale)
+            if outcome == LATE:
+                await self._dropped()
+                if keep == sent:
+                    return
+                op.buttons = keep
+                outcome = await self._report(*report(keep))
+        if outcome != LATE:
+            self._sent_buttons = op.buttons
+
+    async def _keys(self, op: Op) -> None:
+        sent_mods, sent_keys = self._sent_mods, self._sent_keys
+        keep_mods, keep_keys = op.mods & sent_mods, [k for k in sent_keys if k in op.keys]
+        if op.mods == keep_mods and set(op.keys) <= set(keep_keys):
+            outcome = await self._report(self.device.live_keys, op.mods, op.keys)  # only releases
+        else:
+            outcome = LATE if self._stale(op) else await self._report(self.device.live_keys, op.mods, op.keys,
+                                                                      deadline=op.at + self.stale)
+            if outcome == LATE:
+                await self._dropped()
+                if (keep_mods, keep_keys) == (sent_mods, sent_keys):
+                    return
+                op.mods, op.keys = keep_mods, keep_keys
+                outcome = await self._report(self.device.live_keys, keep_mods, keep_keys)
+        if outcome != LATE:
+            self._sent_mods, self._sent_keys = op.mods, list(op.keys)
+
+    def _stale(self, op: Op) -> bool:
+        return time.monotonic() - op.at > self.stale
+
     async def _call(self, fn, *args):
+        self._touched = True
         return await asyncio.get_running_loop().run_in_executor(self._executor, fn, *args)
 
-    async def _report(self, fn, *args) -> None:
+    def _in_time(self, deadline: float, fn, *args) -> bool:
+        """On the session's thread: fn(*args) if the device is free by `deadline` (a REST action
+        holds its action lock meanwhile), else nothing is sent (False)."""
+        lock = getattr(self.device, "_action", None)
+        wait = deadline - time.monotonic()
+        if lock is None:
+            if wait < 0:
+                return False
+            fn(*args)
+            return True
+        if not (lock.acquire(timeout=wait) if wait > 0 else lock.acquire(blocking=False)):
+            return False
+        try:
+            fn(*args)
+        finally:
+            lock.release()
+        return True
+
+    async def _report(self, fn, *args, deadline: float | None = None) -> str:
+        """Send one report: SENT, LATE (not sent: the device was not free by `deadline`) or FAILED
+        (the operator was told)."""
         loop = asyncio.get_running_loop()
         t0 = loop.time()
         try:
-            await self._call(fn, *args)
+            if deadline is None:
+                await self._call(fn, *args)
+            elif not await self._call(self._in_time, deadline, fn, *args):
+                return LATE
         except Exception as e:  # HidError, PointerError...: tell the operator, keep going
             self._count("errors")
             await self._error(str(e) or type(e).__name__)
-            return
+            return FAILED
         self._count("reports")
         self._report_time += loop.time() - t0
+        return SENT
+
+    async def _dropped(self) -> None:
+        """Count a late op; tell the client at once, then at most once a second (the stats carry
+        the counts)."""
+        self._count("dropped")
+        self._drops += 1
+        now = time.monotonic()
+        if now - self._drop_note_at < 1.0:
+            return
+        self._drop_note_at, n, self._drops = now, self._drops, 0
+        busy = None
+        with contextlib.suppress(Exception):
+            busy = self.device.status().get("busy_with")
+        await self._emit({"t": "dropped", "ops": n, "busy_with": busy,
+                          "error": f"live input dropped: the phone was busy{f' ({busy})' if busy else ''} "
+                                   f"for more than {self.stale:g} s"})
 
     async def _action(self, op: Op) -> None:
         loop = asyncio.get_running_loop()
@@ -289,7 +388,7 @@ class LiveSession:
             self._report_time = 0.0
             await self._emit({
                 "t": "stats", "reports": w["reports"], "messages": w["messages"], "coalesced": w["coalesced"],
-                "dropped": 0, "rejected": w["rejected"], "errors": w["errors"], "queue": len(self._ops),
+                "dropped": w["dropped"], "rejected": w["rejected"], "errors": w["errors"], "queue": len(self._ops),
                 "report_ms": round(report_ms, 2) if report_ms is not None else None,
                 "buttons": self._sent_buttons, "totals": dict(self.totals),
             })

@@ -261,6 +261,47 @@ size_t hid_desc_build(uint8_t *out, size_t cap, unsigned mask, bool with_ids)
     return n;
 }
 
+size_t hid_coll_idle_report(hid_coll_t c, uint8_t *out, size_t cap)
+{
+    const size_t len = hid_coll_input_len(c);
+    if (out == NULL || len == 0u || cap < len) {
+        return 0;
+    }
+    memset(out, 0, len);
+    if (c == HID_COLL_ABS_POINTER) {
+        /* buttons, X lo, X hi, Y lo, Y hi, wheel: never (0,0), which is the top-left corner */
+        out[1] = (uint8_t)(HID_ABS_CENTRE & 0xFFu);
+        out[2] = (uint8_t)(HID_ABS_CENTRE >> 8);
+        out[3] = (uint8_t)(HID_ABS_CENTRE & 0xFFu);
+        out[4] = (uint8_t)(HID_ABS_CENTRE >> 8);
+    }
+    return len;
+}
+
+bool hid_map_uses_ids(unsigned mask)
+{
+    unsigned n = 0;
+    for (unsigned c = 0; c < HID_COLL_COUNT; c++) {
+        if ((mask & HID_COLL_BIT(c)) != 0u) {
+            n++;
+        }
+    }
+    return n > 1u;
+}
+
+uint8_t hid_map_report_id(unsigned mask, hid_coll_t c)
+{
+    if ((unsigned)c < HID_COLL_COUNT && (mask & HID_COLL_BIT(c)) != 0u && !hid_map_uses_ids(mask)) {
+        return 0u;
+    }
+    return hid_coll_report_id(c);
+}
+
+size_t hid_map_build(uint8_t *out, size_t cap, unsigned mask)
+{
+    return hid_desc_build(out, cap, mask, hid_map_uses_ids(mask));
+}
+
 hid_profile_t ch9329_profile_for_work_mode(uint8_t work_mode)
 {
     switch (work_mode) {
@@ -313,4 +354,43 @@ unsigned hid_profile_collections(hid_profile_t profile, hid_pointers_t pointers)
     default:
         return HID_COLL_BIT(HID_COLL_KEYBOARD) | HID_COLL_BIT(HID_COLL_CONSUMER) | HID_COLL_BIT(HID_COLL_SYSTEM) | ptr;
     }
+}
+
+const char *hid_identity_tag(hid_profile_t profile, hid_pointers_t pointers)
+{
+    /* Indexed like hid_profile_collections() decides: unknown values fall back the same way. */
+    static const char *const TAGS[HID_PROFILE_COUNT][HID_POINTERS_COUNT] = {
+        [HID_PROFILE_COMPOSITE] = {[HID_POINTERS_REL_AND_ABS] = "RA", [HID_POINTERS_REL_ONLY] = "R",
+                                   [HID_POINTERS_ABS_ONLY] = "A"},
+        [HID_PROFILE_KEYBOARD] = {[HID_POINTERS_REL_AND_ABS] = "K", [HID_POINTERS_REL_ONLY] = "K",
+                                  [HID_POINTERS_ABS_ONLY] = "K"},
+        [HID_PROFILE_MOUSE] = {[HID_POINTERS_REL_AND_ABS] = "MRA", [HID_POINTERS_REL_ONLY] = "MR",
+                               [HID_POINTERS_ABS_ONLY] = "MA"},
+    };
+    const unsigned p = (unsigned)profile < HID_PROFILE_COUNT ? (unsigned)profile : (unsigned)HID_PROFILE_COMPOSITE;
+    const unsigned q = (unsigned)pointers < HID_POINTERS_COUNT ? (unsigned)pointers : (unsigned)HID_POINTERS_REL_AND_ABS;
+    return TAGS[p][q];
+}
+
+size_t hid_identity_string(char *out, size_t cap, const char *base, hid_profile_t profile, hid_pointers_t pointers)
+{
+    if (out == NULL || cap == 0u) {
+        return 0;
+    }
+    const char *tag = hid_identity_tag(profile, pointers);
+    const size_t tag_len = strlen(tag);
+    if (cap < tag_len + 2u) { /* "-", the tag and the NUL */
+        out[0] = '\0';
+        return 0;
+    }
+    size_t n = base != NULL ? strlen(base) : 0u;
+    if (n > cap - tag_len - 2u) {
+        n = cap - tag_len - 2u; /* shorten the base, never the tag */
+    }
+    if (n > 0u) {
+        memcpy(out, base, n);
+        out[n++] = '-';
+    }
+    memcpy(&out[n], tag, tag_len + 1u);
+    return n + tag_len;
 }

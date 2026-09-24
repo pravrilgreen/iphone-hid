@@ -134,10 +134,11 @@ static const char *const V_REL_LEFT_3PX = "57 AB 00 05 05 01 00 FD 00 00 0A";
 static const char *const V_ABS_MOVE = "57 AB 00 04 07 02 00 40 01 15 02 00 67";
 
 /* Replies (success = CMD|0x80 + status 00; SUM by hand). */
-/* GET_INFO: version 0x40 (bridge), link, LEDs, output 0 (not set), collections 0, features
- * bit0 (the fake sink has a clock: SEND_MS_REL_RUN supported), report period 0 (unknown). */
-static const char *const R_INFO_READY = "57 AB 00 81 08 40 01 00 00 00 01 00 00 CD";
-static const char *const R_INFO_IDLE = "57 AB 00 81 08 40 00 00 00 00 01 00 00 CC";
+/* GET_INFO: version 0x40 (bridge), link, LEDs, output 0 (not set), collections 0, features 0x07
+ * (the fake sink has a clock: SEND_MS_REL_RUN, its 0.25 ms unit and its E7 status), report
+ * period 0 (unknown). */
+static const char *const R_INFO_READY = "57 AB 00 81 08 40 01 00 00 00 07 00 00 D3";
+static const char *const R_INFO_IDLE = "57 AB 00 81 08 40 00 00 00 00 07 00 00 D2";
 static const char *const R_KB_OK = "57 AB 00 82 01 00 85";
 static const char *const R_MEDIA_OK = "57 AB 00 83 01 00 86";
 static const char *const R_ABS_OK = "57 AB 00 84 01 00 87";
@@ -184,7 +185,7 @@ TEST(test_get_info)
     R.fake.ready = true;
     R.fake.leds = 0xFF;
     feed_hex(V_GET_INFO, 20);
-    CHECK_REPLY(2, "57 AB 00 81 08 40 01 07 00 00 01 00 00 D4");
+    CHECK_REPLY(2, "57 AB 00 81 08 40 01 07 00 00 07 00 00 DA");
     CHECK_EQ(R.fake.bad_replies, 0);
 }
 
@@ -354,7 +355,7 @@ TEST(test_get_info_bridge_bytes)
     R.fake.leds = 0x02;
     R.fake.report_period = 4; /* USB, bInterval 1 ms */
     feed_hex(V_GET_INFO, 0);
-    CHECK_REPLY(0, "57 AB 00 81 08 40 01 02 02 1F 01 04 00 F4");
+    CHECK_REPLY(0, "57 AB 00 81 08 40 01 02 02 1F 07 04 00 FA");
 }
 
 /* GET_INFO bytes 6-7: the sink's report period, u16 little-endian in 0.25 ms units, asked again
@@ -367,22 +368,22 @@ TEST(test_get_info_report_period)
 
     R.fake.report_period = 60; /* 15 ms connection interval */
     feed_hex(V_GET_INFO, 1);
-    CHECK_REPLY(1, "57 AB 00 81 08 40 01 00 00 00 01 3C 00 09");
+    CHECK_REPLY(1, "57 AB 00 81 08 40 01 00 00 00 07 3C 00 0F");
 
     R.fake.report_period = 0x1234; /* byte 6 = low byte, byte 7 = high byte */
     feed_hex(V_GET_INFO, 2);
-    CHECK_REPLY(2, "57 AB 00 81 08 40 01 00 00 00 01 34 12 13");
+    CHECK_REPLY(2, "57 AB 00 81 08 40 01 00 00 00 07 34 12 19");
 
     R.fake.report_period = 0xFFFF;
     feed_hex(V_GET_INFO, 3);
-    CHECK_REPLY(3, "57 AB 00 81 08 40 01 00 00 00 01 FF FF CB");
+    CHECK_REPLY(3, "57 AB 00 81 08 40 01 00 00 00 07 FF FF D1");
 
     /* Not gated by byte 1: a connected link whose reports are not all deliverable still has
      * its interval. */
     R.fake.report_period = 60;
     R.fake.ready = false;
     feed_hex(V_GET_INFO, 4);
-    CHECK_REPLY(4, "57 AB 00 81 08 40 00 00 00 00 01 3C 00 08");
+    CHECK_REPLY(4, "57 AB 00 81 08 40 00 00 00 00 07 3C 00 0E");
 
     /* Disconnected: the platform reports 0 again. */
     R.fake.ready = true;
@@ -400,7 +401,8 @@ TEST(test_get_info_report_period)
         CHECK(e != NULL && e->len == 14);
         if (e != NULL && e->len == 14) {
             CHECK_EQ((uint32_t)e->bytes[11] | ((uint32_t)e->bytes[12] << 8), v);
-            CHECK_EQ(e->bytes[10], CH9329_FEATURE_REL_RUN);
+            CHECK_EQ(e->bytes[10],
+                     CH9329_FEATURE_REL_RUN | CH9329_FEATURE_REL_RUN_QUARTER_MS | CH9329_FEATURE_REL_RUN_LATE);
         }
         fake_clear(&R.fake);
         n++;
@@ -411,32 +413,45 @@ TEST(test_get_info_report_period)
 
 /* ---- SEND_MS_REL_RUN (vendor 0x30) ------------------------------------------------------- */
 
-static void rel_run(uint8_t addr, int8_t dx, int8_t dy, uint8_t count, uint8_t interval, uint8_t buttons, uint32_t now)
+/* The fake clock counts microseconds (sink clock_us). */
+#define MS 1000u
+
+static void rel_run(uint8_t addr, int8_t dx, int8_t dy, uint8_t count, uint8_t interval, uint8_t flags, uint32_t now)
 {
-    const uint8_t d[5] = {(uint8_t)dx, (uint8_t)dy, count, interval, buttons};
+    const uint8_t d[5] = {(uint8_t)dx, (uint8_t)dy, count, interval, flags};
     send_cmd(addr, CH9329_CMD_SEND_MS_REL_RUN, d, sizeof(d), now);
+}
+
+/* Every recorded mouse report was accepted at t0 + i * step_us. */
+static void check_mouse_times(uint32_t t0, uint32_t step_us, size_t n)
+{
+    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), n);
+    for (size_t i = 0; i < n; i++) {
+        const fake_event_t *e = fake_nth(&R.fake, FK_MOUSE, i);
+        CHECK(e != NULL);
+        if (e != NULL) {
+            CHECK_EQ(e->t, (uint32_t)(t0 + step_us * (uint32_t)i)); /* the clock wraps at 2^32 */
+        }
+    }
 }
 
 TEST(test_rel_run_schedule)
 {
     rig_init();
-    R.fake.clock = 1000;
+    R.fake.clock = 1000 * MS;
     rel_run(0, 5, -3, 4, 15, 0x01, 0);
-    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 4);
+    check_mouse_times(1000 * MS, 15 * MS, 4); /* on the absolute schedule */
     for (size_t i = 0; i < 4; i++) {
         const fake_event_t *e = fake_nth(&R.fake, FK_MOUSE, i);
-        CHECK(e != NULL);
-        if (e != NULL) {
-            CHECK_EQ(e->t, 1000 + 15 * i); /* on the absolute schedule */
-            CHECK_MEM(e->bytes, "\x01\x05\xFD\x00", 4);
-        }
+        CHECK(e != NULL && memcmp(e->bytes, "\x01\x05\xFD\x00", 4) == 0);
     }
     CHECK_EQ(R.fake.sleeps, 4); /* 3 between reports, 1 for the last report's slot */
-    CHECK_EQ(R.fake.clock, 1060);
+    CHECK_EQ(R.fake.clock, 1060 * MS);
     CHECK_EQ(replies(), 1); /* one reply, after the last report's slot */
     CHECK_REPLY(0, "57 AB 00 B0 01 00 B3");
     CHECK(R.fake.ev[R.fake.n - 1].kind == FK_REPLY);
     CHECK_EQ(R.core.stats.runs, 1);
+    CHECK_EQ(R.core.stats.runs_late, 0);
     /* count 1: a single report, no sleep */
     fake_clear(&R.fake);
     rel_run(0, -128, 127, 1, 200, 0, 1);
@@ -450,34 +465,116 @@ TEST(test_rel_run_back_to_back_keeps_the_schedule)
     /* A move is sent as runs queued behind each other (coarse then fine): the second run's first
      * report comes one interval after the first run's last one, as if it were a single run. */
     rig_init();
-    R.fake.clock = 500;
+    R.fake.clock = 500 * MS;
     rel_run(0, 20, 0, 3, 20, 0, 0);
     rel_run(0, 1, 0, 2, 20, 0, 1); /* its bytes arrived while the first run was playing */
-    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 5);
-    for (size_t i = 0; i < 5; i++) {
-        const fake_event_t *e = fake_nth(&R.fake, FK_MOUSE, i);
-        CHECK(e != NULL && e->t == 500 + 20 * i);
-    }
+    check_mouse_times(500 * MS, 20 * MS, 5);
     CHECK_REPORT(FK_MOUSE, 2, "00 14 00 00");
     CHECK_REPORT(FK_MOUSE, 3, "00 01 00 00");
     CHECK_EQ(replies(), 2);
     CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
     CHECK_EQ(reply_status(1), CH9329_STATUS_OK);
-    CHECK_EQ(R.fake.clock, 600);
+    CHECK_EQ(R.fake.clock, 600 * MS);
 }
 
 TEST(test_rel_run_late_steps_sent_not_skipped)
 {
+    /* Every report takes longer than the 15 ms interval: each late step is sent at once (not
+     * skipped), the schedule is not shifted, the whole move is played, and the reply says the
+     * spacing was off (E7) instead of 00. */
     rig_init();
-    R.fake.report_cost_ms = 20; /* each report takes longer than the 15 ms interval */
+    R.fake.report_cost_us = 20 * MS;
     rel_run(0, 1, 0, 4, 15, 0, 0);
-    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 4);
-    const uint32_t want[4] = {20, 40, 60, 80}; /* back to back once late, schedule not shifted */
-    for (size_t i = 0; i < 4; i++) {
-        const fake_event_t *e = fake_nth(&R.fake, FK_MOUSE, i);
-        CHECK(e != NULL && e->t == want[i]);
+    check_mouse_times(20 * MS, 20 * MS, 4); /* 20, 40, 60, 80 ms: back to back once late */
+    CHECK_EQ(replies(), 1);
+    CHECK_REPLY(0, "57 AB 00 F0 01 E7 DA");
+    CHECK_EQ(R.core.stats.runs, 1);
+    CHECK_EQ(R.core.stats.runs_late, 1);
+    CHECK_EQ(R.core.stats.late_max_us, 35 * MS); /* 4th report: slot 45 ms, accepted at 80 ms */
+    CHECK_EQ(R.core.stats.hid_sent, 4);
+}
+
+TEST(test_rel_run_late_threshold)
+{
+    /* One report accepted late: E7 above the threshold, 00 at or below it. The other reports
+     * keep their slots (a late report does not shift the schedule). */
+    static const struct {
+        uint32_t late_limit_us; /* ch9329_options_t.run_late_us (0 = default 2 ms) */
+        uint32_t slow_us;       /* extra time the 3rd report needs */
+        uint8_t status;
+    } cases[] = {
+        {0, 0, CH9329_STATUS_OK},
+        {0, 1500, CH9329_STATUS_OK},
+        {0, CH9329_RUN_LATE_DEFAULT_US, CH9329_STATUS_OK}, /* exactly the limit: on time */
+        {0, CH9329_RUN_LATE_DEFAULT_US + 1u, CH9329_STATUS_RUN_LATE},
+        {0, 14 * MS, CH9329_STATUS_RUN_LATE},
+        {5 * MS, 4 * MS, CH9329_STATUS_OK},
+        {5 * MS, 5 * MS + 1u, CH9329_STATUS_RUN_LATE},
+    };
+    for (size_t k = 0; k < sizeof(cases) / sizeof(cases[0]); k++) {
+        memset(&R, 0, sizeof(R));
+        fake_init(&R.fake);
+        R.opt.run_late_us = cases[k].late_limit_us;
+        boot();
+        R.fake.clock = 7 * MS;
+        R.fake.slow_at = 3;
+        R.fake.slow_cost_us = cases[k].slow_us;
+        rel_run(0, 2, 0, 5, 15, 0, 0);
+        CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 5);
+        const uint32_t want[5] = {7 * MS, 22 * MS, 37 * MS + cases[k].slow_us, 52 * MS, 67 * MS};
+        for (size_t i = 0; i < 5; i++) {
+            const fake_event_t *e = fake_nth(&R.fake, FK_MOUSE, i);
+            CHECK(e != NULL && e->t == want[i]);
+        }
+        CHECK_EQ(replies(), 1);
+        if (reply_status(0) != cases[k].status) {
+            fprintf(stderr, "  case %zu: limit %u us, 3rd report %u us late\n", k, cases[k].late_limit_us,
+                    cases[k].slow_us);
+        }
+        CHECK_EQ(reply_status(0), cases[k].status);
+        CHECK_EQ(reply_cmd(0), cases[k].status == CH9329_STATUS_OK ? 0xB0 : 0xF0);
+        CHECK_EQ(R.core.stats.late_max_us, cases[k].slow_us);
+        CHECK_EQ(R.fake.clock, 82 * MS); /* the run still owns its 5 slots */
     }
+}
+
+TEST(test_rel_run_first_report_late)
+{
+    /* The first report's slot is t0, when the frame is executed: a first report that waited for
+     * the link counts too (every later report then crowds onto it). */
+    rig_init();
+    R.fake.slow_at = 1;
+    R.fake.slow_cost_us = 3 * MS;
+    rel_run(0, 1, 1, 3, 10, 0, 0);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_RUN_LATE);
+    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 3);
+}
+
+TEST(test_rel_run_lateness_from_accept_time)
+{
+    /* USB answers a report only once the phone read it (up to a poll later): that wait is the
+     * link's own grid, not lateness. The core measures when the link ACCEPTED the report
+     * (sink accepted_us), so a 1.5 ms confirmation per report keeps a 2 ms-late-free run at 00. */
+    rig_init();
+    R.fake.confirm_cost_us = 1500;
+    rel_run(0, 1, 0, 6, 4, 0, 0);
+    check_mouse_times(0, 4 * MS, 6);
     CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+    CHECK_EQ(R.core.stats.late_max_us, 0);
+
+    /* The same link without accepted_us: the core falls back to its clock after the callback
+     * returned, so a confirmation slower than the threshold reads as late. */
+    memset(&R, 0, sizeof(R));
+    fake_init(&R.fake);
+    ch9329_sink_t sink = fake_sink(&R.fake);
+    sink.accepted_us = NULL;
+    ch9329_core_init(&R.core, &sink, NULL);
+    R.fake.confirm_cost_us = 1500;
+    rel_run(0, 1, 0, 3, 4, 0, 0);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK); /* 1.5 ms <= 2 ms */
+    R.fake.confirm_cost_us = 2500;
+    rel_run(0, 1, 0, 3, 4, 0, 1);
+    CHECK_EQ(reply_status(1), CH9329_STATUS_RUN_LATE);
 }
 
 TEST(test_rel_run_stops_at_first_failure)
@@ -493,27 +590,90 @@ TEST(test_rel_run_stops_at_first_failure)
     CHECK_EQ(R.core.stats.runs, 0);
 }
 
+TEST(test_rel_run_failure_wins_over_late)
+{
+    /* A late report, then an undelivered one: E6 (the run stopped), not E7. */
+    rig_init();
+    R.fake.slow_at = 1;
+    R.fake.slow_cost_us = 10 * MS;
+    const uint8_t script[] = {CH9329_STATUS_OK, CH9329_STATUS_OK, CH9329_STATUS_EXEC_FAILED};
+    fake_script(&R.fake, script, sizeof(script));
+    rel_run(0, 1, 0, 5, 15, 0, 0);
+    CHECK_EQ(R.fake.attempts, 3);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_EXEC_FAILED);
+    CHECK_EQ(R.core.stats.runs, 0);
+    CHECK_EQ(R.core.stats.runs_late, 0);
+}
+
+TEST(test_rel_run_quarter_ms)
+{
+    /* Flags bit 7: interval in 0.25 ms units. 90 x 0.25 ms = 22.5 ms (a 7.5 ms BLE link x 3). */
+    rig_init();
+    R.fake.clock = 100 * MS;
+    rel_run(0, 3, -1, 5, 90, CH9329_REL_RUN_QUARTER_MS | 0x02u, 0);
+    check_mouse_times(100 * MS, 22500, 5);
+    CHECK_REPORT(FK_MOUSE, 0, "02 03 FF 00"); /* buttons from bits 0-2 only */
+    CHECK_EQ(R.fake.clock, 100 * MS + 5u * 22500u);
+    CHECK_REPLY(0, "57 AB 00 B0 01 00 B3");
+
+    /* Back to back in quarter units: 11.25 ms slots continue across the two runs. */
+    fake_clear(&R.fake);
+    const uint32_t t0 = R.fake.clock;
+    rel_run(0, 1, 0, 2, 45, CH9329_REL_RUN_QUARTER_MS, 1);
+    rel_run(0, 1, 0, 3, 45, CH9329_REL_RUN_QUARTER_MS, 2);
+    check_mouse_times(t0, 11250, 5);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+    CHECK_EQ(reply_status(1), CH9329_STATUS_OK);
+
+    /* 0 x 0.25 ms: every report at once, like interval 0 ms. */
+    fake_clear(&R.fake);
+    const uint32_t t1 = R.fake.clock;
+    rel_run(0, 1, 0, 3, 0, CH9329_REL_RUN_QUARTER_MS, 3);
+    check_mouse_times(t1, 0, 3);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+}
+
 TEST(test_rel_run_parameters)
 {
     rig_init();
     rel_run(0, 1, 1, 0, 10, 0, 0);    /* count 0 */
-    rel_run(0, 1, 1, 2, 10, 0x08, 1); /* button bit 3 */
-    rel_run(0, 1, 1, 255, 8, 0, 2);   /* 254 * 8 = 2032 ms > 2000 */
+    rel_run(0, 1, 1, 2, 10, 0x08, 1); /* reserved flag bits 3-6 */
+    rel_run(0, 1, 1, 2, 10, 0x10, 2);
+    rel_run(0, 1, 1, 2, 10, 0x20, 3);
+    rel_run(0, 1, 1, 2, 10, 0x40 | CH9329_REL_RUN_QUARTER_MS, 4);
+    rel_run(0, 1, 1, 255, 8, 0, 5);   /* 254 * 8 ms = 2032 ms > 2000 */
+    rel_run(0, 1, 1, 255, 32, CH9329_REL_RUN_QUARTER_MS, 6); /* 254 * 8 ms again, in 0.25 ms units */
+    rel_run(0, 1, 1, 2, 255, 0x80 | 0x7F, 7);                /* every flag bit */
     const uint8_t short_d[4] = {1, 1, 2, 10};
-    send_cmd(0, CH9329_CMD_SEND_MS_REL_RUN, short_d, 4, 3);
-    for (size_t i = 0; i < 4; i++) {
+    send_cmd(0, CH9329_CMD_SEND_MS_REL_RUN, short_d, 4, 8);
+    const size_t n_bad = 9;
+    for (size_t i = 0; i < n_bad; i++) {
         CHECK_EQ(reply_status(i), CH9329_STATUS_BAD_PARAM);
     }
     CHECK_EQ(R.fake.attempts, 0);
-    rel_run(0, 1, 0, 201, 10, 0, 4); /* 200 * 10 = 2000 ms: the limit is allowed */
-    CHECK_EQ(reply_status(4), CH9329_STATUS_OK);
+    rel_run(0, 1, 0, 201, 10, 0, 9); /* 200 * 10 ms = 2000 ms: the limit is allowed */
+    CHECK_EQ(reply_status(n_bad), CH9329_STATUS_OK);
     CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 201);
-    CHECK_EQ(R.fake.clock, 2010); /* 201 slots of 10 ms */
+    CHECK_EQ(R.fake.clock, 2010 * MS); /* 201 slots of 10 ms */
+    /* The limit in 0.25 ms units: 200 * 40 x 0.25 ms = 2000 ms allowed; 255 * 31 x 0.25 ms =
+     * 254 * 7.75 ms = 1968.5 ms allowed (the 1 ms unit could not express 7.75 ms). */
+    fake_clear(&R.fake);
+    rel_run(0, 1, 0, 201, 40, CH9329_REL_RUN_QUARTER_MS, 10);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 201);
+    CHECK_EQ(R.fake.clock, 4020 * MS);
+    fake_clear(&R.fake); /* 255 reports + 1 reply: exactly what the fake records */
+    rel_run(0, 1, 0, 255, 31, CH9329_REL_RUN_QUARTER_MS | 0x07u, 11);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 255);
+    CHECK_EQ(R.fake.overflow, 0);
+    CHECK_REPORT(FK_MOUSE, 254, "07 01 00 00");
+    CHECK_EQ(R.fake.clock, 4020 * MS + 255u * 7750u);
 }
 
 TEST(test_rel_run_gating)
 {
-    /* keyboard-only work mode: E6; broadcast: executed, silent; no clock: E3 */
+    /* keyboard-only work mode: E6; broadcast: executed, silent (also when late); no clock: E3 */
     rig_init();
     boot_with_cfg(CH9329_WORK_MODE_KEYBOARD, 0);
     rel_run(0, 1, 1, 3, 10, 0, 0);
@@ -524,16 +684,37 @@ TEST(test_rel_run_gating)
     rel_run(0xFF, 1, 1, 3, 10, 0, 0);
     CHECK_EQ(replies(), 0);
     CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 3);
+    R.fake.report_cost_us = 20 * MS;
+    rel_run(0xFF, 1, 1, 3, 10, 0, 1);
+    CHECK_EQ(replies(), 0);
+    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 6);
+    CHECK_EQ(R.core.stats.runs_late, 1);
 
     memset(&R, 0, sizeof(R));
     fake_init(&R.fake);
     ch9329_sink_t sink = fake_sink(&R.fake);
-    sink.clock_ms = NULL;
-    sink.sleep_until_ms = NULL;
+    sink.clock_us = NULL;
+    sink.sleep_until_us = NULL;
     ch9329_core_init(&R.core, &sink, NULL);
     rel_run(0, 1, 1, 3, 10, 0, 0);
     CHECK_REPLY(0, "57 AB 00 F0 01 E3 D6");
     CHECK_EQ(R.fake.attempts, 0);
+}
+
+TEST(test_rel_run_clock_wraps)
+{
+    /* The microsecond clock wraps every 71.6 minutes: a run across the wrap keeps its slots and
+     * is not mistaken for late (or early). */
+    rig_init();
+    R.fake.clock = 0xFFFFFFFFu - 20u * MS;
+    const uint32_t t0 = R.fake.clock;
+    rel_run(0, 1, 0, 4, 15, 0, 0);
+    check_mouse_times(t0, 15 * MS, 4);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+    CHECK_EQ(R.fake.clock, t0 + 60u * MS);
+    R.fake.report_cost_us = 3 * MS;
+    rel_run(0, 1, 0, 2, 15, 0, 1);
+    CHECK_EQ(reply_status(1), CH9329_STATUS_RUN_LATE);
 }
 
 TEST(test_kb_reserved_byte_forced_zero)
@@ -894,7 +1075,7 @@ TEST(test_address_filter_nonzero)
     boot_with_cfg(0x00, 0x05);
     send_cmd(0x05, CH9329_CMD_GET_INFO, NULL, 0, 0);
     CHECK_EQ(replies(), 1);
-    CHECK_REPLY(0, "57 AB 05 81 08 40 01 00 00 00 01 00 00 D2");
+    CHECK_REPLY(0, "57 AB 05 81 08 40 01 00 00 00 07 00 00 D8");
     send_cmd(0x06, CH9329_CMD_GET_INFO, NULL, 0, 1);
     send_cmd(0x00, CH9329_CMD_GET_INFO, NULL, 0, 2);
     const uint8_t kb[8] = {0, 0, 4, 0, 0, 0, 0, 0};
@@ -1617,9 +1798,15 @@ void run_proto_tests(void)
     RUN(test_rel_run_schedule);
     RUN(test_rel_run_back_to_back_keeps_the_schedule);
     RUN(test_rel_run_late_steps_sent_not_skipped);
+    RUN(test_rel_run_late_threshold);
+    RUN(test_rel_run_first_report_late);
+    RUN(test_rel_run_lateness_from_accept_time);
+    RUN(test_rel_run_failure_wins_over_late);
     RUN(test_rel_run_stops_at_first_failure);
+    RUN(test_rel_run_quarter_ms);
     RUN(test_rel_run_parameters);
     RUN(test_rel_run_gating);
+    RUN(test_rel_run_clock_wraps);
     RUN(test_kb_reserved_byte_forced_zero);
     RUN(test_merged_stream_one_chunk);
     RUN(test_split_stream_byte_by_byte);

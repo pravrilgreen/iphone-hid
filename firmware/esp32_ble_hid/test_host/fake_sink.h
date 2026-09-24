@@ -16,7 +16,7 @@ typedef struct {
     fake_kind_t kind;
     uint8_t bytes[CH9329_MAX_FRAME];
     size_t len;
-    uint32_t t; /* fake clock when recorded */
+    uint32_t t; /* fake clock (us) when recorded; for a report: when the link accepted it */
 } fake_event_t;
 
 typedef struct {
@@ -45,15 +45,23 @@ typedef struct {
     int stores;
     int restarts;
 
-    /* Fake clock for SEND_MS_REL_RUN: sleep_until_ms jumps to the target (never backwards) and
-     * every report callback advances it by `report_cost_ms` (time the link takes to accept). */
+    /* Fake microsecond clock for SEND_MS_REL_RUN: sleep_until_us jumps to the target (never
+     * backwards). Every report callback advances it by `report_cost_us` (time until the link
+     * accepted the report: accepted_us() returns that point), then by `confirm_cost_us` (time
+     * until the callback returns, like USB's wait for the phone to read the endpoint). The
+     * `slow_at`-th report callback (1-based, counted in `attempts`; 0 = none) takes
+     * `slow_cost_us` more before its link accepts it. */
     uint32_t clock;
-    uint32_t report_cost_ms;
+    uint32_t report_cost_us;
+    uint32_t confirm_cost_us;
+    size_t slow_at;
+    uint32_t slow_cost_us;
+    uint32_t accepted_at;
     size_t sleeps;
 } fake_t;
 
 void fake_init(fake_t *f);
-/* Every callback set, including abs_mouse_report and the REL_RUN clock. */
+/* Every callback set, including abs_mouse_report and the REL_RUN clock and accepted_us. */
 ch9329_sink_t fake_sink(fake_t *f);
 void fake_clear(fake_t *f); /* forget recorded events and counters, keep flash and settings */
 /* The next n report callbacks return these statuses (then hid_status again). */

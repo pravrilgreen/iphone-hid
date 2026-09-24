@@ -17,7 +17,8 @@
  *     built without an absolute pointer accepts and drops SEND_MS_ABS_DATA (or answers E5).
  *   - SEND_MS_ABS_DATA: X/Y above 4095 are E5; the report carries X/Y scaled to 0..32767.
  *   - GET_INFO answers version 0x40 and fills the reserved bytes (see ch9329_proto.h).
- *   - SEND_MS_REL_RUN (0x30, vendor): see ch9329_proto.h.
+ *   - SEND_MS_REL_RUN (0x30, vendor): see ch9329_proto.h. It is the only command that can answer
+ *     the vendor status E7 (every report delivered, at least one late).
  *   - SET_PARA_CFG / SET_USB_STRING / SET_DEFAULT_CFG change flash only; GET_* read flash back,
  *     the running configuration changes at the next boot (RESET reboots the bridge).
  */
@@ -344,9 +345,12 @@ static uint8_t cmd_ms_rel(ch9329_core_t *c, const uint8_t *d, uint8_t len)
     return hid_result(c, c->sink.mouse_report(c->sink.ctx, report));
 }
 
+/* GET_INFO byte 5 with a clock: the run, its 0.25 ms interval unit and its E7 status. */
+#define REL_RUN_FEATURES (CH9329_FEATURE_REL_RUN | CH9329_FEATURE_REL_RUN_QUARTER_MS | CH9329_FEATURE_REL_RUN_LATE)
+
 static bool rel_run_supported(const ch9329_core_t *c)
 {
-    return c->sink.clock_ms != NULL && c->sink.sleep_until_ms != NULL;
+    return c->sink.clock_us != NULL && c->sink.sleep_until_us != NULL;
 }
 
 static uint8_t cmd_ms_rel_run(ch9329_core_t *c, const uint8_t *d, uint8_t len)
@@ -358,30 +362,49 @@ static uint8_t cmd_ms_rel_run(ch9329_core_t *c, const uint8_t *d, uint8_t len)
         return CH9329_STATUS_BAD_PARAM;
     }
     const uint8_t count = d[2];
-    const uint8_t interval = d[3];
-    const uint8_t buttons = d[4];
-    if (count == 0u || buttons > 0x07u || (uint32_t)(count - 1u) * interval > CH9329_REL_RUN_MAX_MS) {
+    const uint8_t flags = d[4];
+    const uint32_t unit_us = (flags & CH9329_REL_RUN_QUARTER_MS) != 0u ? 250u : 1000u;
+    const uint32_t interval_us = (uint32_t)d[3] * unit_us; /* <= 255 ms */
+    if (count == 0u || (flags & CH9329_REL_RUN_RESERVED) != 0u ||
+        (uint32_t)(count - 1u) * interval_us > CH9329_REL_RUN_MAX_MS * 1000u) {
         return CH9329_STATUS_BAD_PARAM;
     }
     if (!mode_has_mouse(c) || c->sink.mouse_report == NULL) {
         return hid_result(c, CH9329_STATUS_EXEC_FAILED);
     }
-    const uint8_t report[CH9329_MOUSE_REPORT_LEN] = {buttons, clamp_i8(d[0]), clamp_i8(d[1]), 0x00};
-    const uint32_t t0 = c->sink.clock_ms(c->sink.ctx);
+    const uint8_t report[CH9329_MOUSE_REPORT_LEN] = {(uint8_t)(flags & CH9329_REL_RUN_BUTTONS), clamp_i8(d[0]),
+                                                     clamp_i8(d[1]), 0x00};
+    const uint32_t late_limit = c->opt.run_late_us != 0u ? c->opt.run_late_us : CH9329_RUN_LATE_DEFAULT_US;
+    bool late = false;
+    const uint32_t t0 = c->sink.clock_us(c->sink.ctx);
     for (uint32_t i = 0; i < count; i++) {
+        const uint32_t slot = t0 + i * interval_us; /* count * interval_us < 2^26: no overflow */
         if (i > 0u) {
             /* Absolute schedule: a slow delivery delays the next report, it never shifts the
              * following ones (and a late step is sent at once, not skipped). */
-            c->sink.sleep_until_ms(c->sink.ctx, t0 + i * interval);
+            c->sink.sleep_until_us(c->sink.ctx, slot);
         }
         if (hid_result(c, c->sink.mouse_report(c->sink.ctx, report)) != CH9329_STATUS_OK) {
             return CH9329_STATUS_EXEC_FAILED; /* stop at the first undelivered report */
         }
+        const uint32_t at =
+            c->sink.accepted_us != NULL ? c->sink.accepted_us(c->sink.ctx) : c->sink.clock_us(c->sink.ctx);
+        const int32_t lateness = (int32_t)(at - slot); /* wrap-safe; early (< 0) is on time */
+        if (lateness > 0 && (uint32_t)lateness > c->stats.late_max_us) {
+            c->stats.late_max_us = (uint32_t)lateness;
+        }
+        if (lateness > 0 && (uint32_t)lateness > late_limit) {
+            late = true; /* keep going: the move completes, only its timing is flagged */
+        }
     }
     /* The run owns `count` slots: the reply (and the next frame) wait for the end of the last
      * one, so runs sent back to back continue the same fixed-rate schedule. */
-    c->sink.sleep_until_ms(c->sink.ctx, t0 + (uint32_t)count * interval);
+    c->sink.sleep_until_us(c->sink.ctx, t0 + (uint32_t)count * interval_us);
     c->stats.runs++;
+    if (late) {
+        c->stats.runs_late++;
+        return CH9329_STATUS_RUN_LATE;
+    }
     return CH9329_STATUS_OK;
 }
 
@@ -450,7 +473,7 @@ static uint8_t dispatch(ch9329_core_t *c, uint8_t cmd, const uint8_t *d, uint8_t
         r->data[2] = (uint8_t)(leds & 0x07u);
         r->data[3] = c->output;
         r->data[4] = c->collections;
-        r->data[5] = rel_run_supported(c) ? CH9329_FEATURE_REL_RUN : 0x00u;
+        r->data[5] = rel_run_supported(c) ? REL_RUN_FEATURES : 0x00u;
         r->data[6] = (uint8_t)(period & 0xFFu); /* little-endian, 0.25 ms units */
         r->data[7] = (uint8_t)(period >> 8);
         r->len = 8u;

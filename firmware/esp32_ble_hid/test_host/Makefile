@@ -23,8 +23,9 @@ CORE_WARN := $(WARN) -Wconversion -Wsign-conversion
 SAN := -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer
 CFLAGS_COMMON := -std=c11 -D_DEFAULT_SOURCE -O1 -g -I$(PROTO)/include
 
-CORE_SRC := $(PROTO)/src/ch9329_parser.c $(PROTO)/src/ch9329_core.c $(PROTO)/src/hid_report_map.c
-TEST_SRC := tinytest.c fake_sink.c test_proto.c test_hid_desc.c test_main.c
+CORE_SRC := $(PROTO)/src/ch9329_parser.c $(PROTO)/src/ch9329_core.c $(PROTO)/src/hid_report_map.c \
+            $(PROTO)/src/hid_confirm.c
+TEST_SRC := tinytest.c fake_sink.c test_proto.c test_hid_desc.c test_hid_confirm.c test_main.c
 
 CORE_OBJ := $(patsubst $(PROTO)/src/%.c,$(BUILD)/core_%.o,$(CORE_SRC))
 TEST_OBJ := $(patsubst %.c,$(BUILD)/%.o,$(TEST_SRC))

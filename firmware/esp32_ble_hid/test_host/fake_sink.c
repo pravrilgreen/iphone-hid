@@ -66,7 +66,11 @@ static void cb_reply(void *ctx, const uint8_t *frame, size_t len)
 static uint8_t deliver(fake_t *f, fake_kind_t kind, const uint8_t *report, size_t len)
 {
     f->attempts++;
-    f->clock += f->report_cost_ms;
+    f->clock += f->report_cost_us;
+    if (f->slow_at != 0 && f->attempts == f->slow_at) {
+        f->clock += f->slow_cost_us;
+    }
+    f->accepted_at = f->clock;
     uint8_t status = f->hid_status;
     if (f->script_pos < f->script_n) {
         status = f->script[f->script_pos++];
@@ -79,6 +83,7 @@ static uint8_t deliver(fake_t *f, fake_kind_t kind, const uint8_t *report, size_
         return status;
     }
     record(f, kind, report, len);
+    f->clock += f->confirm_cost_us;
     return CH9329_STATUS_OK;
 }
 
@@ -112,13 +117,18 @@ static uint32_t cb_clock(void *ctx)
     return ((fake_t *)ctx)->clock;
 }
 
-static void cb_sleep_until(void *ctx, uint32_t t_ms)
+static void cb_sleep_until(void *ctx, uint32_t t_us)
 {
     fake_t *f = ctx;
     f->sleeps++;
-    if ((int32_t)(t_ms - f->clock) > 0) {
-        f->clock = t_ms;
+    if ((int32_t)(t_us - f->clock) > 0) {
+        f->clock = t_us;
     }
+}
+
+static uint32_t cb_accepted(void *ctx)
+{
+    return ((fake_t *)ctx)->accepted_at;
 }
 
 static bool cb_ready(void *ctx)
@@ -210,8 +220,9 @@ ch9329_sink_t fake_sink(fake_t *f)
         .persist_load = cb_load,
         .persist_store = cb_store,
         .request_restart = cb_restart,
-        .clock_ms = cb_clock,
-        .sleep_until_ms = cb_sleep_until,
+        .clock_us = cb_clock,
+        .sleep_until_us = cb_sleep_until,
+        .accepted_us = cb_accepted,
     };
     return s;
 }

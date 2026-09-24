@@ -9,7 +9,7 @@ from __future__ import annotations
 import inspect
 import time
 from dataclasses import dataclass
-from typing import Any, Callable, Literal
+from typing import Annotated, Any, Callable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
@@ -130,26 +130,70 @@ class Wait(Body):
     seconds: float = Field(ge=0.0, le=300.0, examples=[0.5])
 
 
-CALIBRATE_OPTIONS = {"coarse_counts", "fine_counts", "repeats", "validate", "page_timeout", "click_timeout", "seed",
-                     "try_absolute", "max_error", "coarse_target"}
+Counts = Annotated[list[Annotated[int, Field(ge=1, le=127)]], Field(min_length=2, max_length=16)]
+
+
+class CalibrateOptions(BaseModel):
+    """Advanced ihc.calibration.calibrate() options, checked (types and ranges) before the phone is
+    touched; omitted ones keep the calibration's defaults."""
+
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+
+    validate_: Annotated[int, Field(ge=3, le=100)] | None = Field(
+        None, alias="validate", description="Validation moves after the measurement (default 8)")
+    max_error: Annotated[float, Field(ge=0.5, le=10.0)] | None = Field(
+        None, description="Largest validation landing error accepted, points (default 3)")
+    repeats: Annotated[int, Field(ge=1, le=5)] | None = Field(None, description="Repeats of each measured run")
+    page_timeout: Annotated[float, Field(ge=1.0, le=120.0)] | None = Field(
+        None, description="Seconds to wait for the page to load on the phone (default 15)")
+    click_timeout: Annotated[float, Field(ge=0.1, le=10.0)] | None = Field(
+        None, description="How late a page event may be, seconds (default 2)")
+    coarse_target: Annotated[float, Field(ge=5.0, le=40.0)] | None = Field(
+        None, description="Size of a coarse step, points (default 20)")
+    try_absolute: bool | None = Field(None, description="Test whether the phone follows absolute reports first "
+                                                        "(default true; false forces relative mode)")
+    coarse_counts: Counts | None = Field(None, description="Run lengths (reports) of the coarse measurement")
+    fine_counts: Counts | None = Field(None, description="Run lengths (reports) of the fine measurement")
+    seed: Annotated[int, Field(ge=0, le=2**32 - 1)] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _known(cls, v):
+        if isinstance(v, dict):
+            known = sorted(f.alias or name for name, f in cls.model_fields.items())
+            bad = sorted(set(v) - set(known))
+            if bad:
+                raise ValueError(f"unknown calibration options {bad}; known: {known}")
+        return v
+
+    def kwargs(self) -> dict[str, Any]:
+        """The options given, as calibrate() keyword arguments."""
+        out = self.model_dump(by_alias=True, exclude_none=True)
+        return {k: tuple(v) if isinstance(v, list) else v for k, v in out.items()}
+
+
+CALIBRATE_OPTIONS = {f.alias or name for name, f in CalibrateOptions.model_fields.items()}
 
 
 class Calibrate(Body):
     """Calibrate the pointer with the Safari calibration page."""
 
     page_url: str | None = Field(None, max_length=2000, description="URL of the calibration page as the phone "
-                                                                    "reaches it (default <public_url>/calibrate/<id>)")
+                                                                    "reaches it (default <public_url>/calibrate/<id>); "
+                                                                    "the server adds the page's key `k` to it")
     open_page: bool = Field(True, description="open the page through Spotlight first; false: it is already open "
-                                              "in Safari (opened by hand)")
-    options: dict[str, Any] = Field(default_factory=dict, description="Advanced ihc.calibration.calibrate() options: "
-                                    + ", ".join(sorted(CALIBRATE_OPTIONS)))
+                                              "in Safari (opened by hand, from the page_url of GET .../calibration)")
+    options: CalibrateOptions = Field(default_factory=CalibrateOptions,
+                                      description="Advanced ihc.calibration.calibrate() options: "
+                                      + ", ".join(sorted(CALIBRATE_OPTIONS)))
 
-    @field_validator("options")
+    @field_validator("page_url")
     @classmethod
-    def _known(cls, v: dict) -> dict:
-        bad = sorted(set(v) - CALIBRATE_OPTIONS)
-        if bad:
-            raise ValueError(f"unknown calibration options {bad}; known: {sorted(CALIBRATE_OPTIONS)}")
+    def _typeable(cls, v: str | None) -> str | None:
+        if v is not None:
+            if not v.lower().startswith(("http://", "https://")):
+                raise ValueError("page_url must be an http:// or https:// URL")
+            keymap.text_reports(v)  # typed through Spotlight
         return v
 
 

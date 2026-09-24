@@ -54,6 +54,10 @@ def render_variant(frame: Frame, rect: ScreenRect | None, width: int | None, qua
     return encode_jpeg(img, quality)
 
 
+class TooManyViewers(Exception):
+    pass
+
+
 class Watcher:
     """One viewer's handle on a hub: waits for frames newer than the one it has."""
 
@@ -84,7 +88,7 @@ class Watcher:
                 return None
             try:
                 await asyncio.wait_for(self._event.wait(), remaining)
-            except TimeoutError:
+            except asyncio.TimeoutError:  # not the builtin TimeoutError before Python 3.11
                 return None
 
 
@@ -109,9 +113,12 @@ class FrameHub:
         return len(self._watchers)
 
     @asynccontextmanager
-    async def watch(self) -> AsyncIterator[Watcher]:
+    async def watch(self, limit: int | None = None) -> AsyncIterator[Watcher]:
+        """Watch the device's frames; TooManyViewers when `limit` viewers already watch."""
         w = Watcher(self, asyncio.get_running_loop())
         with self._lock:
+            if limit is not None and len(self._watchers) >= limit:
+                raise TooManyViewers(f"{self.device.id} already has {len(self._watchers)} viewers (the most allowed)")
             self._watchers.add(w)
             self._wanted.set()
             if self._thread is None and not self._stop.is_set():
@@ -249,7 +256,7 @@ class MJPEGResponse(Response):
     media_type = f"multipart/x-mixed-replace; boundary={BOUNDARY}"
 
     def __init__(self, hub: FrameHub, *, fps: float, crop: bool, width: int | None, quality: int,
-                 frames: int | None, first_timeout: float = 3.0):
+                 frames: int | None, first_timeout: float = 3.0, max_viewers: int | None = None):
         self.status_code = 200
         self.background = None
         self.hub = hub
@@ -259,33 +266,40 @@ class MJPEGResponse(Response):
         self.quality = quality
         self.frames = frames
         self.first_timeout = first_timeout
+        self.max_viewers = max_viewers
 
     async def __call__(self, scope, receive, send) -> None:
-        async with self.hub.watch() as w:
-            first = await w.next(None, self.first_timeout, fail_fast=True)
-            if first is None:
-                msg = self.hub.error or "no video frame in time"
-                await JSONResponse({"error": msg, "code": "no_video"}, status_code=503)(scope, receive, send)
-                return
-            await send({"type": "http.response.start", "status": 200, "headers": [
-                (b"content-type", self.media_type.encode()),
-                (b"cache-control", b"no-cache, no-store, must-revalidate"),
-                (b"pragma", b"no-cache"),
-                (b"x-accel-buffering", b"no"),
-            ]})
-            streamer = asyncio.ensure_future(self._stream(w, first, send))
-            listener = asyncio.ensure_future(_wait_disconnect(receive))
+        try:
+            async with self.hub.watch(self.max_viewers) as w:
+                await self._serve(w, scope, receive, send)
+        except TooManyViewers as e:
+            await JSONResponse({"error": str(e), "code": "too_many"}, status_code=429)(scope, receive, send)
+
+    async def _serve(self, w: Watcher, scope, receive, send) -> None:
+        first = await w.next(None, self.first_timeout, fail_fast=True)
+        if first is None:
+            msg = self.hub.error or "no video frame in time"
+            await JSONResponse({"error": msg, "code": "no_video"}, status_code=503)(scope, receive, send)
+            return
+        await send({"type": "http.response.start", "status": 200, "headers": [
+            (b"content-type", self.media_type.encode()),
+            (b"cache-control", b"no-cache, no-store, must-revalidate"),
+            (b"pragma", b"no-cache"),
+            (b"x-accel-buffering", b"no"),
+        ]})
+        streamer = asyncio.ensure_future(self._stream(w, first, send))
+        listener = asyncio.ensure_future(_wait_disconnect(receive))
+        try:
+            await asyncio.wait({streamer, listener}, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            for t in (streamer, listener):
+                t.cancel()
+            await asyncio.gather(streamer, listener, return_exceptions=True)
+        if streamer.done() and not streamer.cancelled() and streamer.exception() is None:
             try:
-                await asyncio.wait({streamer, listener}, return_when=asyncio.FIRST_COMPLETED)
-            finally:
-                for t in (streamer, listener):
-                    t.cancel()
-                await asyncio.gather(streamer, listener, return_exceptions=True)
-            if streamer.done() and not streamer.cancelled() and streamer.exception() is None:
-                try:
-                    await send({"type": "http.response.body", "body": b"", "more_body": False})
-                except OSError:
-                    pass
+                await send({"type": "http.response.body", "body": b"", "more_body": False})
+            except OSError:
+                pass
 
     async def _stream(self, w: Watcher, frame: Frame, send) -> None:
         loop = asyncio.get_running_loop()

@@ -6,13 +6,16 @@ IPhoneDevice.status() reports.
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-ErrorCode = Literal["not_found", "invalid_input", "device_error", "no_video", "hid_timeout", "internal"]
-CODES: dict[int, ErrorCode] = {404: "not_found", 405: "invalid_input", 422: "invalid_input", 409: "device_error",
-                               503: "no_video", 504: "hid_timeout", 500: "internal"}
+ErrorCode = Literal["not_found", "invalid_input", "device_error", "no_video", "hid_timeout", "internal",
+                    "bad_request", "unauthorized", "forbidden", "too_large", "too_many", "client_gone"]
+CODES: dict[int, ErrorCode] = {400: "bad_request", 401: "unauthorized", 403: "forbidden", 404: "not_found",
+                               405: "invalid_input", 413: "too_large", 415: "invalid_input", 422: "invalid_input",
+                               409: "device_error", 429: "too_many", 499: "client_gone", 503: "no_video",
+                               504: "hid_timeout", 500: "internal"}
 
 
 class _Open(BaseModel):
@@ -24,10 +27,14 @@ class ErrorResponse(BaseModel):
 
     error: str = Field(description="What went wrong, readable by an operator", examples=["no device 'iphone-09'"])
     code: ErrorCode = Field(description="404 not_found, 422 invalid_input, 409 device_error (HID, pointer, "
-                                        "calibration, locked phone...), 503 no_video, 504 hid_timeout, 500 internal")
+                                        "calibration, locked phone...), 503 no_video, 504 hid_timeout, 500 internal; "
+                                        "400 bad_request (Host not allowed), 401 unauthorized (token), 403 forbidden "
+                                        "(Origin, calibration key), 413 too_large, 415 invalid_input (not JSON), "
+                                        "429 too_many (viewers)")
 
 
 ERRORS = {
+    401: {"model": ErrorResponse, "description": "Missing or wrong API token (when the server has one)"},
     404: {"model": ErrorResponse, "description": "Unknown device"},
     409: {"model": ErrorResponse, "description": "The device failed or refused the action (HID error, phone "
                                                  "locked / accessory not allowed, pointer or calibration error)"},
@@ -49,6 +56,8 @@ class DeviceHealth(_Open):
     usb_connected: bool | None = Field(None, description="The phone enumerated the chip (false: locked phone, "
                                                          "accessory prompt, cable)")
     signal: bool | None = Field(None, description="Video frames present and not black")
+    recalibrate: str | None = Field(None, description="Why the pointer calibration no longer holds (e.g. a "
+                                                      "Bluetooth link renegotiated its report period); null: it holds")
     error: str | None = None
 
 
@@ -86,7 +95,8 @@ class DeviceStatus(_Open):
     id: str
     model: str | None = None
     kind: str | None = Field(None, description='"hardware" or "sim"')
-    state: str = Field(description="ready | busy | hid_disconnected | hid_offline | no_signal")
+    state: str = Field(description="ready | busy | hid_disconnected | hid_offline | no_signal | needs_calibration "
+                                   "(taps would land off: see health.recalibrate)")
     busy_with: str | None = Field(None, description="Action running now")
     health: DeviceHealth | None = None
     screen: Screen | None = None
@@ -104,6 +114,9 @@ class DeviceList(BaseModel):
 
 class CalibrationSummary(Calibration):
     mode: str = Field("relative", description="Pointer mode")
+    page_url: str | None = Field(None, description="The calibration page for this device, with its current key "
+                                                   "`k` (valid until the next calibration ends): open it in Safari "
+                                                   "by hand for a calibration with open_page=false")
 
 
 class ActionResponse(BaseModel):
@@ -149,22 +162,34 @@ class ScriptResponse(BaseModel):
     result: ScriptResult
 
 
-class CalibrationEvent(_Open):
-    """An event of the calibration page (web/calibrate.html)."""
+class CalibrationEvent(BaseModel):
+    """An event of the calibration page (web/calibrate.html). Fields not listed here are dropped."""
+
+    model_config = ConfigDict(extra="ignore", allow_inf_nan=False)
 
     type: Literal["hello", "click", "move"]
-    seq: int | None = Field(None, description="Event number within one page load, from 1")
+    pid: str | None = Field(None, max_length=64, description="Random id of one page load")
+    seq: int | None = Field(None, ge=0, description="Event number within one page load, from 1")
     t: float | None = Field(None, description="performance.now() on the phone when the event happened, ms")
     x: float | None = Field(None, description="clientX in CSS px (= points), click and move")
     y: float | None = None
-    button: int | None = None
+    button: int | None = Field(None, ge=0, le=31)
     screen_w: float | None = Field(None, description="hello: screen.width")
     screen_h: float | None = None
     inner_w: float | None = Field(None, description="hello: innerWidth")
     inner_h: float | None = None
-    heartbeat_ms: int | None = Field(None, description="hello: the page repeats hello this often (ms) while visible")
+    heartbeat_ms: int | None = Field(None, ge=0, le=600_000, description="hello: the page repeats hello this often "
+                                                                         "(ms) while visible")
     dpr: float | None = None
     ua: str | None = None
+
+    @field_validator("ua", mode="before")
+    @classmethod
+    def _short(cls, v):
+        return v[:512] if isinstance(v, str) else v
+
+
+CalibrationEvents = Union[Annotated[list[CalibrationEvent], Field(max_length=500)], CalibrationEvent]
 
 
 class SimResult(BaseModel):

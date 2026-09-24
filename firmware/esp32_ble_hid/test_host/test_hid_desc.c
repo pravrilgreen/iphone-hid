@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "ch9329_proto.h"
+#include "fake_sink.h" /* hex_bytes() */
 #include "hid_report_map.h"
 #include "tinytest.h"
 
@@ -24,6 +25,7 @@ typedef struct {
     unsigned out_bits[MAX_ID];
     unsigned feat_bits[MAX_ID];
     unsigned ids_seen; /* bit n = report id n used by a main item (bit 0: no id) */
+    bool id_item;      /* a Report ID item appears anywhere */
     int depth;
     int max_depth;
     int app_collections;
@@ -142,6 +144,7 @@ static void parse(const uint8_t *d, size_t len, desc_info_t *out)
             case 0x8:
                 report_id = uval;
                 any_id = true;
+                out->id_item = true;
                 if (report_id == 0 || report_id >= MAX_ID) {
                     fail(out, "bad report id");
                     return;
@@ -292,7 +295,7 @@ TEST(test_profiles)
     CHECK_EQ(hid_profile_collections(HID_PROFILE_MOUSE, HID_POINTERS_REL_AND_ABS), M | A);
     CHECK_EQ(hid_profile_collections(HID_PROFILE_MOUSE, HID_POINTERS_ABS_ONLY), A);
     for (unsigned p = 0; p < HID_PROFILE_COUNT; p++) {
-        for (unsigned q = 0; q < 3; q++) {
+        for (unsigned q = 0; q < HID_POINTERS_COUNT; q++) {
             CHECK(hid_profile_collections((hid_profile_t)p, (hid_pointers_t)q) != 0u);
         }
     }
@@ -334,6 +337,203 @@ TEST(test_consumer_usages_match_ch9329_table)
     }
 }
 
+/* ---- BLE Report Map: report ids only with several collections -------------------------------- */
+
+static unsigned n_colls(unsigned mask)
+{
+    unsigned n = 0;
+    for (unsigned c = 0; c < HID_COLL_COUNT; c++) {
+        n += (mask & HID_COLL_BIT(c)) != 0u;
+    }
+    return n;
+}
+
+TEST(test_ble_map_report_ids)
+{
+    for (unsigned mask = 1; mask <= HID_COLL_ALL; mask++) {
+        const bool several = n_colls(mask) > 1u;
+        CHECK_EQ(hid_map_uses_ids(mask), several);
+        uint8_t map[HID_DESC_MAX], ref[HID_DESC_MAX];
+        const size_t len = hid_map_build(map, sizeof(map), mask);
+        CHECK(len > 0 && len == hid_desc_build(ref, sizeof(ref), mask, several));
+        CHECK(memcmp(map, ref, len) == 0);
+        desc_info_t info;
+        parse(map, len, &info);
+        CHECK(!info.error);
+        CHECK_EQ(info.id_item, several); /* a single-collection map has no Report ID item at all */
+        /* Report Reference ids: the id the map gives each collection's reports; collections
+         * outside the map keep their own id, which the map does not use; no two report
+         * characteristics (same type) ever share an id. */
+        unsigned refs = 0;
+        for (unsigned c = 0; c < HID_COLL_COUNT; c++) {
+            const uint8_t id = hid_map_report_id(mask, (hid_coll_t)c);
+            if (mask & HID_COLL_BIT(c)) {
+                CHECK_EQ(id, several ? hid_coll_report_id((hid_coll_t)c) : 0u);
+                CHECK(info.ids_seen & (1u << id));
+                CHECK_EQ(info.in_bits[id], hid_coll_input_len((hid_coll_t)c) * 8u);
+            } else {
+                CHECK_EQ(id, hid_coll_report_id((hid_coll_t)c));
+                CHECK(!(info.ids_seen & (1u << id)));
+            }
+            CHECK(!(refs & (1u << id)));
+            refs |= 1u << id;
+        }
+    }
+    CHECK_EQ(hid_map_report_id(HID_COLL_ALL, HID_COLL_COUNT), 0);
+    CHECK(!hid_map_uses_ids(0));
+}
+
+TEST(test_ble_map_ids_per_profile)
+{
+    /* Keyboard-only and the single-pointer mouse-only builds have one collection: no ids. */
+    for (unsigned p = 0; p < HID_PROFILE_COUNT; p++) {
+        for (unsigned q = 0; q < HID_POINTERS_COUNT; q++) {
+            const unsigned mask = hid_profile_collections((hid_profile_t)p, (hid_pointers_t)q);
+            const bool single = p == HID_PROFILE_KEYBOARD || (p == HID_PROFILE_MOUSE && q != HID_POINTERS_REL_AND_ABS);
+            CHECK_EQ(hid_map_uses_ids(mask), !single);
+        }
+    }
+}
+
+/* The map `mask` builds, with and without ids, against pinned bytes (without the id). */
+static void check_map_bytes(unsigned mask, uint8_t id, const char *hex_without_id)
+{
+    uint8_t want[HID_DESC_MAX];
+    const size_t n = hex_bytes(hex_without_id, want, sizeof(want));
+    uint8_t got[HID_DESC_MAX];
+    const size_t len = hid_map_build(got, sizeof(got), mask);
+    CHECK_EQ(len, n);
+    CHECK_MEM(got, want, n < len ? n : len);
+    /* With ids (the old BLE map, and what a map with several collections contains): the same
+     * bytes with "85 <id>" after the 6-byte Usage Page / Usage / Collection head. */
+    const size_t len_id = hid_desc_build(got, sizeof(got), mask, true);
+    CHECK_EQ(len_id, n + 2u);
+    CHECK_MEM(got, want, 6);
+    CHECK_EQ(got[6], 0x85);
+    CHECK_EQ(got[7], id);
+    CHECK_MEM(&got[8], &want[6], n - 6u);
+}
+
+TEST(test_single_collection_map_bytes)
+{
+    /* What the iPhone reads as the BLE Report Map in the single-collection builds. Pinned: iOS
+     * caches it for the life of the bond, so any change must be deliberate (README: Forget and
+     * pair again). */
+    check_map_bytes(HID_COLL_BIT(HID_COLL_KEYBOARD), 1,
+                    "05 01 09 06 A1 01 05 07 19 E0 29 E7 15 00 25 01 75 01 95 08 81 02 95 01 75 08 81 01 "
+                    "05 08 19 01 29 05 95 05 75 01 91 02 95 01 75 03 91 01 05 07 19 00 2A FF 00 15 00 "
+                    "26 FF 00 95 06 75 08 81 00 C0");
+    check_map_bytes(HID_COLL_BIT(HID_COLL_ABS_POINTER), 5,
+                    "05 01 09 02 A1 01 09 01 A1 00 05 09 19 01 29 03 15 00 25 01 95 03 75 01 81 02 95 01 "
+                    "75 05 81 03 05 01 09 30 09 31 16 00 00 26 FF 7F 75 10 95 02 81 02 09 38 15 81 25 7F "
+                    "75 08 95 01 81 06 C0 C0");
+    check_map_bytes(HID_COLL_BIT(HID_COLL_MOUSE), 2,
+                    "05 01 09 02 A1 01 09 01 A1 00 05 09 19 01 29 03 15 00 25 01 95 03 75 01 81 02 95 01 "
+                    "75 05 81 03 05 01 09 30 09 31 09 38 15 81 25 7F 75 08 95 03 81 06 C0 C0");
+}
+
+/* ---- idle input values: never a (0,0) absolute report ----------------------------------------- */
+
+TEST(test_idle_reports)
+{
+    for (unsigned c = 0; c < HID_COLL_COUNT; c++) {
+        uint8_t buf[16];
+        memset(buf, 0xEE, sizeof(buf));
+        const size_t n = hid_coll_idle_report((hid_coll_t)c, buf, sizeof(buf));
+        CHECK_EQ(n, hid_coll_input_len((hid_coll_t)c));
+        CHECK_EQ(buf[n], 0xEE); /* nothing written past the report */
+        if (c == HID_COLL_ABS_POINTER) {
+            /* buttons 0, X = Y = 16384 (centre of 0..32767, little-endian), wheel 0 */
+            CHECK_MEM(buf, "\x00\x00\x40\x00\x40\x00", 6);
+            const unsigned x = buf[1] | (unsigned)buf[2] << 8, y = buf[3] | (unsigned)buf[4] << 8;
+            CHECK(x != 0u && y != 0u && x <= HID_ABS_LOGICAL_MAX && y <= HID_ABS_LOGICAL_MAX);
+            CHECK_EQ(x, HID_ABS_CENTRE);
+            CHECK_EQ(y, HID_ABS_CENTRE);
+        } else {
+            for (size_t i = 0; i < n; i++) {
+                CHECK_EQ(buf[i], 0);
+            }
+        }
+    }
+    uint8_t small[8];
+    memset(small, 0xEE, sizeof(small));
+    CHECK_EQ(hid_coll_idle_report(HID_COLL_ABS_POINTER, small, HID_ABS_REPORT_LEN - 1u), 0);
+    CHECK_EQ(small[0], 0xEE);
+    CHECK_EQ(hid_coll_idle_report(HID_COLL_COUNT, small, sizeof(small)), 0);
+    CHECK_EQ(hid_coll_idle_report(HID_COLL_KEYBOARD, NULL, 8), 0);
+    /* The host's grid centre (2048 of 0..4095) lands next to it: the idle value is a real
+     * position, not a special value. */
+    CHECK(ch9329_abs_scale(2048) - HID_ABS_CENTRE < 8u);
+}
+
+/* ---- descriptor identity ---------------------------------------------------------------------- */
+
+TEST(test_identity_tags)
+{
+    static const char *const WANT[HID_PROFILE_COUNT][HID_POINTERS_COUNT] = {
+        [HID_PROFILE_COMPOSITE] = {"RA", "R", "A"},
+        [HID_PROFILE_KEYBOARD] = {"K", "K", "K"},
+        [HID_PROFILE_MOUSE] = {"MRA", "MR", "MA"},
+    };
+    for (unsigned p = 0; p < HID_PROFILE_COUNT; p++) {
+        for (unsigned q = 0; q < HID_POINTERS_COUNT; q++) {
+            const char *tag = hid_identity_tag((hid_profile_t)p, (hid_pointers_t)q);
+            CHECK(strcmp(tag, WANT[p][q]) == 0);
+            const size_t len = strlen(tag);
+            CHECK(len >= 1u && len <= HID_IDENTITY_TAG_MAX);
+            for (size_t i = 0; i < len; i++) {
+                CHECK(tag[i] >= 'A' && tag[i] <= 'Z'); /* safe in a BLE name (no ':' or ';') and a serial */
+            }
+            /* Same tag exactly when the phone sees the same collections. */
+            for (unsigned p2 = 0; p2 < HID_PROFILE_COUNT; p2++) {
+                for (unsigned q2 = 0; q2 < HID_POINTERS_COUNT; q2++) {
+                    const bool same_tag = strcmp(tag, hid_identity_tag((hid_profile_t)p2, (hid_pointers_t)q2)) == 0;
+                    const bool same_colls = hid_profile_collections((hid_profile_t)p, (hid_pointers_t)q) ==
+                                            hid_profile_collections((hid_profile_t)p2, (hid_pointers_t)q2);
+                    CHECK_EQ(same_tag, same_colls);
+                }
+            }
+        }
+    }
+    /* Out-of-range values fall back exactly like hid_profile_collections(). */
+    CHECK(strcmp(hid_identity_tag((hid_profile_t)7, (hid_pointers_t)9), "RA") == 0);
+    CHECK_EQ(hid_profile_collections((hid_profile_t)7, (hid_pointers_t)9),
+             hid_profile_collections(HID_PROFILE_COMPOSITE, HID_POINTERS_REL_AND_ABS));
+}
+
+TEST(test_identity_string)
+{
+    char out[32];
+    CHECK_EQ(hid_identity_string(out, sizeof(out), "HID Bridge 1A2B", HID_PROFILE_COMPOSITE, HID_POINTERS_REL_AND_ABS),
+             18);
+    CHECK(strcmp(out, "HID Bridge 1A2B-RA") == 0);
+    hid_identity_string(out, sizeof(out), "A0B1C2D3E4F5", HID_PROFILE_COMPOSITE, HID_POINTERS_ABS_ONLY);
+    CHECK(strcmp(out, "A0B1C2D3E4F5-A") == 0);
+    hid_identity_string(out, sizeof(out), "A0B1C2D3E4F5", HID_PROFILE_KEYBOARD, HID_POINTERS_ABS_ONLY);
+    CHECK(strcmp(out, "A0B1C2D3E4F5-K") == 0);
+    /* A product string of the maximum length (23) plus the longest tag fits a BLE name (29). */
+    char name[29 + 1];
+    CHECK_EQ(hid_identity_string(name, sizeof(name), "ABCDEFGHIJKLMNOPQRSTUVW", HID_PROFILE_MOUSE,
+                                 HID_POINTERS_REL_AND_ABS),
+             27);
+    CHECK(strcmp(name, "ABCDEFGHIJKLMNOPQRSTUVW-MRA") == 0);
+    /* Too long: the base is shortened, never the tag. */
+    CHECK_EQ(hid_identity_string(out, 10, "ABCDEFGHIJKLMNOP", HID_PROFILE_MOUSE, HID_POINTERS_REL_AND_ABS), 9);
+    CHECK(strcmp(out, "ABCDE-MRA") == 0);
+    CHECK_EQ(hid_identity_string(out, 5, "ABCDEFGHIJKLMNOP", HID_PROFILE_MOUSE, HID_POINTERS_REL_AND_ABS), 3);
+    CHECK(strcmp(out, "MRA") == 0);
+    memset(out, 'x', sizeof(out));
+    CHECK_EQ(hid_identity_string(out, 4, "AB", HID_PROFILE_MOUSE, HID_POINTERS_REL_AND_ABS), 0);
+    CHECK_EQ(out[0], '\0');
+    /* No base: the tag alone. */
+    CHECK_EQ(hid_identity_string(out, sizeof(out), "", HID_PROFILE_COMPOSITE, HID_POINTERS_REL_ONLY), 1);
+    CHECK(strcmp(out, "R") == 0);
+    CHECK_EQ(hid_identity_string(out, sizeof(out), NULL, HID_PROFILE_KEYBOARD, HID_POINTERS_REL_ONLY), 1);
+    CHECK(strcmp(out, "K") == 0);
+    CHECK_EQ(hid_identity_string(NULL, 8, "x", HID_PROFILE_KEYBOARD, HID_POINTERS_REL_ONLY), 0);
+    CHECK_EQ(hid_identity_string(out, 0, "x", HID_PROFILE_KEYBOARD, HID_POINTERS_REL_ONLY), 0);
+}
+
 TEST(test_parser_self_check)
 {
     /* The mini parser itself must reject broken descriptors. */
@@ -359,5 +559,11 @@ void run_hid_desc_tests(void)
     RUN(test_keyboard_only_has_no_pointer);
     RUN(test_profiles);
     RUN(test_consumer_usages_match_ch9329_table);
+    RUN(test_ble_map_report_ids);
+    RUN(test_ble_map_ids_per_profile);
+    RUN(test_single_collection_map_bytes);
+    RUN(test_idle_reports);
+    RUN(test_identity_tags);
+    RUN(test_identity_string);
     RUN(test_parser_self_check);
 }
