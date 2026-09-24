@@ -378,6 +378,9 @@ static uint8_t cmd_ms_rel_run(ch9329_core_t *c, const uint8_t *d, uint8_t len)
             return CH9329_STATUS_EXEC_FAILED; /* stop at the first undelivered report */
         }
     }
+    /* The run owns `count` slots: the reply (and the next frame) wait for the end of the last
+     * one, so runs sent back to back continue the same fixed-rate schedule. */
+    c->sink.sleep_until_ms(c->sink.ctx, t0 + (uint32_t)count * interval);
     c->stats.runs++;
     return CH9329_STATUS_OK;
 }

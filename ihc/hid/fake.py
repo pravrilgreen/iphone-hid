@@ -71,6 +71,10 @@ class SimPointer:
     _down_at: dict = field(default_factory=dict, repr=False)
     _last_t: float = field(default=0.0, repr=False)
     _glide: tuple | None = field(default=None, repr=False)
+    # The relative and the absolute pointer are separate HID reports, each with its own buttons: a
+    # button pressed through one is released only through the same one. iOS sees their union.
+    _rel_buttons: int = field(default=0, repr=False)
+    _abs_buttons: int = field(default=0, repr=False)
 
     def __post_init__(self) -> None:
         if self.x < 0:
@@ -97,7 +101,8 @@ class SimPointer:
         if (tx, ty) != (self.x, self.y):
             self._glide = (now, self.x, self.y, tx, ty)
             self.history.append((now + self.abs_glide, tx, ty))
-        self._buttons(buttons, now)
+        self._abs_buttons = buttons
+        self._buttons(self._rel_buttons | buttons, now)
         if wheel:
             self.emit("scroll", amount=wheel, x=round(self.x, 1), y=round(self.y, 1))
 
@@ -110,9 +115,15 @@ class SimPointer:
             self.x = min(max(self.x + self._step(dx, dt), 0.0), self.width - 1)
             self.y = min(max(self.y + self._step(dy, dt), 0.0), self.height - 1)
             self.history.append((now, self.x, self.y))
-        self._buttons(buttons, now)
+        self._rel_buttons = buttons
+        self._buttons(buttons | self._abs_buttons, now)
         if wheel:
             self.emit("scroll", amount=wheel, x=round(self.x, 1), y=round(self.y, 1))
+
+    def reset_buttons(self) -> None:
+        """The device went away (power cycle, reset): the phone drops every held button."""
+        self.buttons = self._rel_buttons = self._abs_buttons = 0
+        self._down_at.clear()
 
     def current(self) -> tuple[float, float]:
         """Position now (an absolute move glides, so x/y alone may lag behind)."""
@@ -182,13 +193,18 @@ class FakeChip:
         config: ChipConfig | None = None,
         *,
         usb_connected: bool = True,
-        version: int = 0x30,
+        version: int | None = None,
         pointer: SimPointer | None = None,
+        bridge: bool = False,
     ):
         self.stored = config or ChipConfig.factory_default()  # flash contents
         self.active = self.stored  # what the chip booted with
         self.usb_connected = usb_connected
-        self.version = version
+        # bridge: the ESP32 firmware (GET_INFO 0x40 + output/collections/features, on-chip runs)
+        self.bridge = bridge
+        self.version = version if version is not None else (p.BRIDGE_VERSION if bridge else 0x30)
+        self.clock: Callable[[], float] = time.monotonic  # timing of on-chip runs
+        self.sleep: Callable[[float], None] = time.sleep
         self.usb_strings = {0: "", 1: "", 2: ""}
         self.events: list[dict] = []  # most recent events; `seq` numbers them across trims
         self.event_seq = 0
@@ -201,6 +217,8 @@ class FakeChip:
         self.noise_on_mismatch = False
         self.drop_next = 0  # silently ignore the next N commands addressed to us
         self.fail_next: list[int] = []  # answer the next commands with these error statuses
+        self.mute_next = 0  # execute the next N commands but never answer them
+        self.reply_delays: list[float] = []  # hold back the next replies by these many seconds
         self._buf = bytearray()
         self._lock = threading.Lock()
 
@@ -222,7 +240,7 @@ class FakeChip:
             self.active = self.stored
             self._buf.clear()
             self.keyboard.pressed.clear()
-            self.pointer.buttons = 0
+            self.pointer.reset_buttons()
             self._emit("power_cycle", baud=self.baud, address=self.address)
 
     def _emit(self, event: str, **fields) -> None:
@@ -278,6 +296,10 @@ class FakeChip:
             status, data = self._execute(cmd, raw[5:-1])
         if not reply:
             return b""
+        if self.mute_next:
+            self.mute_next -= 1
+            self._emit("reply_muted", cmd=cmd)
+            return b""
         if data is not None:
             return p.encode(cmd | p.RESPONSE_OK_FLAG, data, own)
         if status == p.Status.OK:
@@ -289,7 +311,14 @@ class FakeChip:
         """Returns (status, data): data is the reply payload for commands that return data."""
         C, S = p.Cmd, p.Status
         if cmd == C.GET_INFO:
-            return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, 0, 0, 0, 0, 0])
+            if self.bridge:
+                collections = {0: 0x1F, 1: 0x0D, 2: 0x12}.get(self.work_mode, 0)
+                extra = (0x7F, collections, p.FEATURE_REL_RUN)
+            else:
+                extra = (0, 0, 0)
+            return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, *extra, 0, 0])
+        if cmd == p.CMD_MS_REL_RUN and self.bridge:
+            return self._rel_run(d), None
         if cmd == C.GET_PARA_CFG:
             return S.OK, self.stored.to_bytes()
         if cmd == C.SET_PARA_CFG:
@@ -307,7 +336,7 @@ class FakeChip:
             # ASSUMPTION: a software reset re-enumerates USB but does not load the stored config;
             # the datasheet only promises that for a power-up.
             self.keyboard.pressed.clear()
-            self.pointer.buttons = 0
+            self.pointer.reset_buttons()
             self._emit("reset")
             return S.OK, None
         if cmd == C.GET_USB_STRING:
@@ -323,6 +352,29 @@ class FakeChip:
         if cmd in (C.SEND_KB_GENERAL_DATA, C.SEND_KB_MEDIA_DATA, C.SEND_MS_ABS_DATA, C.SEND_MS_REL_DATA):
             return self._hid(cmd, d), None
         return S.BAD_CMD, None
+
+    def take_reply_delay(self) -> float:
+        return self.reply_delays.pop(0) if self.reply_delays else 0.0
+
+    def _rel_run(self, d: bytes) -> int:
+        """Bridge vendor command: `count` relative reports `interval` ms apart on the chip's clock;
+        the run owns `count` slots, so a run queued behind it keeps the same schedule."""
+        S = p.Status
+        if len(d) != 5:
+            return S.BAD_PARAM
+        dx, dy = (int.from_bytes(d[i : i + 1], "little", signed=True) for i in (0, 1))
+        count, interval, buttons = d[2], d[3], d[4]
+        if count == 0 or buttons > 0x07 or (count - 1) * interval > p.REL_RUN_MAX_MS:
+            return S.BAD_PARAM
+        if self.work_mode not in (0, 2) or not self.usb_connected:
+            return S.EXEC_ERROR
+        t0 = self.clock()
+        for i in range(count):
+            if i:
+                self.sleep(max(0.0, t0 + i * interval / 1000 - self.clock()))
+            self.pointer.relative(max(dx, -127), max(dy, -127), buttons, 0)
+        self.sleep(max(0.0, t0 + count * interval / 1000 - self.clock()))
+        return S.OK
 
     def _hid(self, cmd: int, d: bytes) -> int:
         C, S = p.Cmd, p.Status
@@ -455,6 +507,12 @@ class FakeSerialDevice:
             if not self.simulate_timing:
                 out = self.chip.receive(data)
                 if out:
+                    delay = self.chip.take_reply_delay()
+                    with self._tx_cond:
+                        if delay or self._tx:  # replies leave in order, behind a delayed one
+                            self._tx.append((time.monotonic() + delay, out))
+                            self._tx_cond.notify()
+                            continue
                     self._write(out)
                 continue
             for part in self._frames(data):
@@ -464,7 +522,7 @@ class FakeSerialDevice:
                     time.sleep(delay)
                 out = self.chip.receive(part)
                 if out:
-                    start = max(time.monotonic() + self.processing_s, self._tx_free_at)
+                    start = max(time.monotonic() + self.processing_s + self.chip.take_reply_delay(), self._tx_free_at)
                     self._tx_free_at = start + len(out) * 10 / baud
                     with self._tx_cond:
                         self._tx.append((self._tx_free_at, out))

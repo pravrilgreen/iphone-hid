@@ -21,13 +21,15 @@ import re
 import sys
 import threading
 import time
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
 from .device import DeviceInfo, IPhoneDevice
+from .hid.base import HidPortError
 from .hid.ch9329 import CH9329Backend
 from .input.pointer import PointerCalibration
-from .models import MODELS
+from .models import find_model
 from .video.geometry import ScreenRect
 
 if sys.version_info >= (3, 11):
@@ -75,6 +77,40 @@ class Registry:
                 pass
 
 
+class OfflineHid:
+    """Stands in for a serial port that could not be opened, so one unplugged rig does not keep the
+    others from starting: every command fails with the open error until the device monitor
+    manages to reopen the port."""
+
+    wait_ack = True
+
+    def __init__(self, port: str, baud: int, error: str):
+        self.port, self.baud, self.error = port, baud, error
+        self.stats: Counter[str] = Counter()
+        self.async_errors: list = []
+
+    def __getattr__(self, name: str):
+        if name.startswith("__"):
+            raise AttributeError(name)
+
+        def unavailable(*args, **kwargs):
+            raise HidPortError(self.error)
+
+        return unavailable
+
+    def close(self) -> None:
+        pass
+
+
+def _open_or_offline(open_hid, port: str, baud: int, log):
+    try:
+        return open_hid()
+    except HidPortError as e:
+        if log:
+            log("hid_offline", port=port, error=str(e))
+        return OfflineHid(port, baud, str(e))
+
+
 def load_config(path: str | Path, log=None) -> Registry:
     """Hardware devices from a TOML file. Import of the capture layer is deferred so HID-only
     setups do not need OpenCV at import time."""
@@ -97,13 +133,13 @@ def load_config(path: str | Path, log=None) -> Registry:
         source = V4L2Capture(video["device"], width=w, height=h, fps=int(video.get("fps", 30)),
                              fourcc=video.get("fourcc", "MJPG"))
         calib = entry.get("calibration")
-        model = MODELS.get(entry.get("model", ""))
+        model = find_model(entry.get("model", ""))
         rect = entry.get("screen_rect")  # [x, y, w, h] in frame pixels, when geometry is not enough
         device = IPhoneDevice(
             DeviceInfo(dev_id, model.name if model else entry.get("model", ""), "hardware"),
-            open_hid(),
+            _open_or_offline(open_hid, port, baud, log),
             source,
-            calibration=None if not model else _initial_calibration(base / calib if calib else None, model),
+            calibration=_initial_calibration(base / calib if calib else None, model),
             calibration_path=(base / calib) if calib else None,
             screen_rect=ScreenRect(*map(float, rect)) if rect else None,
             reopen_hid=open_hid,
@@ -116,6 +152,8 @@ def load_config(path: str | Path, log=None) -> Registry:
 def _initial_calibration(path: Path | None, model) -> PointerCalibration | None:
     if path is not None and path.exists():
         return PointerCalibration.load(path)
+    if model is None:
+        return None
     return PointerCalibration(screen_pt=(float(model.width_pt), float(model.height_pt)))
 
 
@@ -131,6 +169,9 @@ def simulated(count: int = 1, *, model: str = "iphone-15", calibrated: bool = Tr
         m = rig.phone.model
         cal = exact_calibration(rig.chip.pointer) if calibrated else PointerCalibration(screen_pt=(m.width_pt, m.height_pt))
         device = IPhoneDevice(DeviceInfo(rig.id, m.name, "sim"), rig.hid, rig.capture, calibration=cal, log=log)
+        # The simulated chip runs as threads of this process, so its own timing jitters by a few
+        # ms (GIL): pacing is checked loosely here. Exact pacing is tested on a virtual clock.
+        device.pointer.timing_tolerance = 0.006
         rig.phone.web_listeners.append(lambda url, event, d=device: d.clicks.push(event))
         reg.add(device, rig)
     return reg

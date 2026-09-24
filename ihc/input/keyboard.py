@@ -8,9 +8,10 @@ are always released even when something fails half-way.
 from __future__ import annotations
 
 import time
+from contextlib import contextmanager
 from typing import Callable, Sequence
 
-from ..hid.base import HidBackend, HidStatusError, HidTimeout
+from ..hid.base import HidBackend, HidError, HidStatusError, HidTimeout
 from . import keymap
 from .pointer import NOT_EXECUTED
 
@@ -23,6 +24,7 @@ class Keyboard:
         self.gap = gap
         self.retries = retries
         self.resends = 0
+        self.typed = 0  # characters of the last type() call that went out completely
         self._sleep = sleep
 
     def report(self, mods: int, keys: Sequence[int]) -> None:
@@ -40,26 +42,34 @@ class Keyboard:
             self.resends += 1
 
     def type(self, text: str) -> None:
-        """Type ASCII text; raises ValueError before sending anything if a character is not typeable."""
+        """Type ASCII text; raises ValueError before sending anything if a character is not typeable.
+        After a failure, `typed` tells how many characters went out (to resume, not retype)."""
         reports = keymap.text_reports(text)
-        try:
+        self.typed = 0
+        with self._released():
             for mods, keys in reports:
                 self.report(mods, keys)
+                if not keys:  # every character ends with a release report
+                    self.typed += 1
                 self._sleep(self.hold if keys else self.gap)
-        finally:
-            self._release()
 
     def key(self, combo: str, hold: float = 0.05) -> None:
         mods, keys = keymap.parse_combo(combo)
-        try:
+        with self._released():
             self.report(mods, keys)
             self._sleep(hold)
-        finally:
-            self._release()
         self._sleep(self.gap)
 
-    def _release(self) -> None:
+    @contextmanager
+    def _released(self):
+        """Always end with every key up. A failed final release is raised (a key may be held);
+        after another failure it is attempted quietly and the first error wins."""
         try:
-            self.report(0, [])
-        except (HidTimeout, HidStatusError):
-            pass
+            yield
+        except BaseException:
+            try:
+                self.report(0, [])
+            except HidError:
+                pass
+            raise
+        self.report(0, [])

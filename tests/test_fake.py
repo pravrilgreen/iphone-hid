@@ -74,3 +74,17 @@ def test_set_default_restores_factory_block():
     chip.receive(p.encode(p.Cmd.SET_DEFAULT_CFG))
     chip.power_cycle()
     assert chip.baud == 9600
+
+
+def test_relative_and_absolute_pointers_have_separate_buttons():
+    from ihc.hid.fake import SimPointer
+
+    ptr = SimPointer(absolute=True, abs_glide=0.0)
+    ptr.absolute_report(2000, 2000, 1, 0)
+    ptr.relative(0, 0, 0, 0)  # a relative report does not release the absolute button
+    assert ptr.buttons == 1
+    ptr.absolute_report(2000, 2000, 0, 0)
+    assert ptr.buttons == 0
+    ptr.relative(0, 0, 1, 0)
+    ptr.reset_buttons()
+    assert ptr.buttons == 0

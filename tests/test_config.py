@@ -66,3 +66,11 @@ def test_dict_roundtrip_and_parse_value():
     assert parse_value("baud", "0x1C200") == 115200
     assert parse_value("enter_chars", "0d 00 00 00 00 00 00 00") == bytes([13, 0, 0, 0, 0, 0, 0, 0])
     assert "work_mode" in "\n".join(cfg.describe())
+
+
+def test_broadcast_address_is_never_written():
+    import pytest
+
+    cfg, _ = ChipConfig.factory_default().replace(address=0xFF).for_write()
+    with pytest.raises(ValueError, match="broadcast"):
+        cfg.validate_for_write()

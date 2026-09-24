@@ -142,6 +142,8 @@ class ChipConfig:
             raise ValueError("serial_mode must stay 0x00 (protocol): other modes stop this driver from talking to the chip")
         if self.get("baud") not in COMMON_BAUDS:
             raise ValueError(f"baud must be one of {COMMON_BAUDS} (the rates the baud scanner can find)")
+        if self.get("address") == 0xFF:
+            raise ValueError("address 0xFF is the broadcast address: the chip would never answer again")
 
     def warnings(self) -> list[str]:
         out = []

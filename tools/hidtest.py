@@ -135,7 +135,17 @@ class HidShell(cmd.Cmd):
             self.buttons = 0
             print("interrupted; released all keys and buttons")
             self.log("interrupted", line=line)
-        except (HidError, ValueError, OSError) as e:
+        except HidError as e:
+            self.failed = True
+            print(f"error: {e}")
+            # a command may have failed half-way through a click, drag or key: never leave it held
+            try:
+                self.hid.release_all()
+                self.buttons = 0
+                print("released all keys and buttons")
+            except HidError:
+                print("could not release keys/buttons: check the cable, then `release`")
+        except (ValueError, OSError) as e:
             self.failed = True
             print(f"error: {e}")
             self.log("error", line=line, kind=type(e).__name__, error=str(e))

@@ -378,8 +378,9 @@ TEST(test_rel_run_schedule)
             CHECK_MEM(e->bytes, "\x01\x05\xFD\x00", 4);
         }
     }
-    CHECK_EQ(R.fake.sleeps, 3);
-    CHECK_EQ(replies(), 1); /* one reply, after the last report */
+    CHECK_EQ(R.fake.sleeps, 4); /* 3 between reports, 1 for the last report's slot */
+    CHECK_EQ(R.fake.clock, 1060);
+    CHECK_EQ(replies(), 1); /* one reply, after the last report's slot */
     CHECK_REPLY(0, "57 AB 00 B0 01 00 B3");
     CHECK(R.fake.ev[R.fake.n - 1].kind == FK_REPLY);
     CHECK_EQ(R.core.stats.runs, 1);
@@ -388,7 +389,28 @@ TEST(test_rel_run_schedule)
     rel_run(0, -128, 127, 1, 200, 0, 1);
     CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 1);
     CHECK_REPORT(FK_MOUSE, 0, "00 81 7F 00"); /* -128 clamped to -127 */
-    CHECK_EQ(R.fake.sleeps, 0);
+    CHECK_EQ(R.fake.sleeps, 1);
+}
+
+TEST(test_rel_run_back_to_back_keeps_the_schedule)
+{
+    /* A move is sent as runs queued behind each other (coarse then fine): the second run's first
+     * report comes one interval after the first run's last one, as if it were a single run. */
+    rig_init();
+    R.fake.clock = 500;
+    rel_run(0, 20, 0, 3, 20, 0, 0);
+    rel_run(0, 1, 0, 2, 20, 0, 1); /* its bytes arrived while the first run was playing */
+    CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 5);
+    for (size_t i = 0; i < 5; i++) {
+        const fake_event_t *e = fake_nth(&R.fake, FK_MOUSE, i);
+        CHECK(e != NULL && e->t == 500 + 20 * i);
+    }
+    CHECK_REPORT(FK_MOUSE, 2, "00 14 00 00");
+    CHECK_REPORT(FK_MOUSE, 3, "00 01 00 00");
+    CHECK_EQ(replies(), 2);
+    CHECK_EQ(reply_status(0), CH9329_STATUS_OK);
+    CHECK_EQ(reply_status(1), CH9329_STATUS_OK);
+    CHECK_EQ(R.fake.clock, 600);
 }
 
 TEST(test_rel_run_late_steps_sent_not_skipped)
@@ -433,7 +455,7 @@ TEST(test_rel_run_parameters)
     rel_run(0, 1, 0, 201, 10, 0, 4); /* 200 * 10 = 2000 ms: the limit is allowed */
     CHECK_EQ(reply_status(4), CH9329_STATUS_OK);
     CHECK_EQ(fake_count(&R.fake, FK_MOUSE), 201);
-    CHECK_EQ(R.fake.clock, 2000);
+    CHECK_EQ(R.fake.clock, 2010); /* 201 slots of 10 ms */
 }
 
 TEST(test_rel_run_gating)
@@ -1538,6 +1560,7 @@ void run_proto_tests(void)
     RUN(test_abs_mouse_without_pointer);
     RUN(test_get_info_bridge_bytes);
     RUN(test_rel_run_schedule);
+    RUN(test_rel_run_back_to_back_keeps_the_schedule);
     RUN(test_rel_run_late_steps_sent_not_skipped);
     RUN(test_rel_run_stops_at_first_failure);
     RUN(test_rel_run_parameters);

@@ -27,6 +27,9 @@ def test_load_config_builds_devices(tmp_path, monkeypatch):
             self.device, self.kwargs = device, kwargs
             self.size = (kwargs.get("width", 0), kwargs.get("height", 0))
 
+        def latest(self, newer_than=-1, timeout=1.0):
+            raise TimeoutError("no video in this test")
+
         def close(self):
             pass
 
@@ -37,16 +40,34 @@ def test_load_config_builds_devices(tmp_path, monkeypatch):
         cfg.write_text(
             "[[device]]\n"
             'id = "iphone-01"\n'
-            'model = "iphone-15"\n'
+            'model = "iPhone 15 Pro Max"\n'
             f'hid = {{ port = "{dev.port}", baud = 9600 }}\n'
             'video = { device = "/dev/video0", size = "1280x720", fps = 30 }\n'
             'calibration = "calib/iphone-01.json"\n'
+            "[[device]]\n"
+            'id = "iphone-02"\n'
+            'model = "iphone-15"\n'
+            'hid = { port = "/dev/serial/by-path/unplugged-port0" }\n'
+            'video = { device = "/dev/video2" }\n'
         )
         reg = load_config(cfg)
         d = reg.get("iphone-01")
-        assert d.info.model == "iPhone 15" and d.pointer.cal.screen_pt == (393.0, 852.0)
+        assert d.info.model == "iPhone 15 Pro Max" and d.pointer.cal.screen_pt == (430.0, 932.0)
         assert d.source.kwargs["width"] == 1280 and d.hid.info()["usb_connected"]
         assert d.calibration_path == tmp_path / "calib" / "iphone-01.json"
+        # an unplugged rig does not keep the farm from starting; it reports why
+        missing = reg.get("iphone-02")
+        h = missing.check()
+        assert h["hid"] is False and "unplugged-port0" in h["error"] and missing.state == "hid_offline"
         reg.close()
     finally:
         dev.close()
+
+
+def test_model_names_and_keys():
+    from ihc.models import find_model, get_model
+
+    assert find_model("iPhone 15").key == "iphone-15"
+    assert find_model("iphone se (3rd generation)").key == "iphone-se-3"
+    assert get_model("iphone-13").name == "iPhone 13"
+    assert find_model("Galaxy S24") is None

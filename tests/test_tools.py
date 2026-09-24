@@ -12,6 +12,7 @@ def test_summarize_rel_counts_lost_and_merged_reports():
     events = [(s + 0.004, loopback.EV_REL, loopback.REL_X, 1) for s in sent]
     r = loopback.summarize_rel(events, sent, 1)
     assert r["lost_units"] == 0 and r["merged_reports"] == 0 and r["latency_ms_p50"] == 4.0
+    assert r["send_gap_ms"]["p50"] == 10.0 and r["arrival_gap_ms"]["max"] == 10.0
     merged = events[:8] + [(sent[9] + 0.004, loopback.EV_REL, loopback.REL_X, 2)]
     r = loopback.summarize_rel(merged, sent, 1)
     assert r["lost_units"] == 0 and r["merged_reports"] == 1

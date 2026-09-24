@@ -84,9 +84,12 @@ enum ch9329_cmd {
      * Vendor extension (not in the WCH protocol; a real CH9329 answers E3):
      * SEND_MS_REL_RUN  dx int8, dy int8, count u8 (1..255), interval_ms u8, buttons u8
      * Emits `count` relative mouse reports {buttons, dx, dy, 0}, report i at t0 + i * interval_ms
-     * (t0 = when the frame is executed), timed on the bridge. Replies once: 00 when every report
-     * was delivered (same rule as SEND_MS_REL_DATA), E6 at the first one that was not (the rest
-     * are not sent), E5 for count 0, buttons > 7 or (count - 1) * interval_ms > 2000.
+     * (t0 = when the frame is executed), timed on the bridge. The run owns `count` slots: it
+     * ends at t0 + count * interval_ms, so a run queued behind it starts exactly one interval
+     * after this run's last report (the host sends a whole move as back-to-back runs).
+     * Replies once, at the end: 00 when every report was delivered (same rule as
+     * SEND_MS_REL_DATA), E6 at the first one that was not (the rest are not sent), E5 for
+     * count 0, buttons > 7 or (count - 1) * interval_ms > 2000.
      */
     CH9329_CMD_SEND_MS_REL_RUN = 0x30,
 };

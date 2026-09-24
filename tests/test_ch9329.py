@@ -272,3 +272,121 @@ def test_reply_read_by_blocking_poll_is_not_dropped(monkeypatch):
     with CH9329Backend("/dev/null", timeout=0.2) as hid:
         hid.mouse_rel(1, 0)
         assert hid.info()["version_raw"] == 0
+
+
+def test_late_reply_is_never_taken_for_the_next_ack(chip_backend):
+    """The press executes but its ack comes after the timeout. The next exchange must not count
+    that ack as its own: here the release is dropped by the chip, so it has to fail."""
+    chip = FakeChip()
+    hid = chip_backend(chip, timeout=0.1)
+    chip.reply_delays = [0.25]
+    with pytest.raises(HidTimeout):
+        hid.keyboard(*keymap.parse_combo("cmd+space"))
+    time.sleep(0.2)  # the late ack is now waiting in the input
+    receive = chip.receive
+
+    def lose_keyboard_frames(data: bytes) -> bytes:
+        return b"" if data[3:4] == bytes([p.Cmd.SEND_KB_GENERAL_DATA]) else receive(data)
+
+    chip.receive = lose_keyboard_frames
+    with pytest.raises(HidTimeout):
+        hid.keyboard(0, [])
+    chip.receive = receive
+    assert chip.keyboard.pressed == {0x2C}  # the release never arrived: reported, not hidden
+    hid.keyboard(0, [])
+    assert not chip.keyboard.pressed
+    assert hid.stats["late_replies"] >= 1
+
+
+def test_keyboard_resends_after_a_late_ack_and_releases(chip_backend):
+    from ihc.input.keyboard import Keyboard
+
+    chip = FakeChip()
+    hid = chip_backend(chip, timeout=0.1)
+    kb = Keyboard(hid)
+    chip.reply_delays = [0.2]
+    kb.key("cmd+space")
+    assert kb.resends == 1 and not chip.keyboard.pressed
+    assert chip.keyboard.shortcuts == ["cmd+space"]
+
+
+def test_keyboard_raises_when_the_final_release_fails(chip_backend):
+    from ihc.input.keyboard import Keyboard
+
+    chip = FakeChip()
+    hid = chip_backend(chip, timeout=0.1)
+    kb = Keyboard(hid, retries=0)
+    original = hid.keyboard
+
+    def no_release(mods, keys):
+        if not keys:
+            raise HidTimeout("release lost")
+        original(mods, keys)
+
+    hid.keyboard = no_release
+    with pytest.raises(HidTimeout):
+        kb.key("cmd+space")
+    with pytest.raises(HidTimeout):
+        kb.type("ab")
+    assert kb.typed == 0
+
+
+def test_executed_but_unanswered_command(chip_backend):
+    chip = FakeChip()
+    hid = chip_backend(chip, timeout=0.1)
+    chip.mute_next = 1
+    with pytest.raises(HidTimeout):
+        hid.mouse_rel(5, 0)
+    assert chip.pointer.history[-1][0] > 0  # it moved
+    hid.mouse_rel(0, 0)  # resynchronised, next exchange is normal
+    assert hid.info()["usb_connected"]
+
+
+def test_release_all_includes_media_and_power_keys(hid):
+    hid.release_all()
+    frames = [e for e in hid.chip.events if e["event"] == "error_reply"]
+    assert not frames
+    assert hid.stats["tx"] >= 4
+
+
+def test_bridge_info_and_capabilities(chip_backend):
+    plain = chip_backend(FakeChip())
+    assert plain.supports_rel_run() is False and "bridge" not in plain.info()
+    bridge = chip_backend(FakeChip(bridge=True))
+    info = bridge.info()
+    assert info["version"] == "ihc bridge v1.0"
+    assert info["bridge"] == {"output": "simulator", "rel_run": True,
+                              "collections": ["keyboard", "mouse", "consumer", "system", "absolute"]}
+    assert bridge.supports_rel_run() is True
+
+
+def test_bridge_runs_are_timed_on_the_chip(chip_backend):
+    chip = FakeChip(bridge=True)
+    hid = chip_backend(chip, timeout=0.3)
+    t0 = time.monotonic()
+    hid.mouse_rel_runs([(5, 0, 4), (1, 0, 3)], 20)
+    took = time.monotonic() - t0
+    assert took >= 0.14  # 7 slots of 20 ms before the last reply
+    times = [t for t, _, _ in list(chip.pointer.history)[-7:]]
+    gaps = [b - a for a, b in zip(times, times[1:])]
+    assert all(abs(g - 0.02) < 0.006 for g in gaps), gaps  # one schedule across both runs
+    # fire-and-forget: the acks come after the run, and are still all accounted for
+    hid.wait_ack = False
+    hid.mouse_rel_runs([(0, 3, 10)], 20)
+    hid.sync()
+    assert hid.stats["lost_acks"] == 0 and not hid.async_errors
+
+
+def test_bridge_run_refused_in_keyboard_only_mode(chip_backend):
+    chip = FakeChip(ChipConfig.factory_default().replace(work_mode=0x01), bridge=True)
+    hid = chip_backend(chip)
+    with pytest.raises(HidStatusError) as e:
+        hid.mouse_rel_runs([(1, 0, 3)], 10)
+    assert e.value.status == p.Status.EXEC_ERROR
+    assert "mouse" not in hid.info()["bridge"]["collections"]
+
+
+def test_plain_ch9329_rejects_runs(hid):
+    with pytest.raises(HidStatusError) as e:
+        hid.mouse_rel_runs([(1, 0, 3)], 10)
+    assert e.value.status == p.Status.BAD_CMD

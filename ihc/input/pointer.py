@@ -17,7 +17,13 @@ screen by `abs_map`), then a short wait while iOS glides the cursor there. No an
 
 Reliability: every report is acknowledged by the chip (driver in ack mode). Reports that only carry
 state (buttons, keys, zero movement) are resent after an ambiguous failure; a movement report is
-not, since it may have been applied: the whole move is redone from a fresh anchor instead.
+not, since it may have been applied: the whole move is redone from a fresh anchor instead. When a
+button report fails, every button is released (on both pointer reports) before the next anchor,
+since anchoring with a button still held would drag.
+
+Pacing: with a CH9329 the host times every report and checks afterwards that none went out late
+(`timing_tolerance`); a late one makes the move be redone. The ESP32 bridge times runs itself
+(vendor command SEND_MS_REL_RUN), so host and USB-serial jitter do not reach the phone at all.
 """
 
 from __future__ import annotations
@@ -71,7 +77,7 @@ class DirectionModel:
             return 0, 0, 0.0
         c, f = self.coarse, self.fine
         max_fine = math.ceil((c.a + abs(c.b) + abs(f.b)) / f.a) + 2 if f.a > 0 else 0
-        est = int((d - c.b) / c.a) if c.a > 0 and d > c.b else 0
+        est = min(int((d - c.b) / c.a) if c.a > 0 and d > c.b else 0, max_coarse)
         plans = []
         for nc in range(max(0, est - 1), min(max_coarse, est + 1) + 1):
             left = d - c.distance(nc)
@@ -172,7 +178,9 @@ class PointerModel:
         *,
         retries: int = 2,
         pipeline: bool = True,
-        timing_tolerance: float = 0.006,
+        timing_tolerance: float = 0.0015,
+        anchor_interval: float = 0.016,
+        onchip_runs: bool | None = None,
         attempts: int = 3,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
@@ -181,7 +189,13 @@ class PointerModel:
         self.cal = calibration or PointerCalibration()
         self.retries = retries
         self.pipeline = pipeline
+        # How far a report may stray from its slot. Acceleration makes distance depend on speed:
+        # in the simulator ~0.75 pt per ms for a 24-unit report, so 1.5 ms keeps a run within ~1 pt.
         self.timing_tolerance = timing_tolerance
+        # Corner slams need no exact pace, but frames sent back to back could be merged by a chip
+        # that splits packets on line gaps (CH9329: 3 ms): 16 ms leaves >= 4 ms at 9600 baud.
+        self.anchor_interval = anchor_interval
+        self.onchip_runs = onchip_runs  # None: ask the device (ESP32 bridge) on first use
         self.attempts = attempts
         self.timing_retries = 0
         self.position: tuple[float, float] | None = None
@@ -195,6 +209,8 @@ class PointerModel:
         self._next_at = 0.0
         self._rest_until = 0.0
         self._abs: tuple[int, int] | None = None  # last absolute grid position sent
+        self._abs_last: tuple[int, int] | None = None  # same, kept after relative moves
+        self._buttons_unsure = False  # a button report failed: the phone may hold a button
 
     # -- reports -------------------------------------------------------------------------------
 
@@ -222,11 +238,13 @@ class PointerModel:
                     self.position = None
                 raise
             except HidTimeout as e:
-                if idempotent and attempt < self.retries:
-                    self.resends += 1
-                    continue
+                if idempotent:  # nothing moved: the position still holds
+                    if attempt < self.retries:
+                        self.resends += 1
+                        continue
+                    raise
                 self.position = None
-                raise PointerDesync(f"movement report may have been lost or applied: {e}") from e
+                raise PointerDesync(f"a report that moves or scrolls may have been lost or applied: {e}") from e
         self.reports += 1
         self.last_sent = start
         if dx or dy:
@@ -237,6 +255,36 @@ class PointerModel:
     def rest(self) -> None:
         """The next movement report waits until the pointer has been idle for `cal.rest`."""
         self._rest_until = self.last_motion + self.cal.rest
+
+    def _wait_until(self, t: float) -> None:
+        now = self._clock()
+        if now < t:
+            self._sleep(t - now)
+
+    def _onchip(self) -> bool:
+        if self.onchip_runs is None:
+            probe = getattr(self.hid, "supports_rel_run", None)
+            self.onchip_runs = bool(probe and probe())
+        return self.onchip_runs
+
+    def _chip_run(self, dx: int, dy: int, count: int, interval: float) -> None:
+        """`count` reports of (dx, dy) timed by the bridge, `interval` apart; returns after the last
+        one's slot (the bridge replies then)."""
+        try:
+            self.hid.mouse_rel_runs([(dx, dy, count)], round(interval * 1000), self.buttons)
+        except HidTimeout as e:
+            self.position = None
+            raise PointerDesync(f"a run timed by the bridge was not acknowledged: {e}") from e
+        except HidStatusError as e:
+            self.position = None
+            if e.status in NOT_EXECUTED:  # damaged on the line; part of a split run may have played
+                raise PointerDesync(f"a run frame was damaged on the line: {e}") from e
+            raise
+        now = self._clock()
+        self.reports += count
+        self.last_sent = self.last_motion = now
+        self._next_at = now
+        self._abs = None
 
     # -- absolute reports -----------------------------------------------------------------------
 
@@ -265,13 +313,33 @@ class PointerModel:
         self.reports += 1
         self.last_sent = self.last_motion = start
         self._next_at = start + self.cal.interval
-        self._abs = (gx, gy)
+        self._abs = self._abs_last = (gx, gy)
 
     def _buttons_changed(self) -> None:
-        if self.cal.mode == "absolute" and self._abs is not None:
-            self.send_abs(*self._abs)
-        else:
-            self.send()
+        try:
+            if self.cal.mode == "absolute" and self._abs is not None:
+                self.send_abs(*self._abs)
+            else:
+                self.send()
+        except Exception:
+            self._buttons_unsure = True
+            raise
+
+    def release_all(self) -> None:
+        """Release every button on both pointer reports: the relative and the absolute pointer
+        are separate HID reports with separate button states. Raises if the phone could not be
+        told (then the next anchor tries again first)."""
+        self.buttons = 0
+        self._buttons_unsure = True
+        self.send()
+        if self._abs_last is not None:  # absolute reports were used: release through one too
+            if self.cal.mode == "absolute" and self.position is not None:
+                self.send_abs(*self.abs_grid(*self.position))
+            else:
+                self.send_abs(*(self._abs or self._abs_last))
+                if self.cal.mode != "absolute":
+                    self.position = None  # a relative-mode phone may still follow it
+        self._buttons_unsure = False
 
     # -- planned moves -------------------------------------------------------------------------
 
@@ -279,11 +347,19 @@ class PointerModel:
         """Pin the pointer into a corner: sx -1 left / +1 right, sy -1 top / +1 bottom."""
         if self.buttons:
             raise PointerError("refusing to anchor while a button is held: it would drag")
-        # No pacing needed (they only have to reach the corner): as fast as the line allows, with
-        # every ack still checked at the end of the burst.
-        with self._pipelined():
-            for _ in range(self.cal.reset_reports):
-                self.send(127 * sx, 127 * sy, paced=False)
+        if self._buttons_unsure:
+            self.release_all()
+        # No exact pace needed (they only have to reach the corner), and every ack is checked at
+        # the end of the burst.
+        if self._onchip():
+            self._wait_until(self._next_at)
+            self._chip_run(127 * sx, 127 * sy, self.cal.reset_reports, self.anchor_interval)
+        else:
+            with self._pipelined():
+                for _ in range(self.cal.reset_reports):
+                    self._wait_until(self._next_at)
+                    self.send(127 * sx, 127 * sy, paced=False)
+                    self._next_at = self.last_sent + self.anchor_interval
         self.rest()
         self.position = self.anchored_at(sx, sy)
 
@@ -295,50 +371,57 @@ class PointerModel:
     def run(self, axis: int, coarse: int, fine: int) -> None:
         """A coarse run then a fine run along one axis (signed report counts), each from rest.
 
-        The distance a run covers depends on its pace (iOS acceleration is speed-based), so the
-        send times are checked: a report that went out late (host stalled) makes the position
-        unknown, and the caller redoes the move."""
+        The distance a run covers depends on its pace (iOS acceleration is speed-based). The bridge
+        times runs itself; otherwise the send times are checked (when each report started, and
+        when it had left): a report off its slot (host stalled) makes the position unknown, and the
+        caller redoes the move."""
         for n, units in ((coarse, self.cal.step), (fine, self.cal.fine_step)):
             if not n:
                 continue
             u = units if n > 0 else -units
-            starts = [self.last_motion]
-            with self._pipelined():
-                for _ in range(abs(n)):
-                    if axis == 0:
-                        self.send(u, 0)
-                    else:
-                        self.send(0, u)
-                    starts.append(self.last_sent)
-            self._check_pace(starts)
+            dx, dy = (u, 0) if axis == 0 else (0, u)
+            if self._onchip():
+                self._wait_until(max(self._next_at, self._rest_until))
+                self._chip_run(dx, dy, abs(n), self.cal.interval)
+            else:
+                starts, ends = [self.last_motion], []
+                with self._pipelined() as verified:
+                    for _ in range(abs(n)):
+                        self.send(dx, dy)
+                        starts.append(self.last_sent)
+                        ends.append(self._clock())
+                self._check_pace(starts, ends if verified else [])
             self.rest()
 
-    def _check_pace(self, starts: list[float]) -> None:
+    def _check_pace(self, starts: list[float], ends: list[float]) -> None:
         tol = self.timing_tolerance
         gaps = [b - a for a, b in zip(starts, starts[1:])]
         short_rest = bool(gaps) and starts[0] > 0 and gaps[0] < self.cal.rest - 0.002
-        bad = [g for g in gaps[1:] if not (self.cal.interval - 0.002 <= g <= self.cal.interval + tol)]
-        if short_rest or bad:
+        slots = gaps[1:] + [b - a for a, b in zip(ends, ends[1:])]
+        off = [abs(g - self.cal.interval) for g in slots]
+        if short_rest or any(o > tol for o in off):
             self.position = None
             self.timing_retries += 1
-            worst = max((abs(g - self.cal.interval) for g in gaps[1:]), default=0.0)
-            raise PointerDesync(f"report pacing off by up to {worst * 1000:.1f} ms (host busy?)")
+            raise PointerDesync(f"report pacing off by up to {max(off, default=0.0) * 1000:.1f} ms (host busy?)")
 
     @contextmanager
     def _pipelined(self):
         """Inside a run, reports go out without waiting for each ack (only the serial line limits
         the pace), but every ack is still collected at the end: a missing or failed one means the
-        position is unknown, and the caller redoes the move from a fresh anchor."""
+        position is unknown, and the caller redoes the move from a fresh anchor. Yields whether
+        the acks are being verified this way (backends without sync() are always in ack mode)."""
         hid = self.hid
-        if not self.pipeline or not hasattr(hid, "sync") or not getattr(hid, "wait_ack", False):
-            yield
+        if not self.pipeline or not hasattr(hid, "sync") or not hasattr(hid, "async_errors"):
+            yield False
             return
+        was = hid.wait_ack
+        hid.sync()  # nothing older may be counted against this run
         lost0, err0 = hid.stats["lost_acks"], len(hid.async_errors)
         hid.wait_ack = False
         try:
-            yield
+            yield True
         finally:
-            hid.wait_ack = True
+            hid.wait_ack = was
             hid.sync()
         failed = hid.async_errors[err0:]
         if hid.stats["lost_acks"] != lost0 or failed:
@@ -397,7 +480,9 @@ class PointerModel:
         """With the current buttons held, move by (dx, dy) points. Absolute mode glides there in
         reports spread over `duration`; relative mode runs X then Y from rest (no anchoring is
         possible while pressed, so it relies on the run models alone)."""
-        if self.cal.mode == "absolute" and self.position is not None:
+        if self.cal.mode == "absolute":
+            if self.position is None:
+                raise PointerError("a drag needs a known start position: move there first")
             x0, y0 = self.position
             n = max(2, round(duration / self.cal.interval))
             for i in range(1, n + 1):
@@ -405,13 +490,15 @@ class PointerModel:
             self._sleep(self.cal.abs_settle)
             self.position = (x0 + dx, y0 + dy)
             return
+        moved = [0.0, 0.0]
         for axis, d in ((0, dx), (1, dy)):
             if d:
                 sign = 1 if d > 0 else -1
-                nc, nf, _ = self.cal.direction(axis, sign).plan(abs(d))
+                nc, nf, got = self.cal.direction(axis, sign).plan(abs(d))
                 self.run(axis, sign * nc, sign * nf)
+                moved[axis] = sign * got
         if self.position is not None:
-            self.position = (self.position[0] + dx, self.position[1] + dy)
+            self.position = (self.position[0] + moved[0], self.position[1] + moved[1])
 
     def raw(self, dx: int, dy: int, wheel: int = 0) -> None:
         """Unplanned relative report (live remote control): the position becomes unknown."""
@@ -430,8 +517,8 @@ class PointerModel:
         self._buttons_changed()
 
     def click(self, button: int = p.MOUSE_LEFT, hold: float = 0.06) -> None:
-        self.press(button)
         try:
+            self.press(button)
             self._sleep(hold)
         finally:
             self.release(button)

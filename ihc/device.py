@@ -11,6 +11,7 @@ after an unplug.
 
 from __future__ import annotations
 
+import sys
 import threading
 import time
 from dataclasses import dataclass
@@ -30,6 +31,7 @@ from .video.frame import Frame, FrameSource, encode_jpeg
 from .video.geometry import ScreenRect, fit_screen_rect
 
 STATES = ("ready", "busy", "hid_disconnected", "hid_offline", "no_signal")
+MAX_FRAME_AGE_S = 2.0  # a capture that delivered nothing newer is frozen or unplugged
 
 
 @dataclass
@@ -52,6 +54,10 @@ class IPhoneDevice:
         reopen_hid: Callable[[], CH9329Backend] | None = None,
         log=None,
     ):
+        # Report pacing runs in a Python thread: a thread waking from sleep waits for the GIL up to
+        # the switch interval (default 5 ms) while other threads (API, streaming) run Python code,
+        # which would push reports off their slots. 1 ms keeps that inside the pace tolerance.
+        sys.setswitchinterval(min(sys.getswitchinterval(), 0.001))
         self.info = info
         self.hid = hid
         self.source = source
@@ -79,29 +85,36 @@ class IPhoneDevice:
     # -- health ---------------------------------------------------------------------------------
 
     def check(self) -> dict:
-        """Refresh health: chip reachable and its USB side enumerated, video frames present and not
-        black. Skipped (cached value returned) while an action runs."""
-        if not self._action.acquire(blocking=False):
-            return self._health
+        """Refresh health: chip reachable and its USB side enumerated, video frames fresh and not
+        black. The chip is asked only when no action runs (its previous answer is kept otherwise);
+        the video is checked without holding up actions."""
+        h = {"hid": self._health["hid"], "usb_connected": self._health["usb_connected"], "signal": None, "error": None}
+        if self._action.acquire(blocking=False):
+            try:
+                h["hid"] = h["usb_connected"] = None
+                try:
+                    h["usb_connected"] = self.hid.info()["usb_connected"]
+                    h["hid"] = True
+                except HidPortError as e:
+                    h["hid"], h["error"] = False, str(e)
+                    self._try_reopen()
+                except HidError as e:
+                    h["hid"], h["error"] = False, str(e)
+            finally:
+                self._action.release()
         try:
-            h = {"hid": None, "usb_connected": None, "signal": None, "error": None}
-            try:
-                h["usb_connected"] = self.hid.info()["usb_connected"]
-                h["hid"] = True
-            except HidPortError as e:
-                h["hid"], h["error"] = False, str(e)
-                self._try_reopen()
-            except HidError as e:
-                h["hid"], h["error"] = False, str(e)
-            try:
-                h["signal"] = not _is_blank(self.source.latest(timeout=1.0), self.screen_rect())
-            except (TimeoutError, OSError, ValueError) as e:
+            frame = self.source.latest(timeout=1.0)
+            age = self.source.stats().get("age_s") if hasattr(self.source, "stats") else None
+            if age is not None and age > MAX_FRAME_AGE_S:
                 h["signal"] = False
-                h["error"] = h["error"] or f"video: {e}"
-            self._health = h
-            return h
-        finally:
-            self._action.release()
+                h["error"] = h["error"] or f"video: no new frame for {age:.1f} s ({self.source.stats().get('status')})"
+            else:
+                h["signal"] = not _is_blank(frame, self.screen_rect())
+        except Exception as e:  # a broken source must not stop the health monitor
+            h["signal"] = False
+            h["error"] = h["error"] or f"video: {e}"
+        self._health = h
+        return h
 
     @property
     def state(self) -> str:
@@ -168,6 +181,7 @@ class IPhoneDevice:
             pass
         self.hid = self.pointer.hid = self.keyboard.hid = new
         self.pointer.position = None
+        self.pointer.onchip_runs = None  # ask the new device
         self._log("hid_reopened", device=self.id, port=new.port)
 
     def close(self) -> None:
@@ -175,10 +189,7 @@ class IPhoneDevice:
         if self._monitor is not None:
             self._monitor.join(timeout=3)
         with self._action:
-            try:
-                self.hid.release_all()
-            except HidError:
-                pass
+            self._release_quietly()
             self.hid.close()
         self.source.close()
 
@@ -186,6 +197,7 @@ class IPhoneDevice:
 
     def _run(self, name: str, fn, **fields) -> dict:
         with self._action:
+            outer = self._busy_with
             self._busy_with = name
             t0 = time.monotonic()
             reports0 = self.pointer.reports
@@ -197,13 +209,25 @@ class IPhoneDevice:
                                     "seconds": round(time.monotonic() - t0, 3)}
                 self._log("action", device=self.id, **self.last_result)
                 return self.last_result
-            except (HidError, PointerError, ValueError, RuntimeError) as e:
+            except Exception as e:
+                if not isinstance(e, HidPortError):  # (with the port gone nothing can be sent)
+                    self._release_quietly()  # never leave a key or button held after a failure
                 self.counters["errors"] += 1
-                self.last_result = {"action": name, **fields, "ok": False, "error": str(e)}
+                self.last_result = {"action": name, **fields, "ok": False, "error": f"{type(e).__name__}: {e}"}
                 self._log("action", device=self.id, **self.last_result)
                 raise
             finally:
-                self._busy_with = None
+                self._busy_with = outer
+
+    def _release_quietly(self) -> None:
+        try:
+            self.hid.release_all()
+        except HidError:
+            pass
+        try:
+            self.pointer.release_all()
+        except (HidError, PointerError):
+            pass  # the pointer releases again before its next anchor
 
     def _pt(self, x: float, y: float, space: str) -> tuple[float, float]:
         w, h = self.pointer.cal.screen_pt
@@ -266,8 +290,8 @@ class IPhoneDevice:
 
         def do():
             plan = self.pointer.move_to(*a)
-            self.pointer.press(p.MOUSE_LEFT)
             try:
+                self.pointer.press(p.MOUSE_LEFT)
                 time.sleep(0.05)
                 self.pointer.drag_by(b[0] - a[0], b[1] - a[1], duration)
                 if hold_end:
@@ -307,8 +331,8 @@ class IPhoneDevice:
             raise ValueError(f"unknown media key {name!r}; one of {', '.join(p.MEDIA_KEYS)}")
 
         def do():
-            self.hid.media(p.MEDIA_KEYS[name])
             try:
+                self.hid.media(p.MEDIA_KEYS[name])
                 time.sleep(0.08)
             finally:
                 self.hid.media(0)
@@ -316,11 +340,15 @@ class IPhoneDevice:
         return self._run("media", do, key=name)
 
     def open_url(self, url: str) -> dict:
-        """Spotlight, type the URL, Return: opens Safari on it."""
+        """Home, Spotlight, type the URL, Return: opens Safari on it. Going Home first means that if
+        Spotlight does not open, the keystrokes land on the home screen, where they do nothing,
+        instead of in whatever app was in front."""
 
         def do():
+            self.pointer.click(p.MOUSE_RIGHT)  # AssistiveTouch secondary button = Home
+            time.sleep(0.8)
             self.keyboard.key("cmd+space")
-            time.sleep(0.4)
+            time.sleep(0.5)
             self.keyboard.type(url + "\n")
 
         return self._run("open_url", do, url=url)
@@ -328,11 +356,11 @@ class IPhoneDevice:
     def calibrate(self, page_url: str | None = None, **options) -> dict:
         """Measure the pointer with the calibration page (see ihc.calibration). With `page_url`
         the page is opened through Spotlight first; otherwise it must already be open."""
-        self.clicks = ClickCollector()
-        if page_url:
-            self.open_url(page_url)
 
         def do():
+            self.clicks = ClickCollector()  # under the action lock: one calibration at a time
+            if page_url:
+                self.open_url(page_url)
             cal = calibrate(self.pointer, self.clicks, log=self._log, **options)
             if self.calibration_path:
                 cal.save(self.calibration_path)
@@ -369,8 +397,8 @@ class IPhoneDevice:
 
     def release_all(self) -> None:
         with self._action:
-            self.pointer.buttons = 0
             self.hid.release_all()
+            self.pointer.release_all()
 
 
 def _is_blank(frame: Frame, rect: ScreenRect) -> bool:

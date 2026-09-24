@@ -74,6 +74,37 @@ def test_capture_thread_serves_latest_and_reopens():
         cap.close()
 
 
+def test_capture_thread_survives_a_driver_exception():
+    class Exploding:
+        def __init__(self):
+            self.n = 0
+
+        def read(self):
+            self.n += 1
+            if self.n == 3:
+                raise cv2.error("device vanished")
+            return True, jpeg_buffer()
+
+        def release(self):
+            pass
+
+    caps = []
+
+    def open_fn(*args):
+        caps.append(Exploding())
+        return caps[-1]
+
+    cap = V4L2Capture("/dev/video9", open_fn=open_fn, backoff=(0.01, 0.02))
+    try:
+        deadline = time.monotonic() + 3
+        while len(caps) < 3 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert len(caps) >= 3 and cap.reopens >= 2  # reopened each time, the thread lives on
+        assert cap._thread.is_alive()
+    finally:
+        cap.close()
+
+
 def test_capture_timeout_reports_status():
     def open_fn(*args):
         raise OSError("no such device")

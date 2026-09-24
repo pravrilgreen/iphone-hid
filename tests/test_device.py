@@ -146,3 +146,53 @@ def test_calibration_through_the_simulated_safari():
         assert rig.phone.tap_log[-1]["hit"]
     finally:
         reg.close()
+
+
+def test_failed_actions_leave_nothing_held(farm):
+    from ihc.hid.base import HidStatusError
+    from ihc.hid import protocol as p
+
+    dev, rig = rig_of(farm[0], 1)
+    original = dev.pointer.drag_by
+
+    def broken_drag(*args, **kwargs):
+        raise HidStatusError("phone locked", p.Cmd.SEND_MS_REL_DATA, p.Status.EXEC_ERROR)
+
+    dev.pointer.drag_by = broken_drag
+    try:
+        with pytest.raises(HidError):
+            dev.swipe(0.5, 0.5, 0.5, 0.3)
+    finally:
+        dev.pointer.drag_by = original
+    assert rig.chip.pointer.buttons == 0 and dev.pointer.buttons == 0
+    rig.chip.fail_next = [p.Status.EXEC_ERROR]  # the media press is refused
+    with pytest.raises(HidError):
+        dev.media("volume_up")
+    assert dev.state != "busy"
+
+
+def test_frozen_capture_is_reported(farm):
+    dev, rig = rig_of(farm[0], 1)
+
+    class Frozen:
+        def __init__(self, source):
+            self.source = source
+            self.size = source.size
+
+        def latest(self, newer_than=-1, timeout=1.0):
+            return self.source.latest(newer_than, timeout)
+
+        def stats(self):
+            return {"age_s": 5.0, "status": "ok"}
+
+        def close(self):
+            pass
+
+    real = dev.source
+    dev.source = Frozen(real)
+    try:
+        h = dev.check()
+        assert h["signal"] is False and "no new frame" in h["error"] and dev.state == "no_signal"
+    finally:
+        dev.source = real
+    assert dev.check()["signal"] is True

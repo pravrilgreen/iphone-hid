@@ -74,6 +74,13 @@ class DirectHid:
     def mouse_abs(self, x: int, y: int, buttons: int = 0, wheel: int = 0) -> None:
         self._cmd(p.mouse_abs(x, y, buttons, wheel))
 
+    def supports_rel_run(self) -> bool:
+        return self.chip.bridge
+
+    def mouse_rel_runs(self, runs, interval_ms: int, buttons: int = 0) -> None:
+        for dx, dy, count in runs:
+            self._cmd(p.mouse_rel_run(dx, dy, count, interval_ms, buttons))
+
     def release_all(self) -> None:
         self.keyboard(0, [])
         self.mouse_rel(0, 0)
@@ -85,9 +92,10 @@ class DirectHid:
         pass
 
 
-def direct_phone(model: str = "iphone-15", **phone_options) -> tuple[SimPhone, FakeChip, DirectHid, VirtualClock]:
+def direct_phone(model: str = "iphone-15", *, bridge: bool = False, **phone_options) -> tuple[SimPhone, FakeChip, DirectHid, VirtualClock]:
     clock = VirtualClock()
-    chip = FakeChip()
+    chip = FakeChip(bridge=bridge)
+    chip.clock, chip.sleep = clock, clock.sleep
     chip.pointer.clock = clock
     chip.pointer.history.clear()
     phone = SimPhone(get_model(model), clock=clock, **phone_options)

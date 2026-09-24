@@ -136,6 +136,8 @@ class V4L2Capture:
             delay = self._backoff[0]
             try:
                 self._grab_loop(cap)
+            except Exception as e:  # e.g. cv2.error from a vanished device: reopen, never die
+                self.status = f"error: {e}"
             finally:
                 try:
                     cap.release()

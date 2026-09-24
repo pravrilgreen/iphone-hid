@@ -38,8 +38,17 @@ MODELS = {
 }
 
 
+def find_model(name: str) -> PhoneModel | None:
+    """A model by key ("iphone-15") or display name ("iPhone 15"), case and spacing ignored."""
+    norm = "-".join(name.lower().replace("(", " ").replace(")", " ").split())
+    for m in MODELS.values():
+        if norm in (m.key, "-".join(m.name.lower().replace("(", " ").replace(")", " ").split())):
+            return m
+    return None
+
+
 def get_model(key: str) -> PhoneModel:
-    try:
-        return MODELS[key]
-    except KeyError:
-        raise ValueError(f"unknown phone model {key!r}; known: {', '.join(MODELS)}") from None
+    m = find_model(key)
+    if m is None:
+        raise ValueError(f"unknown phone model {key!r}; known: {', '.join(MODELS)}")
+    return m

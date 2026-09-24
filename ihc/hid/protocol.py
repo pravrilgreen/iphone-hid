@@ -24,6 +24,16 @@ REPLY_TIMEOUT_S = 0.5
 # Sent by the chip on its own in custom-HID mode (data the USB host wrote); never a reply.
 CHIP_HID_DATA = 0x87
 
+# ESP32 bridge extensions (firmware/esp32_ble_hid), not in the WCH protocol: a real CH9329 answers
+# E3 to the vendor command. The bridge reports GET_INFO version 0x40 and fills the reserved bytes:
+# byte 3 output link, byte 4 HID collections, byte 5 vendor features.
+BRIDGE_VERSION = 0x40
+CMD_MS_REL_RUN = 0x30
+FEATURE_REL_RUN = 0x01
+REL_RUN_MAX_MS = 2000  # (count - 1) * interval_ms of one run
+BRIDGE_OUTPUTS = {0x01: "ble", 0x02: "usb", 0x7F: "simulator"}
+BRIDGE_COLLECTIONS = {0x01: "keyboard", 0x02: "mouse", 0x04: "consumer", 0x08: "system", 0x10: "absolute"}
+
 
 class Cmd(IntEnum):
     GET_INFO = 0x01
@@ -224,6 +234,19 @@ def mouse_abs(x: int, y: int, buttons: int = 0, wheel: int = 0, addr: int = DEFA
             raise FrameError(f"absolute {name} out of range 0..4095: {v}")
     data = bytes([0x02, buttons & 0x07, *x.to_bytes(2, "little"), *y.to_bytes(2, "little"), _i8(wheel)])
     return encode(Cmd.SEND_MS_ABS_DATA, data, addr)
+
+
+def mouse_rel_run(dx: int, dy: int, count: int, interval_ms: int, buttons: int = 0, addr: int = DEFAULT_ADDR) -> bytes:
+    """Bridge only: `count` relative reports of (dx, dy), one every `interval_ms`, timed by the
+    bridge. A run owns `count` slots and replies at the end of the last one, so runs queued back to
+    back play as one fixed-rate sequence."""
+    if not 1 <= count <= 255:
+        raise FrameError(f"run count out of range 1..255: {count}")
+    if not 0 <= interval_ms <= 255:
+        raise FrameError(f"run interval out of range 0..255 ms: {interval_ms}")
+    if (count - 1) * interval_ms > REL_RUN_MAX_MS:
+        raise FrameError(f"run too long: {count} reports every {interval_ms} ms")
+    return encode(CMD_MS_REL_RUN, bytes([_i8(dx), _i8(dy), count, interval_ms, buttons & 0x07]), addr)
 
 
 def get_info(addr: int = DEFAULT_ADDR) -> bytes:

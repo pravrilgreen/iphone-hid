@@ -154,7 +154,9 @@ def basic_session(sim: Sim) -> None:
                 "MOUSE 01 FD 05 FF",
                 abs_line(100, 200),
                 abs_line(4095, 0, p.MOUSE_RIGHT, 1),
-                "KB 00 00 00 00 00 00 00 00",
+                "KB 00 00 00 00 00 00 00 00",  # release_all: keyboard, media, power, mouse
+                "CONSUMER 00 00 00",
+                "SYSTEM 00",
                 "MOUSE 00 00 00 00",
             ],
             f"HID reports: {sim.reports()[before:]}",
@@ -257,8 +259,20 @@ def reliability_session(sim: Sim) -> None:
         frames, took = rel_run(hid, 5, -3, 20, 15, p.MOUSE_LEFT)
         check([(f.cmd, f.data) for f in frames] == [(0xB0, b"\x00")], f"REL_RUN reply {frames}")
         check(sim.reports()[before:] == ["MOUSE 01 05 FD 00"] * 20, f"REL_RUN reports {sim.reports()[before:]}")
-        check(0.285 <= took < 0.8, f"REL_RUN took {took * 1000:.0f} ms for 19 x 15 ms")
+        check(0.3 <= took < 0.8, f"REL_RUN took {took * 1000:.0f} ms for 20 slots of 15 ms")
         hid.mouse_rel(0, 0)
+        # The host driver's own API: bridge detection and back-to-back runs (a coarse then a fine
+        # run, as the pointer model sends them), one write, every reply accounted for.
+        info = hid.info()
+        check(info["version"] == "ihc bridge v1.0" and info["bridge"]["output"] == "simulator", f"bridge info {info}")
+        check(hid.supports_rel_run(), "bridge advertises REL_RUN")
+        before = len(sim.reports())
+        t0 = time.monotonic()
+        hid.mouse_rel_runs([(20, 0, 3), (1, 0, 2)], 20)
+        took = time.monotonic() - t0
+        check(sim.reports()[before:] == ["MOUSE 00 14 00 00"] * 3 + ["MOUSE 00 01 00 00"] * 2,
+              f"chained runs {sim.reports()[before:]}")
+        check(0.1 <= took < 0.6, f"chained runs took {took * 1000:.0f} ms for 5 slots of 20 ms")
         for bad in ([5, 0, 0, 10, 0], [5, 0, 2, 10, 8], [5, 0, 255, 9, 0]):
             frames = hid.transact_raw(p.encode(CMD_REL_RUN, bytes(bad)), listen=0.2)
             check([(f.cmd, f.data) for f in frames] == [(0xF0, b"\xe5")], f"REL_RUN {bad}: {frames}")

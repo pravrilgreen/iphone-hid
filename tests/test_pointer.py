@@ -242,3 +242,112 @@ def test_keyboard_type_key_and_resend():
     assert rec.keys[-2:] == [(0, [0x29]), (0, [])] and kb.resends == 1
     with pytest.raises(ValueError):
         kb.type("é")
+
+
+def test_failed_press_is_released_and_does_not_lock_out_moves():
+    pm, rec, _ = model()
+    rec.fail = [HidTimeout("x")] * 3  # the press and both resends time out
+    with pytest.raises(HidTimeout):  # a button report moves nothing: not a desync
+        pm.click()
+    assert rec.reports[-1] == (0, 0, 0, 0) and pm.buttons == 0  # click still released
+    rec.fail = [HidTimeout("x")] * 3  # and now the release is lost too
+    with pytest.raises(HidTimeout):
+        pm.click()
+    n = len(rec.reports)
+    pm.move_to(100, 100)  # no lock-out: the next anchor releases first
+    assert rec.reports[n] == (0, 0, 0, 0) and abs(rec.reports[n + 1][0]) == 127
+
+
+def test_release_all_covers_the_absolute_report():
+    class Both(Recorder):
+        def mouse_abs(self, x, y, buttons=0, wheel=0):
+            self.reports.append(("abs", x, y, buttons))
+
+    clock = VirtualClock()
+    rec = Both(clock)
+    pm = PointerModel(rec, PointerCalibration(mode="absolute"), clock=clock, sleep=clock.sleep)
+    pm.move_to(100, 200)
+    pm.press()
+    pm.release_all()
+    assert rec.reports[-2] == (0, 0, 0, 0) and rec.reports[-1][0] == "abs" and rec.reports[-1][3] == 0
+    pm.cal.mode = "relative"  # an absolute report was used earlier: it is released too
+    pm.release_all()
+    assert rec.reports[-1][0] == "abs" and pm.position is None
+
+
+def test_plan_with_a_tiny_coarse_slope():
+    m = DirectionModel(RunModel(0.5, 0.0), RunModel(0.1, 0.0))
+    nc, nf, got = m.plan(800.0)
+    assert nc == 400 and got <= 800.0
+
+
+def test_drag_updates_the_position_with_the_planned_distance():
+    pm, rec, _ = model()
+    pm.move_to(100.0, 100.0)
+    x, y = pm.position
+    pm.press()
+    pm.drag_by(33.3, 0)
+    nc, nf, got = pm.cal.right.plan(33.3)
+    assert pm.position == (x + got, y)
+
+
+def test_pace_check_sees_reports_that_left_late():
+    pm, rec, clock = model()
+    rec.stats = {"lost_acks": 0}
+    rec.async_errors = []
+    rec.sync = lambda: None
+    original = rec.mouse_rel
+
+    def stuck_after_timestamp(dx, dy, buttons=0, wheel=0):
+        original(dx, dy, buttons, wheel)
+        if len(rec.reports) == 3:
+            clock.sleep(0.004)  # preempted between the timestamp and the write
+
+    rec.mouse_rel = stuck_after_timestamp
+    with pytest.raises(PointerDesync, match="pacing"):
+        pm.run(0, 5, 0)
+
+
+def _bridge_phone(tracking=1.0):
+    from ihc.sim.direct import direct_phone
+    from ihc.sim.rig import exact_calibration
+
+    phone, chip, hid, clock = direct_phone(bridge=True)
+    chip.pointer.tracking = tracking
+    return chip, hid, clock, exact_calibration(chip.pointer)
+
+
+def test_bridge_times_runs_so_host_jitter_does_not_matter():
+    import random
+
+    rnd = random.Random(3)
+    chip, hid, clock, cal = _bridge_phone()
+
+    def jittery_sleep(s):  # a busy host: every sleep overshoots by up to 15 ms
+        clock.sleep(s + rnd.uniform(0, 0.015))
+
+    pm = PointerModel(hid, cal, clock=clock, sleep=jittery_sleep)
+    assert pm._onchip()
+    errors = []
+    for _ in range(12):
+        x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
+        pm.move_to(x, y)
+        px, py = chip.pointer.current()
+        errors.append(max(abs(px - x), abs(py - y)))
+    assert max(errors) < 1.0 and pm.timing_retries == 0
+    # the same host driving a plain CH9329 (host-timed runs) notices and gives up
+    chip.bridge = False
+    host = PointerModel(hid, cal, clock=clock, sleep=jittery_sleep, onchip_runs=False)
+    with pytest.raises(PointerDesync):
+        for _ in range(5):
+            host.move_to(rnd.uniform(10, 380), rnd.uniform(10, 840))
+    assert host.timing_retries >= 3
+
+
+def test_bridge_anchor_is_one_frame():
+    chip, hid, clock, cal = _bridge_phone()
+    pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
+    tx = hid.stats["tx"]
+    pm.anchor(1, 1)
+    assert hid.stats["tx"] == tx + 1
+    assert chip.pointer.current() == (chip.pointer.width - 1, chip.pointer.height - 1)

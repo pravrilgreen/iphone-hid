@@ -121,6 +121,14 @@ def summarize_rel(events, sent_at: list[float], dx: int) -> dict:
     total = sum(v for _, v in xs)
     expected = dx * len(sent_at)
     lat = [t - s for (t, _), s in zip(xs, sent_at)] if len(xs) == len(sent_at) else []
+
+    def gaps_ms(times: list[float]) -> dict:
+        """Spacing between consecutive reports: what the pointer acceleration sees."""
+        g = [(b - a) * 1000 for a, b in zip(times, times[1:])]
+        if not g:
+            return {"p50": None, "min": None, "max": None}
+        return {"p50": round(statistics.median(g), 2), "min": round(min(g), 2), "max": round(max(g), 2)}
+
     return {
         "sent": len(sent_at),
         "received_events": len(xs),
@@ -130,6 +138,10 @@ def summarize_rel(events, sent_at: list[float], dx: int) -> dict:
         "merged_reports": len(sent_at) - len(xs) if total == expected else None,
         "latency_ms_p50": round(statistics.median(lat) * 1000, 2) if lat else None,
         "latency_ms_max": round(max(lat) * 1000, 2) if lat else None,
+        # the host's actual send spacing, and the spacing the receiving host saw (USB polling and
+        # USB-serial latency included): the arrival spread is the timing noise relative mode gets
+        "send_gap_ms": gaps_ms(sent_at),
+        "arrival_gap_ms": gaps_ms([t for t, _ in xs]),
     }
 
 
@@ -138,6 +150,7 @@ def test_rel(hid: CH9329Backend, reader: EventReader, intervals: list[float], co
     for mode in ("ack", "pipelined"):
         for interval in intervals:
             reader.drain(0.2)
+            lost0, err0 = hid.stats["lost_acks"], len(hid.async_errors)
             hid.wait_ack = mode == "ack"
             sent_at, dx = [], 1
             next_at = time.monotonic()
@@ -157,11 +170,13 @@ def test_rel(hid: CH9329Backend, reader: EventReader, intervals: list[float], co
                 left -= 100
             reader.drain(0.2)
             r = {"mode": mode, "interval_ms": interval * 1000, **summarize_rel(back, sent_at, dx),
-                 "lost_acks": hid.stats["lost_acks"], "async_errors": len(hid.async_errors)}
+                 "lost_acks": hid.stats["lost_acks"] - lost0, "async_errors": len(hid.async_errors) - err0}
             results.append(r)
             log("loopback_rel", **r)
             ok = "OK " if r["lost_units"] == 0 else "LOSS"
-            print(f"{ok} {mode:9} every {interval * 1000:5.1f} ms: sent {r['sent']}, received {r['received_events']} events, "
+            sg, ag = r["send_gap_ms"], r["arrival_gap_ms"]
+            print(f"{ok} {mode:9} asked {interval * 1000:5.1f} ms, sent every {sg['p50']} ms ({sg['min']}..{sg['max']}), "
+                  f"arrived every {ag['p50']} ms ({ag['min']}..{ag['max']}): {r['received_events']}/{r['sent']} events, "
                   f"units {r['total_received']}/{r['total_expected']}, latency p50 {r['latency_ms_p50']} ms max {r['latency_ms_max']} ms")
     return results
 

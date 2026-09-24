@@ -7,6 +7,10 @@ Two send modes:
 - wait_ack=False: HID reports are fire-and-forget. Their replies are read opportunistically and
   counted off; error replies are kept in `async_errors`. The next command that needs a reply
   first waits for the outstanding ones (`sync()`), so a stale ack is never taken for a new reply.
+
+A reply can still come after its command was given up on (timeout, lost ack). The chip answers in
+order, so the next exchange first sends GET_INFO and discards everything before its answer: a late
+ack is never taken for the ack of a later command.
 """
 
 from __future__ import annotations
@@ -47,7 +51,15 @@ _STATUS_HINTS = {
 
 
 def version_string(raw: int) -> str:
-    return f"V1.{raw - 0x30}" if 0x30 <= raw <= 0x39 else f"unknown ({raw:#04x})"
+    if 0x30 <= raw <= 0x39:
+        return f"V1.{raw - 0x30}"
+    if p.BRIDGE_VERSION <= raw <= p.BRIDGE_VERSION + 0x0F:
+        return f"ihc bridge v1.{raw - p.BRIDGE_VERSION}"
+    return f"unknown ({raw:#04x})"
+
+
+def is_bridge(version_raw: int) -> bool:
+    return p.BRIDGE_VERSION <= version_raw <= p.BRIDGE_VERSION + 0x0F
 
 
 def _cmd_name(cmd: int) -> str:
@@ -121,6 +133,9 @@ class CH9329Backend:
         self._inflight: Counter[int] = Counter()  # fire-and-forget commands whose reply is unread
         self._last_send = 0.0
         self._last_rx = 0.0
+        self._busy_until = 0.0  # end of the last on-chip run queued (its reply comes after it)
+        self._resync = False  # a reply may still be on its way: resync before the next exchange
+        self._info: dict | None = None  # last GET_INFO, for capabilities
         self._rx_since_send = bytearray()  # raw bytes seen since the last request, for diagnostics
         self.async_errors: list[tuple[int, int | None]] = []
         self.stats: Counter[str] = Counter()
@@ -145,11 +160,12 @@ class CH9329Backend:
     # -- HidBackend ----------------------------------------------------------------------------
 
     def info(self) -> dict:
-        """GET_INFO: chip version, USB enumeration state and keyboard LEDs."""
+        """GET_INFO: chip version, USB enumeration state and keyboard LEDs (plus, from the ESP32
+        bridge, its output link, HID collections and vendor features)."""
         d = self._request(p.Cmd.GET_INFO).data
         if len(d) < 3:
             raise HidProtocolError(f"GET_INFO reply too short: {d.hex(' ')}")
-        return {
+        info = {
             "version": version_string(d[0]),
             "version_raw": d[0],
             "usb_connected": d[1] == 0x01,
@@ -159,6 +175,24 @@ class CH9329Backend:
             "scroll_lock": bool(d[2] & 0x04),
             "raw": d.hex(" "),
         }
+        if is_bridge(d[0]) and len(d) >= 6:
+            info["bridge"] = {
+                "output": p.BRIDGE_OUTPUTS.get(d[3], f"unknown ({d[3]:#04x})"),
+                "collections": [name for bit, name in p.BRIDGE_COLLECTIONS.items() if d[4] & bit],
+                "rel_run": bool(d[5] & p.FEATURE_REL_RUN),
+            }
+        self._info = info
+        return info
+
+    def supports_rel_run(self) -> bool:
+        """Whether the device times relative runs itself (ESP32 bridge). Asked once, then cached;
+        False when the device cannot be asked right now."""
+        if self._info is None:
+            try:
+                self.info()
+            except HidError:
+                return False
+        return bool(self._info.get("bridge", {}).get("rel_run"))
 
     def keyboard(self, modifiers: int, keys: Sequence[int]) -> None:
         self._hid(p.kb_general(modifiers, keys, self.addr))
@@ -177,13 +211,57 @@ class CH9329Backend:
         self._hid(p.kb_acpi(bits, self.addr))
 
     def mouse_abs(self, x: int, y: int, buttons: int = 0, wheel: int = 0) -> None:
-        """Absolute pointer on a 4096 x 4096 grid. iOS is expected to ignore it:
-        its pointer only follows relative mice."""
+        """Absolute pointer on a 4096 x 4096 grid (a separate HID report from the relative mouse,
+        with its own buttons). Whether iOS follows it is checked per phone by the calibration."""
         self._hid(p.mouse_abs(x, y, buttons, wheel, self.addr))
 
+    @_serialized
+    def mouse_rel_runs(self, runs: Sequence[tuple[int, int, int]], interval_ms: int, buttons: int = 0) -> None:
+        """ESP32 bridge only: relative runs played on the bridge's clock, one report every
+        `interval_ms`, each run (dx, dy, count) right after the previous one. All frames go out in
+        one write, so a host stall cannot stretch the pace. With wait_ack, returns once every run
+        was delivered (and raises on the first failure); otherwise the replies stay in flight."""
+        per_frame = p.REL_RUN_MAX_MS // interval_ms + 1 if interval_ms else 255
+        frames, total = [], 0
+        for dx, dy, count in runs:
+            total += count
+            while count > 0:
+                n = min(count, per_frame, 255)
+                frames.append(p.mouse_rel_run(dx, dy, n, interval_ms, buttons, self.addr))
+                count -= n
+        if not frames:
+            return
+        broadcast = self.addr == p.BROADCAST_ADDR
+        if (self.wait_ack or self._resync) and not broadcast:
+            self.sync()
+        err0, lost0 = len(self.async_errors), self.stats["lost_acks"]
+        self._write(b"".join(frames))
+        self._busy_until = max(self._busy_until, self._last_send) + total * interval_ms / 1000
+        if broadcast:
+            return
+        self._inflight[p.CMD_MS_REL_RUN] += len(frames)
+        if not self.wait_ack:
+            self._pump(block=False)
+            return
+        self.sync()
+        failed = self.async_errors[err0:]
+        del self.async_errors[err0:]
+        if failed:
+            raise status_error(*failed[0])
+        if self.stats["lost_acks"] != lost0:
+            self.stats["timeouts"] += 1
+            raise HidTimeout(f"no reply to {_cmd_name(p.CMD_MS_REL_RUN)} within {self.timeout * 1000:.0f} ms after the run")
+
     def release_all(self) -> None:
-        """Best effort: release every key and mouse button."""
-        for frame in (p.kb_general(0, [], self.addr), p.mouse_rel(0, 0, 0, 0, self.addr)):
+        """Best effort: release every key, media/power key and relative mouse button. (An absolute
+        pointer button is released by a report at its position: see PointerModel.release_all.)"""
+        frames = (
+            p.kb_general(0, [], self.addr),
+            p.kb_media(0, self.addr),
+            p.kb_acpi(0, self.addr),
+            p.mouse_rel(0, 0, 0, 0, self.addr),
+        )
+        for frame in frames:
             try:
                 self._hid(frame)
             except HidError:
@@ -208,6 +286,7 @@ class CH9329Backend:
         """Software reset. The chip drops off USB and re-enumerates."""
         self._request_status(p.Cmd.RESET)
         self._parser.reset()
+        self._info = None
 
     def get_usb_string(self, kind: int) -> str:
         """kind: 0 vendor, 1 product, 2 serial number."""
@@ -231,24 +310,50 @@ class CH9329Backend:
 
     @_serialized
     def sync(self) -> None:
-        """Wait for replies to fire-and-forget commands, then drop anything left in the input."""
+        """Wait for replies to fire-and-forget commands, then drop anything left in the input.
+        After a reply was given up on, first make sure it cannot arrive later (see _resync_now)."""
         if self._inflight:
             # replies trail their commands; keep waiting while they are still arriving
-            while self._inflight and time.monotonic() < max(self._last_send, self._last_rx) + self.timeout:
+            while self._inflight and time.monotonic() < max(self._last_send, self._last_rx, self._busy_until) + self.timeout:
                 self._pump(block=True)
+            self._pump(block=False)
             if self._inflight:
                 lost = sum(self._inflight.values())
                 self.stats["lost_acks"] += lost
                 self._emit("lost_acks", count=lost, cmds={f"{c:#04x}": n for c, n in self._inflight.items()})
                 self._inflight.clear()
+                self._resync = True
+        if self._resync and self.addr != p.BROADCAST_ADDR:
+            self._resync_now()
         self._pump(block=False)
         self._parser.reset()
+
+    def _resync_now(self) -> None:
+        """Send GET_INFO and discard every frame before its reply. The chip answers in order, so
+        once it answers, no reply to an earlier command can still arrive."""
+        late = len(self._pump(block=False))
+        self._write(p.get_info(self.addr))
+        deadline = time.monotonic() + self.timeout
+        while time.monotonic() < deadline:
+            for f in self._pump(block=True):
+                if f.request_cmd == p.Cmd.GET_INFO:
+                    self._resync = False
+                    self.stats["late_replies"] += late
+                    self._emit("resynced", discarded=late)
+                    return
+                late += 1
+        self.stats["late_replies"] += late
+        self.stats["timeouts"] += 1
+        raise HidTimeout(f"{self.port} stopped answering: no reply to GET_INFO within {self.timeout * 1000:.0f} ms "
+                         "while resynchronising after a lost reply")
 
     @_serialized
     def _hid(self, frame: bytes) -> None:
         if self.wait_ack and frame[2] != p.BROADCAST_ADDR:
             self._check(self._roundtrip(frame), frame[3])
             return
+        if self._resync:
+            self.sync()
         self._write(frame)
         if frame[2] != p.BROADCAST_ADDR:
             self._inflight[frame[3]] += 1
@@ -286,6 +391,7 @@ class CH9329Backend:
         garbage = self._parser.discarded - discarded0
         received = bytes(self._rx_since_send)
         self.stats["timeouts"] += 1
+        self._resync = True  # its reply may still come: never take it for the next one
         self._emit("timeout", cmd=f"{cmd:#04x}", received=received.hex(" "), garbage=garbage)
         raise HidTimeout(self._timeout_message(cmd, received, garbage), received)
 
