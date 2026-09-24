@@ -1,0 +1,18 @@
+[project]
+name = "iphone-hid"
+version = "0.0.1"
+description = "Control an iPhone from a Linux host via HDMI capture and external HID hardware"
+requires-python = ">=3.10"
+dependencies = ["pyserial>=3.5"]
+
+[project.optional-dependencies]
+vision = ["opencv-python", "numpy", "Pillow"]
+api = ["fastapi", "uvicorn", "websockets"]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["ihc*"]
