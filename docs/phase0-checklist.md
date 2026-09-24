@@ -112,8 +112,9 @@ iPhone và host phải cùng mạng Wi-Fi/LAN (iPhone sẽ mở một trang trê
    ```bash
    ihc serve --config farm.toml
    ```
-3. Mở `http://<ip-host>:8000`, chọn máy, bấm **Hiệu chỉnh**. Công cụ tự mở Safari qua Spotlight. Nếu không
-   mở được, gõ tay trên iPhone địa chỉ công cụ hiển thị (`http://<ip-host>:8000/calibrate/<id>`).
+3. Mở `http://<ip-host>:8000`, chọn máy, bấm **Calibrate**. Công cụ tự mở Safari qua Spotlight. Nếu không
+   mở được, gõ tay trên iPhone địa chỉ `http://<ip-host>:8000/calibrate/<id>`, rồi gọi API hiệu chỉnh với
+   `{"open_page": false}` (không gửi phím nào).
 4. Chờ kết quả, khoảng 10 s nếu iPhone theo chuột tuyệt đối, khoảng 1 phút nếu không.
 
 Mong đợi, ở bảng trạng thái:
@@ -163,7 +164,7 @@ Sau đó rút/cắm nguồn PD và ghi lại thứ gì rớt (hình, HID, sạc)
    ```
 
    Mong đợi: chuỗi hiện đúng từng ký tự.
-2. Trong web console (chế độ **Chạm chính xác**), mở app có danh sách dài. Vuốt 20 lần.
+2. Trong web console (chế độ **Precise tap**), mở app có danh sách dài. Vuốt 20 lần.
    Mong đợi: không lần nào bị "kẹt" ở trạng thái đang kéo (nhả nút bị lỡ).
 3. Nếu `mode: absolute`, chạy 50 lần tap tại cùng một nút và đếm số lần trượt.
 
@@ -173,7 +174,7 @@ Sau đó rút/cắm nguồn PD và ghi lại thứ gì rớt (hình, HID, sạc)
 
 ## T4. Chế độ tương đối (bắt buộc nếu T1 cho `relative`, và cho dòng Lightning)
 
-Lặp lại **Hiệu chỉnh** 3 lần và so `validation` giữa các lần. Sau đó đổi Tracking Speed lên/xuống một nấc,
+Lặp lại **Calibrate** 3 lần (ép chế độ tương đối bằng `{"options": {"try_absolute": false}}` nếu cần) và so `validation` giữa các lần. Sau đó đổi Tracking Speed lên/xuống một nấc,
 hiệu chỉnh lại, và so tiếp.
 
 **Ghi lại:** các `validation` và file hiệu chỉnh (`calib/*.json`, có tham số từng hướng). Sai số tăng rõ giữa
@@ -207,7 +208,7 @@ thử lại.
 
 1. Mở một trang đồng hồ bấm giờ có mili giây trên iPhone. Mở web console trên laptop, để hai màn hình cạnh
    nhau và chụp ảnh cả hai bằng điện thoại khác. Hiệu hai số là độ trễ hình tới trình duyệt. Lặp 5 lần.
-2. Mở web console, chọn chế độ **Điều khiển trực tiếp**, di chuột. Con trỏ có hiện trong hình không?
+2. Mở web console, chọn chế độ **Live control**, di chuột. Con trỏ có hiện trong hình không?
 3. Chạy `python tools/capture_check.py probe --device /dev/video0` với MJPG 1920x1080 và 1280x720.
 
 **Ghi lại:** độ trễ; con trỏ có/không; fps; Mbit/s.
@@ -277,7 +278,7 @@ Tăng dần số card (1, 2, 3...), thử cả cổng USB 2 và USB 3.
 ihc serve --config farm.toml --log docs/test-logs/soak.jsonl
 ```
 
-Để chạy nền với một kịch bản tap định kỳ (web console → Recorder → phát lại theo vòng, hoặc dùng SDK). Có một
+Để chạy nền với một kịch bản tap định kỳ (một script dùng SDK chạy vòng lặp các thao tác). Có một
 lần rút điện có chủ đích.
 
 **Ghi lại:**

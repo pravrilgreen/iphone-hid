@@ -17,8 +17,8 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
 3. **Settings > Accessibility > Pointer Control:**
    - **Automatically Hide Pointer: OFF.** Con trỏ tự ẩn thì không nhìn thấy được.
    - **Pointer Size:** tăng lên khoảng 2/3 thanh trượt.
-   - **Color:** chọn màu viền dễ phân biệt, mặc định phần mềm tìm màu **xanh lá**. Đổi màu khác thì phải
-     cấu hình `PointerStyle.border_rgb`.
+   - **Color:** tuỳ chọn, chọn màu viền dễ nhìn để người vận hành thấy con trỏ trên hình (phần mềm không
+     nhận diện hình ảnh nên màu không ảnh hưởng gì tới điều khiển).
    - **Increase Contrast: ON** nếu có.
    - **Tracking Speed:** chọn một mức, ghi lại, và **không đổi nữa**. Hiệu chỉnh con trỏ chỉ đúng với mức đã đo.
 4. **Settings > Display & Brightness:**
@@ -30,6 +30,8 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
 6. **Settings > General > Keyboard > Hardware Keyboard:**
    - layout **U.S.**;
    - tắt Auto-Capitalization, Auto-Correction và phím tắt "." (hai lần dấu cách).
+7. **Safari:** để thanh địa chỉ **ở dưới** (mặc định từ iOS 15). Để ở trên thì lúc tìm trang hiệu chỉnh, một
+   cú click có thể trúng thanh địa chỉ và bật bàn phím; hiệu chỉnh sẽ dừng an toàn nhưng phải chạy lại.
 
 ## Nên làm
 
