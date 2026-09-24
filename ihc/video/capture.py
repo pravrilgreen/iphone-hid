@@ -22,8 +22,20 @@ import numpy as np
 from .frame import Frame
 
 
+def device_index(device: str | int) -> int | str:
+    """/dev/videoN or a /dev/v4l/by-path|by-id link to it -> N. Some OpenCV builds cannot open V4L2
+    devices by name, but every build opens them by index."""
+    if isinstance(device, int):
+        return device
+    real = os.path.realpath(device)
+    name = os.path.basename(real)
+    if name.startswith("video") and name[5:].isdigit():
+        return int(name[5:])
+    return device
+
+
 def _default_open(device: str | int, width: int, height: int, fps: int, fourcc: str, passthrough: bool):
-    cap = cv2.VideoCapture(device, cv2.CAP_V4L2)
+    cap = cv2.VideoCapture(device_index(device), cv2.CAP_V4L2)
     if not cap.isOpened():
         cap.release()
         raise OSError(f"cannot open video device {device!r} (missing, busy, or no permission: add yourself to the 'video' group)")

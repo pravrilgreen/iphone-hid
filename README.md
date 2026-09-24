@@ -1,242 +1,177 @@
 # iphone-hid
 
-**Điều khiển iPhone cho automation chỉ bằng phần cứng ngoài.** Hệ thống nhìn màn hình iPhone qua cổng
-HDMI và thao tác bằng chuột/bàn phím HID giả lập, giống một "ngón tay ảo có mắt". Không jailbreak, không
-Developer Mode, không cài app lên máy, không dùng công cụ chuyên cho iPhone (libimobiledevice,
-WebDriverAgent...). iPhone chỉ thấy một màn hình ngoài và một bộ chuột + bàn phím.
+**Điều khiển iPhone cho automation chỉ bằng phần cứng gắn ngoài.** Hệ thống xem màn hình iPhone qua cổng
+HDMI và thao tác bằng một bộ chuột + bàn phím "ảo". Với iPhone, đó chỉ là một màn hình ngoài và một bộ chuột,
+bàn phím bình thường:
+- không jailbreak, không bật Developer Mode;
+- không cài app lên máy;
+- không dùng công cụ riêng của Apple hay bên thứ ba dành cho iPhone.
 
-Repo này là **tầng điều khiển iPhone** cho một hệ thống automation. Bên automation gọi API (HTTP/WebSocket
-hoặc Python SDK) để xem màn hình, tap, vuốt, gõ phím, tìm chữ/ảnh; repo lo phần cứng, con trỏ và độ chính xác.
+Đây là **phần điều khiển iPhone** cho một hệ thống automation lớn hơn. Bên automation chỉ cần gọi "chạm vào
+điểm này", "vuốt từ đây tới đây", "gõ chữ này", "chụp màn hình". Hệ thống lo phần cứng, con trỏ và độ chính
+xác. Người vận hành có một trang web để xem màn hình từng máy trực tiếp và điều khiển như đang cầm máy.
 
-> **Trạng thái:** đang phát triển, **chưa có phần cứng**. Mọi tầng đều được viết và test trên **bộ mô phỏng**
-> (chip HID giả qua pty, iPhone giả vẽ màn hình + con trỏ AssistiveTouch, tín hiệu HDMI giả). Hành vi mô
-> phỏng bám theo tài liệu gốc của hãng chip và hành vi iOS đã được ghi nhận; điểm nào chưa chắc đều được
-> đánh dấu và có bài test phần cứng tương ứng ở giai đoạn 0. Xem [Lộ trình](#lộ-trình-và-trạng-thái).
+> **Trạng thái:** phần mềm đã hoàn chỉnh và chạy được trên **iPhone mô phỏng**. Chưa có phần cứng, nên chưa
+> hạng mục nào được kiểm chứng trên máy thật. Mọi hành vi mô phỏng đều dựa trên tài liệu gốc của hãng chip,
+> hành vi iOS đã được ghi nhận và các dự án tương tự. Những điểm còn phải kiểm chứng đều có bài test phần cứng
+> tương ứng. Xem [Lộ trình](#lộ-trình).
 
 ---
 
-## Sản phẩm cuối sẽ trông thế nào
+## Nó hoạt động thế nào (từ đầu đến cuối)
 
-### 1. Web console
+### 1. Mỗi iPhone được nối như sau
 
-Một trang web cho người vận hành: lưới các máy đang chạy, mở một máy để xem live và điều khiển trực tiếp
-(click để tap, kéo để vuốt, gõ phím), ghi lại thao tác thành kịch bản rồi phát lại.
+**iPhone cổng USB-C (iPhone 15 trở lên):** một dây mang cả hình lẫn điều khiển.
 
 ```
-┌─ iphone-hid console ─────────────────────────────────────── host: farm-01 ─ 4 devices ─┐
-│  ● iphone-01  ready     ● iphone-02  ready     ● iphone-03  busy     ○ iphone-04  locked │
-├───────────────────────────────┬────────────────────────────────────────────────────────┤
-│ iphone-01  iPhone 15 · iOS 26 │  Actions                                               │
-│ ┌───────────────────────────┐ │  [ Home ] [ App Switcher ] [ Spotlight ] [ Lock? ]     │
-│ │ 09:41                  ▮▮ │ │  Type: [ hello world_______________ ] [Send]           │
-│ │                           │ │  Key:  [ cmd+space ] [Send]                            │
-│ │  ▢ Mail  ▢ Notes ▢ Maps   │ │                                                        │
-│ │  ▢ Photos ▢ Clock ▢ Music │ │  Pointer   (0.512, 0.604)  closed-loop ✓  err 1.8 px   │
-│ │          ◯ ← con trỏ      │ │  Last tap  182 ms · 1 correction                       │
-│ │                           │ │  Stream    30 fps · 74 ms latency · MJPEG passthrough  │
-│ │  ▢ Safari  ▢ Settings     │ │                                                        │
-│ └───────────────────────────┘ │  Recorder  ● REC  tap(0.51,0.60) · type("hello") ...   │
-│   click = tap · drag = swipe  │  [ Save script ] [ Replay ]                            │
-└───────────────────────────────┴────────────────────────────────────────────────────────┘
+                ┌──────── Hub USB-C (HDMI + USB-A + sạc) ────────┐
+   iPhone ══════│ HDMI  ─────► Capture card ─────► Máy chủ Linux │  hình
+                │ USB-A ◄───── Chip HID ◄───────── Máy chủ Linux │  thao tác
+                │ Sạc   ◄───── Củ sạc 20 W                       │
+                └────────────────────────────────────────────────┘
 ```
 
-### 2. Python SDK cho dự án automation
+**iPhone cổng Lightning:** hình qua adapter HDMI của Apple, thao tác qua Bluetooth.
 
-```python
-from ihc.client import Farm
-
-farm = Farm("http://farm-01:8000")          # một hoặc nhiều host
-for d in farm.devices():
-    print(d.id, d.model, d.state)           # iphone-01  iPhone 15  ready
-
-phone = farm.device("iphone-01")
-phone.home()
-phone.tap(0.50, 0.93)                       # toạ độ chuẩn hoá 0..1 trên màn hình iPhone
-phone.swipe(0.5, 0.8, 0.5, 0.2, duration=0.4)
-phone.key("cmd+space")                      # Spotlight
-phone.type("notes\n")
-phone.wait_for_change(timeout=3)            # chờ UI đổi sau thao tác
-phone.tap_image("templates/new_note.png")   # tìm ảnh mẫu trên màn hình rồi tap
-phone.screenshot("shot.png")
+```
+   iPhone ══► Lightning Digital AV Adapter ──HDMI──► Capture card ──► Máy chủ Linux   hình
+   iPhone ◄── Bluetooth ── ESP32 (chuột + bàn phím Bluetooth) ◄───── Máy chủ Linux   thao tác
 ```
 
-### 3. API cho mọi ngôn ngữ
+**Vì sao iPhone Lightning phải dùng ESP32 và Bluetooth, còn iPhone USB-C thì không?**
+- Cổng USB-C của iPhone 15 trở lên làm được hai việc cùng lúc: xuất hình ra HDMI và nhận thiết bị USB. Chỉ
+  cần một hub là có cả hai, và chip HID (CH9329, rẻ, mua về dùng ngay) cắm vào hub như một bộ chuột + bàn
+  phím có dây.
+- iPhone Lightning chỉ có một cổng. Cổng đó phải dùng cho adapter HDMI của Apple thì mới lấy được hình, và cổng
+  phụ trên adapter **chỉ để sạc**, không truyền dữ liệu. Không còn chỗ nào để cắm chuột có dây, nên thao tác
+  phải đi qua **Bluetooth**.
+- Chip CH9329 không có Bluetooth. ESP32 là vi điều khiển giá rẻ có Bluetooth, được nạp firmware để làm bộ
+  chuột + bàn phím Bluetooth. Firmware "nói" đúng ngôn ngữ của CH9329, nên phần mềm trên máy chủ dùng chung cho
+  cả hai dòng máy, không phải sửa gì.
+- Không dùng Bluetooth cho cả iPhone USB-C, vì có dây thì ổn định hơn: không phải ghép đôi, không nhiễu sóng khi
+  nhiều máy đặt cạnh nhau, trễ thấp hơn, và iPhone nhận được chế độ chuột chính xác nhất qua dây (xem dưới).
+- Về lâu dài, có thể thay CH9329 bằng chính ESP32-S3 ở chế độ USB, để hai dòng máy dùng chung một loại phần
+  cứng, và có thêm vài khả năng CH9329 không có.
 
-| Method | Endpoint | Việc |
+### 2. Nhìn thấy màn hình
+
+iPhone phản chiếu (mirror) màn hình ra HDMI. Capture card biến tín hiệu đó thành luồng hình nén sẵn. Máy chủ
+chuyển thẳng luồng này tới trình duyệt, không giải nén rồi nén lại, nên xem được nhiều máy cùng lúc mà máy chủ
+không phải gánh nặng. Trong mạng nội bộ, hình tới trình duyệt chậm khoảng 0,15–0,25 giây.
+
+### 3. Chạm đúng chỗ, không cần "nhìn"
+
+iPhone điều khiển bằng chuột thông qua tính năng trợ năng **AssistiveTouch**. Hệ thống không nhận diện hình ảnh,
+nên phải biết chắc con trỏ đang ở đâu. Có hai cách, tự chọn khi hiệu chỉnh:
+
+- **Chuột tuyệt đối:** đặt con trỏ thẳng vào toạ độ cần chạm, như chạm tay. Nhanh (khoảng 0,15 giây mỗi lần
+  chạm) và gần như không sai số. Dự án mã nguồn mở gần nhất với sản phẩm này cho thấy iPhone nhận được cách này
+  qua dây USB. Đây là điều đầu tiên sẽ kiểm chứng khi có phần cứng.
+- **Chuột tương đối** (khi iPhone không nhận chuột tuyệt đối, ví dụ qua Bluetooth):
+  1. trước mỗi lần chạm, đẩy con trỏ vào góc màn hình gần nhất, nơi nó chắc chắn dừng lại, để có một điểm xuất
+     phát biết chắc;
+  2. đi từng trục một, với nhịp đều tuyệt đối, để quãng đường luôn lặp lại được dù iPhone có "tăng tốc" con
+     trỏ;
+  3. vì luôn xuất phát lại từ góc, sai số không bị cộng dồn qua các lần chạm.
+
+**Hiệu chỉnh mỗi máy một lần:** hệ thống tự mở một trang web trên Safari của iPhone. Trang cho biết chính xác
+mỗi cú click rơi vào đâu, và hệ thống dùng đó để đo con trỏ của từng máy (vài giây với chuột tuyệt đối, khoảng
+một phút với chuột tương đối).
+
+### 4. Không mất lệnh
+
+- Mỗi lệnh gửi xuống chip đều được chip **xác nhận**. Không có xác nhận thì hệ thống biết ngay và xử lý, không
+  bao giờ "gửi rồi mong trúng".
+- Lệnh nào gửi lại được an toàn (nhấn/nhả nút, phím, đặt vị trí tuyệt đối) thì được gửi lại.
+- Lệnh di chuyển không rõ đã chạy hay chưa thì cả thao tác được làm lại từ đầu, kể cả bước đẩy con trỏ về góc,
+  chứ không đoán.
+- Nhịp gửi được đo từng lệnh. Nếu máy chủ bị khựng làm lệch nhịp (có thể làm lệch vị trí), thao tác đó cũng
+  được làm lại.
+- Mọi phím và nút luôn được nhả khi kết thúc, kể cả khi có lỗi giữa chừng hoặc người điều khiển đóng trình
+  duyệt.
+- Trước khi có iPhone, một công cụ kiểm tra đọc lại chính xác những gì chip gửi ra cổng USB, để xác nhận chip
+  không đánh rơi hay gộp lệnh.
+
+### 5. Dùng như thế nào
+
+**Người vận hành** mở trang web của máy chủ:
+- thấy lưới các máy đang chạy, kèm trạng thái: sẵn sàng / đang bận / máy khoá / mất hình / mất kết nối;
+- mở một máy để xem màn hình trực tiếp, rồi chọn một trong hai chế độ:
+  - **Điều khiển trực tiếp:** chuột và bàn phím của người vận hành đi thẳng tới iPhone, như dùng máy tính từ
+    xa;
+  - **Chạm chính xác:** click lên hình là chạm đúng điểm đó; kéo là vuốt; cuộn chuột là cuộn;
+- có sẵn nút Home, App Switcher, Spotlight, âm lượng, ô gõ chữ, phím tắt;
+- ghi lại một chuỗi thao tác và phát lại;
+- nút **Hiệu chỉnh** cho mỗi máy.
+
+**Dự án automation** gọi qua API (HTTP/WebSocket) hoặc thư viện Python. Toạ độ tính theo tỉ lệ trên màn
+hình iPhone (0 đến 1), không phụ thuộc camera, độ phân giải hay đời máy. Các lệnh có sẵn:
+- chạm, chạm giữ, vuốt, cuộn;
+- gõ chữ, phím tắt, Home, App Switcher, mở URL;
+- chụp màn hình, xem trạng thái;
+- chạy một kịch bản thao tác.
+
+Một máy chủ quản lý nhiều iPhone. Nhiều máy chủ được gộp lại thành một "farm" từ phía thư viện.
+
+---
+
+## Cần những gì cho mỗi iPhone
+
+| Thiết bị | Dòng USB-C | Dòng Lightning | Ghi chú |
+|---|---|---|---|
+| Hub USB-C có HDMI + USB-A + sạc PD | ✔ | | nên thử 2–3 mẫu; tham khảo Apple USB-C Digital AV Multiport Adapter |
+| Cáp CH9329 (CH9329 + CH340, hai đầu USB-A) | ✔ | | mua về dùng ngay |
+| Apple Lightning Digital AV Adapter | | ✔ | hàng chính hãng |
+| ESP32-S3 DevKit | | ✔ | nạp firmware có sẵn trong repo |
+| Capture card HDMI → USB (chip MS2109) | ✔ | ✔ | loại nén sẵn MJPEG |
+| Củ sạc PD ≥ 20 W | ✔ | ✔ | |
+| Máy chủ Linux | | | Raspberry Pi 5 cho 1–2 máy; mini PC x86 + card USB mở rộng cho nhiều máy |
+
+Lưu ý:
+- **iPhone 16e/17e không xuất được HDMI**, nên không dùng được cách này.
+- Mỗi iPhone cần cài đặt tay một lần (bật AssistiveTouch, gán nút chuột, tắt khoá màn hình tự động...). Xem
+  [hướng dẫn cài đặt iPhone](docs/iphone-setup.md).
+
+## Hiệu năng mục tiêu
+
+| Chỉ số | Mục tiêu | Trên mô phỏng |
 |---|---|---|
-| GET | `/devices` | danh sách máy, trạng thái (ready / busy / locked / no_signal / offline) |
-| GET | `/devices/{id}/screenshot` | PNG/JPEG màn hình hiện tại |
-| POST | `/devices/{id}/tap` | `{x, y, space: "norm" \| "frame"}`, tuỳ chọn `long: true` |
-| POST | `/devices/{id}/swipe` | `{x1, y1, x2, y2, duration}` |
-| POST | `/devices/{id}/scroll` | `{x, y, amount}` |
-| POST | `/devices/{id}/type` | `{text}` |
-| POST | `/devices/{id}/key` | `{combo: "cmd+space"}` |
-| POST | `/devices/{id}/home`, `/app_switcher` | nút AssistiveTouch |
-| POST | `/devices/{id}/find` | tìm ảnh mẫu / chữ trên màn hình |
-| WS | `/devices/{id}/stream` | luồng JPEG + trạng thái con trỏ |
-| WS | `/devices/{id}/input` | sự kiện điều khiển realtime từ web UI |
+| Độ chính xác chạm | 95% trong 4 pt (≈ 5 px ở khung 1080p) | chuột tuyệt đối ≤ 0,3 pt; chuột tương đối ≤ 2,1 pt |
+| Thời gian một lần chạm | < 1,5 s | tuyệt đối ≈ 0,15 s; tương đối 1,1–1,7 s |
+| Độ trễ hình tới trình duyệt (LAN) | < 0,25 s | cần đo trên máy thật |
+| Lệnh bị mất mà không biết | 0 | mọi lệnh có xác nhận; lệnh lỗi được làm lại hoặc báo lỗi |
 
-### 4. Một lệnh để chạy
+Nút thắt khi mở rộng là **băng thông USB cho capture card**, không phải phần điều khiển. Một host chịu được bao
+nhiêu máy sẽ được đo cụ thể khi có phần cứng.
 
-```bash
-ihc serve --config farm.yaml      # phần cứng thật: map cổng serial ↔ capture card theo cổng USB vật lý
-ihc serve --sim 4                 # 4 iPhone mô phỏng, không cần phần cứng
-```
-
----
-
-## Nguyên lý hoạt động
-
-### Phần cứng cho mỗi iPhone
-
-**iPhone cổng USB-C (15 trở lên):** một dây mang cả hình lẫn điều khiển.
-
-```
-            ┌──── Hub USB-C (DisplayPort Alt Mode + USB-A + sạc PD) ────┐
-iPhone ═════│ HDMI  ──► Capture card HDMI→USB ──► host Linux   (hình)   │
-   USB-C    │ USB-A ◄── Chip HID (CH9329) ◄── serial ◄── host  (thao tác)│
-            │ PD    ◄── Sạc ≥ 20 W                                       │
-            └────────────────────────────────────────────────────────────┘
-```
-
-**iPhone cổng Lightning (6s trở lên, iOS 13+):** hình qua adapter HDMI, điều khiển qua Bluetooth.
-
-```
-iPhone ══► Lightning Digital AV Adapter ──HDMI──► Capture card ──► host      (hình)
-iPhone ◄── Bluetooth LE ── ESP32 (HID bàn phím + chuột) ◄── serial ◄── host  (thao tác)
-```
-
-Firmware ESP32 nói **đúng giao thức serial của CH9329**, nên phần mềm host dùng chung cho cả hai dòng máy.
-
-### Con trỏ: vì sao cần "mắt"
-
-- iOS nhận chuột ngoài qua **AssistiveTouch** và **chỉ nhận chuột tương đối** (dx, dy). Không có lệnh "đặt
-  con trỏ tại (x, y)", và iOS còn có gia tốc con trỏ.
-- Cách làm: đẩy con trỏ về góc để biết chắc vị trí, di chuyển bằng các bước đều nhịp (quãng đường gần tuyến
-  tính theo số bước), rồi **nhìn con trỏ trên hình capture** (viền màu đặc trưng) để sửa sai số trước khi
-  click. Tham số hiệu chỉnh được lưu theo từng máy.
-- Nếu con trỏ không hiện trong tín hiệu HDMI: dùng open-loop đã hiệu chỉnh, rồi xác minh kết quả bằng việc UI
-  có thay đổi sau thao tác hay không.
-
-### Kiến trúc phần mềm
-
-```
- automation của bạn ──► Python SDK / REST / WebSocket          web console (live view, click-to-tap, recorder)
-                              │                                        │
- ┌────────────────────────────▼────────────────────────────────────────▼──────────────┐
- │ api       FastAPI + WebSocket, device registry, job queue theo từng máy            │
- │ device    IPhoneDevice: tap / swipe / type / key / find, trạng thái, tự kết nối lại│
- │ control   closed-loop pointer, hiệu chỉnh tự động, xác minh thao tác               │
- │ vision    capture V4L2 (MJPEG passthrough), vùng màn hình, dò con trỏ, tìm ảnh/chữ │
- │ input     pointer model (pacer, reset góc), gestures, keymap                        │
- │ hid       driver CH9329 (serial) │ ESP32 BLE bridge (cùng giao thức) │ chip giả     │
- └──────────────────────────────────────────────────────────────────────────────────────┘
- sim: iPhone mô phỏng (UI, con trỏ, gia tốc, HDMI letterbox) cắm vào đúng các giao diện trên
-```
-
-Toạ độ công khai của API là **chuẩn hoá (0..1, 0..1) trên màn hình iPhone**, không phụ thuộc capture card hay
-độ phân giải.
-
----
-
-## Hiệu năng và quy mô
-
-| Chỉ số | Mục tiêu | Cách đạt |
-|---|---|---|
-| Độ chính xác tap | 95% lần trong 5 px (frame 1080p) | closed-loop theo vị trí con trỏ trên hình |
-| Thời gian một tap | < 1,5 s kể cả sửa sai | pacer 25 ms/bước, tối đa vài vòng sửa |
-| Độ trễ hình tới trình duyệt | < 200 ms trong LAN | chuyển thẳng khung MJPEG của capture card, không decode/encode lại |
-| Tốc độ gửi HID | ~50 báo cáo/s ở 9600 baud, nhiều hơn khi nâng lên 115200 | driver có chế độ chờ ack và không chờ ack |
-| Nhiều máy / host | nhiều máy trên một host, mỗi máy một worker độc lập | vision chỉ decode khi cần; giới hạn thật là băng thông USB của capture card, sẽ đo ở giai đoạn 0 |
-
-Nút thắt khi scale là **băng thông USB và CPU cho video**. Hệ thống được thiết kế để: giảm độ phân giải/fps
-khi không cần, chỉ decode khung hình khi thị giác máy cần, và thêm host khi đầy (SDK quản lý nhiều host).
-
----
-
-## Lộ trình và trạng thái
+## Lộ trình
 
 | Giai đoạn | Nội dung | Trạng thái |
 |---|---|---|
-| 0. Kiểm chứng phần cứng | script test, công cụ dò baud, checklist cho người có phần cứng | 🟡 công cụ đang hoàn thiện; chờ mua phần cứng để chạy |
-| 1. Driver HID + CLI | driver CH9329 (ack/không ack, timeout, lỗi dễ hiểu), chip giả trên pty, `hidtest` | 🟢 chạy được trên chip giả |
-| 1b. Firmware ESP32 BLE | bridge Bluetooth HID nói giao thức CH9329 | 🟡 đang viết |
-| 2. Vision + closed-loop | capture, vùng màn hình, dò con trỏ, hiệu chỉnh, tap có phản hồi | 🟡 đang viết |
-| 3. API + web console | REST/WebSocket, SDK, web UI, ghi/phát kịch bản | ⚪ tiếp theo |
-| 4. Ổn định, nhiều máy | tự kết nối lại, phát hiện khoá màn hình/popup, log, registry theo cổng USB | ⚪ tiếp theo |
-| 5. Board nhúng theo máy | SoC Linux có USB gadget HID + HDMI-to-CSI | ⚪ nghiên cứu |
+| 0. Kiểm chứng phần cứng | công cụ đo chip, capture card, hiệu chỉnh, checklist 11 bài test | 🟢 công cụ sẵn sàng, chờ phần cứng |
+| 1. Điều khiển HID | driver chip, xác nhận từng lệnh, dò cấu hình, công cụ test | 🟢 xong trên mô phỏng |
+| 1b. Firmware ESP32 | chuột + bàn phím Bluetooth, cùng ngôn ngữ với CH9329 | 🟡 đang hoàn thiện |
+| 2. Con trỏ chính xác | chuột tuyệt đối / tương đối, hiệu chỉnh qua Safari | 🟢 xong trên mô phỏng |
+| 3. API + trang điều khiển | xem live, điều khiển trực tiếp, chạm chính xác, ghi/phát, thư viện Python | 🟡 đang hoàn thiện |
+| 4. Ổn định, nhiều máy | tự kết nối lại, phát hiện máy khoá/mất hình, log, cấu hình farm | 🟢 xong trên mô phỏng |
+| 5. Board nhúng cho từng máy | gắn phần điều khiển + lấy hình vào một board nhỏ theo từng iPhone | ⚪ nghiên cứu |
 
-🟢 xong trên mô phỏng · 🟡 đang làm · ⚪ chưa làm. Chưa hạng mục nào được kiểm chứng trên phần cứng thật.
+🟢 xong trên mô phỏng · 🟡 đang làm · ⚪ chưa làm.
 
----
+## Giới hạn
 
-## Chạy thử ngay, không cần phần cứng
+- Không vượt được passcode/Face ID, không cài app, không đọc dữ liệu hệ thống. iPhone phải được mở khoá sẵn.
+- Nội dung có bảo vệ bản quyền (Netflix...) sẽ ra màn đen trên HDMI.
+- Tự động hoá trên nền tảng của bên thứ ba có thể vi phạm điều khoản sử dụng của nền tảng đó.
 
-```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev,vision,api]"
-pytest -q
+## Tài liệu
 
-python tools/hidtest.py --fake        # CLI điều khiển chip HID giả; gõ `help`
-```
-
-Ví dụ phiên `hidtest` trên chip giả:
-
-```
-hid> info
-chip V1.0 (0x30) | USB connected (status 0x01) | num lock off, caps lock off, scroll lock off
-hid> type Hello, iPhone!
-typed 14 characters
-  [sim] text 'Hello, iPhone!'
-hid> bench 30
-GET_INFO round trip:       mean 22.6 ms, p50 22.6, p95 22.7, max 22.8 (n=30)
-mouse report with ack:     mean 20.6 ms, p50 20.5, p95 20.6, max 20.9 (n=30)  -> 49 reports/s
-```
-
-Khi có phần cứng: `python -m ihc.hid.scan` tìm cổng và baud của chip, `python tools/hidtest.py --port ...`
-để thử từng thao tác. Mọi phiên đều ghi log JSON lines vào `docs/test-logs/`.
-
----
-
-## Phần cứng cần có (mỗi iPhone)
-
-| Thiết bị | Dùng cho | Ghi chú |
-|---|---|---|
-| Cáp CH9329 thành phẩm (CH9329 + CH340, hai đầu USB-A) | HID có dây | không cần viết firmware |
-| Hub USB-C có HDMI + USB-A + PD passthrough | dòng USB-C | không phải hub nào cũng chạy với iPhone, nên thử 2–3 mẫu |
-| Capture card HDMI→USB (ưu tiên MS2130; MS2109 rẻ hơn) | cả hai dòng | |
-| Apple Lightning Digital AV Adapter (chính hãng) | dòng Lightning | |
-| ESP32-S3 DevKit | Bluetooth HID cho dòng Lightning | |
-| Sạc PD ≥ 20 W | nuôi iPhone qua hub | |
-| Host: Raspberry Pi 5 hoặc mini PC x86 chạy Linux | chạy phần mềm | |
-
-iPhone cần cài đặt tay một lần: bật AssistiveTouch, gán nút chuột phải = Home, nút giữa = App Switcher,
-tăng kích thước và đặt màu viền con trỏ, Auto-Lock = Never, bàn phím phần cứng layout U.S.
-
-## Giới hạn (theo thiết kế)
-
-Không vượt passcode/Face ID, không cài/ký app, không đọc dữ liệu hệ thống, không lấy cây UI. Máy phải được
-mở khoá sẵn. Nội dung có DRM (HDCP) sẽ ra màn đen trên HDMI. Tự động hoá trên nền tảng bên thứ ba có thể vi
-phạm điều khoản sử dụng của nền tảng đó.
-
-## Cấu trúc repo
-
-```
-ihc/hid        driver CH9329, chip giả (pty), dò baud, cấu hình chip
-ihc/input      keymap, pointer model, gestures
-ihc/vision     capture, vùng màn hình, dò con trỏ, tìm ảnh/chữ
-ihc/control    closed-loop, hiệu chỉnh
-ihc/sim        iPhone mô phỏng
-ihc/api        server HTTP/WebSocket
-web/           web console
-tools/         CLI test phần cứng (hidtest, capture_check)
-firmware/      ESP32 BLE HID bridge (ESP-IDF)
-tests/
-docs/          tài liệu, checklist, log test phần cứng
-```
-
-## Phát triển
-
-- Code, tên biến, commit message: tiếng Anh. Tài liệu: tiếng Việt.
-- Không có phần cứng thì mọi thay đổi phải có test trên bộ mô phỏng; hành vi phần cứng chưa kiểm chứng phải
-  được đánh dấu rõ trong code và có bài test tương ứng ở giai đoạn 0.
+- [Bắt đầu nhanh](docs/getting-started.md): chạy thử trên mô phỏng, rồi trên phần cứng
+- [Kiến trúc](docs/architecture.md)
+- [Đánh giá khả thi](docs/feasibility.md): nghiên cứu độc lập, có nguồn, kèm rủi ro
+- [Checklist kiểm chứng phần cứng](docs/phase0-checklist.md)
+- [Cài đặt iPhone](docs/iphone-setup.md)
+- [Giao thức chip CH9329](docs/ch9329-protocol.md)
+- [Bộ mô phỏng](docs/simulator.md)
+- [Firmware ESP32](firmware/esp32_ble_hid/README.md)

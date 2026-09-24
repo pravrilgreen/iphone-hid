@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import pytest
 
-from ihc.video.capture import V4L2Capture, frame_from_buffer, list_video_devices
+from ihc.video.capture import V4L2Capture, device_index, frame_from_buffer, list_video_devices
 from ihc.video.frame import Frame, StaticSource, encode_jpeg, jpeg_size
 from ihc.video.geometry import ScreenRect, fit_screen_rect
 
@@ -105,3 +105,10 @@ def test_jpeg_size_and_static_source():
 
 def test_list_video_devices_does_not_crash():
     assert isinstance(list_video_devices(), list)
+
+
+def test_device_index_resolves_links(tmp_path):
+    link = tmp_path / "usb-0:1.3:1.0-video-index0"
+    link.symlink_to("/dev/video7")
+    assert device_index(str(link)) == 7 and device_index("/dev/video2") == 2 and device_index(3) == 3
+    assert device_index("rtsp://x") == "rtsp://x"
