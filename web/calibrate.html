@@ -37,7 +37,10 @@
 (function () {
   "use strict";
   var id = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
-  var url = "/api/devices/" + encodeURIComponent(id) + "/calibration/events";
+  // The link carries the calibration key (?k=...): the server takes page events only with it.
+  var key = new URLSearchParams(location.search).get("k") || "";
+  var url = "/api/devices/" + encodeURIComponent(id) + "/calibration/events?k=" + encodeURIComponent(key);
+  var expired = false;
   var HEARTBEAT_MS = 250;
   // One id per page load: the host tells a reload (or an older tab's leftovers) from this load.
   var PID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -52,7 +55,7 @@
   // A queued event is never dropped (that would be a gap): optional ones (hover, heartbeat) are
   // simply not created while the network is backed up.
   function post(ev, optional) {
-    if (optional && queue.length > 20) return;
+    if (expired || (optional && queue.length > 20)) return;
     seq += 1;
     ev.pid = PID;
     ev.seq = seq;
@@ -70,6 +73,11 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(batch)
     }).then(function (r) {
+      if (r.status === 403) {  // the key rotated (a calibration ended, or the server restarted)
+        expired = true;
+        queue = [];
+        return;
+      }
       if (!r.ok && r.status >= 500) throw new Error("HTTP " + r.status);
       queue.splice(0, batch.length);
       sent += batch.length;
@@ -78,6 +86,10 @@
       failures += 1;
     }).then(function () {
       sending = false;
+      if (expired) {
+        show("This calibration link has expired: open it again from the console.");
+        return;
+      }
       show("clicks " + clicks + " · sent " + sent + (failures ? " · retrying" : "") + " · " + id);
       if (queue.length) setTimeout(pump, failures ? Math.min(2000, 100 * failures) : 0);
     });

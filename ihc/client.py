@@ -279,7 +279,7 @@ def _token_for(token: str | Mapping[str, str] | None, base_url: str) -> str | No
         return os.environ.get("IHC_TOKEN") or None
     if isinstance(token, str):
         return token or None
-    return token.get(base_url.rstrip("/")) or token.get(base_url)
+    return {url.rstrip("/"): t for url, t in token.items()}.get(base_url.rstrip("/")) or None
 
 
 def _answers(base_url: str, timeout: float = 2.0) -> bool:

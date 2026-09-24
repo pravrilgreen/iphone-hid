@@ -3,9 +3,9 @@
 - Host: only IP literals, localhost, names ending in .local, this machine's name, the public URL's
   host and names allowed by the operator. A DNS-rebinding page reaches the box under the attacker's
   own name, which is refused (400) before anything else happens.
-- Origin: a browser sends it on WebSockets and POSTs. One that is not this server (same host and
-  port as the Host header), not the public URL and not allowed by the operator is refused (403);
-  no Origin at all means no browser (SDK, curl), which passes.
+- Origin: a browser sends it on WebSockets and POSTs. One that is not this server (the request's
+  scheme, the Host header's host and port), not the public URL and not allowed by the operator is
+  refused (403); no Origin at all means no browser (SDK, curl), which passes.
 - Token: with a token configured, /api/* needs `Authorization: Bearer <token>` (401 otherwise),
   except GET /api/health and the calibration page's events, which carry a per-device key instead
   (checked by the endpoint). WebSockets and the media URLs an <img> loads (MJPEG, screenshot) may
@@ -24,10 +24,12 @@ from __future__ import annotations
 import hmac
 import ipaddress
 import json
+import math
 import re
 import secrets
 import socket
 import threading
+import time
 from collections import Counter
 from typing import Iterable
 from urllib.parse import parse_qs, parse_qsl, urlencode, urlsplit, urlunsplit
@@ -108,7 +110,8 @@ class Policy:
         return (self.any_host or host in self.hosts or host.endswith(".local") or host.endswith(".localhost")
                 or _is_ip(host))
 
-    def origin_ok(self, origin: str, host_header: str | None) -> bool:
+    def origin_ok(self, origin: str, host_header: str | None, scheme: str) -> bool:
+        """`scheme`: the request's (http, https, ws, wss); same origin = same scheme, host and port."""
         if self.any_origin:
             return True
         o = _origin(origin)
@@ -118,8 +121,9 @@ class Policy:
             return True
         if host_header is None:
             return False
+        scheme = {"ws": "http", "wss": "https"}.get(scheme, scheme)
         host, port = split_host(host_header)
-        return o[1] == host and o[2] == (port if port is not None else _DEFAULT_PORT.get(o[0], 0))
+        return o == (scheme, host, port if port is not None else _DEFAULT_PORT.get(scheme, 0))
 
     def token_ok(self, presented: str | None) -> bool:
         if self.token is None:
@@ -188,7 +192,15 @@ class Guard:
     def __init__(self, app, policy: Policy, log=None):
         self.app = app
         self.policy = policy
-        self.log = log or (lambda event, **fields: None)
+        self._log = log or (lambda event, **fields: None)
+        self._logged: dict[str, float] = {}
+
+    def log(self, event: str, reason: str, **fields) -> None:
+        """At most one event per reason every 10 s: refusals must not flood the log."""
+        now = time.monotonic()
+        if now - self._logged.get(reason, -math.inf) >= 10.0:
+            self._logged[reason] = now
+            self._log(event, reason=reason, **fields)
 
     async def __call__(self, scope, receive, send) -> None:
         kind = scope["type"]
@@ -204,7 +216,7 @@ class Guard:
                                       "use an IP address or a .local name, or start the server with --allowed-host")
         origin = headers.get("origin")
         if origin is not None and (kind == "websocket" or method not in _SAFE) \
-                and not self.policy.origin_ok(origin, host):
+                and not self.policy.origin_ok(origin, host, scope.get("scheme", "http")):
             self.log("request_refused", reason="origin", origin=origin, path=path)
             return await self._refuse(scope, receive, send, 403,
                                       f"origin {origin!r} is not allowed: start the server with --allow-origin")

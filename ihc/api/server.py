@@ -223,6 +223,7 @@ class _Job:
 
     def end(self, ok: bool, value: Any) -> None:
         self.ended_at = time.monotonic()
+        self.requests = []
         self.outcome.set_result((ok, value))
 
 
@@ -444,8 +445,8 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
     @app.get("/api/devices/{device_id}", tags=["devices"], summary="Device status", response_model=models.DeviceStatus,
              responses={404: models.ERRORS[404]})
     async def device_status(device_id: str = DeviceId):
-        """State (ready, busy, hid_disconnected, hid_offline, no_signal), health, pointer, calibration,
-        HID counters and the last action's result."""
+        """State (ready, busy, hid_disconnected, hid_offline, no_signal, needs_calibration), health, pointer,
+        calibration, HID counters and the last action's result."""
         return farm.device(device_id).status()
 
     # -- video ----------------------------------------------------------------------------------
@@ -555,7 +556,7 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                     if now - pacer.last_sent_at < ACK_TIMEOUT:
                         try:
                             await asyncio.wait_for(acked.wait(), budget)
-                        except TimeoutError:
+                        except asyncio.TimeoutError:  # not the builtin TimeoutError before Python 3.11
                             pass
                         continue
                     acked.set()  # the client stopped answering: do not stall forever
@@ -752,7 +753,8 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                     "?takeover=true to take over")}))
                 await ws.close(code=4409, reason="live control is in use by another client")
                 return
-            other.kicked.set()
+            if not other.closing:
+                other.kicked.set()
             try:  # its session releases everything first
                 await asyncio.wait_for(other.done.wait(), 10.0)
             except asyncio.TimeoutError:  # not the builtin TimeoutError before Python 3.11
@@ -808,7 +810,7 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
             try:
                 await send({"t": "error", "code": "taken_over", "error": "live control was taken over by another client"})
                 await ws.close(code=4409, reason="taken over by another client")
-            except (RuntimeError, OSError):
+            except (WebSocketDisconnect, RuntimeError, OSError):
                 pass
 
     async def _admit(ws: WebSocket, key: str = "type") -> bool:

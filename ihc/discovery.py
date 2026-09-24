@@ -44,7 +44,7 @@ class Announcement:
 
 
 def advertise(port: int, *, name: str | None = None, devices: int = 0, version: str = "", address: str | None = None,
-              log=None) -> Announcement:
+              auth: bool = False, log=None) -> Announcement:
     """Announce `http://<address>:<port>` as an ihc box. Returns a handle; close() withdraws it."""
     try:
         from zeroconf import ServiceInfo, Zeroconf
@@ -59,7 +59,7 @@ def advertise(port: int, *, name: str | None = None, devices: int = 0, version: 
         f"{host}.{SERVICE}",
         addresses=[socket.inet_aton(ip)],
         port=port,
-        properties={"api": "/api", "devices": str(devices), "version": version},
+        properties={"api": "/api", "devices": str(devices), "version": version, "auth": "token" if auth else "none"},
         server=f"{host}.local.",
     )
     zc = Zeroconf()

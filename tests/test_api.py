@@ -2,16 +2,26 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
+import socket
 import threading
 import time
 import warnings
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from types import SimpleNamespace
 
 import cv2
 import numpy as np
 import pytest
+from starlette.websockets import WebSocketDisconnect
 
+import ihc.api
 from ihc.api import create_app
+from ihc.api.control import LiveSession
+from ihc.api.server import ClientGone
+from ihc.api.stream import FrameHub
 from ihc.device import DeviceInfo, IPhoneDevice
 from ihc.hid import protocol as p
 from ihc.hid.fake import FakeBackend
@@ -524,6 +534,466 @@ def test_mjpeg_forwards_the_capture_jpeg_untouched(farm):
     assert c.get("/api/devices/nope/mjpeg").status_code == 404
 
 
+# -- access control -----------------------------------------------------------------------------------
+
+
+def closed_with(connect, code: int) -> None:
+    """The WebSocket is refused (handshake) or closed right away with `code`."""
+    with pytest.raises(WebSocketDisconnect) as e:
+        with connect() as ws:
+            while True:
+                ws.receive_json()
+    assert e.value.code == code
+
+
+def test_api_needs_the_token(farm):
+    reg, c = farm
+    anon = TestClient(c.app, headers={"Content-Type": "application/json"})
+    assert anon.get("/api/health").status_code == 200  # monitors and discovery need no token
+    tx = reg.get("sim-01").hid.stats["tx"]
+    for method, path in [("GET", "/api/devices"), ("GET", "/api/devices/sim-01"), ("GET", "/api/devices/nope"),
+                         ("GET", "/api/devices/sim-01/screenshot"), ("GET", "/api/devices/sim-01/calibration"),
+                         ("POST", "/api/devices/sim-01/home"), ("POST", "/api/devices/sim-01/calibrate"),
+                         ("POST", "/api/devices/sim-01/sim/lock"), ("GET", "/api/unknown")]:
+        r = anon.request(method, path)
+        assert r.status_code == 401 and r.json()["code"] == "unauthorized", (method, path)
+        assert r.headers["www-authenticate"] == "Bearer" and "token" in r.json()["error"]
+    for auth in ("Bearer wrong", f"Bearer {TOKEN[:-1]}", f"Bearer {TOKEN}x", f"Basic {TOKEN}", TOKEN, "Bearer"):
+        assert anon.post("/api/devices/sim-01/home", headers={"Authorization": auth}).status_code == 401, auth
+    assert reg.get("sim-01").hid.stats["tx"] == tx and reg.get("sim-01").state == "ready"  # nothing happened
+    assert anon.get("/api/devices", headers={"Authorization": f"bearer {TOKEN}"}).status_code == 200
+    # ?token= only where a browser cannot send a header: media URLs (<img>) and WebSockets
+    assert anon.get(f"/api/devices?token={TOKEN}").status_code == 401
+    assert anon.post(f"/api/devices/sim-01/home?token={TOKEN}").status_code == 401
+    r = anon.get(f"/api/devices/sim-01/screenshot?token={TOKEN}")
+    assert r.status_code == 200 and r.headers["content-type"] == "image/jpeg"
+    assert anon.get(f"/api/devices/sim-01/mjpeg?frames=1&token={TOKEN}").status_code == 200
+    assert anon.get("/api/devices/sim-01/mjpeg?frames=1&token=wrong").status_code == 401
+    # the console and the API reference are public: the console asks for the token
+    for path in ("/", "/app.js", "/docs", "/openapi.json"):
+        assert anon.get(path).status_code == 200, path
+    schema = anon.get("/openapi.json").json()
+    assert schema["components"]["securitySchemes"]["token"]["scheme"] == "bearer"
+    assert schema["paths"]["/api/devices/{device_id}/tap"]["post"]["security"] == [{"token": []}]
+    assert "security" not in schema["paths"]["/api/health"]["get"]
+
+
+def test_websockets_need_the_token(farm):
+    reg, c = farm
+    anon = TestClient(c.app)
+    for path in ("/api/devices/sim-01/control", "/api/devices/sim-01/stream"):
+        closed_with(lambda: anon.websocket_connect(path), 4401)  # accepted, then closed: a browser sees why
+        closed_with(lambda: anon.websocket_connect(f"{path}?token=wrong"), 4401)
+    with anon.websocket_connect(f"/api/devices/sim-01/control?token={TOKEN}") as ws:
+        assert ws.receive_json()["t"] == "hello"
+    with anon.websocket_connect(f"/api/devices/sim-01/stream?token={TOKEN}&crop=true&width=60") as ws:
+        recv_until(ws, lambda m: m.get("bytes") is not None)
+
+
+def test_without_a_token_the_server_says_so():
+    reg = simulated(1, simulate_timing=False)
+    events = []
+    try:
+        app = create_app(reg, public_url="http://testserver", log=lambda event, **fields: events.append(event))
+        with TestClient(app, headers={"Content-Type": "application/json"}) as c:
+            assert c.get("/api/devices").status_code == 200
+            assert c.post("/api/devices/sim-01/home").status_code == 200
+        assert "auth_disabled" in events
+    finally:
+        reg.close()
+
+
+@pytest.mark.parametrize("origin", ["http://evil.example", "http://testserver.evil.example", "http://testserver:8001",
+                                    "https://testserver", "null", "file://"])
+def test_foreign_origins_are_refused(farm, origin):
+    reg, c = farm
+    tx = reg.get("sim-01").hid.stats["tx"]
+    closed_with(lambda: c.websocket_connect("/api/devices/sim-01/control", headers={"Origin": origin}), 1008)
+    closed_with(lambda: c.websocket_connect("/api/devices/sim-01/stream", headers={"Origin": origin}), 1008)
+    for path in ("/api/devices/sim-01/home", "/api/devices/sim-01/sim/lock"):
+        r = c.post(path, headers={"Origin": origin})
+        assert r.status_code == 403 and r.json()["code"] == "forbidden", path
+    assert reg.get("sim-01").hid.stats["tx"] == tx and reg.get("sim-01").state == "ready"
+    # reading is not refused: the browser's same-origin policy keeps a foreign page from seeing the answer
+    assert c.get("/api/devices", headers={"Origin": origin}).status_code == 200
+
+
+def test_same_origin_and_non_browsers_pass(farm):
+    reg, c = farm
+    for headers in ({}, {"Origin": "http://testserver"}, {"Origin": "http://TestServer:80"}):
+        with c.websocket_connect("/api/devices/sim-01/control", headers=headers) as ws:
+            assert ws.receive_json()["t"] == "hello"
+        assert c.post("/api/devices/sim-01/release_all", headers=headers).status_code == 200
+    # the console served from the box's IP: same origin as the Host it used
+    with c.websocket_connect("/api/devices/sim-01/control",
+                             headers={"Host": "192.168.1.20:8000", "Origin": "http://192.168.1.20:8000"}) as ws:
+        assert ws.receive_json()["t"] == "hello"
+    closed_with(lambda: c.websocket_connect("/api/devices/sim-01/control", headers={
+        "Host": "192.168.1.20:8000", "Origin": "http://192.168.1.21:8000"}), 1008)
+
+
+def test_allowed_origins_and_hosts():
+    reg = relaxed(simulated(1, simulate_timing=False))
+    try:
+        app = make_app(reg, allow_origins=["https://ci.example.com"], allowed_hosts=["farm.example.com"])
+        with client(app) as c:
+            with c.websocket_connect("/api/devices/sim-01/control", headers={"Origin": "https://ci.example.com"}) as ws:
+                assert ws.receive_json()["t"] == "hello"
+            assert c.post("/api/devices/sim-01/home", headers={"Origin": "https://ci.example.com:443"}).status_code == 200
+            closed_with(lambda: c.websocket_connect("/api/devices/sim-01/control",
+                                                    headers={"Origin": "https://ci.example.org"}), 1008)
+            for host in ("farm.example.com", "FARM.example.com.:8000"):
+                assert c.get("/api/health", headers={"Host": host}).status_code == 200
+            assert c.get("/api/health", headers={"Host": "other.example.com"}).status_code == 400
+        with client(make_app(reg, allowed_hosts=["*"], allow_origins=["*"])) as c:
+            assert c.get("/api/health", headers={"Host": "anything.example"}).status_code == 200
+            assert c.post("/api/devices/sim-01/home", headers={"Origin": "http://x.example"}).status_code == 200
+    finally:
+        reg.close()
+
+
+@pytest.mark.parametrize("host, ok", [
+    ("testserver", True),  # the public URL's host
+    ("192.168.1.20:8000", True), ("10.0.0.1", True), ("[fe80::1]:8000", True), ("[::1]", True),
+    ("localhost:8000", True), ("ihc-box.local", True), ("IHC-BOX.LOCAL.:8000", True), (socket.gethostname(), True),
+    ("evil.example", False), ("attacker.example:8000", False), ("192.168.1.20.nip.io", False),
+    ("local", False), ("testserver.evil.example", False),
+])
+def test_host_header_is_checked(farm, host, ok):
+    """DNS rebinding: a page of the attacker's site whose name now resolves to the box."""
+    reg, c = farm
+    r = c.get("/api/devices", headers={"Host": host})
+    if ok:
+        assert r.status_code == 200, r.text
+        return
+    assert r.status_code == 400 and r.json()["code"] == "bad_request" and "not allowed" in r.json()["error"]
+    assert c.get("/", headers={"Host": host}).status_code == 400  # the console as well
+    assert c.post("/api/devices/sim-01/home", headers={"Host": host}).status_code == 400
+    closed_with(lambda: c.websocket_connect("/api/devices/sim-01/control", headers={"Host": host}), 1008)
+
+
+@pytest.mark.parametrize("headers, content", [
+    ({}, None),  # a body-less POST with no Content-Type
+    ({"Content-Type": "application/x-www-form-urlencoded"}, b""),  # an HTML form
+    ({"Content-Type": "text/plain"}, b'{"x": 0.5, "y": 0.5}'),  # a "simple" cross-site fetch
+    ({"Content-Type": "multipart/form-data; boundary=x"}, b"--x--"),
+    ({"Content-Type": "application/jsonp"}, b"{}"),
+])
+def test_posts_must_be_declared_json(farm, headers, content):
+    """A cross-site page cannot send application/json without a CORS preflight (never granted)."""
+    reg, c = farm
+    anon = TestClient(c.app, headers=AUTH)
+    tx = reg.get("sim-01").hid.stats["tx"]
+    for path in ("/api/devices/sim-01/home", "/api/devices/sim-01/release_all", "/api/devices/sim-01/calibrate",
+                 "/api/devices/sim-01/sim/lock", "/api/devices/sim-01/actions", "/api/devices/sim-01/tap"):
+        r = anon.post(path, headers=headers, content=content)
+        assert r.status_code == 415 and r.json()["code"] == "invalid_input", path
+        assert "application/json" in r.json()["error"]
+    assert reg.get("sim-01").hid.stats["tx"] == tx and reg.get("sim-01").state == "ready"
+    r = anon.post("/api/devices/sim-01/home", headers={"Content-Type": "application/json; charset=utf-8"})
+    assert r.status_code == 200
+
+
+def test_request_body_size_is_capped():
+    reg = relaxed(simulated(1, simulate_timing=False))
+    try:
+        with client(make_app(reg)) as c:
+            r = c.post("/api/devices/sim-01/type", json={"text": "x" * (1 << 20)})
+            assert r.status_code == 413 and r.json()["code"] == "too_large"
+        with client(make_app(reg, max_body=2000)) as c:
+            assert c.post("/api/devices/sim-01/type", json={"text": "x" * 3000}).status_code == 413
+
+            def chunked():  # no Content-Length: counted while it arrives
+                yield b'{"text": "'
+                for _ in range(30):
+                    yield b"x" * 100
+                yield b'"}'
+
+            assert c.post("/api/devices/sim-01/type", content=chunked()).status_code == 413
+            assert c.post("/api/devices/sim-01/type", json={"text": "hi"}).status_code == 200
+    finally:
+        reg.close()
+
+
+# -- request lifecycle ------------------------------------------------------------------------------
+
+
+class _Request:
+    """What the job runner uses of an HTTP request."""
+
+    def __init__(self, path: str, gone: bool, key: str | None = None):
+        self.headers = {"idempotency-key": key} if key else {}
+        self.url = SimpleNamespace(path=path)
+        self.gone = gone
+
+    async def is_disconnected(self) -> bool:
+        return self.gone
+
+    async def body(self) -> bytes:
+        return b'{"x": 0.5, "y": 0.5}'
+
+
+def test_job_is_skipped_when_its_client_left(farm):
+    """A request that timed out on the client must not act later (a retry would act twice)."""
+    reg, c = farm
+    server, dev = c.app.state.farm, reg.get("sim-01")
+    events = []
+    server.log = lambda event, **fields: events.append((event, fields))
+    gate = threading.Event()
+    path = "/api/devices/sim-01/tap"
+
+    async def main():
+        busy = server.worker(dev).submit(gate.wait, 5)  # another job holds the phone
+        try:
+            with pytest.raises(ClientGone):
+                await server.run(_Request(path, gone=True, key="k1"), dev, "tap", dev.tap, 0.5, 0.5)
+            waiting = asyncio.ensure_future(server.run(_Request(path, gone=False), dev, "tap", dev.tap, 0.5, 0.5))
+            retried = asyncio.ensure_future(server.run(_Request(path, gone=False, key="k1"), dev, "tap", dev.tap, 0.5, 0.5))
+            await asyncio.sleep(0.3)
+            assert not waiting.done()  # its client is still there: it waits its turn
+        finally:
+            gate.set()
+        busy.result(5)
+        return await waiting, await retried
+
+    taps = dev.counters["taps"]
+    first, retry = asyncio.run(main())
+    assert first["action"] == retry["action"] == "tap"
+    assert dev.counters["taps"] == taps + 2  # the skipped one never ran; its retry (same key) did
+    skipped = [f for e, f in events if e == "action_skipped_client_gone"]
+    assert len(skipped) == 1 and skipped[0]["action"] == "tap" and skipped[0]["device"] == "sim-01"
+
+
+def test_idempotency_key_acts_once(farm):
+    reg, c = farm
+    dev = reg.get("sim-01")
+    taps = dev.counters["taps"]
+    body = {"x": 0.5, "y": 0.5}
+    r1 = c.post("/api/devices/sim-01/tap", json=body, headers={"Idempotency-Key": "k-1"})
+    r2 = c.post("/api/devices/sim-01/tap", json=body, headers={"Idempotency-Key": "k-1"})
+    assert r1.status_code == r2.status_code == 200 and r1.json() == r2.json()
+    assert dev.counters["taps"] == taps + 1
+    # another key, or the same key on another device: acts
+    assert c.post("/api/devices/sim-01/tap", json=body, headers={"Idempotency-Key": "k-2"}).status_code == 200
+    assert c.post("/api/devices/sim-02/tap", json=body, headers={"Idempotency-Key": "k-1"}).status_code == 200
+    assert dev.counters["taps"] == taps + 2
+    # the same key for a different request is a mistake, not a replay
+    r = c.post("/api/devices/sim-01/tap", json={"x": 0.4, "y": 0.5}, headers={"Idempotency-Key": "k-1"})
+    assert r.status_code == 422 and "different request" in r.json()["error"]
+    assert c.post("/api/devices/sim-01/home", json={}, headers={"Idempotency-Key": "k-1"}).status_code == 422
+    assert c.post("/api/devices/sim-01/home", headers={"Idempotency-Key": "x" * 201}).status_code == 422
+    # a failed attempt is replayed too: it may have acted in part
+    c.post("/api/devices/sim-01/sim/lock")
+    try:
+        errs = [c.post("/api/devices/sim-01/home", json={}, headers={"Idempotency-Key": "k-3"}) for _ in range(2)]
+    finally:
+        c.post("/api/devices/sim-01/sim/unlock")
+    assert [r.status_code for r in errs] == [409, 409] and errs[0].json() == errs[1].json()
+    r = c.post("/api/devices/sim-01/home", json={}, headers={"Idempotency-Key": "k-3"})
+    assert r.status_code == 409 and r.json() == errs[0].json()
+
+
+def test_idempotency_key_waits_for_the_running_job(farm):
+    reg, c = farm
+    dev = reg.get("sim-01")
+    script = {"actions": [{"type": "wait", "seconds": 0.5}, {"type": "home"}]}
+    actions = dev.counters["actions"]
+    results = [None, None]
+
+    def post(i):
+        results[i] = c.post("/api/devices/sim-01/actions", json=script, headers={"Idempotency-Key": "s-1"})
+
+    threads = [threading.Thread(target=post, args=(i,)) for i in range(2)]
+    threads[0].start()
+    time.sleep(0.15)  # the first one runs, the retry comes in meanwhile
+    threads[1].start()
+    for t in threads:
+        t.join()
+    assert results[0].status_code == results[1].status_code == 200
+    assert results[0].json() == results[1].json() and results[0].json()["ok"]
+    assert dev.counters["actions"] == actions + 1
+
+
+# -- live control limits ------------------------------------------------------------------------------
+
+
+def test_control_drops_input_that_waited_for_a_busy_phone(farm):
+    """Input queued behind a REST action is not replayed seconds later; releases still go out."""
+    reg, c = farm
+    dev, chip = reg.get("sim-01"), reg.extra("sim-01").chip
+    chip.pointer.accel, chip.pointer.gain = 0.0, 1.0
+    kb = chip.keyboard
+    with c.websocket_connect("/api/devices/sim-01/control") as ws:
+        assert ws.receive_json()["t"] == "hello"
+        ws.send_json({"t": "mouse", "dx": 0, "dy": 0, "buttons": p.MOUSE_LEFT})  # held before the phone is busy
+        ws.send_json({"t": "keys", "mods": 0x02, "keys": [0x04]})  # shift+a
+        control_sync(ws, 1)
+        assert chip.pointer.buttons == p.MOUSE_LEFT and kb.pressed == {0x04}
+        seq0, x0, text0 = chip.event_seq, chip.pointer.x, kb.text
+        busy = threading.Event()
+
+        def rest_action():  # holds the phone for 1.5 s, as a long REST action does
+            with dev._action:
+                busy.set()
+                time.sleep(1.5)
+
+        t = threading.Thread(target=rest_action)
+        t.start()
+        busy.wait()
+        ws.send_json({"t": "mouse", "dx": 30, "dy": 0})  # motion: dropped
+        ws.send_json({"t": "mouse", "dx": 0, "dy": 0, "buttons": 0})  # release: goes out when the phone is free
+        ws.send_json({"t": "mouse", "dx": 5, "dy": 0, "buttons": p.MOUSE_RIGHT})  # a press (Home): dropped
+        ws.send_json({"t": "mouse", "dx": 0, "dy": 0, "buttons": 0})
+        ws.send_json({"t": "keys", "mods": 0, "keys": [0x04, 0x05]})  # shift up (goes out), b down (dropped)
+        ws.send_json({"t": "keys", "mods": 0, "keys": []})
+        dropped = recv_json_until(ws, lambda m: m["t"] == "dropped")
+        assert dropped["ops"] >= 1 and "busy" in dropped["error"]
+        t.join()
+        control_sync(ws, 2)
+        assert chip.pointer.buttons == 0 and kb.pressed == set()  # every release went out
+        events = [e for e in chip.events if e["seq"] > seq0]
+        assert not [e for e in events if e["event"] == "button_down"]  # no late press
+        assert [e["button"] for e in events if e["event"] in ("click", "drag")] == ["left"]
+        assert chip.pointer.x == x0 and kb.text == text0  # no late motion, no late key
+        ws.send_json({"t": "mouse", "dx": 7, "dy": 0})  # the phone is free again: input flows at once
+        control_sync(ws, 3)
+        assert chip.pointer.x == x0 + 7
+        stats = recv_json_until(ws, lambda m: m["t"] == "stats" and m["totals"].get("dropped"))
+        assert stats["totals"]["dropped"] >= 3
+
+
+def test_one_control_connection_per_device(farm):
+    reg, c = farm
+    chip = reg.extra("sim-01").chip
+    with c.websocket_connect("/api/devices/sim-01/control") as first:
+        assert first.receive_json()["t"] == "hello"
+        first.send_json({"t": "mouse", "dx": 0, "dy": 0, "buttons": p.MOUSE_LEFT})
+        control_sync(first, 1)
+        with c.websocket_connect("/api/devices/sim-01/control") as second:
+            m = second.receive_json()
+            assert m["t"] == "error" and m["code"] == "busy" and "takeover=true" in m["error"]
+            with pytest.raises(WebSocketDisconnect) as e:
+                second.receive_json()
+            assert e.value.code == 4409
+        control_sync(first, 2)  # untouched
+        assert chip.pointer.buttons == p.MOUSE_LEFT
+        with c.websocket_connect("/api/devices/sim-02/control") as other:  # another phone has its own
+            assert other.receive_json()["t"] == "hello"
+        with c.websocket_connect("/api/devices/sim-01/control?takeover=true") as third:
+            assert third.receive_json()["t"] == "hello"
+            assert chip.pointer.buttons == 0  # the first session released everything before
+            assert recv_json_until(first, lambda m: m.get("code") == "taken_over")["t"] == "error"
+            with pytest.raises(WebSocketDisconnect) as e:
+                recv_json_until(first, lambda m: False)
+            assert e.value.code == 4409
+            third.send_json({"t": "mouse", "dx": 0, "dy": 0, "buttons": p.MOUSE_LEFT})
+            control_sync(third, 3)
+            assert chip.pointer.buttons == p.MOUSE_LEFT
+    wait_until(lambda: chip.pointer.buttons == 0, what="release after close")
+    with c.websocket_connect("/api/devices/sim-01/control") as ws:  # free again once closed
+        assert ws.receive_json()["t"] == "hello"
+
+
+def test_viewer_and_connection_limits():
+    reg = relaxed(simulated(2, simulate_timing=False))
+    try:
+        with client(make_app(reg, max_viewers=2, max_websockets=3)) as c:
+            with c.websocket_connect("/api/devices/sim-01/stream") as a, \
+                    c.websocket_connect("/api/devices/sim-01/stream") as b:
+                recv_until(a, lambda m: m.get("bytes") is not None)
+                recv_until(b, lambda m: m.get("bytes") is not None)
+                with c.websocket_connect("/api/devices/sim-01/stream") as extra:
+                    assert extra.receive_json()["code"] == "too_many"
+                    with pytest.raises(WebSocketDisconnect) as e:
+                        extra.receive_json()
+                    assert e.value.code == 4429
+                r = c.get("/api/devices/sim-01/mjpeg?frames=1")
+                assert r.status_code == 429 and r.json()["code"] == "too_many"
+                assert c.get("/api/devices/sim-02/mjpeg?frames=1").status_code == 200  # per device
+                with c.websocket_connect("/api/devices/sim-02/control") as ctl:  # the third socket
+                    assert ctl.receive_json()["t"] == "hello"
+                    with c.websocket_connect("/api/devices/sim-02/stream") as fourth:
+                        m = fourth.receive_json()
+                        assert m["code"] == "too_many" and "WebSocket connections" in m["error"]
+                        with pytest.raises(WebSocketDisconnect) as e:
+                            fourth.receive_json()
+                        assert e.value.code == 4429
+            wait_until(lambda: c.app.state.farm.sockets == 0, what="sockets counted out")
+            with c.websocket_connect("/api/devices/sim-01/stream") as ws:
+                recv_until(ws, lambda m: m.get("bytes") is not None)
+    finally:
+        reg.close()
+
+
+# -- Python 3.10: asyncio.wait_for raises asyncio.TimeoutError, not the builtin TimeoutError -----------
+
+
+def test_no_builtin_timeout_error_around_asyncio_waits():
+    for path in Path(ihc.api.__file__).parent.glob("*.py"):
+        assert not re.search(r"except\s*\(?\s*TimeoutError\b", path.read_text()), path.name
+
+
+def test_live_control_survives_a_coalescing_wait():
+    """The worker's wait for more input times out between moves: it must go on (on 3.10 it died)."""
+
+    class Dev:
+        id = "d"
+
+        def __init__(self):
+            self.calls = []
+
+        def live_mouse(self, dx, dy, buttons, wheel=0):
+            self.calls.append(("mouse", dx, dy, buttons))
+
+        def live_keys(self, mods, keys):
+            self.calls.append(("keys", mods, keys))
+
+        def release_all(self):
+            self.calls.append(("release",))
+
+    async def main():
+        dev = Dev()
+
+        async def send(msg):
+            pass
+
+        s = LiveSession(dev, send)
+        s.start()
+        await s.handle({"t": "mouse", "dx": 5, "dy": 0})
+        await asyncio.sleep(0.002)
+        await s.handle({"t": "mouse", "dx": 7, "dy": 0})  # while the worker waits for the next tick
+        await asyncio.sleep(0.1)
+        await s.handle({"t": "mouse", "dx": 0, "dy": 0, "buttons": 1})
+        await s.handle({"t": "keys", "mods": 0, "keys": [4]})
+        await asyncio.sleep(0.3)
+        assert not s._tasks[0].done(), s._tasks[0]
+        await s.close()
+        return dev.calls
+
+    calls = asyncio.run(main())
+    assert sum(c[1] for c in calls if c[0] == "mouse") == 12
+    assert ("mouse", 0, 0, 1) in calls and ("keys", 0, [4]) in calls and calls[-1] == ("release",)
+
+
+def test_video_wait_times_out_quietly():
+    class Dev:
+        id = "d"
+
+        def frame(self, newer_than=-1, timeout=1.0):
+            time.sleep(timeout)
+            raise TimeoutError("no video")
+
+    async def main():
+        hub = FrameHub(Dev(), ThreadPoolExecutor(1), frame_timeout=0.05)
+        try:
+            async with hub.watch() as w:
+                return await w.next(None, 0.1)
+        finally:
+            hub.close()
+
+    assert asyncio.run(main()) is None
+
+
 # -- simulator, calibration page, console -----------------------------------------------------------
 
 
@@ -673,7 +1143,11 @@ def test_console_is_served_without_caching(farm):
 
 @pytest.mark.slow
 def test_calibrate_through_safari_page():
-    reg = relaxed(simulated(1, calibrated=False, simulate_timing=False))
+    # Calibration accepts at most 3 pt of validation error, so here pacing is checked as strictly as on
+    # hardware: a report sent off its slot makes the move be redone rather than measured.
+    reg = simulated(1, calibrated=False, simulate_timing=False)
+    for d in reg.devices():
+        d.pointer.timing_tolerance = 0.0015
     try:
         with client(make_app(reg)) as c:
             assert c.get("/api/devices/sim-01/calibration").json()["method"] == "guess"

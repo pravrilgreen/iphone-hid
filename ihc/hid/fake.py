@@ -481,6 +481,8 @@ class FakeSerialDevice:
         self._tx: deque = deque()
         self._tx_cond = threading.Condition()
         self._split = bytearray()
+        self._host_writes: deque = deque(maxlen=4096)
+        self._host_lock = threading.Lock()
         self._rx_free_at = 0.0
         self._tx_free_at = 0.0
         self._threads = [
@@ -548,18 +550,20 @@ class FakeSerialDevice:
                     self._write(b"\xf0\x0f\xfe")
                 continue
             if not self.simulate_timing:
-                out = self.chip.receive(data, at=arrived)
-                if out:
-                    delay = self.chip.take_reply_delay()
-                    with self._tx_cond:
-                        if delay or self._tx:  # replies leave in order, behind a delayed one
-                            self._tx.append((time.monotonic() + delay, out))
-                            self._tx_cond.notify()
-                            continue
-                    self._write(out)
+                for part in self._frames(data):
+                    out = self.chip.receive(part, at=self._host_time(part, arrived))
+                    if out:
+                        delay = self.chip.take_reply_delay()
+                        with self._tx_cond:
+                            if delay or self._tx:  # replies leave in order, behind a delayed one
+                                self._tx.append((time.monotonic() + delay, out))
+                                self._tx_cond.notify()
+                                continue
+                        self._write(out)
                 continue
             for part in self._frames(data):
-                self._rx_free_at = max(arrived, self._rx_free_at) + len(part) * 10 / baud
+                sent = self._host_time(part, arrived)
+                self._rx_free_at = max(sent, self._rx_free_at) + len(part) * 10 / baud
                 delay = self._rx_free_at - time.monotonic()
                 if delay > 0:
                     time.sleep(delay)
@@ -570,6 +574,32 @@ class FakeSerialDevice:
                     with self._tx_cond:
                         self._tx.append((self._tx_free_at, out))
                         self._tx_cond.notify()
+
+    def note_host_write(self, t: float, data: bytes) -> None:
+        """The host (FakeBackend) wrote `data` at time t. Frames then reach the simulated chip as if
+        the USB-serial path had a constant latency: when this process's threads get to them does
+        not change the timing the simulated phone sees (a real chip is not a Python thread)."""
+        i = 0
+        with self._host_lock:
+            while i + 5 <= len(data):
+                if data[i : i + 2] != p.HEADER:
+                    i += 1
+                    continue
+                n = 6 + data[i + 4]
+                self._host_writes.append((t, bytes(data[i : i + n])))
+                i += n
+
+    def _host_time(self, part: bytes, arrived: float) -> float:
+        """When the host wrote this frame (see note_host_write); `arrived` when it is unknown."""
+        with self._host_lock:
+            while self._host_writes:
+                t, frame = self._host_writes[0]
+                if t > arrived:
+                    break
+                self._host_writes.popleft()
+                if frame == part and arrived - t < 1.0:
+                    return t
+        return arrived
 
     def _write_loop(self) -> None:
         while not self._stop.is_set():
@@ -620,6 +650,10 @@ class FakeBackend(CH9329Backend):
         except Exception:
             self.device.close()
             raise
+
+    def _write(self, frame: bytes) -> None:
+        self.device.note_host_write(time.monotonic(), frame)
+        super()._write(frame)
 
     def close(self) -> None:
         super().close()

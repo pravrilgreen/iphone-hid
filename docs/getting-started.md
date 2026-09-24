@@ -17,7 +17,9 @@ pytest -q
 ihc serve --sim 4
 ```
 
-Mở `http://localhost:8000`: có 4 iPhone mô phỏng. Trong đó:
+Mở `http://localhost:8000`: có 4 iPhone mô phỏng. (Chạy như vậy thì server không có token, nó in cảnh báo
+"anyone ... can control the phones": ai vào được máy này cũng điều khiển được. Thử cả phần xác thực thì thêm
+`--token <chuỗi bí mật>`; web console sẽ hỏi token một lần.) Trong đó:
 - chọn một máy, chế độ **Precise tap**: click lên hình là chạm đúng chỗ đó (mở app **Targets** để xem độ
   chính xác);
 - chế độ **Live control** chuyển chuột và bàn phím của bạn thẳng xuống iPhone mô phỏng;
@@ -40,7 +42,7 @@ python tools/hidtest.py --fake        # gõ `help`
 ```python
 from ihc.client import Farm
 
-farm = Farm.discover()                       # mọi box trong mạng LAN (mDNS); hoặc Farm("http://farm-01:8000")
+farm = Farm.discover(token="...")            # mọi box trong mạng LAN (mDNS); hoặc Farm("http://farm-01:8000", token="...")
 phone = farm.device("iphone-01")
 
 phone.home()
@@ -54,6 +56,15 @@ print(phone.status()["state"])               # ready / busy / hid_disconnected /
 
 Các lệnh này cũng có qua REST (`POST /api/devices/{id}/tap` ...) và WebSocket. Danh sách đầy đủ có ở trang
 `http://<host>:8000/docs` khi server đang chạy.
+
+Token: bỏ `token=` thì SDK lấy biến môi trường `IHC_TOKEN`. Mỗi box có token riêng thì truyền
+`token={"http://farm-01:8000": "...", "http://farm-02:8000": "..."}`. Gọi REST trực tiếp thì gửi header
+`Authorization: Bearer <token>`, và mọi `POST` phải có `Content-Type: application/json` (kể cả khi không có
+body), nếu không server trả 415.
+
+Thử lại an toàn: SDK gửi kèm mỗi lệnh một `Idempotency-Key`. Lệnh bị timeout thì gọi lại với cùng key
+(`phone.tap(x, y, idempotency_key=e.idempotency_key)`, `e` là `IhcError` vừa bắt được): iPhone không bao giờ
+làm hai lần. Lệnh mà client đã bỏ đi trước khi nó kịp chạy (đang xếp hàng sau lệnh khác) thì server bỏ qua.
 
 ## 4. Với phần cứng thật
 
@@ -85,7 +96,18 @@ Các lệnh này cũng có qua REST (`POST /api/devices/{id}/tap` ...) và WebSo
    ```
 6. Mở web console, bấm **Calibrate** cho từng máy (iPhone phải cùng mạng với host).
 
-Để host thành một "box" tự chạy khi bật máy (systemd, udev, mDNS): `sudo sh deploy/install.sh`. Từ máy khác
-trong mạng, `ihc devices` liệt kê mọi box và iPhone tìm được.
+Để host thành một "box" tự chạy khi bật máy (systemd, udev, mDNS): `sudo sh deploy/install.sh`. Lần cài đầu
+tiên, script tạo một token ngẫu nhiên ở `/var/lib/ihc/token` (chỉ user `ihc` đọc được) và in ra cách xem nó:
+`sudo cat /var/lib/ihc/token`. Web console hỏi token này một lần rồi nhớ trong trình duyệt. Muốn nhiều box dùng
+chung một token: `sudo IHC_TOKEN=<token> sh deploy/install.sh`. Từ máy khác trong mạng,
+`IHC_TOKEN=<token> ihc devices` (hoặc `ihc devices --token-file <file>`) liệt kê mọi box và iPhone tìm được.
+
+Server chỉ nhận Host là địa chỉ IP, `localhost`, tên `.local` hoặc tên của chính máy này (chống DNS
+rebinding); truy cập qua tên khác (ví dụ reverse proxy) thì thêm `--allowed-host <tên>`, và
+`--allow-origin https://<tên>` nếu trình duyệt mở console từ một origin khác.
+
+Hiệu chỉnh khi Spotlight không mở được: web console hiện link trang hiệu chỉnh (có khoá `k`, đổi sau mỗi lần
+hiệu chỉnh; qua API là `page_url` của `GET /api/devices/{id}/calibration`). Gõ link đó vào Safari trên iPhone
+rồi bấm **calibrate the open page**.
 
 Chi tiết từng bài kiểm tra ở [phase0-checklist.md](phase0-checklist.md).

@@ -185,6 +185,11 @@ with sources: [absolute pointer research](docs/research/absolute-pointer.md) and
    configuration.
 4. Calibrate each phone once, from the console or through the API.
 
+**Access.** Installing the box creates a random API token; every call needs it (the SDK and CLI read it from
+`IHC_TOKEN`, the console asks for it once). The server also refuses requests from other web sites and
+unknown host names, and the calibration page on the phone uses a one-time key of its own, so a device on the
+same network cannot drive the phones or feed fake clicks into a calibration.
+
 **From a test framework** (HTTP/WebSocket API or the Python SDK). Coordinates are fractions of the phone
 screen (0 to 1), so they do not depend on the capture resolution or the phone model:
 

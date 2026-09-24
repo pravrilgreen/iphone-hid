@@ -102,7 +102,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
                 "anyone on this network"
             print(f"ihc: WARNING: no API token (--token, --token-file or IHC_TOKEN): {who} can control the phones",
                   file=sys.stderr)
-        announcement = _advertise(args.port, public_url, len(registry.devices()), log)
+        announcement = _advertise(args.port, public_url, len(registry.devices()), log, auth=bool(token))
         logging.getLogger("uvicorn.access").addFilter(_RedactToken())
         logging.getLogger("uvicorn.error").addFilter(_RedactToken())  # WebSocket handshakes are logged there
         config = uvicorn.Config(
@@ -124,7 +124,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return 0
 
 
-def _advertise(port: int, public_url: str, devices: int, log):
+def _advertise(port: int, public_url: str, devices: int, log, auth: bool = False):
     """Announce this box over mDNS when ihc.discovery is available; None otherwise."""
     try:
         from .discovery import advertise
@@ -133,7 +133,7 @@ def _advertise(port: int, public_url: str, devices: int, log):
     from urllib.parse import urlparse
 
     try:
-        return advertise(port, devices=devices, address=urlparse(public_url).hostname, log=log)
+        return advertise(port, devices=devices, address=urlparse(public_url).hostname, auth=auth, log=log)
     except Exception as e:  # mDNS is a convenience: never keep the server from starting
         print(f"ihc: mDNS announcement failed: {e}", file=sys.stderr)
         return None
