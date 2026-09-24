@@ -216,6 +216,12 @@ class FakeChip:
         # interval, USB polling); a report waits for the next event. 0 = delivered at once.
         self.link_period = 0.0
         self.bridge_output = 0x7F  # GET_INFO byte 3: 0x01 Bluetooth, 0x02 USB, 0x7F simulator
+        # A run report accepted this late after its slot makes the run answer RUN_LATE. The firmware
+        # uses 2 ms; this process's threads oversleep more than that, so 10 ms by default (like the
+        # firmware's own host simulator). `run_delays`: extra seconds before the next run reports
+        # are accepted (a link that makes the bridge wait, e.g. full Bluetooth buffers).
+        self.run_late_s = 0.010
+        self.run_delays: list[float] = []
         self.usb_strings = {0: "", 1: "", 2: ""}
         self.events: list[dict] = []  # most recent events; `seq` numbers them across trims
         self.event_seq = 0
@@ -335,7 +341,8 @@ class FakeChip:
             if self.bridge:
                 collections = {0: 0x1F, 1: 0x0D, 2: 0x12}.get(self.work_mode, 0)
                 period = round(self.link_period * 4000) if self.usb_connected else 0
-                extra = (self.bridge_output, collections, p.FEATURE_REL_RUN, period & 0xFF, period >> 8)
+                features = p.FEATURE_REL_RUN | p.FEATURE_REL_RUN_QUARTER_MS | p.FEATURE_REL_RUN_LATE
+                extra = (self.bridge_output, collections, features, period & 0xFF, period >> 8)
             else:
                 extra = (0, 0, 0, 0, 0)
             return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, *extra])
@@ -392,19 +399,24 @@ class FakeChip:
         if len(d) != 5:
             return S.BAD_PARAM
         dx, dy = (int.from_bytes(d[i : i + 1], "little", signed=True) for i in (0, 1))
-        count, interval, buttons = d[2], d[3], d[4]
-        if count == 0 or buttons > 0x07 or (count - 1) * interval > p.REL_RUN_MAX_MS:
+        count, flags = d[2], d[4]
+        interval = d[3] / 4 if flags & p.REL_RUN_QUARTER_FLAG else float(d[3])  # ms
+        buttons = flags & 0x07
+        if count == 0 or flags & 0x78 or (count - 1) * interval > p.REL_RUN_MAX_MS:
             return S.BAD_PARAM
         if self.work_mode not in (0, 2) or not self.usb_connected:
             return S.EXEC_ERROR
-        t0 = self.clock()
+        t0, late = self.clock(), False
         for i in range(count):
-            if i:
-                self.sleep(max(0.0, t0 + i * interval / 1000 - self.clock()))
-            self._link_event()
+            slot = t0 + i * interval / 1000
+            self.sleep(max(0.0, slot - self.clock()))
+            if self.run_delays:
+                self.sleep(self.run_delays.pop(0))
+            late |= self.clock() - slot > self.run_late_s  # accepted by the link this late
+            self._link_event()  # (waiting for the link's event is not lateness: its phase is fixed)
             self.pointer.relative(max(dx, -127), max(dy, -127), buttons, 0)
         self.sleep(max(0.0, t0 + count * interval / 1000 - self.clock()))
-        return S.OK
+        return S.RUN_LATE if late else S.OK
 
     def _hid(self, cmd: int, d: bytes) -> int:
         C, S = p.Cmd, p.Status

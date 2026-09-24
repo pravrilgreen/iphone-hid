@@ -297,6 +297,13 @@ def reliability_session(sim: Sim) -> None:
         check(sim.reports()[before:] == ["MOUSE 00 14 00 00"] * 3 + ["MOUSE 00 01 00 00"] * 2,
               f"chained runs {sim.reports()[before:]}")
         check(0.1 <= took < 0.6, f"chained runs took {took * 1000:.0f} ms for 5 slots of 20 ms")
+        # The host driver's 0.25 ms pace (an 11.25 ms Bluetooth link needs 22.5 ms) reaches the core as flag bit 7.
+        before = len(sim.reports())
+        t0 = time.monotonic()
+        hid.mouse_rel_runs([(3, 0, 4)], 22.5)
+        took = time.monotonic() - t0
+        check(sim.reports()[before:] == ["MOUSE 00 03 00 00"] * 4, f"quarter-ms run {sim.reports()[before:]}")
+        check(0.085 <= took < 0.6, f"quarter-ms run took {took * 1000:.0f} ms for 4 slots of 22.5 ms")
         for bad in ([5, 0, 0, 10, 0], [5, 0, 2, 10, 8], [5, 0, 255, 9, 0]):
             frames = hid.transact_raw(p.encode(CMD_REL_RUN, bytes(bad)), listen=0.2)
             check([(f.cmd, f.data) for f in frames] == [(0xF0, b"\xe5")], f"REL_RUN {bad}: {frames}")

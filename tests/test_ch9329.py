@@ -358,7 +358,8 @@ def test_bridge_info_and_capabilities(chip_backend):
     bridge = chip_backend(FakeChip(bridge=True))
     info = bridge.info()
     assert info["version"] == "ihc bridge v1.0"
-    assert info["bridge"] == {"output": "simulator", "rel_run": True, "report_period_ms": None,
+    assert info["bridge"] == {"output": "simulator", "rel_run": True, "rel_run_quarter_ms": True, "rel_run_late": True,
+                              "report_period_ms": None,
                               "collections": ["keyboard", "mouse", "consumer", "system", "absolute"]}
     assert bridge.supports_rel_run() is True
 
@@ -433,3 +434,18 @@ def test_release_all_retries_and_reports_what_stayed_held(chip_backend):
     with pytest.raises(HidStatusError):
         hid.release_all()
     assert chip.keyboard.pressed == {0x04}
+
+
+def test_bridge_quarter_ms_run_and_late_status(chip_backend):
+    chip = FakeChip(bridge=True)
+    hid = chip_backend(chip, timeout=0.3)
+    hid.mouse_rel_runs([(2, 0, 3)], 22.5)  # a 0.25 ms pace (for an 11.25 ms Bluetooth link)
+    assert len(chip.pointer.history) >= 3
+    chip.run_delays = [0.05]  # the link made the bridge wait: the run is played, but off schedule
+    with pytest.raises(HidStatusError) as e:
+        hid.mouse_rel_runs([(2, 0, 3)], 20)
+    assert e.value.status == p.Status.RUN_LATE
+    chip.bridge = False  # an old firmware without 0.25 ms runs cannot play 22.5 ms: it says so
+    hid._info = None
+    with pytest.raises(HidError, match="whole ms"):
+        hid.mouse_rel_runs([(2, 0, 3)], 22.5)

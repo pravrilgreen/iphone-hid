@@ -422,7 +422,9 @@ class IPhoneDevice:
                 self.open_url(page_url)
             period = self._link_period()
             old = self.pointer.cal
-            self.pointer.cal = replace(old, interval=pace_interval(period, PointerCalibration.interval))
+            quarter = getattr(self.hid, "bridge_feature", lambda name: False)("rel_run_quarter_ms")
+            self.pointer.cal = replace(old, interval=pace_interval(period, PointerCalibration.interval,
+                                                                   whole_ms=not quarter))
             try:
                 cal = calibrate(self.pointer, self.clicks, log=self._log, fresh_page=bool(page_url), **options)
             except BaseException:

@@ -91,14 +91,22 @@ class DirectionModel:
         return pick[2], pick[3], pick[4]
 
 
-def pace_interval(report_period: float | None, base: float = 0.02) -> float:
+def pace_interval(report_period: float | None, base: float = 0.02, whole_ms: bool = False) -> float:
     """The run pace to use over a link that delivers reports every `report_period` seconds: the
     smallest multiple of it that is at least `base`. Every report of a run then reaches the phone
     at the same phase of the link's schedule, so the spacing iOS sees is uniform (at 20 ms over a
-    15 ms Bluetooth link, it would alternate 15 and 30 ms and distances would stop repeating)."""
+    15 ms Bluetooth link, it would alternate 15 and 30 ms and distances would stop repeating).
+    `whole_ms`: the pace must also be a whole number of ms (bridge firmware without 0.25 ms runs),
+    e.g. 45 ms rather than 22.5 ms on an 11.25 ms link."""
     if not report_period or report_period <= 0:
         return base
-    return round(math.ceil(base / report_period - 1e-9) * report_period, 6)
+    k = math.ceil(base / report_period - 1e-9)
+    if whole_ms:
+        for m in range(k, k + 64):
+            ms = m * report_period * 1000
+            if abs(ms - round(ms)) < 1e-6:
+                return round(ms) / 1000
+    return round(k * report_period, 6)
 
 
 def _guess_direction() -> DirectionModel:
@@ -292,7 +300,7 @@ class PointerModel:
         """`count` reports of (dx, dy) timed by the bridge, `interval` apart; returns after the last
         one's slot (the bridge replies then)."""
         try:
-            self.hid.mouse_rel_runs([(dx, dy, count)], round(interval * 1000), self.buttons)
+            self.hid.mouse_rel_runs([(dx, dy, count)], round(interval * 4000) / 4, self.buttons)
         except HidTimeout as e:
             self.position = None
             raise PointerDesync(f"a run timed by the bridge was not acknowledged: {e}") from e
@@ -300,6 +308,9 @@ class PointerModel:
             self.position = None
             if e.status in NOT_EXECUTED:  # damaged on the line; part of a split run may have played
                 raise PointerDesync(f"a run frame was damaged on the line: {e}") from e
+            if e.status == p.Status.RUN_LATE:  # it played, off schedule: the distance is not the planned one
+                self.timing_retries += 1
+                raise PointerDesync(f"the bridge played a run off schedule: {e}") from e
             raise
         now = self._clock()
         self.reports += count

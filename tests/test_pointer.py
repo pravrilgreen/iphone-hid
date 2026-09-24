@@ -430,3 +430,40 @@ def test_bridge_probe_failure_is_not_remembered():
     pm = PointerModel(Flaky(clock), PointerCalibration(), clock=clock, sleep=clock.sleep)
     assert pm._onchip() is False and pm.onchip_runs is None  # could not ask: host timing this time
     assert pm._onchip() is True and pm.onchip_runs is True
+
+
+
+def test_pace_for_links_that_are_not_whole_milliseconds():
+    """Review M2: an 11.25 ms link needs 22.5 ms (0.25 ms units on the bridge) or 45 ms with a
+    firmware that only knows whole ms; rounding to 22 ms broke the phase lock (~13 pt)."""
+    import random
+
+    from ihc.input.pointer import pace_interval
+    from ihc.sim.rig import exact_calibration
+
+    assert pace_interval(0.01125) == 0.0225 and pace_interval(0.01125, whole_ms=True) == 0.045
+    assert pace_interval(0.0075, whole_ms=True) == 0.03 and pace_interval(0.01875, whole_ms=True) == 0.075
+    chip, hid, clock, _ = _bridge_phone()
+    chip.link_period = 0.01125
+    cal = exact_calibration(chip.pointer, PointerCalibration(interval=pace_interval(0.01125)))
+    pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
+    rnd = random.Random(2)
+    worst = 0.0
+    for _ in range(15):
+        clock.sleep(rnd.uniform(0, 0.05))
+        x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
+        pm.move_to(x, y)
+        px, py = chip.pointer.current()
+        worst = max(worst, abs(px - x), abs(py - y))
+    assert worst < 1.0
+
+
+def test_run_played_off_schedule_is_redone():
+    """Review M3: the bridge says when a run was held up; the move is redone from a corner."""
+    chip, hid, clock, cal = _bridge_phone()
+    chip.run_late_s = 0.002
+    pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
+    chip.run_delays = [0.0, 0.006]  # the second report of the first run waited for the link
+    pm.move_to(200.0, 300.0)
+    px, py = chip.pointer.current()
+    assert pm.timing_retries >= 1 and abs(px - 200) < 1.0 and abs(py - 300) < 1.0

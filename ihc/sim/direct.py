@@ -83,9 +83,13 @@ class DirectHid:
     def report_period(self) -> float | None:
         return self.chip.link_period if self.chip.bridge and self.chip.link_period > 0 else None
 
-    def mouse_rel_runs(self, runs, interval_ms: int, buttons: int = 0) -> None:
+    def bridge_feature(self, name: str) -> bool:
+        return self.chip.bridge and name in ("rel_run", "rel_run_quarter_ms", "rel_run_late")
+
+    def mouse_rel_runs(self, runs, interval_ms: float, buttons: int = 0) -> None:
+        quarter = abs(interval_ms - round(interval_ms)) > 1e-9
         for dx, dy, count in runs:
-            self._cmd(p.mouse_rel_run(dx, dy, count, interval_ms, buttons))
+            self._cmd(p.mouse_rel_run(dx, dy, count, interval_ms, buttons, quarter=quarter))
 
     def release_all(self) -> None:
         self.keyboard(0, [])

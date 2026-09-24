@@ -47,6 +47,7 @@ _STATUS_HINTS = {
     p.Status.BAD_HEADER: "bytes were corrupted on the serial line (noise, loose wire, baud off)",
     p.Status.TIMEOUT: "the chip got a partial frame (bytes lost, or a gap longer than its packet interval)",
     p.Status.BAD_PARAM: "the chip rejected a value (or this report type is disabled in the current work mode)",
+    p.Status.RUN_LATE: "the bridge was held up (e.g. waiting for Bluetooth buffers): the distance is not the planned one",
 }
 
 
@@ -187,6 +188,8 @@ class CH9329Backend:
                 "output": p.BRIDGE_OUTPUTS.get(d[3], f"unknown ({d[3]:#04x})"),
                 "collections": [name for bit, name in p.BRIDGE_COLLECTIONS.items() if d[4] & bit],
                 "rel_run": bool(d[5] & p.FEATURE_REL_RUN),
+                "rel_run_quarter_ms": bool(d[5] & p.FEATURE_REL_RUN_QUARTER_MS),
+                "rel_run_late": bool(d[5] & p.FEATURE_REL_RUN_LATE),
                 # how often the phone takes a report (BLE connection interval, USB polling), in
                 # units of 0.25 ms; None while unknown or not connected
                 "report_period_ms": period / 4 if period else None,
@@ -203,6 +206,15 @@ class CH9329Backend:
             except HidError:
                 return None
         return bool(self._info.get("bridge", {}).get("rel_run"))
+
+    def bridge_feature(self, name: str) -> bool:
+        """A feature flag of the bridge's GET_INFO (cached), e.g. "rel_run_quarter_ms"."""
+        if self._info is None:
+            try:
+                self.info()
+            except HidError:
+                return False
+        return bool(self._info.get("bridge", {}).get(name))
 
     def report_period(self) -> float | None:
         """Seconds between the moments the phone takes a report, when the device knows it (ESP32
@@ -236,18 +248,24 @@ class CH9329Backend:
         self._hid(p.mouse_abs(x, y, buttons, wheel, self.addr))
 
     @_serialized
-    def mouse_rel_runs(self, runs: Sequence[tuple[int, int, int]], interval_ms: int, buttons: int = 0) -> None:
+    def mouse_rel_runs(self, runs: Sequence[tuple[int, int, int]], interval_ms: float, buttons: int = 0) -> None:
         """ESP32 bridge only: relative runs played on the bridge's clock, one report every
-        `interval_ms`, each run (dx, dy, count) right after the previous one. All frames go out in
-        one write, so a host stall cannot stretch the pace. With wait_ack, returns once every run
-        was delivered (and raises on the first failure); otherwise the replies stay in flight."""
-        per_frame = p.REL_RUN_MAX_MS // interval_ms + 1 if interval_ms else 255
+        `interval_ms` (a multiple of 0.25 ms if the bridge supports it, else whole ms), each run
+        (dx, dy, count) right after the previous one. All frames go out in one write, so a host
+        stall cannot stretch the pace. With wait_ack, returns once every run was delivered (and
+        raises on the first failure: E6 undelivered, E7 played off schedule); otherwise the
+        replies stay in flight."""
+        quarter = abs(interval_ms - round(interval_ms)) > 1e-9
+        if quarter and not self.bridge_feature("rel_run_quarter_ms"):
+            raise HidError(f"this bridge firmware times runs in whole ms only; {interval_ms} ms cannot be played "
+                           "(update the firmware, or pace at a whole number of ms)")
+        per_frame = int(p.REL_RUN_MAX_MS // interval_ms) + 1 if interval_ms else 255
         frames, total = [], 0
         for dx, dy, count in runs:
             total += count
             while count > 0:
                 n = min(count, per_frame, 255)
-                frames.append(p.mouse_rel_run(dx, dy, n, interval_ms, buttons, self.addr))
+                frames.append(p.mouse_rel_run(dx, dy, n, interval_ms, buttons, self.addr, quarter=quarter))
                 count -= n
         if not frames:
             return
