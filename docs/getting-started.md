@@ -7,7 +7,7 @@ Cần Linux (hoặc macOS để thử mô phỏng) và Python 3.10 trở lên.
 ```bash
 git clone <repo> iphone-hid && cd iphone-hid
 python3 -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev,vision,api]"
+pip install -e ".[dev,video,api]"
 pytest -q
 ```
 

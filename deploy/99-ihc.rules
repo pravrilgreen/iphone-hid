@@ -1,0 +1,13 @@
+# iphone-hid box: device permissions and USB behaviour.
+
+# HID chips on USB-serial bridges (CH340/CH341/CH9102/CH343 cables, CP210x, ESP32-S3 native USB):
+# readable by the dialout group, and ModemManager must never probe them (it sends AT commands).
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523|5523|55d4|55d3", MODE="0660", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0660", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", MODE="0660", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+# Capture cards: the video group.
+SUBSYSTEM=="video4linux", MODE="0660", GROUP="video"
+
+# A dedicated box: no USB autosuspend anywhere (suspended capture cards and serial bridges drop out).
+ACTION=="add", SUBSYSTEM=="usb", TEST=="power/control", ATTR{power/control}="on"

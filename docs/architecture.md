@@ -71,6 +71,19 @@ Mọi cú click khi hiệu chỉnh đều được giữ trong vùng trang, khô
    thể kẹp con trỏ cách mép 1 pt) và số báo cáo neo tối thiểu (nhân đôi để có biên an toàn).
 4. **Neo lại trước mỗi thao tác**, nên sai số không cộng dồn.
 
+**Giới hạn của chế độ tương đối:** quãng đường phụ thuộc vận tốc, nên **jitter thời gian** ở bất kỳ đâu trên
+đường đi đều thành sai số vị trí:
+- lịch luồng của host;
+- độ trễ USB-serial;
+- chu kỳ poll USB (`bInterval`) của chip HID.
+
+Phần mềm tự đo thời điểm gửi và làm lại khi host bị khựng, nhưng không thấy được jitter sau cổng serial. Cách
+giảm:
+- đo `bInterval` và jitter bằng bài T0;
+- hạ tốc độ bước lớn (`coarse_target`) nếu sai số kiểm tra cao;
+- dùng firmware ESP32 ở chế độ USB (đặt được `bInterval` = 1 ms);
+- tốt nhất là chế độ tuyệt đối, vốn không bị ảnh hưởng.
+
 ### 3.3 Không mất lệnh
 
 | Lớp | Cơ chế |

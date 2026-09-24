@@ -29,6 +29,13 @@ from dataclasses import replace
 from .input.pointer import DirectionModel, PointerCalibration, PointerDesync, PointerModel, RunModel
 
 
+# Travel per coarse report: fast, while a fine run still covers one of them. Lower it (e.g. 10) when
+# the validation error shows timing jitter matters (acceleration grows with speed, so slower coarse
+# reports are less sensitive to it).
+COARSE_TARGET_PT = 20.0
+FINE_TARGET_PT = 1.0  # travel per fine report: the resolution of a tap
+
+
 class CalibrationError(RuntimeError):
     pass
 
@@ -124,6 +131,7 @@ def calibrate(
     repeats: int = 2,
     validate: int = 8,
     try_absolute: bool = True,
+    coarse_target: float = COARSE_TARGET_PT,
     page_timeout: float = 15.0,
     click_timeout: float = 2.0,
     seed: int = 0,
@@ -144,7 +152,7 @@ def calibrate(
         cal = _try_absolute(s, W, H, inner_h) if try_absolute else None
         if cal is None:
             pos = s.must_click()  # the absolute test may have moved the pointer (on the page)
-            cal = _measure(s, W, H, inner_h, pos, coarse_counts, fine_counts, repeats)
+            cal = _measure(s, W, H, inner_h, pos, coarse_counts, fine_counts, repeats, coarse_target)
         pm.cal = cal
         errors = _validate(s, cal, W, H, inner_h, validate, random.Random(seed))
     except Exception:
@@ -229,7 +237,8 @@ def _try_absolute(s: _Session, W, H, inner_h) -> PointerCalibration | None:
                    notes=pm.cal.notes + notes, extra={**pm.cal.extra, "page_top_pt": round(page_top, 2)})
 
 
-def _measure(s: _Session, W, H, inner_h, pos, coarse_counts, fine_counts, repeats) -> PointerCalibration:
+def _measure(s: _Session, W, H, inner_h, pos, coarse_counts, fine_counts, repeats,
+             coarse_target: float = COARSE_TARGET_PT) -> PointerCalibration:
     pm = s.pm
     entry_x = 3
 
@@ -239,7 +248,7 @@ def _measure(s: _Session, W, H, inner_h, pos, coarse_counts, fine_counts, repeat
     rate: dict[int, float] = {}  # rough points per coarse report, per axis
     for axis, span in ((0, W), (1, inner_h)):
         pos = _approach(s, pos, centre[axis], axis, span, rate)
-    pos = _tune_steps(s, pos, W, centre)
+    pos = _tune_steps(s, pos, W, centre, coarse_target)
     samples: dict[tuple[int, int, bool], list[tuple[int, float]]] = {}
 
     def predicted(axis: int, fine: bool, n: int) -> float:
@@ -350,16 +359,13 @@ def _measure(s: _Session, W, H, inner_h, pos, coarse_counts, fine_counts, repeat
                    measured_at=time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
-COARSE_TARGET_PT = 20.0  # travel per coarse report: fast, while a fine run still covers one of them
-FINE_TARGET_PT = 1.0  # travel per fine report: the resolution of a tap
-
-
-def _tune_steps(s: _Session, pos, W: float, centre) -> tuple[float, float]:
+def _tune_steps(s: _Session, pos, W: float, centre, coarse_target: float = COARSE_TARGET_PT,
+                fine_target: float = FINE_TARGET_PT) -> tuple[float, float]:
     """Pick report sizes for this phone so a coarse report moves about 20 pt and a fine one about
     1 pt, whatever the Tracking Speed. Distance grows faster than the report size (acceleration),
     so the size is corrected a few times from measured runs along X around the page centre."""
     pm = s.pm
-    for fine, target, lo, hi, n in ((False, COARSE_TARGET_PT, 4, 100, 3), (True, FINE_TARGET_PT, 1, 8, 8)):
+    for fine, target, lo, hi, n in ((False, coarse_target, 4, 100, 3), (True, fine_target, 1, 8, 8)):
         for _ in range(4):
             step = pm.cal.fine_step if fine else pm.cal.step
             sign = 1 if pos[0] < centre[0] else -1

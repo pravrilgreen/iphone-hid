@@ -33,7 +33,7 @@ sudo apt install -y git python3-venv v4l-utils usbutils evtest
 sudo usermod -aG dialout,video,input $USER          # rồi đăng xuất và đăng nhập lại
 git clone <repo> iphone-hid && cd iphone-hid
 python3 -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev,vision,api]"
+pip install -e ".[dev,video,api]"
 pytest -q                                            # phải xanh hết
 ```
 

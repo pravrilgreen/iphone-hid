@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import threading
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -193,3 +194,116 @@ def config_from_discovery(rigs: list[Rig], model: str = "") -> str:
             "",
         ]
     return "\n".join(lines)
+
+
+def default_state_dir() -> Path:
+    """Where a box keeps per-rig calibration: $IHC_STATE_DIR or ~/.local/share/ihc."""
+    return Path(os.environ.get("IHC_STATE_DIR") or Path.home() / ".local" / "share" / "ihc")
+
+
+class NoVideo:
+    """FrameSource for a rig without a capture card: HID works, video reports no signal."""
+
+    def __init__(self, size: tuple[int, int] = (1920, 1080)):
+        self.size = size
+
+    def latest(self, newer_than: int = -1, timeout: float = 1.0):
+        time.sleep(min(timeout, 0.05))
+        raise TimeoutError("no capture card is paired with this rig")
+
+    def close(self) -> None:
+        pass
+
+
+def auto(
+    *,
+    state_dir: str | Path | None = None,
+    log=None,
+    ports: list[str] | None = None,
+    sysfs: str = "/sys",
+    video_size: tuple[int, int] = (1920, 1080),
+    fps: int = 30,
+    probe_timeout: float = 0.25,
+    open_video=None,
+) -> Registry:
+    """Zero-config registry: every rig found on this host (see ihc.rigs), calibration files kept
+    in `state_dir` under the rig id."""
+    from .rigs import find_rigs
+
+    state = Path(state_dir) if state_dir else default_state_dir()
+    if open_video is None:
+        from .video.capture import V4L2Capture
+
+        def open_video(device: str):
+            return V4L2Capture(device, width=video_size[0], height=video_size[1], fps=fps)
+
+    reg = AutoRegistry(lambda ports_in_use, videos_in_use: find_rigs(ports, sysfs=sysfs, timeout=probe_timeout, log=log,
+                                                                   skip=ports_in_use, skip_videos=videos_in_use),
+                       lambda spec: _build_rig(spec, state, open_video, video_size, log))
+    reg.rescan()
+    return reg
+
+
+class AutoRegistry(Registry):
+    """A registry that keeps looking for newly plugged rigs (rescan / start_rescan)."""
+
+    def __init__(self, find, build):
+        super().__init__()
+        self._find = find
+        self._build = build
+        self._stop_scan = threading.Event()
+        self._scanner: threading.Thread | None = None
+
+    def rescan(self) -> list[str]:
+        """Probe serial ports not in use yet; add the rigs found. Returns the new device ids."""
+        ports = {os.path.realpath(d.hid.port) for d in self.devices()}
+        videos = {os.path.realpath(str(d.source.device)) for d in self.devices() if hasattr(d.source, "device")}
+        added = []
+        for spec in self._find(ports, videos):
+            if spec.id in self._devices:
+                continue
+            device = self._build(spec)
+            self.add(device, spec)
+            added.append(device.id)
+        return added
+
+    def start_rescan(self, interval: float = 10.0, on_added=None) -> None:
+        def run() -> None:
+            while not self._stop_scan.wait(interval):
+                try:
+                    for dev_id in self.rescan():
+                        if on_added:
+                            on_added(self.get(dev_id))
+                except Exception:
+                    pass  # a failing probe must not stop hot-plug detection
+
+        self._scanner = threading.Thread(target=run, name="rig-rescan", daemon=True)
+        self._scanner.start()
+
+    def close(self) -> None:
+        self._stop_scan.set()
+        if self._scanner is not None:
+            self._scanner.join(timeout=5)
+        super().close()
+
+
+def _build_rig(spec, state: Path, open_video, video_size, log) -> IPhoneDevice:
+    c = spec.chip
+
+    def open_hid(port=c.port, baud=c.baud, addr=c.addr) -> CH9329Backend:
+        return CH9329Backend(port, baud, addr=addr)
+
+    cal_path = state / f"{spec.id}.json"
+    device = IPhoneDevice(
+        DeviceInfo(spec.id, "", "hardware"),
+        open_hid(),
+        open_video(spec.video.device) if spec.video else NoVideo(video_size),
+        calibration=PointerCalibration.load(cal_path) if cal_path.exists() else None,
+        calibration_path=cal_path,
+        reopen_hid=open_hid,
+        log=log,
+    )
+    if log:
+        log("rig_found", id=spec.id, port=c.port, baud=c.baud, chip=c.info.get("version"),
+            video=spec.video.device if spec.video else None, notes=spec.notes)
+    return device
