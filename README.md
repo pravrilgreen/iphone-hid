@@ -28,21 +28,7 @@ locked phone that the health check reports as "HID not connected".*
 
 ## How it works, end to end
 
-```mermaid
-flowchart LR
-    T["Test framework<br/>(SDK / REST / WebSocket)"] --> BOX
-    O["Operator<br/>(browser)"] --> BOX
-    subgraph BOX["Control box (Linux)"]
-        direction TB
-        API["API + web console"] --> CTRL["Per-phone controller<br/>pointer model · keyboard · health"]
-        CTRL --> DRV["HID driver<br/>every frame acknowledged"]
-        CAP["Capture reader<br/>MJPEG passthrough"] --> API
-    end
-    DRV -->|serial| CHIP["HID chip<br/>CH9329 or ESP32"]
-    CHIP -->|"USB or Bluetooth<br/>keyboard + mouse"| PHONE["iPhone"]
-    PHONE -->|HDMI mirror| CARD["HDMI capture card"]
-    CARD -->|USB video| CAP
-```
+![Test framework and operator talk to the control box; the box drives a HID chip that acts as keyboard and mouse for the iPhone, and reads the iPhone's HDMI mirror through a capture card](docs/images/diagram-overview.png)
 
 1. **Seeing.** The iPhone mirrors its screen to HDMI. A cheap capture card turns that into a compressed
    (MJPEG) video stream, and the box forwards those frames to the browser or SDK as they are. Nothing is
@@ -57,27 +43,11 @@ flowchart LR
 
 **USB-C iPhones (iPhone 15 and later):** one hub carries video out and keyboard/mouse in.
 
-```mermaid
-flowchart LR
-    P["iPhone 15+<br/>USB-C"] ==>|one cable| H["USB-C hub<br/>HDMI + USB-A + PD charging"]
-    H -->|HDMI| C["HDMI capture card"]
-    C -->|USB| S["Control box"]
-    S -->|"USB (serial)"| X["CH9329 cable<br/>keyboard + mouse"]
-    X -->|USB-A| H
-    PD["20 W charger"] --> H
-```
+![USB-C wiring: the iPhone connects to a USB-C hub; the hub's HDMI goes to a capture card, the CH9329 cable plugs into the hub's USB-A port, and a charger feeds the hub](docs/images/diagram-wiring-usb-c.png)
 
 **Lightning iPhones:** video through Apple's HDMI adapter, keyboard and mouse over Bluetooth.
 
-```mermaid
-flowchart LR
-    P["iPhone<br/>Lightning"] --> A["Apple Lightning<br/>Digital AV Adapter"]
-    A -->|HDMI| C["HDMI capture card"]
-    C -->|USB| S["Control box"]
-    PD["charger"] --> A
-    S -->|"USB (serial)"| E["ESP32-S3 bridge"]
-    E -.->|"Bluetooth keyboard + mouse"| P
-```
+![Lightning wiring: the iPhone connects to Apple's Lightning Digital AV Adapter for HDMI; keyboard and mouse come from an ESP32-S3 over Bluetooth](docs/images/diagram-wiring-lightning.png)
 
 ### Why Lightning needs an ESP32, and USB-C does not
 
@@ -132,18 +102,7 @@ click on. The result is validated with taps from the centre outwards and refused
 
 ## No lost commands
 
-```mermaid
-sequenceDiagram
-    participant B as Control box
-    participant C as HID chip
-    participant P as iPhone
-    B->>C: report (checksummed frame)
-    C->>P: USB / Bluetooth HID report
-    C-->>B: ack, or error code
-    Note over B,C: No ack within 500 ms: before anything else, the box asks the chip<br/>for its status and discards every older reply (a late ack is never<br/>mistaken for a newer one)
-    Note over B: Key or button report failed: resent (resending state is harmless)
-    Note over B: Movement report failed: the whole move is redone from a corner
-```
+![Every report is acknowledged; a missing ack triggers a resync, state reports are resent, movement is redone from a corner](docs/images/diagram-reliability.png)
 
 - **Every command is acknowledged by the chip.** No acknowledgement means the box knows at once; it never
   "sends and hopes".
