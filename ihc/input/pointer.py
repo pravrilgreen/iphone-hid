@@ -21,8 +21,8 @@ not, since it may have been applied: the whole move is redone from a fresh ancho
 button report fails, every button is released (on both pointer reports) before the next anchor,
 since anchoring with a button still held would drag.
 
-Pacing: with a CH9329 the host times every report and checks afterwards that none went out late
-(`timing_tolerance`); a late one makes the move be redone. The ESP32 bridge times runs itself
+Pacing: with a CH9329 the host times every report on one schedule per run and checks afterwards
+that none strayed from its slot (`timing_tolerance`); a stray one makes the move be redone. The ESP32 bridge times runs itself
 (vendor command SEND_MS_REL_RUN), so host and USB-serial jitter do not reach the phone at all.
 """
 
@@ -191,7 +191,7 @@ class PointerModel:
         timing_tolerance: float = 0.0015,
         anchor_interval: float = 0.016,
         onchip_runs: bool | None = None,
-        attempts: int = 3,
+        attempts: int = 5,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
     ):
@@ -396,7 +396,9 @@ class PointerModel:
             else:
                 starts, ends = [self.last_motion], []
                 with self._pipelined() as verified:
-                    for _ in range(abs(n)):
+                    for k in range(abs(n)):
+                        if k:  # one schedule per run: a late report does not push the later ones back
+                            self._next_at = starts[1] + k * self.cal.interval
                         self.send(dx, dy)
                         starts.append(self.last_sent)
                         ends.append(self._clock())
@@ -404,12 +406,17 @@ class PointerModel:
             self.rest()
 
     def _check_pace(self, starts: list[float], ends: list[float]) -> None:
-        tol = self.timing_tolerance
-        gaps = [b - a for a, b in zip(starts, starts[1:])]
-        short_rest = bool(gaps) and starts[0] > 0 and gaps[0] < self.cal.rest - 0.002
-        slots = gaps[1:] + [b - a for a, b in zip(ends, ends[1:])]
-        off = [abs(g - self.cal.interval) for g in slots]
-        if short_rest or any(o > tol for o in off):
+        """Every report within `timing_tolerance` of its slot on the run's schedule, measured when
+        it started and when it had been written. A report late by d stretches one gap and shortens
+        the next by d, so small delays cancel out in the distance; a stall does not."""
+        first, run = starts[0], starts[1:]
+        short_rest = bool(run) and first > 0 and run[0] - first < self.cal.rest - 0.002
+        off = []
+        for times in (run, ends):
+            if times:
+                slots = [t - k * self.cal.interval for k, t in enumerate(times)]
+                off += [t - min(slots) for t in slots]
+        if short_rest or any(o > self.timing_tolerance for o in off):
             self.position = None
             self.timing_retries += 1
             raise PointerDesync(f"report pacing off by up to {max(off, default=0.0) * 1000:.1f} ms (host busy?)")

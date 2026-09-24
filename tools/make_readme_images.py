@@ -260,11 +260,89 @@ def accuracy() -> dict:
     return summary
 
 
+def timing() -> dict:
+    """Why pacing matters in relative mode: a busy host, and a Bluetooth link's schedule."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from ihc.input.pointer import PointerDesync, pace_interval
+
+    def taps(n, *, bridge=False, onchip=False, tolerance=0.0015, jitter=False, link=0.0, interval=0.02, seed=0):
+        phone, chip, hid, clock = direct_phone(bridge=bridge)
+        chip.link_period = link
+        cal = exact_calibration(chip.pointer, PointerCalibration(interval=interval))
+        rnd = random.Random(seed)
+
+        def host_sleep(s):  # a busy host: sleeps overshoot, now and then by a lot
+            extra = 0.0
+            if jitter:
+                extra = rnd.expovariate(1 / 0.0002) + (rnd.uniform(0.003, 0.015) if rnd.random() < 0.01 else 0.0)
+            clock.sleep(s + extra)
+
+        pm = PointerModel(hid, cal, clock=clock, sleep=host_sleep, onchip_runs=onchip, timing_tolerance=tolerance)
+        errors, failed = [], 0
+        for _ in range(n):
+            clock.sleep(rnd.uniform(0, 0.05))
+            x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
+            try:
+                pm.move_to(x, y)
+            except PointerDesync:
+                failed += 1
+                continue
+            px, py = chip.pointer.current()
+            errors.append(max(abs(px - x), abs(py - y)))
+        return {"errors": errors, "failed": failed, "redos": pm.timing_retries}
+
+    busy = {
+        "CH9329,\nno pace check": taps(150, jitter=True, tolerance=1.0),
+        "CH9329,\npace checked (1.5 ms)": taps(150, jitter=True),
+        "ESP32 bridge,\ntimed on the chip": taps(150, jitter=True, bridge=True, onchip=True),
+    }
+    ble = {
+        "20 ms pace": taps(150, bridge=True, onchip=True, link=0.015, interval=0.02),
+        f"{pace_interval(0.015) * 1000:.0f} ms pace\n(multiple of 15 ms)": taps(
+            150, bridge=True, onchip=True, link=0.015, interval=pace_interval(0.015)),
+    }
+
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.4), dpi=120, gridspec_kw={"width_ratios": [3, 2]})
+    for ax, data, title in ((a1, busy, "A busy host: sleeps overshoot ~0.2 ms, 1% stall 3-15 ms"),
+                            (a2, ble, "Bluetooth link with 15 ms connection interval")):
+        labels = list(data)
+        ax.boxplot([data[k]["errors"] for k in labels], tick_labels=labels, showfliers=True, widths=0.5)
+        ax.axhline(4.0, color="#ff3b30", linestyle="--", linewidth=1.2)
+        ax.set_yscale("symlog", linthresh=5)
+        ax.set_ylim(0, 60)
+        ax.set_yticks([0, 1, 2, 4, 10, 30])
+        ax.set_yticklabels(["0", "1", "2", "4", "10", "30"])
+        ax.set_ylabel("tap error (points)")
+        ax.set_title(title, fontsize=10)
+        ax.spines[["top", "right"]].set_visible(False)
+        for i, k in enumerate(labels, start=1):
+            d = data[k]
+            note = f"max {max(d['errors']):.1f} pt"
+            if d["redos"]:
+                note += f"\n{d['redos']} moves redone"
+            if d["failed"]:
+                note += f"\n{d['failed']} gave up"
+            ax.text(i, 45, note, ha="center", va="top", fontsize=8.5, color="#333")
+    a1.text(0.52, 4.25, "4 pt target", color="#ff3b30", fontsize=8.5)
+    fig.suptitle("Relative mode depends on report timing: 150 random taps per case, simulated iPhone 15", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(OUT / "timing.png")
+    return {k.replace("\n", " "): {"max_error_pt": round(max(v["errors"]), 2), "redos": v["redos"], "failed": v["failed"]}
+            for k, v in {**busy, **ble}.items()}
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
+    if sys.argv[1:] == ["timing"]:
+        print(json.dumps(timing(), indent=2))
+        return 0
     simulated_screens()
     pointer_modes()
-    info = {"calibration": calibration_page(), "accuracy": accuracy()}
+    info = {"calibration": calibration_page(), "accuracy": accuracy(), "timing": timing()}
     (OUT / "figures.json").write_text(json.dumps(info, indent=2) + "\n")
     print(json.dumps(info, indent=2))
     return 0
