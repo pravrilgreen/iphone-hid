@@ -78,6 +78,12 @@ def _serialized(method):
     return wrapper
 
 
+def status_error(cmd: int, status: int | None) -> HidStatusError:
+    """The operator-facing error for a command the chip answered with an error status."""
+    hint = _STATUS_HINTS.get(status, "")
+    return HidStatusError(f"{_cmd_name(cmd)} failed: {_status_name(status)}" + (f"; {hint}" if hint else ""), cmd, status)
+
+
 def explain_open_error(port: str, exc: Exception) -> str:
     code = getattr(exc, "errno", None)
     text = str(exc)
@@ -306,9 +312,7 @@ class CH9329Backend:
         self.stats["errors"] += 1
         if not reply.is_error and status is None:
             raise HidProtocolError(f"{_cmd_name(cmd)}: unexpected reply {reply.data.hex(' ')}")
-        hint = _STATUS_HINTS.get(status, "")
-        msg = f"{_cmd_name(cmd)} failed: {_status_name(status)}" + (f"; {hint}" if hint else "")
-        raise HidStatusError(msg, cmd, status)
+        raise status_error(cmd, status)
 
     def _write(self, frame: bytes) -> None:
         try:

@@ -279,8 +279,11 @@ class PointerModel:
         """Pin the pointer into a corner: sx -1 left / +1 right, sy -1 top / +1 bottom."""
         if self.buttons:
             raise PointerError("refusing to anchor while a button is held: it would drag")
-        for _ in range(self.cal.reset_reports):
-            self.send(127 * sx, 127 * sy)
+        # No pacing needed (they only have to reach the corner): as fast as the line allows, with
+        # every ack still checked at the end of the burst.
+        with self._pipelined():
+            for _ in range(self.cal.reset_reports):
+                self.send(127 * sx, 127 * sy, paced=False)
         self.rest()
         self.position = self.anchored_at(sx, sy)
 
@@ -337,8 +340,14 @@ class PointerModel:
         finally:
             hid.wait_ack = True
             hid.sync()
-        if hid.stats["lost_acks"] != lost0 or len(hid.async_errors) != err0:
+        failed = hid.async_errors[err0:]
+        if hid.stats["lost_acks"] != lost0 or failed:
             self.position = None
+            real = [(cmd, st) for cmd, st in failed if st not in NOT_EXECUTED]
+            if real:  # the chip refused (e.g. phone locked): retrying cannot help, say why
+                from ..hid.ch9329 import status_error
+
+                raise status_error(*real[0])
             raise PointerDesync("a report inside a run was not acknowledged or failed")
 
     def plan(self, x: float, y: float) -> MovePlan:

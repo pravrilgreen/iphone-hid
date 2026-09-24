@@ -191,7 +191,11 @@ def test_pipelined_run_checks_every_ack():
 
         def sync(self):
             if len(self.reports) == 3:
-                self.async_errors.append((5, 0xE6))
+                self.stats["lost_acks"] += 1  # a reply that never came: retry from the anchor
+            if len(self.reports) == 4:
+                self.async_errors.append((5, 0xE4))  # damaged frame: also a retry
+            if len(self.reports) == 5:
+                self.async_errors.append((5, 0xE6))  # the chip refused: say why, do not retry
 
     clock = VirtualClock()
     hid = Pipelined(clock)
@@ -199,6 +203,10 @@ def test_pipelined_run_checks_every_ack():
     pm.run(0, 2, 0)
     assert hid.modes == [False, False] and hid.wait_ack is True
     with pytest.raises(PointerDesync, match="not acknowledged"):
+        pm.run(0, 1, 0)
+    with pytest.raises(PointerDesync):
+        pm.run(0, 1, 0)
+    with pytest.raises(HidStatusError, match="EXEC_ERROR"):
         pm.run(0, 1, 0)
 
 

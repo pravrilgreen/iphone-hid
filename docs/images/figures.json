@@ -1,0 +1,41 @@
+{
+  "calibration": {
+    "clicks": 111,
+    "validation": {
+      "mean": 0.45,
+      "max": 0.86,
+      "n": 8
+    },
+    "caption": "111 clicks, validation error max 0.86 pt"
+  },
+  "accuracy": {
+    "Absolute": {
+      "max_error_pt": 0.25,
+      "p95_error_pt": 0.25,
+      "median_s": 0.18,
+      "calibration_s": 5.6,
+      "mode": "absolute"
+    },
+    "Relative\nTracking 0.4": {
+      "max_error_pt": 0.5,
+      "p95_error_pt": 0.5,
+      "median_s": 1.46,
+      "calibration_s": 44.2,
+      "mode": "relative"
+    },
+    "Relative\nTracking 1.0": {
+      "max_error_pt": 0.83,
+      "p95_error_pt": 0.8,
+      "median_s": 1.26,
+      "calibration_s": 42.5,
+      "mode": "relative"
+    },
+    "Relative\nTracking 2.5": {
+      "max_error_pt": 0.46,
+      "p95_error_pt": 0.41,
+      "median_s": 1.42,
+      "calibration_s": 43.0,
+      "mode": "relative"
+    }
+  }
+}

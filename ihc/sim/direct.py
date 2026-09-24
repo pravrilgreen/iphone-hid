@@ -92,4 +92,5 @@ def direct_phone(model: str = "iphone-15", **phone_options) -> tuple[SimPhone, F
     chip.pointer.history.clear()
     phone = SimPhone(get_model(model), clock=clock, **phone_options)
     phone.attach(chip)
-    return phone, chip, DirectHid(chip, clock), clock
+    # each command costs the wire time of an 11-byte frame at 9600 baud
+    return phone, chip, DirectHid(chip, clock, wire_s=11 * 10 / 9600), clock
