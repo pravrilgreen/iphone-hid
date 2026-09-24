@@ -17,6 +17,7 @@
 #include "esp_log.h"
 #include "esp_mac.h"
 #include "esp_system.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "hid_link.h"
@@ -86,23 +87,41 @@ static uint16_t sink_report_period(void *ctx)
     return hid_link_report_period();
 }
 
-/* SEND_MS_REL_RUN pacing (bridge task): 1 ms FreeRTOS ticks, esp_timer milliseconds. */
+/* SEND_MS_REL_RUN pacing (bridge task): esp_timer microseconds, truncated to 32 bits (the core
+ * handles the wrap every 71.6 minutes). */
+static uint32_t now_us(void)
+{
+    return (uint32_t)esp_timer_get_time();
+}
+
 static uint32_t sink_clock(void *ctx)
 {
     (void)ctx;
-    return transport_now_ms();
+    return now_us();
 }
 
-static void sink_sleep_until(void *ctx, uint32_t t_ms)
+/* Precision: the sleep is tick-bound (1 ms FreeRTOS ticks), so it only brings the task to 1-3 ms
+ * before the slot; the rest is a busy-wait on the microsecond timer. The report is handed to the
+ * link within microseconds of its slot, unless the higher-priority UART reader or an interrupt
+ * runs at that moment (typically tens of microseconds). Not yet measured on hardware. */
+static void sink_sleep_until(void *ctx, uint32_t t_us)
 {
     (void)ctx;
-    const int32_t wait = (int32_t)(t_ms - transport_now_ms());
-    if (wait > 1) {
-        vTaskDelay(pdMS_TO_TICKS((uint32_t)(wait - 1))); /* may wake up to 1 tick early... */
+    const int32_t wait = (int32_t)(t_us - now_us());
+    if (wait >= 2000) {
+        /* vTaskDelay(n) returns after (n - 1, n] ms: n = wait/1000 - 1 never oversleeps. */
+        vTaskDelay((TickType_t)((uint32_t)wait / 1000u - 1u));
     }
-    while ((int32_t)(t_ms - transport_now_ms()) > 0) {
-        /* ...so finish on the clock (< 1 ms; the higher-priority UART reader still preempts). */
+    while ((int32_t)(t_us - now_us()) > 0) {
+        /* finish on the microsecond clock (1-3 ms; the higher-priority UART reader still preempts) */
     }
+}
+
+/* SEND_MS_REL_RUN lateness: when the link accepted the report (BLE queued / USB in the endpoint). */
+static uint32_t sink_accepted(void *ctx)
+{
+    (void)ctx;
+    return hid_link_accepted_us();
 }
 
 static bool sink_load(void *ctx, ch9329_persist_t *out)
@@ -167,12 +186,13 @@ static void log_stats(void)
     const ch9329_core_stats_t *c = &s_core.stats;           /* approximate: owned by bridge task */
     const ch9329_parser_stats_t *p = &s_core.parser.stats;
     ESP_LOGI(TAG,
-             "link %s | frames %lu bad_sum %lu timeouts %lu | hid ok %lu fail %lu runs %lu | uart bytes %lu "
-             "ovf %lu drops %lu lineerr %lu gaps %lu",
+             "link %s | frames %lu bad_sum %lu timeouts %lu | hid ok %lu fail %lu runs %lu late %lu (max %lu us) | "
+             "uart bytes %lu ovf %lu drops %lu lineerr %lu gaps %lu",
              hid_link_ready() ? "ready" : "down", (unsigned long)p->frames, (unsigned long)p->bad_sum,
              (unsigned long)p->timeouts, (unsigned long)c->hid_sent, (unsigned long)c->hid_failed,
-             (unsigned long)c->runs, (unsigned long)u.bytes, (unsigned long)u.uart_overflows,
-             (unsigned long)u.queue_drops, (unsigned long)u.line_errors, (unsigned long)s_discontinuities);
+             (unsigned long)c->runs, (unsigned long)c->runs_late, (unsigned long)c->late_max_us,
+             (unsigned long)u.bytes, (unsigned long)u.uart_overflows, (unsigned long)u.queue_drops,
+             (unsigned long)u.line_errors, (unsigned long)s_discontinuities);
     hid_link_log_stats();
 }
 
@@ -231,8 +251,9 @@ void app_main(void)
         .persist_load = sink_load,
         .persist_store = sink_store,
         .request_restart = sink_restart,
-        .clock_ms = sink_clock,
-        .sleep_until_ms = sink_sleep_until,
+        .clock_us = sink_clock,
+        .sleep_until_us = sink_sleep_until,
+        .accepted_us = sink_accepted,
     };
 #ifdef CONFIG_BRIDGE_ABS_MOUSE_REJECT
     const bool abs_reject = true;
@@ -242,6 +263,7 @@ void app_main(void)
     const ch9329_options_t opt = {
         .abs_mouse_reject = abs_reject,
         .rx_slack_ms = 0, /* set below, once the baud rate is known */
+        .run_late_us = CONFIG_BRIDGE_REL_RUN_LATE_US,
     };
     /* The configuration stored by SET_PARA_CFG is applied here, at boot (after RESET too). */
     ch9329_core_init(&s_core, &sink, &opt);
@@ -256,24 +278,34 @@ void app_main(void)
     const uint32_t baud = ch9329_cfg_baud(active->cfg);
     ch9329_core_set_rx_slack(&s_core, transport_uart_timing_slack_ms(baud));
     ch9329_core_set_link_info(&s_core, hid_link_output_id(), (uint8_t)collections);
-    ESP_LOGI(TAG, "%s config: work mode 0x%02X (%s, collections 0x%02X), address 0x%02X, %lu baud, "
-                  "packet interval %u ms (+%lu ms UART slack)",
+    ESP_LOGI(TAG, "%s config: work mode 0x%02X (%s, collections 0x%02X, identity tag -%s), address 0x%02X, "
+                  "%lu baud, packet interval %u ms (+%lu ms UART slack)",
              s_core.used_defaults ? "default" : "stored", ch9329_cfg_work_mode(active->cfg), hid_profile_name(profile),
-             collections,
+             collections, hid_identity_tag(profile, BRIDGE_POINTERS),
              ch9329_cfg_address(active->cfg), (unsigned long)baud,
              (unsigned)ch9329_cfg_u16(active->cfg, CH9329_CFG_OFF_PACKET_INTERVAL),
              (unsigned long)transport_uart_timing_slack_ms(baud));
 
     uint8_t mac[6] = {0};
     esp_read_mac(mac, ESP_MAC_BT);
-    char name[32];
-    char serial[16];
+    char base[48];
+    char name[HID_LINK_NAME_MAX + 1];
+    char serial[HID_LINK_SERIAL_MAX + 1];
     if (active->str[CH9329_STR_PRODUCT].len > 0u) {
-        snprintf(name, sizeof(name), "%s", active->str[CH9329_STR_PRODUCT].text);
+        snprintf(base, sizeof(base), "%s", active->str[CH9329_STR_PRODUCT].text);
     } else {
-        snprintf(name, sizeof(name), "%s %02X%02X", CONFIG_BRIDGE_DEVICE_NAME_PREFIX, mac[4], mac[5]);
+        snprintf(base, sizeof(base), "%s %02X%02X", CONFIG_BRIDGE_DEVICE_NAME_PREFIX, mac[4], mac[5]);
     }
-    snprintf(serial, sizeof(serial), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    /* Descriptor identity: iOS caches HID descriptors, so the name (BLE name, USB product) and
+     * the serial number end in a tag naming the collection set: "HID Bridge 1A2B-RA",
+     * "A0B1C2D3E4F5-A", "...-K" (hid_identity_tag()). A stored SET_USB_STRING string gets it too. */
+    hid_identity_string(name, sizeof(name), base, profile, BRIDGE_POINTERS);
+    if (active->str[CH9329_STR_SERIAL].len > 0u) {
+        snprintf(base, sizeof(base), "%s", active->str[CH9329_STR_SERIAL].text);
+    } else {
+        snprintf(base, sizeof(base), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    }
+    hid_identity_string(serial, sizeof(serial), base, profile, BRIDGE_POINTERS);
     /* VID/PID come from Kconfig, one PID per profile; the CH9329 block's VID/PID bytes are stored
      * and read back but not used (see README). */
     const uint16_t pids[HID_PROFILE_COUNT] = {
@@ -286,7 +318,7 @@ void app_main(void)
         .collections = collections,
         .name = name,
         .manufacturer = active->str[CH9329_STR_VENDOR].text,
-        .serial = active->str[CH9329_STR_SERIAL].len > 0u ? active->str[CH9329_STR_SERIAL].text : serial,
+        .serial = serial,
         .vid = CONFIG_BRIDGE_VID,
         .pid = pids[profile],
     };

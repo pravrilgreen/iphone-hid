@@ -4,22 +4,36 @@
  *
  * USB layout: one configuration, one HID interface per group of collections, each with its own
  * interrupt IN endpoint polled every 1 ms. Keyboard LEDs arrive as SET_REPORT(Output) on the
- * control endpoint.
+ * control endpoint. Interfaces in this order, pointers last:
  *
  *   interface  collections           report ids  boot protocol
  *   keyboard   KEYBOARD              none        keyboard
+ *   extras     CONSUMER + SYSTEM     3, 4        none
  *   mouse      MOUSE (relative)      none        mouse
  *   pointer    ABS_POINTER           none        none
- *   extras     CONSUMER + SYSTEM     3, 4        none
+ *
+ * Aiden (AidenAI-IO/aiden-firmware, docs/03-services/usb-hid.md, studied for understanding only)
+ * found iOS's soft keyboard came back after a re-enumeration only ~80% of the time with the
+ * pointer right after the keyboard, and 10 out of 10 times with keyboard -> consumer control ->
+ * pointer. The earlier order here was keyboard -> mouse -> pointer -> extras, under composite PID
+ * 0x4008; the new order has a new PID (Kconfig BRIDGE_PID_COMPOSITE, bridge_config.h refuses
+ * 0x4008) because iOS may reuse a cached descriptor for a known identity.
  *
  * Only the interfaces whose collections are in the profile exist (keyboard-only: just the
- * keyboard), and each profile has its own PID (Kconfig), so the phone never pairs a cached
- * descriptor with another profile's interfaces. A separate absolute-pointer interface without a
- * report id is the layout PiKVM and Aiden use with iOS (studied for understanding only).
+ * keyboard), each profile has its own PID (Kconfig), and the serial number ends in the identity
+ * tag (hid_identity_tag(): -RA, -A, -R, -K, ...), so the phone never pairs a cached descriptor
+ * with another build's interfaces. A separate absolute-pointer interface without a report id is
+ * the layout PiKVM and Aiden use with iOS (studied for understanding only).
  *
  * Delivery: a report is answered 00 only after tud_hid_report_complete_cb() reported that the
- * host read it from the endpoint. Reports are serialised: the next one is queued only after the
- * previous one completed, so they reach the phone in the host's order.
+ * host read that very report (hid_confirm.h: TinyUSB frees the endpoint before the callback
+ * runs, so a late completion of an earlier, unconfirmed report must not be credited to the
+ * next one). Reports are serialised: the next one is queued only after the previous one
+ * completed or gave up, so they reach the phone in the host's order.
+ *
+ * GET_REPORT(Input) answers the last report sent, or the idle value before the first one and
+ * after every (re)configuration (hid_coll_idle_report(): the absolute pointer reads as the
+ * centre of the screen, never (0,0)).
  *
  * API usage follows ESP-IDF's examples/peripherals/usb/device/tusb_hid (Apache-2.0 / CC0) and
  * the TinyUSB headers; no example code was copied.
@@ -38,6 +52,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "hid_confirm.h"
 #include "hid_link.h"
 #include "tinyusb.h"
 
@@ -68,12 +83,12 @@ static uint8_t s_itf_count;
 static int8_t s_coll_itf[HID_COLL_COUNT]; /* collection -> HID instance, -1 if absent */
 static unsigned s_colls;
 static unsigned s_primary;
-static SemaphoreHandle_t s_done[MAX_ITF];
+static SemaphoreHandle_t s_done[MAX_ITF]; /* wakes the bridge task: a completion or a link reset */
 static tusb_desc_device_t s_dev_desc;
 static uint8_t s_cfg_desc[TUD_CONFIG_DESC_LEN + MAX_ITF * TUD_HID_DESC_LEN];
 static char s_manufacturer[32];
-static char s_product[32];
-static char s_serial[32];
+static char s_product[HID_LINK_NAME_MAX + 1];
+static char s_serial[HID_LINK_SERIAL_MAX + 1];
 static const char LANG_EN_US[2] = {0x09, 0x04};
 static const char *s_strings[4];
 
@@ -82,12 +97,17 @@ static portMUX_TYPE s_lock = portMUX_INITIALIZER_UNLOCKED;
 static uint8_t s_leds;
 static bool s_stalled; /* a report was not confirmed in time: link presumed stuck until it drains */
 static uint8_t s_last[HID_COLL_COUNT][MAX_IN_LEN]; /* GET_REPORT answers */
+static hid_confirm_t s_confirm[MAX_ITF];           /* which completion belongs to which report */
+
+/* Bridge task only. */
+static uint32_t s_accepted_us; /* hid_link_accepted_us() */
 typedef struct {
     uint32_t sent;        /* confirmed by the host */
     uint32_t refused;     /* not mounted / not in profile */
     uint32_t busy;        /* endpoint stayed busy (or bus suspended) for the whole wait */
     uint32_t rejected;    /* tud_hid_n_report() returned false */
     uint32_t unconfirmed; /* accepted, but the host did not read it within the confirm wait */
+    uint32_t lost;        /* in the endpoint when the link was reset: never read */
     uint32_t wakeups;     /* remote wakeup requests */
     uint32_t mounts;
 } usb_stats_t;
@@ -201,15 +221,42 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 
 void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report, uint16_t len)
 {
+    /* `report` is the endpoint's buffer, which may already hold the next report: no identity.
+     * Completions come in queue order, so the tracker credits the oldest outstanding report. */
     (void)report;
     (void)len;
     if (instance < s_itf_count && s_done[instance] != NULL) {
-        xSemaphoreGive(s_done[instance]); /* the host has read the report */
+        portENTER_CRITICAL(&s_lock);
+        hid_confirm_completed(&s_confirm[instance]);
+        portEXIT_CRITICAL(&s_lock);
+        xSemaphoreGive(s_done[instance]); /* the host has read a report of this interface */
+    }
+}
+
+/* The configuration was set or cleared (TinyUSB drops a transfer in flight without a
+ * completion, e.g. after a bus reset): reports in flight are lost, and every readable input
+ * value starts idle again. */
+static void link_reset(void)
+{
+    portENTER_CRITICAL(&s_lock);
+    for (uint8_t i = 0; i < s_itf_count; i++) {
+        hid_confirm_reset(&s_confirm[i]);
+    }
+    for (unsigned c = 0; c < HID_COLL_COUNT; c++) {
+        (void)hid_coll_idle_report((hid_coll_t)c, s_last[c], sizeof(s_last[c])); /* never (0,0) */
+    }
+    s_leds = 0;
+    portEXIT_CRITICAL(&s_lock);
+    for (uint8_t i = 0; i < s_itf_count; i++) {
+        if (s_done[i] != NULL) {
+            xSemaphoreGive(s_done[i]); /* a waiting report learns it was lost */
+        }
     }
 }
 
 void tud_mount_cb(void)
 {
+    link_reset();
     portENTER_CRITICAL(&s_lock);
     s_stats.mounts++;
     s_stalled = false;
@@ -219,9 +266,7 @@ void tud_mount_cb(void)
 
 void tud_umount_cb(void)
 {
-    portENTER_CRITICAL(&s_lock);
-    s_leds = 0;
-    portEXIT_CRITICAL(&s_lock);
+    link_reset();
     ESP_LOGI(TAG, "detached / unconfigured");
 }
 
@@ -242,18 +287,24 @@ esp_err_t hid_link_start(const hid_link_config_t *cfg)
     s_colls = cfg->collections & HID_COLL_ALL;
     s_primary = hid_link_primary(s_colls);
     memset(s_coll_itf, -1, sizeof(s_coll_itf));
+    /* Keyboard first, pointers last (see the header comment). Changing this order changes the
+     * configuration descriptor: it needs a new PID. */
     add_itf(HID_COLL_BIT(HID_COLL_KEYBOARD), false, HID_ITF_PROTOCOL_KEYBOARD, "keyboard");
+    add_itf(HID_COLL_BIT(HID_COLL_CONSUMER) | HID_COLL_BIT(HID_COLL_SYSTEM), true, HID_ITF_PROTOCOL_NONE, "extras");
     add_itf(HID_COLL_BIT(HID_COLL_MOUSE), false, HID_ITF_PROTOCOL_MOUSE, "mouse");
     add_itf(HID_COLL_BIT(HID_COLL_ABS_POINTER), false, HID_ITF_PROTOCOL_NONE, "pointer");
-    add_itf(HID_COLL_BIT(HID_COLL_CONSUMER) | HID_COLL_BIT(HID_COLL_SYSTEM), true, HID_ITF_PROTOCOL_NONE, "extras");
     if (s_itf_count == 0u) {
         return ESP_ERR_INVALID_ARG;
     }
     for (uint8_t i = 0; i < s_itf_count; i++) {
+        hid_confirm_init(&s_confirm[i]);
         s_done[i] = xSemaphoreCreateBinary();
         if (s_done[i] == NULL) {
             return ESP_ERR_NO_MEM;
         }
+    }
+    for (unsigned c = 0; c < HID_COLL_COUNT; c++) {
+        (void)hid_coll_idle_report((hid_coll_t)c, s_last[c], sizeof(s_last[c])); /* never (0,0) */
     }
 
     snprintf(s_manufacturer, sizeof(s_manufacturer), "%s",
@@ -296,8 +347,8 @@ esp_err_t hid_link_start(const hid_link_config_t *cfg)
         ESP_LOGE(TAG, "tinyusb_driver_install: %s", esp_err_to_name(err));
         return err;
     }
-    ESP_LOGI(TAG, "USB %04X:%04X \"%s\", %u interface(s), configuration descriptor %u bytes", cfg->vid, cfg->pid,
-             s_product, (unsigned)s_itf_count, (unsigned)cfg_len);
+    ESP_LOGI(TAG, "USB %04X:%04X \"%s\" serial \"%s\", %u interface(s), configuration descriptor %u bytes",
+             cfg->vid, cfg->pid, s_product, s_serial, (unsigned)s_itf_count, (unsigned)cfg_len);
     for (uint8_t i = 0; i < s_itf_count; i++) {
         ESP_LOGI(TAG, "  interface %u: %s, report descriptor %u bytes", (unsigned)i, s_itf[i].name,
                  (unsigned)s_itf[i].desc_len);
@@ -350,21 +401,49 @@ uint8_t hid_link_send(hid_coll_t which, const uint8_t *data, size_t len)
         vTaskDelay(1);
     }
 
-    /* 2. Queue it. A completion left over from an earlier, unconfirmed report is dropped first:
-     * the endpoint was free, so that report is done and this wait is for the new one. */
-    (void)xSemaphoreTake(s_done[inst], 0);
+    /* 2. Queue it, with a ticket reserved first: its completion can run on the other core
+     * before tud_hid_n_report() returns. The endpoint being free does not mean the previous
+     * report's completion callback has run yet (TinyUSB clears "busy" first); the ticket keeps
+     * that late completion from being credited to this report. */
+    portENTER_CRITICAL(&s_lock);
+    const hid_confirm_ticket_t ticket = hid_confirm_reserve(&s_confirm[inst]);
+    portEXIT_CRITICAL(&s_lock);
     if (!tud_hid_n_report(inst, report_id, data, (uint16_t)len)) {
         portENTER_CRITICAL(&s_lock);
+        hid_confirm_cancel(&s_confirm[inst], ticket);
         s_stats.rejected++;
         portEXIT_CRITICAL(&s_lock);
         return CH9329_STATUS_EXEC_FAILED;
     }
+    s_accepted_us = (uint32_t)esp_timer_get_time(); /* in the endpoint; the phone reads it at its next poll */
 
-    /* 3. Wait for the host to read it. */
-    if (xSemaphoreTake(s_done[inst], pdMS_TO_TICKS(CONFIG_BRIDGE_USB_CONFIRM_WAIT_MS)) != pdTRUE) {
+    /* 3. Wait for the host to read this very report. Every completion (and a link reset) wakes
+     * the task; only this report's own completion ends the wait. */
+    const int64_t confirm_deadline = esp_timer_get_time() + (int64_t)CONFIG_BRIDGE_USB_CONFIRM_WAIT_MS * 1000;
+    hid_confirm_state_t state;
+    for (;;) {
+        portENTER_CRITICAL(&s_lock);
+        state = hid_confirm_state(&s_confirm[inst], ticket);
+        portEXIT_CRITICAL(&s_lock);
+        const int64_t left_us = confirm_deadline - esp_timer_get_time();
+        if (state != HID_CONFIRM_WAITING || left_us <= 0) {
+            break;
+        }
+        (void)xSemaphoreTake(s_done[inst], pdMS_TO_TICKS((uint32_t)((left_us + 999) / 1000)));
+    }
+    if (state == HID_CONFIRM_LOST) {
+        /* The configuration was reset while it waited: dropped by the stack, never read. */
+        portENTER_CRITICAL(&s_lock);
+        s_stats.lost++;
+        portEXIT_CRITICAL(&s_lock);
+        ESP_LOGW(TAG, "%s report dropped by a USB reset", hid_coll_name(which));
+        return CH9329_STATUS_EXEC_FAILED;
+    }
+    if (state != HID_CONFIRM_READ) {
         /* Still in the endpoint: the phone stopped polling (detached, suspended mid-transfer).
          * It may still be read later if polling resumes; the host must treat the pointer
-         * position as unknown after this E6. */
+         * position as unknown after this E6. Its late completion is matched to it, not to the
+         * next report. */
         portENTER_CRITICAL(&s_lock);
         s_stats.unconfirmed++;
         s_stalled = true;
@@ -399,6 +478,11 @@ bool hid_link_ready(void)
     const bool ready = !s_stalled;
     portEXIT_CRITICAL(&s_lock);
     return ready;
+}
+
+uint32_t hid_link_accepted_us(void)
+{
+    return s_accepted_us;
 }
 
 uint8_t hid_link_leds(void)
@@ -437,9 +521,12 @@ void hid_link_log_stats(void)
     portENTER_CRITICAL(&s_lock);
     const usb_stats_t st = s_stats;
     portEXIT_CRITICAL(&s_lock);
-    ESP_LOGI(TAG, "usb: mounted %d suspended %d | sent %lu refused %lu busy %lu rejected %lu unconfirmed %lu wakeups %lu",
+    ESP_LOGI(TAG,
+             "usb: mounted %d suspended %d | sent %lu refused %lu busy %lu rejected %lu unconfirmed %lu lost %lu "
+             "wakeups %lu",
              tud_mounted(), tud_suspended(), (unsigned long)st.sent, (unsigned long)st.refused, (unsigned long)st.busy,
-             (unsigned long)st.rejected, (unsigned long)st.unconfirmed, (unsigned long)st.wakeups);
+             (unsigned long)st.rejected, (unsigned long)st.unconfirmed, (unsigned long)st.lost,
+             (unsigned long)st.wakeups);
 }
 
 #endif /* CONFIG_BRIDGE_OUTPUT_USB */

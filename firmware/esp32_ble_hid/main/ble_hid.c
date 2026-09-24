@@ -3,7 +3,8 @@
  * CONFIG_BRIDGE_OUTPUT_BLE (see hid_link.h for the delivery contract).
  *
  * GATT database (identical in every work mode, so a bonded iPhone's cached handles stay valid;
- * only the Report Map value changes with the profile, announced with Service Changed):
+ * only the Report Map and Report Reference values change with the profile, announced with
+ * Service Changed):
  *
  *   Device Information 0x180A  Manufacturer, Model, Serial, Firmware rev, Software rev, PnP ID
  *   Battery            0x180F  Battery Level (always 100 %: USB powered)
@@ -11,6 +12,17 @@
  *                              Report id 1 input (keyboard), id 1 output (LEDs), id 2 input
  *                              (mouse), id 3 input (consumer), id 4 input (system), id 5 input
  *                              (absolute pointer)
+ *
+ * Report ids (hid_map_build(), hid_map_report_id()): a profile with several collections uses the
+ * ids above. A profile with ONE collection (keyboard-only; mouse-only with a single pointer) has
+ * a Report Map without any Report ID item and that collection's Report References say id 0:
+ * iOS 13.2.3 ignored notifications from a single-collection map that declared an id (Apple
+ * Developer Forums thread 126757). Characteristics of collections outside the profile keep their
+ * own id, which the map does not declare; they are never notified.
+ *
+ * Readable input values start idle (hid_coll_idle_report()): all zero, except the absolute
+ * pointer, which reads as the centre of the screen. An absolute report is a position, and (0,0)
+ * would send the phone's pointer to the top-left corner.
  *
  * Threading: hid_link_send() and hid_link_shutdown() block and run in the bridge task, never in
  * the NimBLE host task. GAP/GATT callbacks (host task) only copy small values and never wait.
@@ -89,7 +101,9 @@ static const char *TAG = "ble_hid";
 #define ADV_SLOW_ITVL 244u  /* 152.5 ms */
 #define ADV_FAST_MS 30000   /* Apple: 20 ms for at least 30 s */
 #define ADV_NAME_IN_ADV 15u /* 31 - flags(3) - tx power(3) - appearance(4) - uuid16(4) - header(2) */
-#define NAME_MAX_LEN 29u    /* whole name in the scan response: 31 - header(2) */
+#define NAME_MAX_LEN HID_LINK_NAME_MAX /* whole name in the scan response: 31 - header(2) */
+_Static_assert(CH9329_STR_MAX + 1u + HID_IDENTITY_TAG_MAX <= NAME_MAX_LEN,
+               "a SET_USB_STRING product name plus the identity tag must fit the BLE name");
 
 /* HID reports may only use NimBLE's mbuf pools while more blocks than this are free: the
  * stack's own ATT responses (report map reads, CCCD writes) and L2CAP signalling (connection
@@ -104,12 +118,12 @@ static const char *TAG = "ble_hid";
 /* HID Information: bcdHID 1.11, country 0, flags RemoteWake | NormallyConnectable. */
 static const uint8_t HID_INFO[4] = {0x11, 0x01, 0x00, 0x03};
 
-/* Report Reference descriptors: {report id, type (1 input, 2 output)}. */
+/* Report Reference descriptors: {report id, type (1 input, 2 output)}. The id depends on the
+ * profile's Report Map (hid_map_report_id()); the table is filled in hid_link_start(). */
 enum { RR_KB_IN = 0, RR_KB_OUT, RR_MOUSE_IN, RR_CONSUMER_IN, RR_SYSTEM_IN, RR_ABS_IN, RR_COUNT };
-static const uint8_t REPORT_REF[RR_COUNT][2] = {
-    {HID_REPORT_ID_KEYBOARD, 1}, {HID_REPORT_ID_KEYBOARD, 2}, {HID_REPORT_ID_MOUSE, 1},
-    {HID_REPORT_ID_CONSUMER, 1}, {HID_REPORT_ID_SYSTEM, 1},   {HID_REPORT_ID_ABS_POINTER, 1},
-};
+static const hid_coll_t RR_COLL[RR_COUNT] = {HID_COLL_KEYBOARD, HID_COLL_KEYBOARD, HID_COLL_MOUSE,
+                                             HID_COLL_CONSUMER, HID_COLL_SYSTEM,   HID_COLL_ABS_POINTER};
+static const uint8_t RR_TYPE[RR_COUNT] = {1, 2, 1, 1, 1, 1};
 
 #define N_IN HID_COLL_COUNT /* one input report characteristic per collection */
 #define MAX_IN_LEN 8u       /* largest input payload (keyboard) */
@@ -166,13 +180,17 @@ static unsigned s_primary; /* ... that GET_INFO's link status requires */
 static uint16_t s_appearance;
 static char s_name[NAME_MAX_LEN + 1];
 static char s_manufacturer[CH9329_STR_MAX + 1];
-static char s_serial[CH9329_STR_MAX + 1];
+static char s_serial[HID_LINK_SERIAL_MAX + 1];
 static char s_fw_rev[48]; /* esp_app_desc_t.version: 32 bytes */
 static char s_sw_rev[48]; /* "ESP-IDF " + esp_app_desc_t.idf_ver (32 bytes) */
 static uint8_t s_pnp[7];
 static const char *const MODEL = "ESP32-S3 BLE HID bridge"; /* <= 26 chars (Apple) */
 static uint8_t s_map[HID_DESC_MAX];
 static size_t s_map_len;
+static uint8_t s_report_ref[RR_COUNT][2];
+
+/* Bridge task only. */
+static uint32_t s_accepted_us; /* hid_link_accepted_us() */
 
 /* Host task only. */
 static uint8_t s_own_addr_type;
@@ -255,7 +273,7 @@ static int report_ref_access(uint16_t conn_handle, uint16_t attr_handle, struct 
     if (ctxt->op != BLE_GATT_ACCESS_OP_READ_DSC || idx >= RR_COUNT) {
         return BLE_ATT_ERR_UNLIKELY;
     }
-    return append(ctxt->om, REPORT_REF[idx], 2);
+    return append(ctxt->om, s_report_ref[idx], 2);
 }
 
 static int hid_access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg)
@@ -451,7 +469,9 @@ static void reset_link_state(uint16_t conn)
     s_st.protocol_mode = 1;
     s_st.suspended = false;
     s_st.period = 0;
-    memset(s_st.last, 0, sizeof(s_st.last));
+    for (unsigned c = 0; c < N_IN; c++) {
+        (void)hid_coll_idle_report((hid_coll_t)c, s_st.last[c], sizeof(s_st.last[c])); /* never (0,0) */
+    }
     portEXIT_CRITICAL(&s_lock);
 }
 
@@ -728,12 +748,14 @@ static void on_sync(void)
         return;
     }
     if (s_db_changed) {
-        /* The Report Map changed since the last boot (work mode): tell bonded iPhones to
-         * re-read the database. NimBLE indicates at once to connected peers and stores a
-         * pending indication for bonded ones, sent when they reconnect. */
+        /* The Report Map or a Report Reference differs from the last boot's (work mode, pointer
+         * build, firmware update): tell bonded iPhones to re-read the database. NimBLE indicates
+         * at once to connected peers and stores a pending indication for bonded ones, sent when
+         * they reconnect. Whether iOS then drops its cached report map is unproven. */
         ble_svc_gatt_changed(0x0001, 0xFFFF);
         s_db_changed = false;
-        ESP_LOGI(TAG, "Service Changed queued for bonded peers (report map changed)");
+        ESP_LOGW(TAG, "report map new or changed since the last boot: Service Changed queued. An iPhone paired "
+                      "before must Forget this device; hold BOOT 3 s to delete the bridge's bonds, then pair again");
     }
     advertise(true);
 }
@@ -751,6 +773,21 @@ static void copy_str(char *dst, size_t cap, const char *src, const char *fallbac
     snprintf(dst, cap, "%s", s);
 }
 
+/* What a bonded iPhone caches from this firmware: the Report Map and the Report References
+ * (FNV-1a). A new value since the last boot is announced with Service Changed (on_sync). */
+static uint32_t map_fingerprint(void)
+{
+    uint32_t h = 2166136261u;
+    for (size_t i = 0; i < s_map_len; i++) {
+        h = (h ^ s_map[i]) * 16777619u;
+    }
+    for (size_t i = 0; i < RR_COUNT; i++) {
+        h = (h ^ s_report_ref[i][0]) * 16777619u;
+        h = (h ^ s_report_ref[i][1]) * 16777619u;
+    }
+    return h;
+}
+
 esp_err_t hid_link_start(const hid_link_config_t *cfg)
 {
     s_events = xEventGroupCreate();
@@ -760,11 +797,16 @@ esp_err_t hid_link_start(const hid_link_config_t *cfg)
     s_profile = cfg->profile < HID_PROFILE_COUNT ? cfg->profile : HID_PROFILE_COMPOSITE;
     s_colls = cfg->collections & HID_COLL_ALL;
     s_primary = hid_link_primary(s_colls);
-    s_map_len = hid_desc_build(s_map, sizeof(s_map), s_colls, true);
+    s_map_len = hid_map_build(s_map, sizeof(s_map), s_colls);
     if (s_map_len == 0u) {
         ESP_LOGE(TAG, "no report map for collections 0x%02X", s_colls);
         return ESP_ERR_INVALID_ARG;
     }
+    for (unsigned i = 0; i < RR_COUNT; i++) {
+        s_report_ref[i][0] = hid_map_report_id(s_colls, RR_COLL[i]);
+        s_report_ref[i][1] = RR_TYPE[i];
+    }
+    reset_link_state(BLE_HS_CONN_HANDLE_NONE); /* idle input values before the first connection */
     s_appearance = s_profile == HID_PROFILE_MOUSE ? APPEARANCE_MOUSE : APPEARANCE_KEYBOARD;
 
     /* Local Name: printable ASCII, no ':' or ';' (Apple), at most 29 characters. */
@@ -787,12 +829,15 @@ esp_err_t hid_link_start(const hid_link_config_t *cfg)
     s_pnp[5] = 0x00; /* product version 1.00 */
     s_pnp[6] = 0x01;
 
-    /* The GATT layout never changes; the Report Map does, with the work mode and the pointer
-     * choice. Remember what the bonded iPhones last saw so a change can be announced (on_sync). */
-    uint8_t last_colls = 0xFF;
-    if (!persist_get_u8("gatt_colls", &last_colls) || last_colls != (uint8_t)s_colls) {
-        s_db_changed = last_colls != 0xFF; /* first boot: nobody has a cache to invalidate */
-        persist_set_u8("gatt_colls", (uint8_t)s_colls);
+    /* The GATT layout never changes; the Report Map and Report References do, with the work
+     * mode, the pointer build and firmware updates. Remember what the bonded iPhones last saw so
+     * a change can be announced (on_sync). No record (first boot, or a firmware that kept only
+     * the collection mask) counts as a change: Service Changed without bonded peers is harmless. */
+    const uint32_t fingerprint = map_fingerprint();
+    uint32_t last = 0;
+    if (!persist_get_u32("gatt_map", &last) || last != fingerprint) {
+        s_db_changed = true;
+        persist_set_u32("gatt_map", fingerprint);
     }
 
     esp_err_t err = nimble_port_init();
@@ -834,8 +879,9 @@ esp_err_t hid_link_start(const hid_link_config_t *cfg)
     ble_npl_event_init(&s_clear_ev, clear_bonds_cb, NULL);
     ble_npl_callout_init(&s_param_retry, nimble_port_get_dflt_eventq(), param_retry_cb, NULL);
 
-    ESP_LOGI(TAG, "profile %s, collections 0x%02X, name \"%s\", report map %u bytes", hid_profile_name(s_profile),
-             s_colls, s_name, (unsigned)s_map_len);
+    ESP_LOGI(TAG, "profile %s, collections 0x%02X, name \"%s\", serial \"%s\", report map %u bytes %s report ids",
+             hid_profile_name(s_profile), s_colls, s_name, s_serial, (unsigned)s_map_len,
+             hid_map_uses_ids(s_colls) ? "with" : "without");
     nimble_port_freertos_init(host_task);
     return ESP_OK;
 }
@@ -876,6 +922,7 @@ uint8_t hid_link_send(hid_coll_t which, const uint8_t *data, size_t len)
             }
         }
         if (rc == 0) {
+            s_accepted_us = (uint32_t)esp_timer_get_time(); /* queued for the next connection event */
             portENTER_CRITICAL(&s_lock);
             memcpy(s_st.last[which], data, len);
             s_st.stalled = false;
@@ -928,6 +975,11 @@ bool hid_link_ready(void)
     }
     portEXIT_CRITICAL(&s_lock);
     return ready;
+}
+
+uint32_t hid_link_accepted_us(void)
+{
+    return s_accepted_us;
 }
 
 uint8_t hid_link_leds(void)

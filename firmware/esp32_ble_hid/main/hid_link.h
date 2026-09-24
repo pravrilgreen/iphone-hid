@@ -16,7 +16,8 @@
  *        encrypted link whose central subscribed to that report. The link layer then
  *        retransmits it until acknowledged or the link drops.
  *   USB: tud_hid_n_report() accepted it AND tud_hid_report_complete_cb() confirmed the host read
- *        it from the endpoint, within CONFIG_BRIDGE_USB_CONFIRM_WAIT_MS.
+ *        that very report from the endpoint (hid_confirm.h matches completions to reports),
+ *        within CONFIG_BRIDGE_USB_CONFIRM_WAIT_MS.
  */
 #pragma once
 
@@ -28,12 +29,17 @@
 #include "esp_err.h"
 #include "hid_report_map.h"
 
+/* Longest name and serial number (without the NUL) hid_link_start() presents unshortened. */
+#define HID_LINK_NAME_MAX 29u /* BLE: the whole Local Name fits in the scan response (31 - 2) */
+/* A SET_USB_STRING serial number (23 characters) + "-" + the identity tag (hid_identity_tag()). */
+#define HID_LINK_SERIAL_MAX (CH9329_STR_MAX + 1u + HID_IDENTITY_TAG_MAX)
+
 typedef struct {
     hid_profile_t profile;
     unsigned collections;     /* HID_COLL_* bits the phone sees (never changes while running) */
-    const char *name;         /* BLE device name / USB product string */
+    const char *name;         /* BLE device name / USB product string, identity tag included */
     const char *manufacturer; /* DIS / USB manufacturer string */
-    const char *serial;       /* DIS / USB serial number string */
+    const char *serial;       /* DIS / USB serial number string, identity tag included */
     uint16_t vid, pid;        /* BLE PnP ID / USB device descriptor */
 } hid_link_config_t;
 
@@ -41,6 +47,12 @@ esp_err_t hid_link_start(const hid_link_config_t *cfg);
 
 /* Deliver one input report of collection `which` (payload without report id). */
 uint8_t hid_link_send(hid_coll_t which, const uint8_t *data, size_t len);
+
+/* When the link ACCEPTED the last report hid_link_send() answered OK for, on the esp_timer
+ * microsecond clock truncated to 32 bits (SEND_MS_REL_RUN lateness, ch9329_sink_t.accepted_us).
+ * BLE: NimBLE queued the notification. USB: the report was placed in the endpoint (the OK itself
+ * waits until the phone has read it, up to one poll later). Bridge task only. */
+uint32_t hid_link_accepted_us(void);
 
 /* GET_INFO byte 1: every primary report of the profile can be delivered right now. */
 bool hid_link_ready(void);

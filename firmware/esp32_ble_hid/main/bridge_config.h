@@ -49,6 +49,11 @@
 #endif
 #endif /* CONFIG_BRIDGE_OUTPUT_BLE */
 
+#if CONFIG_BRIDGE_OUTPUT_USB && CONFIG_BRIDGE_PID_COMPOSITE == 0x4008
+/* iOS may reuse the descriptor it cached for a known VID/PID/serial. */
+#error "PID 0x4008 was the composite profile's PID with the old USB interface order (keyboard, mouse, pointer, extras). Use the new default 0x4028 (delete this build's sdkconfig, or set BRIDGE_PID_COMPOSITE in menuconfig) or another unused PID"
+#endif
+
 #if CONFIG_BRIDGE_NOTIFY_WAIT_MS >= 450
 #error "CONFIG_BRIDGE_NOTIFY_WAIT_MS must stay well below the host's 500 ms reply timeout"
 #endif

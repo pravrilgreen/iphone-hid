@@ -12,7 +12,7 @@ CONFIG_BRIDGE_OUTPUT_USB=y
 # CONFIG_ESP_CONSOLE_UART_CUSTOM for debugging).
 CONFIG_ESP_CONSOLE_NONE=y
 
-# TinyUSB (espressif/esp_tinyusb): four HID interfaces (keyboard, mouse, pointer, extras).
+# TinyUSB (espressif/esp_tinyusb): four HID interfaces (keyboard, extras, mouse, pointer).
 CONFIG_TINYUSB_HID_COUNT=4
 # CONFIG_TINYUSB_CDC_ENABLED is not set
 # CONFIG_TINYUSB_MSC_ENABLED is not set

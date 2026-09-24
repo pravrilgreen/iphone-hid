@@ -22,5 +22,5 @@ bool persist_load(ch9329_persist_t *out);
 bool persist_store(const ch9329_persist_t *p);
 
 /* Small unsigned markers (namespace "bridge"). */
-bool persist_get_u8(const char *key, uint8_t *out);
-bool persist_set_u8(const char *key, uint8_t value);
+bool persist_get_u32(const char *key, uint32_t *out);
+bool persist_set_u32(const char *key, uint32_t value);

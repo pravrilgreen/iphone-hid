@@ -91,23 +91,23 @@ bool persist_store(const ch9329_persist_t *p)
     return true;
 }
 
-bool persist_get_u8(const char *key, uint8_t *out)
+bool persist_get_u32(const char *key, uint32_t *out)
 {
     nvs_handle_t h;
     if (nvs_open(NS_BRIDGE, NVS_READONLY, &h) != ESP_OK) {
         return false;
     }
-    const esp_err_t err = nvs_get_u8(h, key, out);
+    const esp_err_t err = nvs_get_u32(h, key, out);
     nvs_close(h);
     return err == ESP_OK;
 }
 
-bool persist_set_u8(const char *key, uint8_t value)
+bool persist_set_u32(const char *key, uint32_t value)
 {
     nvs_handle_t h;
     esp_err_t err = nvs_open(NS_BRIDGE, NVS_READWRITE, &h);
     if (err == ESP_OK) {
-        err = nvs_set_u8(h, key, value);
+        err = nvs_set_u32(h, key, value);
         if (err == ESP_OK) {
             err = nvs_commit(h);
         }

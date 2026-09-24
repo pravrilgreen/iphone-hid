@@ -35,10 +35,14 @@ from ihc.hid.scan import probe  # noqa: E402
 CHECKS = 0
 
 # GET_INFO of the simulator: version 0x40 ("ihc bridge v1.0"), link, LEDs, output 0x7F (simulator),
-# collections 0x1F (keyboard, mouse, consumer, system, absolute pointer), features 0x01 (REL_RUN),
-# report period 60 x 0.25 ms = 15 ms (u16 little-endian: 3c 00).
-INFO_COMPOSITE = "40 01 00 7f 1f 01 3c 00"
+# collections 0x1F (keyboard, mouse, consumer, system, absolute pointer), features 0x07 (REL_RUN,
+# its 0.25 ms interval flag, its E7 "late" status), report period 60 x 0.25 ms = 15 ms
+# (u16 little-endian: 3c 00).
+INFO_COMPOSITE = "40 01 00 7f 1f 07 3c 00"
+INFO_KEYBOARD_ONLY = "40 01 00 7f 01 07 3c 00"
 CMD_REL_RUN = 0x30
+REL_RUN_QUARTER_MS = 0x80  # flags bit 7: interval in 0.25 ms units
+STATUS_RUN_LATE = 0xE7  # vendor: every report delivered, at least one late (not in the driver's enum yet)
 
 
 def info_period(info: dict) -> int:
@@ -211,7 +215,7 @@ def basic_session(sim: Sim) -> None:
         check(any(ln.startswith("RESTART work_mode=01") for ln in sim.lines()), "restart into work mode 1")
         hid.keyboard(0x08, [0x2C])  # Cmd+Space still works
         hid.keyboard(0, [])
-        check(hid.info()["raw"] == "40 01 00 7f 01 01 3c 00", "GET_INFO: keyboard collection only")
+        check(hid.info()["raw"] == INFO_KEYBOARD_ONLY, "GET_INFO: keyboard collection only")
         expect_status(lambda: hid.mouse_rel(1, 1), p.Status.EXEC_ERROR, "mouse in keyboard-only mode")
         expect_status(lambda: hid.mouse_abs(1, 1), p.Status.EXEC_ERROR, "abs pointer in keyboard-only mode")
         expect_status(lambda: hid.media(p.MEDIA_KEYS["mute"]), p.Status.EXEC_ERROR, "media in keyboard-only mode")
@@ -296,6 +300,34 @@ def reliability_session(sim: Sim) -> None:
         for bad in ([5, 0, 0, 10, 0], [5, 0, 2, 10, 8], [5, 0, 255, 9, 0]):
             frames = hid.transact_raw(p.encode(CMD_REL_RUN, bytes(bad)), listen=0.2)
             check([(f.cmd, f.data) for f in frames] == [(0xF0, b"\xe5")], f"REL_RUN {bad}: {frames}")
+        # 0.25 ms units (flags bit 7): 12 steps of 90 x 0.25 ms = 22.5 ms (a 7.5 ms BLE link x 3),
+        # buttons still in bits 0-2; reserved flag bits 3-6 are refused.
+        before = len(sim.reports())
+        frames, took = rel_run(hid, 2, 0, 12, 90, REL_RUN_QUARTER_MS | p.MOUSE_LEFT)
+        check([(f.cmd, f.data) for f in frames] == [(0xB0, b"\x00")], f"quarter-ms REL_RUN reply {frames}")
+        check(sim.reports()[before:] == ["MOUSE 01 02 00 00"] * 12, f"quarter-ms reports {sim.reports()[before:]}")
+        check(0.25 <= took < 0.75, f"quarter-ms run took {took * 1000:.0f} ms for 12 slots of 22.5 ms")
+        hid.mouse_rel(0, 0)
+        for flags in (0x08, 0x40 | REL_RUN_QUARTER_MS):
+            frames = hid.transact_raw(p.encode(CMD_REL_RUN, bytes([1, 0, 2, 10, flags])), listen=0.2)
+            check([(f.cmd, f.data) for f in frames] == [(0xF0, b"\xe5")], f"REL_RUN flags {flags:#04x}: {frames}")
+        # Late reports (the simulated link takes 30 ms per report for a 15 ms pace): the whole move
+        # is still played, but the reply is E7 instead of 00, so the host knows the landing point
+        # is not exact. The unmodified driver reports it as a failed command with status 0xE7.
+        sim.ctl("delay 30")
+        before = len(sim.reports())
+        frames, _ = rel_run(hid, 1, 0, 3, 15)
+        check([(f.cmd, f.data) for f in frames] == [(0xF0, b"\xe7")], f"late REL_RUN reply {frames}")
+        check(sim.reports()[before:] == ["MOUSE 00 01 00 00"] * 3, f"late run still complete {sim.reports()[before:]}")
+        before = len(sim.reports())
+        expect_status(lambda: hid.mouse_rel_runs([(1, 0, 2)], 15), STATUS_RUN_LATE, "driver sees E7 for a late run")
+        check(sim.reports()[before:] == ["MOUSE 00 01 00 00"] * 2, f"late driver run complete {sim.reports()[before:]}")
+        sim.ctl("delay 0")
+        frames, _ = rel_run(hid, 1, 0, 3, 15)
+        check([(f.cmd, f.data) for f in frames] == [(0xB0, b"\x00")], f"on-time REL_RUN reply {frames}")
+        hid.mouse_rel_runs([(1, 0, 2)], 15)  # on time again: no error
+        check(hid.info()["raw"] == INFO_COMPOSITE, "GET_INFO after the late runs")
+
         # Buffers stay full at step 3 of 5: E6, steps 1-2 delivered, nothing after the failure.
         before = len(sim.reports())
         sim.ctl("failat 3")
