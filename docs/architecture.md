@@ -94,6 +94,11 @@ link trong `GET_INFO` (byte 6–7), và hiệu chỉnh chọn nhịp là bội s
 20 ms (Bluetooth 15 ms thành 30 ms). Nếu link Bluetooth đổi chu kỳ sau khi hiệu chỉnh, trạng thái thiết bị
 báo cần hiệu chỉnh lại.
 
+Rủi ro còn lại (cần đo trên phần cứng, bài L2): báo cáo xếp hàng sát một connection event có thể đi ở event đó
+hoặc event sau tuỳ may rủi, và đồng hồ ESP32 lệch dần so với iPhone nên pha sẽ trôi qua ranh giới đó mỗi vài
+phút. Trên mô phỏng, jitter 1 ms của bridge đã cho sai số tới vài chục pt ở một số lần. Nếu đo thấy vấn đề, bridge
+sẽ canh bắt đầu mỗi đoạn chạy ở giữa hai connection event. Chế độ tuyệt đối không bị ảnh hưởng.
+
 Với CH9329, `bInterval` của chip chưa biết: bài T0 đo nó. Nếu jitter sau cổng serial vẫn lớn thì:
 - hạ tốc độ bước lớn (`coarse_target`);
 - dùng bridge ESP32 ở chế độ USB (tự tạo nhịp, `bInterval` 1 ms);
