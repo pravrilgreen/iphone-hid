@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import os
 import select
+from collections import deque
 import termios
 import threading
 import time
@@ -39,49 +40,105 @@ def _noop(event: str, **fields) -> None:
 
 @dataclass
 class SimPointer:
-    """Crude AssistiveTouch pointer: relative moves only, speed-dependent gain, clamped to the screen.
+    """Stand-in for the AssistiveTouch pointer: relative moves only, velocity-dependent gain,
+    clamped to the screen. Units are iOS points (default: iPhone 15 portrait, 393 x 852 pt).
 
-    Each axis moves d * gain * (1 + accel * |d|) points per report, a stand-in for iOS pointer
-    acceleration when reports are paced at a fixed interval. Units are iOS points (iPhone 15 portrait).
+    Per axis a report of d units moves d * gain * (1 + accel * v / 1000) points, where v is the
+    report's speed in units/s: d over the time since the previous report, a gap counted as at most
+    `idle_reset` seconds (the velocity estimate forgets after that, as mouse drivers do). Real iOS
+    acceleration is unknown in detail but also speed-based, which is what the pacer relies on: a
+    fixed step at a fixed interval, started from rest, covers a fixed distance. `tracking` scales
+    everything like the iOS Tracking Speed slider.
     """
 
     width: float = 393.0
     height: float = 852.0
-    gain: float = 0.5
-    accel: float = 0.03
+    gain: float = 0.35
+    accel: float = 1.5
+    tracking: float = 1.0
+    idle_reset: float = 0.1
+    # Absolute reports: iOS support is unverified (the Aiden project reports it works over USB), so
+    # it is a switch. When on, the 0..4095 range spans the screen and the cursor glides to the new
+    # spot over `abs_glide` seconds, so a click sent too early lands short.
+    absolute: bool = False
+    abs_glide: float = 0.06
     x: float = -1.0
     y: float = -1.0
     buttons: int = 0
+    clock: Callable[[], float] = field(default=time.monotonic, repr=False)
     emit: Emit = field(default=_noop, repr=False)
+    history: deque = field(default_factory=lambda: deque(maxlen=512), repr=False)
     _down_at: dict = field(default_factory=dict, repr=False)
+    _last_t: float = field(default=0.0, repr=False)
+    _glide: tuple | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         if self.x < 0:
             self.x, self.y = self.width / 2, self.height / 2
+        self.history.append((self.clock(), self.x, self.y))
 
-    def _step(self, d: int) -> float:
-        return d * self.gain * (1 + self.accel * abs(d))
+    def _step(self, d: int, dt: float) -> float:
+        speed = abs(d) / max(dt, 0.008)
+        return d * self.gain * self.tracking * (1 + self.accel * speed / 1000)
 
-    def relative(self, dx: int, dy: int, buttons: int, wheel: int) -> None:
-        self.x = min(max(self.x + self._step(dx), 0.0), self.width - 1)
-        self.y = min(max(self.y + self._step(dy), 0.0), self.height - 1)
-        self._buttons(buttons)
+    def _settle_glide(self, now: float) -> None:
+        if self._glide is not None:
+            t0, x0, y0, x1, y1 = self._glide
+            k = min(1.0, (now - t0) / self.abs_glide) if self.abs_glide > 0 else 1.0
+            self.x, self.y = x0 + (x1 - x0) * k, y0 + (y1 - y0) * k
+            if k >= 1.0:
+                self._glide = None
+
+    def absolute_report(self, ax: int, ay: int, buttons: int, wheel: int) -> None:
+        now = self.clock()
+        self._settle_glide(now)
+        tx = min(max(ax / 4095 * self.width, 0.0), self.width - 1)
+        ty = min(max(ay / 4095 * self.height, 0.0), self.height - 1)
+        if (tx, ty) != (self.x, self.y):
+            self._glide = (now, self.x, self.y, tx, ty)
+            self.history.append((now + self.abs_glide, tx, ty))
+        self._buttons(buttons, now)
         if wheel:
             self.emit("scroll", amount=wheel, x=round(self.x, 1), y=round(self.y, 1))
 
-    def _buttons(self, buttons: int) -> None:
+    def relative(self, dx: int, dy: int, buttons: int, wheel: int) -> None:
+        now = self.clock()
+        self._settle_glide(now)
+        if dx or dy:  # velocity comes from motion reports only
+            dt = min(now - self._last_t, self.idle_reset) if self._last_t else self.idle_reset
+            self._last_t = now
+            self.x = min(max(self.x + self._step(dx, dt), 0.0), self.width - 1)
+            self.y = min(max(self.y + self._step(dy, dt), 0.0), self.height - 1)
+            self.history.append((now, self.x, self.y))
+        self._buttons(buttons, now)
+        if wheel:
+            self.emit("scroll", amount=wheel, x=round(self.x, 1), y=round(self.y, 1))
+
+    def current(self) -> tuple[float, float]:
+        """Position now (an absolute move glides, so x/y alone may lag behind)."""
+        self._settle_glide(self.clock())
+        return self.x, self.y
+
+    def position_at(self, t: float) -> tuple[float, float]:
+        """Where the pointer was at time t (for simulating capture latency)."""
+        for ht, hx, hy in reversed(self.history):
+            if ht <= t:
+                return hx, hy
+        return (self.history[0][1], self.history[0][2]) if self.history else (self.x, self.y)
+
+    def _buttons(self, buttons: int, now: float) -> None:
         pos = (round(self.x, 1), round(self.y, 1))
         for bit, name in _BUTTON_NAMES.items():
-            was, now = self.buttons & bit, buttons & bit
-            if now and not was:
-                self._down_at[bit] = pos
+            was, down = self.buttons & bit, buttons & bit
+            if down and not was:
+                self._down_at[bit] = (pos, now)
                 self.emit("button_down", button=name, x=pos[0], y=pos[1])
-            elif was and not now:
-                start = self._down_at.pop(bit, pos)
+            elif was and not down:
+                start, t0 = self._down_at.pop(bit, (pos, now))
                 if abs(start[0] - pos[0]) + abs(start[1] - pos[1]) < 5:
-                    self.emit("click", button=name, x=pos[0], y=pos[1])
+                    self.emit("click", button=name, x=pos[0], y=pos[1], held=round(now - t0, 3))
                 else:
-                    self.emit("drag", button=name, x1=start[0], y1=start[1], x2=pos[0], y2=pos[1])
+                    self.emit("drag", button=name, x1=start[0], y1=start[1], x2=pos[0], y2=pos[1], held=round(now - t0, 3))
         self.buttons = buttons
 
 
@@ -103,15 +160,16 @@ class SimKeyboard:
             ch = keymap.char_for(mods, usage)
             if ch is not None:
                 self.text += ch
+                self.emit("char", ch=ch)
             elif mods & keymap.SHORTCUT_MODS:
                 name = keymap.combo_name(mods, usage)
                 self.shortcuts.append(name)
                 self.emit("shortcut", combo=name)
-            elif usage == keymap.KEYS["backspace"]:
-                self.text = self.text[:-1]
             elif usage == keymap.KEYS["capslock"]:
                 self.leds ^= 0x02
             else:
+                if usage == keymap.KEYS["backspace"]:
+                    self.text = self.text[:-1]
                 self.emit("key", name=keymap.combo_name(mods, usage))
         self.pressed = set(down)
 
@@ -132,7 +190,9 @@ class FakeChip:
         self.usb_connected = usb_connected
         self.version = version
         self.usb_strings = {0: "", 1: "", 2: ""}
-        self.events: list[dict] = []
+        self.events: list[dict] = []  # most recent events; `seq` numbers them across trims
+        self.event_seq = 0
+        self.listeners: list[Callable[[dict], None]] = []
         self.pointer = pointer or SimPointer()
         self.pointer.emit = self._emit
         self.keyboard = SimKeyboard(emit=self._emit)
@@ -166,7 +226,13 @@ class FakeChip:
             self._emit("power_cycle", baud=self.baud, address=self.address)
 
     def _emit(self, event: str, **fields) -> None:
-        self.events.append({"t": time.monotonic(), "event": event, **fields})
+        self.event_seq += 1
+        record = {"seq": self.event_seq, "t": time.monotonic(), "event": event, **fields}
+        self.events.append(record)
+        if len(self.events) > 10_000:  # a long-running simulator must not grow without bound
+            del self.events[:5_000]
+        for listener in self.listeners:
+            listener(record)
 
     def events_of(self, event: str) -> list[dict]:
         return [e for e in self.events if e["event"] == event]
@@ -290,14 +356,22 @@ class FakeChip:
             dx, dy, wheel = (int.from_bytes(d[i : i + 1], "little", signed=True) for i in (2, 3, 4))
             self.pointer.relative(dx, dy, d[1], wheel)
         else:
-            # iOS only follows relative pointers: the simulated phone ignores these.
             x, y = int.from_bytes(d[2:4], "little"), int.from_bytes(d[4:6], "little")
-            self._emit("mouse_abs_ignored", x=x, y=y, buttons=d[1])
+            if self.pointer.absolute:
+                self.pointer.absolute_report(x, y, d[1], int.from_bytes(d[6:7], "little", signed=True))
+            else:  # the conservative assumption: iOS follows relative pointers only
+                self._emit("mouse_abs_ignored", x=x, y=y, buttons=d[1])
         return S.OK
 
 
 class FakeSerialDevice:
-    """Runs a FakeChip behind a pty. Open `port` with pyserial like a real /dev/ttyUSB*."""
+    """Runs a FakeChip behind a pty. Open `port` with pyserial like a real /dev/ttyUSB*.
+
+    With `simulate_timing` the line behaves like a full-duplex UART at the configured baud: each
+    frame reaches the chip only once its bytes would have crossed the wire (frames queue behind each
+    other), and replies go out on their own wire, so a reply never delays the next command. A reader
+    thread only timestamps arrivals, so the chip sees frames with the spacing the host sent them.
+    """
 
     def __init__(self, chip: FakeChip, *, simulate_timing: bool = False, processing_s: float = 0.001):
         self.chip = chip
@@ -307,14 +381,25 @@ class FakeSerialDevice:
         tty.setraw(self._slave)
         self.port = os.ttyname(self._slave)
         self._stop = threading.Event()
-        self._thread = threading.Thread(target=self._run, name="fake-ch9329", daemon=True)
-        self._thread.start()
+        self._rx: deque = deque()
+        self._rx_cond = threading.Condition()
+        self._tx: deque = deque()
+        self._tx_cond = threading.Condition()
+        self._split = bytearray()
+        self._rx_free_at = 0.0
+        self._tx_free_at = 0.0
+        self._threads = [
+            threading.Thread(target=target, name=f"fake-ch9329-{name}", daemon=True)
+            for name, target in (("rx", self._read_loop), ("chip", self._chip_loop), ("tx", self._write_loop))
+        ]
+        for t in self._threads:
+            t.start()
 
     def line_baud(self) -> int | None:
         """Baud rate the host set on the pty."""
         return _SPEEDS.get(termios.tcgetattr(self._slave)[5])
 
-    def _run(self) -> None:
+    def _read_loop(self) -> None:
         while not self._stop.is_set():
             ready, _, _ = select.select([self._master], [], [], 0.05)
             if not ready:
@@ -323,6 +408,42 @@ class FakeSerialDevice:
                 data = os.read(self._master, 4096)
             except OSError:
                 return
+            with self._rx_cond:
+                self._rx.append((time.monotonic(), data))
+                self._rx_cond.notify()
+
+    def _frames(self, data: bytes) -> list[bytes]:
+        """Split a chunk at frame boundaries (so each frame gets its own arrival time); anything
+        that is not a complete frame passes through as it is."""
+        self._split += data
+        out = []
+        while True:
+            i = self._split.find(p.HEADER)
+            if i != 0:
+                if i < 0:
+                    i = len(self._split)
+                if i:
+                    out.append(bytes(self._split[:i]))
+                    del self._split[:i]
+                if not self._split:
+                    return out
+            if len(self._split) < 5 or len(self._split) < 6 + self._split[4]:
+                if len(self._split) >= 5 and self._split[4] > p.MAX_DATA_LEN:
+                    out.append(bytes(self._split[:2]))
+                    del self._split[:2]
+                    continue
+                return out
+            n = 6 + self._split[4]
+            out.append(bytes(self._split[:n]))
+            del self._split[:n]
+
+    def _chip_loop(self) -> None:
+        while not self._stop.is_set():
+            with self._rx_cond:
+                if not self._rx:
+                    self._rx_cond.wait(0.05)
+                    continue
+                arrived, data = self._rx.popleft()
             if not self.chip.powered:
                 continue
             baud = self.line_baud()
@@ -331,11 +452,37 @@ class FakeSerialDevice:
                 if self.chip.noise_on_mismatch:
                     self._write(b"\xf0\x0f\xfe")
                 continue
-            out = self.chip.receive(data)
-            if out:
-                if self.simulate_timing:
-                    time.sleep((len(data) + len(out)) * 10 / baud + self.processing_s)
-                self._write(out)
+            if not self.simulate_timing:
+                out = self.chip.receive(data)
+                if out:
+                    self._write(out)
+                continue
+            for part in self._frames(data):
+                self._rx_free_at = max(arrived, self._rx_free_at) + len(part) * 10 / baud
+                delay = self._rx_free_at - time.monotonic()
+                if delay > 0:
+                    time.sleep(delay)
+                out = self.chip.receive(part)
+                if out:
+                    start = max(time.monotonic() + self.processing_s, self._tx_free_at)
+                    self._tx_free_at = start + len(out) * 10 / baud
+                    with self._tx_cond:
+                        self._tx.append((self._tx_free_at, out))
+                        self._tx_cond.notify()
+
+    def _write_loop(self) -> None:
+        while not self._stop.is_set():
+            with self._tx_cond:
+                if not self._tx:
+                    self._tx_cond.wait(0.05)
+                    continue
+                at, out = self._tx[0]
+            delay = at - time.monotonic()
+            if delay > 0:
+                time.sleep(delay)
+            with self._tx_cond:
+                self._tx.popleft()
+            self._write(out)
 
     def _write(self, data: bytes) -> None:
         try:
@@ -345,7 +492,8 @@ class FakeSerialDevice:
 
     def close(self) -> None:
         self._stop.set()
-        self._thread.join(timeout=1)
+        for t in self._threads:
+            t.join(timeout=1)
         for fd in (self._master, self._slave):
             try:
                 os.close(fd)

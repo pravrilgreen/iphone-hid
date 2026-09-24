@@ -3,7 +3,7 @@ name = "iphone-hid"
 version = "0.0.1"
 description = "Control an iPhone from a Linux host via HDMI capture and external HID hardware"
 requires-python = ">=3.10"
-dependencies = ["pyserial>=3.5"]
+dependencies = ["pyserial>=3.5", "tomli>=2; python_version < '3.11'"]
 
 [project.optional-dependencies]
 vision = ["opencv-python-headless", "numpy", "Pillow"]

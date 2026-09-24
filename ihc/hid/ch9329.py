@@ -12,6 +12,8 @@ Two send modes:
 from __future__ import annotations
 
 import errno
+import functools
+import threading
 import time
 from collections import Counter
 from typing import Callable, Sequence
@@ -65,6 +67,17 @@ def _status_name(status: int | None) -> str:
         return f"{status:#04x}"
 
 
+def _serialized(method):
+    """Run under the backend's I/O lock: one command/reply exchange at a time across threads."""
+
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        with self._io:
+            return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 def explain_open_error(port: str, exc: Exception) -> str:
     code = getattr(exc, "errno", None)
     text = str(exc)
@@ -97,6 +110,7 @@ class CH9329Backend:
         self.timeout = timeout
         self.wait_ack = wait_ack
         self._trace = trace
+        self._io = threading.RLock()
         self._parser = p.FrameParser()
         self._inflight: Counter[int] = Counter()  # fire-and-forget commands whose reply is unread
         self._last_send = 0.0
@@ -118,8 +132,9 @@ class CH9329Backend:
         self.close()
 
     def close(self) -> None:
-        if self._ser.is_open:
-            self._ser.close()
+        with self._io:
+            if self._ser.is_open:
+                self._ser.close()
 
     # -- HidBackend ----------------------------------------------------------------------------
 
@@ -195,6 +210,7 @@ class CH9329Backend:
             raise HidProtocolError(f"unexpected GET_USB_STRING reply: {d.hex(' ')}")
         return d[2 : 2 + d[1]].decode("ascii", errors="replace")
 
+    @_serialized
     def transact_raw(self, frame: bytes, listen: float = 0.3) -> list[p.Frame]:
         """Write bytes verbatim (for experiments) and return every frame seen for `listen` seconds."""
         self.sync()
@@ -207,6 +223,7 @@ class CH9329Backend:
 
     # -- plumbing ------------------------------------------------------------------------------
 
+    @_serialized
     def sync(self) -> None:
         """Wait for replies to fire-and-forget commands, then drop anything left in the input."""
         if self._inflight:
@@ -221,6 +238,7 @@ class CH9329Backend:
         self._pump(block=False)
         self._parser.reset()
 
+    @_serialized
     def _hid(self, frame: bytes) -> None:
         if self.wait_ack and frame[2] != p.BROADCAST_ADDR:
             self._check(self._roundtrip(frame), frame[3])
@@ -230,6 +248,7 @@ class CH9329Backend:
             self._inflight[frame[3]] += 1
         self._pump(block=False)
 
+    @_serialized
     def _request(self, cmd: int, data: bytes = b"") -> p.Frame:
         if self.addr == p.BROADCAST_ADDR:
             raise HidError("address 0xFF is broadcast: the chip never replies, so requests cannot work")

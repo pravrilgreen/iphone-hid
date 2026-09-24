@@ -593,13 +593,14 @@ class HidShell(cmd.Cmd):
         print(f"pointer ({pt.x:.1f}, {pt.y:.1f}) on {pt.width:.0f}x{pt.height:.0f}, buttons {pt.buttons:#x}")
         print(f"typed text {chip.keyboard.text!r}; shortcuts {chip.keyboard.shortcuts}")
         for e in chip.events[-10:]:
-            print("  " + " ".join(f"{k}={v}" for k, v in e.items() if k != "t"))
+            print("  " + " ".join(f"{k}={v}" for k, v in e.items() if k not in ("t", "seq")))
 
     def _print_sim_changes(self) -> None:
         chip = self.hid.chip
-        for e in chip.events[self._sim_seen :]:
-            print("  [sim] " + " ".join(str(v) for k, v in e.items() if k != "t"))
-        self._sim_seen = len(chip.events)
+        for e in chip.events:
+            if e["seq"] > self._sim_seen and e["event"] != "char":
+                print("  [sim] " + " ".join(str(v) for k, v in e.items() if k not in ("t", "seq")))
+        self._sim_seen = chip.event_seq
         pos = (round(chip.pointer.x, 1), round(chip.pointer.y, 1))
         if pos != self._sim_pos:
             if self._sim_pos is not None:
