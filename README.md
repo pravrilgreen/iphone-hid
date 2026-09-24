@@ -38,10 +38,10 @@ flowchart LR
         CTRL --> DRV["HID driver<br/>every frame acknowledged"]
         CAP["Capture reader<br/>MJPEG passthrough"] --> API
     end
-    DRV -- "serial" --> CHIP["HID chip<br/>CH9329 or ESP32"]
-    CHIP -- "USB or Bluetooth<br/>keyboard + mouse" --> PHONE["iPhone"]
-    PHONE -- "HDMI mirror" --> CARD["HDMI capture card"]
-    CARD -- "USB video" --> CAP
+    DRV -->|serial| CHIP["HID chip<br/>CH9329 or ESP32"]
+    CHIP -->|"USB or Bluetooth<br/>keyboard + mouse"| PHONE["iPhone"]
+    PHONE -->|HDMI mirror| CARD["HDMI capture card"]
+    CARD -->|USB video| CAP
 ```
 
 1. **Seeing.** The iPhone mirrors its screen to HDMI. A cheap capture card turns that into a compressed
@@ -59,11 +59,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    P["iPhone 15+<br/>USB-C"] <== "one cable" ==> H["USB-C hub<br/>HDMI + USB-A + PD charging"]
-    H -- "HDMI" --> C["HDMI capture card"]
-    C -- "USB" --> S["Control box"]
-    S -- "USB (serial)" --> X["CH9329 cable<br/>keyboard + mouse"]
-    X -- "USB-A" --> H
+    P["iPhone 15+<br/>USB-C"] ==>|one cable| H["USB-C hub<br/>HDMI + USB-A + PD charging"]
+    H -->|HDMI| C["HDMI capture card"]
+    C -->|USB| S["Control box"]
+    S -->|"USB (serial)"| X["CH9329 cable<br/>keyboard + mouse"]
+    X -->|USB-A| H
     PD["20 W charger"] --> H
 ```
 
@@ -72,11 +72,11 @@ flowchart LR
 ```mermaid
 flowchart LR
     P["iPhone<br/>Lightning"] --> A["Apple Lightning<br/>Digital AV Adapter"]
-    A -- "HDMI" --> C["HDMI capture card"]
-    C -- "USB" --> S["Control box"]
+    A -->|HDMI| C["HDMI capture card"]
+    C -->|USB| S["Control box"]
     PD["charger"] --> A
-    S -- "USB (serial)" --> E["ESP32-S3 bridge"]
-    E -. "Bluetooth keyboard + mouse" .-> P
+    S -->|"USB (serial)"| E["ESP32-S3 bridge"]
+    E -.->|"Bluetooth keyboard + mouse"| P
 ```
 
 ### Why Lightning needs an ESP32, and USB-C does not
