@@ -9,27 +9,32 @@ Concurrency model:
   checks on an I/O pool, JPEG variants on an encoder pool;
 - video comes from one pump thread per watched device (ihc.api.stream), shared by every viewer;
 - each /control connection owns a worker thread that sends its HID reports in order
-  (ihc.api.control), and releases everything when the connection ends.
+  (ihc.api.control), and releases everything when the connection ends; one per device at a time.
+
+Access control (token, Host, Origin, request shape) is one middleware in front of everything
+(ihc.api.security). A device job whose HTTP client left before it started is skipped, and a
+repeated Idempotency-Key gets the first request's outcome instead of acting again.
 """
 
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import inspect
 import json
 import math
 import os
 import threading
 import time
-from collections import deque
+from collections import OrderedDict, deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Literal, Optional, Union
+from typing import Any, Iterable, Literal, Optional
 
-from fastapi import Body, FastAPI, Path as PathParam, Query, Request, WebSocket
+from fastapi import Body, Depends, FastAPI, Header, Path as PathParam, Query, Request, WebSocket
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocketDisconnect
@@ -38,12 +43,19 @@ from ..hid.base import HidError, HidTimeout
 from ..input.pointer import PointerError
 from . import actions, models
 from .control import LiveSession, dumps
-from .stream import BOUNDARY, Hubs, MJPEGResponse, Pacer
+from .security import MAX_BODY, CalibrationKeys, Guard, Policy
+from .stream import BOUNDARY, Hubs, MJPEGResponse, Pacer, TooManyViewers
 
 VERSION = "0.1.0"
 WEB_DIR = Path(__file__).resolve().parents[2] / "web"
 STATUS_INTERVAL = 0.5
 ACK_TIMEOUT = 2.0
+MAX_VIEWERS = 16  # video viewers per device (/stream sockets and MJPEG streams)
+MAX_WEBSOCKETS = 256  # /stream and /control sockets of the whole server
+IDEMPOTENCY_TTL = 600.0  # a key's outcome is replayed this long after its job ended
+IDEMPOTENCY_MAX = 1024
+DISCONNECT_POLL = 0.1  # how often a queued job checks that its client is still there
+NO_CACHE = {"Cache-Control": "no-cache, no-store, must-revalidate"}
 SimOp = Literal["lock", "unlock", "prompt_accessory", "allow_accessory", "signal_off", "signal_on", "home", "open_app"]
 DeviceId = PathParam(description="Device id, as listed by GET /api/devices", examples=["sim-01"])
 
@@ -61,6 +73,17 @@ has received every report of it. Different devices never wait for each other.
 **Errors** are always `{"error": "...", "code": "..."}`: 404 `not_found` (unknown device), 422
 `invalid_input` (nothing was sent to the phone), 409 `device_error` (HID error, phone locked or accessory not
 allowed, pointer or calibration failure), 503 `no_video`, 504 `hid_timeout`.
+
+**Access**: when the server has a token (`ihc serve --token-file`, a box keeps it in `/var/lib/ihc/token`),
+every `/api` route except `GET /api/health` needs `Authorization: Bearer <token>` (401 otherwise); WebSockets
+and the MJPEG/screenshot URLs also take `?token=`. POST requests must be sent as `Content-Type:
+application/json`, even with an empty body (415), at most 1 MB (413). Browsers from another origin
+(WebSockets, POSTs) are refused (403), and so is a Host header that is not an IP address, a `.local` name or
+this machine's name (400).
+
+**Retries**: a request whose client went away before its action started is dropped (the phone does nothing).
+An `Idempotency-Key` header makes a POST action safe to retry: a repeated key (per device, for 10 minutes)
+returns the first request's outcome, waiting for it if it is still running, instead of acting again.
 
 ### Video
 * `GET /api/devices/{id}/mjpeg`: `multipart/x-mixed-replace` JPEG stream (works in an `<img>`, VLC, OpenCV).
@@ -84,6 +107,13 @@ allowed, pointer or calibration failure), 503 `no_video`, 504 `hid_timeout`.
   `{"t": "result", "id", "ok", "result" | "error"}` in order with the live input; `{"t": "sync", "id"}` is answered
   once everything before it was sent.
 * The server sends `{"t": "stats", "reports", "messages", "coalesced", "dropped", "errors", "queue", ...}` every second.
+* Input that waited more than 0.5 s for the phone (a REST action or a calibration held it) is dropped instead of
+  being replayed late: moves, wheel, button and key presses; releases always go out. The client gets
+  `{"t": "dropped", "ops", "busy_with", "error"}`.
+* One control connection per device: another one is closed with code 4409 unless it connects with
+  `?takeover=true`, which closes the current one (code 4409, everything released) and takes its place.
+* Close codes: 4401 token missing or wrong, 4404 unknown device, 4409 control in use or taken over, 4429 too
+  many connections or viewers.
 """
 
 TAGS = [
@@ -175,10 +205,42 @@ class StreamSettings:
         return not self.crop and not self.width
 
 
+class ClientGone(ApiError):
+    """Every client waiting for a job left before it started: it was not run."""
+
+    def __init__(self) -> None:
+        super().__init__(499, "the client went away before the action started: it was not performed")
+
+
+class _Job:
+    """A device job shared by the requests carrying the same Idempotency-Key."""
+
+    def __init__(self, fingerprint: tuple, request: Request):
+        self.fingerprint = fingerprint
+        self.requests = [request]
+        self.outcome: asyncio.Future = asyncio.get_running_loop().create_future()  # (ok, result | ApiError)
+        self.ended_at: float | None = None
+
+    def end(self, ok: bool, value: Any) -> None:
+        self.ended_at = time.monotonic()
+        self.outcome.set_result((ok, value))
+
+
+class _Control:
+    """The /control connection of a device (at most one)."""
+
+    def __init__(self, peer: str):
+        self.peer = peer
+        self.kicked = asyncio.Event()  # another client takes over
+        self.closing = False  # its client is gone: the next one waits for the release, not refused
+        self.done = asyncio.Event()  # the session has released everything
+
+
 class _Farm:
     """Server state: the registry plus the executors and video hubs built on top of it."""
 
-    def __init__(self, registry, public_url: str | None, log):
+    def __init__(self, registry, public_url: str | None, log, *, max_viewers: int = MAX_VIEWERS,
+                 max_websockets: int = MAX_WEBSOCKETS):
         self.registry = registry
         self.public_url = public_url.rstrip("/") if public_url else None
         self.log = log or (lambda event, **fields: None)
@@ -187,6 +249,12 @@ class _Farm:
         self.io = ThreadPoolExecutor(max(8, 2 * cpus), thread_name_prefix="ihc-io")
         self.encoder = ThreadPoolExecutor(max(2, cpus), thread_name_prefix="ihc-jpeg")
         self.hubs = Hubs(self.encoder)
+        self.keys = CalibrationKeys()
+        self.max_viewers = max_viewers
+        self.max_websockets = max_websockets
+        self.sockets = 0  # open /stream and /control sockets
+        self.controls: dict[str, _Control] = {}
+        self._jobs: OrderedDict[tuple[str, str], _Job] = OrderedDict()
         self._workers: dict[str, ThreadPoolExecutor] = {}
         self._lock = threading.Lock()
 
@@ -203,17 +271,74 @@ class _Farm:
                 ex = self._workers[device.id] = ThreadPoolExecutor(1, thread_name_prefix=f"ihc-{device.id}")
             return ex
 
-    async def on_device(self, device, fn, *args) -> Any:
-        """Run a blocking device action on the device's own worker (in arrival order)."""
-        return await self._call(self.worker(device), fn, *args)
+    async def run(self, request: Request, device, name: str, fn, *args) -> Any:
+        """Run a blocking device job for an HTTP request, on the device's own worker (in arrival
+        order). Skipped when its client left before it started; once per Idempotency-Key."""
+        key = request.headers.get("idempotency-key")
+        if key is None:
+            return await self._run([request], device, name, fn, *args)
+        if not (0 < len(key) <= 200 and key.isascii() and key.isprintable()):
+            raise ApiError(422, "Idempotency-Key must be 1 to 200 printable ASCII characters")
+        fingerprint = (request.url.path, hashlib.sha256(await request.body()).hexdigest())
+        slot = (device.id, key)
+        job = self._jobs.get(slot)
+        if job is not None and job.ended_at is not None and time.monotonic() - job.ended_at > IDEMPOTENCY_TTL:
+            del self._jobs[slot]
+            job = None
+        if job is not None:
+            if job.fingerprint != fingerprint:
+                raise ApiError(422, f"Idempotency-Key {key!r} was already used for a different request")
+            self._jobs.move_to_end(slot)
+            job.requests.append(request)
+            self.log("action_replayed", device=device.id, action=name, key=key, running=job.ended_at is None)
+            ok, value = await asyncio.shield(job.outcome)
+            if ok:
+                return value
+            raise value
+        job = self._jobs[slot] = _Job(fingerprint, request)
+        while len(self._jobs) > IDEMPOTENCY_MAX:
+            self._jobs.popitem(last=False)
+        try:
+            value = await self._run(job.requests, device, name, fn, *args)
+        except ApiError as e:
+            if isinstance(e, ClientGone):
+                self._jobs.pop(slot, None)  # never ran: a retry must run it
+            job.end(False, e)
+            raise
+        except BaseException:  # cancelled (server shutting down): the outcome is unknown
+            self._jobs.pop(slot, None)
+            job.end(False, ApiError(503, "the server stopped while the action was pending"))
+            raise
+        job.end(True, value)
+        return value
+
+    async def _run(self, requests: list[Request], device, name: str, fn, *args) -> Any:
+        fut = self.worker(device).submit(fn, *args)
+        waiter = asyncio.wrap_future(fut)
+        t0 = time.monotonic()
+        while not fut.running() and not fut.done():
+            await asyncio.wait({waiter}, timeout=DISCONNECT_POLL)
+            if fut.running() or fut.done():
+                break
+            gone = True
+            for r in requests:
+                if not await r.is_disconnected():
+                    gone = False
+                    break
+            if gone and fut.cancel():  # atomic: false once the worker picked the job up
+                self.log("action_skipped_client_gone", device=device.id, action=name,
+                         waited_s=round(time.monotonic() - t0, 3))
+                raise ClientGone()
+        try:
+            return await waiter
+        except ApiError:
+            raise
+        except Exception as e:
+            raise ApiError(error_status(e), error_message(e)) from e
 
     async def on_io(self, fn, *args) -> Any:
-        return await self._call(self.io, fn, *args)
-
-    @staticmethod
-    async def _call(executor, fn, *args) -> Any:
         try:
-            return await asyncio.get_running_loop().run_in_executor(executor, fn, *args)
+            return await asyncio.get_running_loop().run_in_executor(self.io, fn, *args)
         except ApiError:
             raise
         except Exception as e:
@@ -221,6 +346,10 @@ class _Farm:
 
     def base_url(self, request: Request) -> str:
         return self.public_url or str(request.base_url).rstrip("/")
+
+    def page_url(self, request: Request, device, page_url: str | None = None) -> str:
+        """The calibration page of `device` as the phone reaches it, with its current key."""
+        return self.keys.url(device.id, page_url or f"{self.base_url(request)}/calibrate/{device.id}")
 
     def close(self) -> None:
         self.hubs.close()
@@ -235,22 +364,41 @@ def _ok(result: Any = None) -> dict:
 def _check_event(ev: models.CalibrationEvent) -> dict:
     need = ("screen_w", "screen_h", "inner_w", "inner_h") if ev.type == "hello" else ("x", "y")
     for key in need:
-        v = getattr(ev, key)
-        if v is None or not math.isfinite(v):
+        if getattr(ev, key) is None:
             raise ApiError(422, f"a {ev.type} event needs a number {key!r}")
     return ev.model_dump(exclude_none=True)
 
 
-def create_app(registry, *, public_url: str | None = None, log=None, web_dir: str | Path | None = None) -> FastAPI:
+IdempotencyKey = Header(None, alias="Idempotency-Key", max_length=200,
+                        description="Retry safely: a repeated key (per device, 10 minutes) returns the first "
+                                    "request's outcome instead of acting again")
+EXPIRED_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>iphone-hid calibration</title></head>
+<body style="font: 17px -apple-system, system-ui, sans-serif; padding: 24px">
+<h1>This calibration link has expired</h1>
+<p>Each calibration link works for one calibration. Open the current link again: the console shows it, and so
+does <code>GET /api/devices/&lt;id&gt;/calibration</code> (<code>page_url</code>).</p></body></html>"""
+
+
+def create_app(registry, *, public_url: str | None = None, log=None, web_dir: str | Path | None = None,
+               token: str | None = None, allowed_hosts: Iterable[str] = (), allow_origins: Iterable[str] = (),
+               max_body: int = MAX_BODY, max_viewers: int = MAX_VIEWERS,
+               max_websockets: int = MAX_WEBSOCKETS) -> FastAPI:
     """The API and web console for the devices of `registry` (which the caller keeps and closes).
 
     `public_url` is how phones reach this server (the calibration page is opened from it); by
-    default the URL of each request is used. `log` is an event log callable (ihc.jsonlog.EventLog)."""
-    farm = _Farm(registry, public_url, log)
+    default the URL of each request is used. `log` is an event log callable (ihc.jsonlog.EventLog).
+    `token`: the API token (None: anyone who reaches the server controls the phones);
+    `allowed_hosts`: Host names accepted besides IP addresses, localhost, *.local, this machine's
+    name and public_url's host ("*": any); `allow_origins`: browser origins accepted besides this
+    server itself and public_url ("*": any). See ihc.api.security."""
+    farm = _Farm(registry, public_url, log, max_viewers=max_viewers, max_websockets=max_websockets)
     web = Path(web_dir) if web_dir else WEB_DIR
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        if not token:
+            farm.log("auth_disabled", warning="no API token: anyone on this network can control the phones")
         try:
             yield
         finally:
@@ -258,6 +406,8 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
     app = FastAPI(title="iphone-hid", version=VERSION, description=DESCRIPTION, openapi_tags=TAGS, lifespan=lifespan)
     app.state.farm = farm
+    app.add_middleware(Guard, policy=Policy(token=token, public_url=public_url, allowed_hosts=allowed_hosts,
+                                            allow_origins=allow_origins, max_body=max_body), log=farm.log)
 
     # -- errors ---------------------------------------------------------------------------------
 
@@ -327,14 +477,21 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
         or scaled variants are encoded once per frame and shared by all viewers. A slow client skips frames;
         a frame whose pixels did not change is re-sent at most once a second."""
         device = farm.device(device_id)
-        return MJPEGResponse(farm.hubs.get(device), fps=fps, crop=crop, width=width, quality=quality, frames=frames)
+        return MJPEGResponse(farm.hubs.get(device), fps=fps, crop=crop, width=width, quality=quality, frames=frames,
+                             max_viewers=farm.max_viewers)
 
     @app.websocket("/api/devices/{device_id}/stream")
     async def stream(ws: WebSocket, device_id: str):
         await ws.accept()
         device = await _ws_device(ws, device_id)
-        if device is None:
+        if device is None or not await _admit(ws):
             return
+        try:
+            await _stream(ws, device)
+        finally:
+            farm.sockets -= 1
+
+    async def _stream(ws: WebSocket, device) -> None:
         settings = StreamSettings()
         try:
             settings.update(dict(ws.query_params))
@@ -425,9 +582,14 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                 sent += 1
                 sent_at.append(now)
 
-        farm.log("ws_open", kind="stream", device=device.id)
-        async with hub.watch() as w:
-            await _run_until_first_exits(receiver(), sender(w))
+        try:
+            async with hub.watch(farm.max_viewers) as w:
+                farm.log("ws_open", kind="stream", device=device.id)
+                await _run_until_first_exits(receiver(), sender(w))
+        except TooManyViewers as e:
+            await send_text({"type": "error", "error": str(e), "code": "too_many"})
+            await ws.close(code=4429, reason="too many viewers")
+            return
         farm.log("ws_close", kind="stream", device=device.id)
 
     # -- actions --------------------------------------------------------------------------------
@@ -435,16 +597,20 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
     def add_action(name: str, spec: actions.Spec) -> None:
         optional = all(not f.is_required() for f in spec.model.model_fields.values())
 
-        async def endpoint(device_id: str, body: Any = None):
+        async def endpoint(request: Request, device_id: str, body: Any = None, idempotency_key: Any = None):
             device = farm.device(device_id)
-            return _ok(await farm.on_device(device, spec.run, device, body if body is not None else spec.model()))
+            body = body if body is not None else spec.model()
+            return _ok(await farm.run(request, device, name, spec.run, device, body))
 
         # FastAPI reads the signature: give it the real body model, so it validates and documents it
         endpoint.__signature__ = inspect.Signature([
+            inspect.Parameter("request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request),
             inspect.Parameter("device_id", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=str, default=DeviceId),
             inspect.Parameter("body", inspect.Parameter.POSITIONAL_OR_KEYWORD,
                               annotation=Optional[spec.model] if optional else spec.model,
                               default=Body(None) if optional else Body(...)),
+            inspect.Parameter("idempotency_key", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Optional[str],
+                              default=IdempotencyKey),
         ])
         endpoint.__name__ = f"action_{name}"
         app.add_api_route(f"/api/devices/{{device_id}}/{name}", endpoint, methods=["POST"], tags=["actions"],
@@ -456,7 +622,8 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
     @app.post("/api/devices/{device_id}/actions", tags=["actions"], summary="Run a script of actions",
               response_model=models.ScriptResponse, responses={404: models.ERRORS[404], 422: models.ERRORS[422]})
-    async def run_script(body: models.ScriptRequest, device_id: str = DeviceId):
+    async def run_script(request: Request, body: models.ScriptRequest, device_id: str = DeviceId,
+                         idempotency_key: Optional[str] = IdempotencyKey):
         """Steps run in order on the device, as one job (other requests for the device wait until it ends).
         Every step is validated before the first one runs (422 names the bad step). A failing step does not make
         the request fail: the response has `ok: false`, the first `error`, and every step's result."""
@@ -485,7 +652,7 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
             return {"steps": results, "completed": sum(r["ok"] for r in results), "total": len(steps),
                     "seconds": round(time.monotonic() - t0, 3)}
 
-        out = await farm.on_device(device, run_all)
+        out = await farm.run(request, device, "actions", run_all)
         failed = [r for r in out["steps"] if not r["ok"]]
         if failed:
             f = failed[0]
@@ -496,42 +663,70 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
     @app.get("/api/devices/{device_id}/calibration", tags=["calibration"], summary="Calibration summary",
              response_model=models.CalibrationSummary, responses={404: models.ERRORS[404]})
-    async def calibration(device_id: str = DeviceId):
+    async def calibration(request: Request, device_id: str = DeviceId):
         """How the pointer is calibrated: method ("guess" = not yet, "safari", "sim"), when, the landing error
-        of the validation moves, and the pointer mode."""
-        st = farm.device(device_id).status()
-        return {**st["calibration"], "mode": st["pointer"].get("mode", "relative")}
+        of the validation moves, the pointer mode, and the calibration page's current URL (to open it in Safari
+        by hand before a calibration with open_page=false)."""
+        device = farm.device(device_id)
+        st = device.status()
+        return {**st["calibration"], "mode": st["pointer"].get("mode", "relative"),
+                "page_url": farm.page_url(request, device)}
 
     @app.post("/api/devices/{device_id}/calibrate", tags=["calibration"], summary="Calibrate the pointer",
               response_model=models.ActionResponse, responses=models.ERRORS)
-    async def calibrate(request: Request, body: Optional[actions.Calibrate] = Body(None), device_id: str = DeviceId):
+    async def calibrate(request: Request, body: Optional[actions.Calibrate] = Body(None), device_id: str = DeviceId,
+                        idempotency_key: Optional[str] = IdempotencyKey):
         """Opens the calibration page in Safari through Spotlight, then measures the pointer from the clicks the
         page reports (about a minute; do not touch the phone meanwhile). The phone must reach `page_url`: by
-        default `<public_url>/calibrate/<id>`, so it must be on the same network as this host."""
+        default `<public_url>/calibrate/<id>`, so it must be on the same network as this host. The page's URL
+        carries a key (`k`) that its events must present; a new one is made when the calibration ends."""
         device = farm.device(device_id)
         body = body or actions.Calibrate()
-        page_url = body.page_url or f"{farm.base_url(request)}/calibrate/{device.id}"
-        farm.log("calibrate_start", device=device.id, page_url=page_url)
-        opened = page_url if body.open_page else None
-        result = await farm.on_device(device, lambda: device.calibrate(page_url=opened, **body.options))
-        return _ok({**result, "page_url": page_url})
+        options = body.options.kwargs()
+
+        def job() -> dict:
+            page_url = farm.page_url(request, device, body.page_url)  # the key current when the job starts
+            rejected = farm.keys.rejected[device.id]
+            farm.log("calibrate_start", device=device.id, page_url=page_url.partition("?")[0], open_page=body.open_page)
+            try:
+                result = device.calibrate(page_url=page_url if body.open_page else None, **options)
+            except Exception as e:
+                if farm.keys.rejected[device.id] > rejected and error_status(e) == 409:
+                    raise ApiError(409, f"{error_message(e)} (the page on the phone sent events with an expired key: "
+                                        "open its current link, GET .../calibration page_url, and try again)") from e
+                raise
+            finally:
+                farm.keys.rotate(device.id)
+            return {**result, "page_url": page_url}
+
+        return _ok(await farm.run(request, device, "calibrate", job))
+
+    def calibration_key(device_id: str = DeviceId,
+                        k: str = Query("", max_length=100, description="The page's calibration key (from its URL)")):
+        """The device, once the calibration page's key is checked (before the body is)."""
+        device = farm.device(device_id)
+        if not farm.keys.check(device.id, k):
+            raise ApiError(403, "wrong or expired calibration key: open the calibration page from its current link")
+        return device
 
     @app.post("/api/devices/{device_id}/calibration/events", tags=["calibration"], summary="Calibration page events",
-              response_model=models.ActionResponse, responses={404: models.ERRORS[404], 422: models.ERRORS[422]})
-    async def calibration_events(body: Union[list[models.CalibrationEvent], models.CalibrationEvent],
-                                 device_id: str = DeviceId):
-        """Posted by web/calibrate.html running in Safari on the phone: one event or a list, applied in order."""
-        device = farm.device(device_id)
+              response_model=models.ActionResponse,
+              responses={403: {"model": models.ErrorResponse, "description": "Wrong or expired calibration key"},
+                         404: models.ERRORS[404], 422: models.ERRORS[422]})
+    async def calibration_events(body: models.CalibrationEvents, device=Depends(calibration_key)):
+        """Posted by web/calibrate.html running in Safari on the phone: one event or a list, applied in order.
+        Needs no API token but the page's key `k` (query parameter), which the page has in its own URL."""
         events = [_check_event(ev) for ev in (body if isinstance(body, list) else [body])]
         for ev in events:
             device.clicks.push(ev)
         return _ok({"accepted": len(events)})
 
     @app.get("/calibrate/{device_id}", include_in_schema=False)
-    async def calibration_page(device_id: str):
-        farm.device(device_id)
-        return FileResponse(web / "calibrate.html", media_type="text/html",
-                            headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+    async def calibration_page(device_id: str, k: str = Query("", max_length=100)):
+        device = farm.device(device_id)
+        if not farm.keys.check(device.id, k):
+            return HTMLResponse(EXPIRED_PAGE, status_code=403, headers=NO_CACHE)
+        return FileResponse(web / "calibrate.html", media_type="text/html", headers=NO_CACHE)
 
     # -- live control ---------------------------------------------------------------------------
 
@@ -539,25 +734,42 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
     async def control(ws: WebSocket, device_id: str):
         await ws.accept()
         device = await _ws_device(ws, device_id, key="t")
-        if device is None:
+        if device is None or not await _admit(ws, key="t"):
             return
+        try:
+            await _control(ws, device)
+        finally:
+            farm.sockets -= 1
+
+    async def _control(ws: WebSocket, device) -> None:
+        peer = f"{ws.client.host}:{ws.client.port}" if ws.client else "?"
+        takeover = ws.query_params.get("takeover", "").lower() in ("1", "true", "yes", "on")
+        while (other := farm.controls.get(device.id)) is not None:
+            if not takeover and not other.closing:
+                farm.log("control_refused", device=device.id, peer=peer, holder=other.peer)
+                await ws.send_text(dumps({"t": "error", "code": "busy", "error": (
+                    f"{device.id} is controlled live by another client ({other.peer}); connect with "
+                    "?takeover=true to take over")}))
+                await ws.close(code=4409, reason="live control is in use by another client")
+                return
+            other.kicked.set()
+            try:  # its session releases everything first
+                await asyncio.wait_for(other.done.wait(), 10.0)
+            except asyncio.TimeoutError:  # not the builtin TimeoutError before Python 3.11
+                if farm.controls.get(device.id) is other:
+                    del farm.controls[device.id]
+        me = farm.controls[device.id] = _Control(peer)
         lock = asyncio.Lock()
 
         async def send(msg: dict) -> None:
             async with lock:
                 await ws.send_text(dumps(msg))
 
-        session = LiveSession(device, send)
-        session.start()
-        farm.log("ws_open", kind="control", device=device.id)
-        try:
-            st = device.status()
-            await send({"t": "hello", "device": device.id, "mode": st["pointer"].get("mode", "relative"),
-                        "tick_ms": round(session.tick * 1000, 1)})
+        async def receiver() -> None:
             while True:
                 msg = await ws.receive()
                 if msg["type"] == "websocket.disconnect":
-                    break
+                    return
                 try:
                     data = json.loads(msg.get("text") or "null")
                 except ValueError:
@@ -567,11 +779,48 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                         await session.handle(item)
                     else:
                         await send({"t": "error", "error": "messages must be JSON objects"})
+
+        session = LiveSession(device, send)
+        session.start()
+        farm.log("ws_open", kind="control", device=device.id, peer=peer, takeover=takeover)
+        try:
+            st = device.status()
+            await send({"t": "hello", "device": device.id, "mode": st["pointer"].get("mode", "relative"),
+                        "tick_ms": round(session.tick * 1000, 1)})
+            await _run_until_first_exits(receiver(), me.kicked.wait())
         except (WebSocketDisconnect, RuntimeError, OSError):
             pass
         finally:
-            await session.close()  # releases every key and button
-            farm.log("ws_close", kind="control", device=device.id, **dict(session.totals))
+            me.closing = True
+
+            def ended(_) -> None:
+                if farm.controls.get(device.id) is me:
+                    del farm.controls[device.id]
+                me.done.set()
+                farm.log("ws_close", kind="control", device=device.id, kicked=me.kicked.is_set(), **dict(session.totals))
+
+            # releases every key and button; a task of its own, so that it ends (and the device's
+            # next control connection may start) even when this handler is cancelled
+            closing = asyncio.ensure_future(session.close())
+            closing.add_done_callback(ended)
+            await asyncio.shield(closing)
+        if me.kicked.is_set():
+            try:
+                await send({"t": "error", "code": "taken_over", "error": "live control was taken over by another client"})
+                await ws.close(code=4409, reason="taken over by another client")
+            except (RuntimeError, OSError):
+                pass
+
+    async def _admit(ws: WebSocket, key: str = "type") -> bool:
+        """Count a socket in, or close it (code 4429) when the server has too many."""
+        if farm.sockets >= farm.max_websockets:
+            farm.log("ws_refused", reason="too_many", path=ws.url.path)
+            await ws.send_text(dumps({key: "error", "code": "too_many", "error": (
+                f"this server already has {farm.sockets} WebSocket connections (the most allowed)")}))
+            await ws.close(code=4429, reason="too many connections")
+            return False
+        farm.sockets += 1
+        return True
 
     # -- simulator ------------------------------------------------------------------------------
 
@@ -619,6 +868,12 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                         op["responses"]["422"] = {"description": models.ERRORS[422]["description"], "content": error}
             for name in ("HTTPValidationError", "ValidationError"):
                 schema.get("components", {}).get("schemas", {}).pop(name, None)
+            if token:  # the docs' "Authorize" button
+                schema.setdefault("components", {})["securitySchemes"] = {"token": {"type": "http", "scheme": "bearer"}}
+                for path, ops in schema.get("paths", {}).items():
+                    if path.startswith("/api/") and path != "/api/health" and not path.endswith("/calibration/events"):
+                        for op in ops.values():
+                            op["security"] = [{"token": []}]
             app.openapi_schema = schema
         return app.openapi_schema
 

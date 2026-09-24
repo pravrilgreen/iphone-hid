@@ -2,20 +2,65 @@
 "use strict";
 
 const $ = (id) => document.getElementById(id);
-const wsUrl = (path) => (location.protocol === "https:" ? "wss://" : "ws://") + location.host + path;
 const STATE_TEXT = {
   ready: "ready", busy: "busy", hid_disconnected: "HID not connected",
-  hid_offline: "HID offline", no_signal: "no signal",
+  hid_offline: "HID offline", no_signal: "no signal", needs_calibration: "needs calibration",
 };
+
+/* The API token, asked for once when the server answers 401 (or closes a socket with 4401) and kept
+   in this browser. WebSockets and <img> URLs cannot set headers: they carry it as ?token=. */
+const auth = {
+  token: (() => { try { return localStorage.getItem("ihc.token") || ""; } catch (e) { return ""; } })(),
+  asking: null,
+  /** Resolves once the operator entered a token; one dialog for every request that needs it. */
+  ask(message) {
+    if (!this.asking) {
+      this.asking = new Promise((resolve) => {
+        const dlg = $("token-dialog"), input = $("token-input");
+        $("token-error").textContent = this.token ? "That token was refused." : "";
+        if (message) $("token-error").textContent += (this.token ? " " : "") + message;
+        input.value = "";
+        $("token-form").onsubmit = (e) => {
+          e.preventDefault();
+          const value = input.value.trim();
+          if (!value) return;
+          this.token = value;
+          try { localStorage.setItem("ihc.token", value); } catch (err) { /* private mode: this page only */ }
+          dlg.close();
+          this.asking = null;
+          resolve();
+        };
+        dlg.oncancel = (e) => e.preventDefault();  // Esc: nothing works without the token
+        dlg.showModal();
+        input.focus();
+      });
+    }
+    return this.asking;
+  },
+  url(path, params = {}) {
+    const q = new URLSearchParams(params);
+    if (this.token) q.set("token", this.token);
+    const qs = q.toString();
+    return path + (qs ? "?" + qs : "");
+  },
+};
+const wsUrl = (path, params) => (location.protocol === "https:" ? "wss://" : "ws://") + location.host + auth.url(path, params);
 
 async function api(method, path, body) {
   const opts = { method, headers: {} };
-  if (body !== undefined) {
+  if (auth.token) opts.headers.Authorization = "Bearer " + auth.token;
+  if (method !== "GET") {
+    // always declared JSON, even without a body: the server refuses anything else (a cross-site
+    // form cannot send it)
     opts.headers["Content-Type"] = "application/json";
-    opts.body = JSON.stringify(body);
+    if (body !== undefined) opts.body = JSON.stringify(body);
   }
   const r = await fetch(path, opts);
   const data = await r.json().catch(() => ({}));
+  if (r.status === 401) {
+    await auth.ask();
+    return api(method, path, body);
+  }
   if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
   return data;
 }
@@ -29,13 +74,12 @@ function setBadge(el, state) {
    than one frame in flight to us and a slow browser skips frames instead of lagging behind. */
 class FrameSocket {
   constructor(path, params, { onFrame, onStatus, onClose }) {
-    this.url = wsUrl(path) + "?" + new URLSearchParams({ ...params, ack: "true" });
-    Object.assign(this, { onFrame, onStatus, onClose });
+    Object.assign(this, { path, params: { ...params, ack: "true" }, onFrame, onStatus, onClose });
     this.closed = false;
     this.connect();
   }
   connect() {
-    const ws = (this.ws = new WebSocket(this.url));
+    const ws = (this.ws = new WebSocket(wsUrl(this.path, this.params)));  // the current token
     ws.binaryType = "blob";
     ws.onmessage = async (ev) => {
       if (typeof ev.data === "string") {
@@ -46,9 +90,11 @@ class FrameSocket {
       try { await this.onFrame(ev.data); } catch (e) { /* undecodable frame: skip it */ }
       if (ws.readyState === WebSocket.OPEN) ws.send('{"t":"ack"}');
     };
-    ws.onclose = () => {
-      if (this.onClose) this.onClose();
-      if (!this.closed) this.timer = setTimeout(() => this.connect(), 1500);
+    ws.onclose = (ev) => {
+      if (this.onClose) this.onClose(ev);
+      if (this.closed || ev.code === 4404) return;
+      if (ev.code === 4401) return auth.ask().then(() => { if (!this.closed) this.connect(); });
+      this.timer = setTimeout(() => this.connect(), ev.code === 4429 ? 10000 : 1500);  // 4429: too many viewers
     };
   }
   close() {
@@ -86,7 +132,8 @@ const grid = {
       setBadge(t.badge, st.state);
       const cal = st.calibration || {};
       t.meta.textContent = `${st.model} · ${st.kind} · ${(st.pointer || {}).mode || "relative"} pointer · ` +
-        (cal.calibrated ? `calibrated (${cal.method})` : "not calibrated");
+        ((st.health || {}).recalibrate ? "calibration no longer holds" :
+          cal.calibrated ? `calibrated (${cal.method})` : "not calibrated");
     }
   },
   addTile(id) {
@@ -158,16 +205,16 @@ const view = {
     $("screen-msg").hidden = false;
     this.mode = localStorage.getItem("ihc.mode") || "precise";
     this.openStream();
-    this.openControl();
+    if (this.mode === "direct") this.openControl();
     this.render();
+    this.showCalLink();
   },
   stop() {
     $("device-view").hidden = true;
     this.disengage();
     if (this.stream) this.stream.close();
-    if (this.control) { this.control.closed = true; this.control.close(); }
-    clearTimeout(this.controlTimer);
-    this.stream = this.control = null;
+    this.closeControl();
+    this.stream = null;
     this.id = null;
   },
 
@@ -205,7 +252,7 @@ const view = {
     $("live").hidden = true;
     img.hidden = false;
     img.onload = () => { $("screen-msg").hidden = true; this.fit(); };
-    img.src = `/api/devices/${encodeURIComponent(this.id)}/mjpeg?crop=true`;
+    img.src = auth.url(`/api/devices/${encodeURIComponent(this.id)}/mjpeg`, { crop: "true" });
     const poll = setInterval(async () => {
       if (!this.id) return clearInterval(poll);
       try { this.onStatus(await api("GET", `/api/devices/${encodeURIComponent(this.id)}`)); } catch (e) { /* retry */ }
@@ -234,9 +281,9 @@ const view = {
       ` · ${st.model} · ${st.kind}`;
     $("st-pointer").textContent = `${p.mode || "relative"} · ` +
       (p.pt ? `${p.pt[0]}, ${p.pt[1]} pt (${p.norm[0].toFixed(3)}, ${p.norm[1].toFixed(3)})` : "position unknown");
-    const v = cal.validation;
-    $("st-cal").textContent = cal.calibrated
-      ? `${cal.method}` + (v ? ` · error mean ${v.mean} pt, max ${v.max} pt` : "") : "not calibrated";
+    const v = cal.validation, why = (st.health || {}).recalibrate;
+    $("st-cal").textContent = (why ? `calibrate again: ${why} · ` : "") + (cal.calibrated
+      ? `${cal.method}` + (v ? ` · error mean ${v.mean} pt, max ${v.max} pt` : "") : "not calibrated");
     $("st-hid").textContent = `${p.reports || 0} reports · ${p.resends || 0} resent` +
       (this.live ? ` · live ${this.live.reports}/s` + (this.live.report_ms ? ` (${this.live.report_ms} ms)` : "") : "");
     const lr = st.last_result;
@@ -251,8 +298,12 @@ const view = {
   },
 
   /* -- control socket ---------------------------------------------------------------------- */
-  openControl() {
-    const ws = (this.control = new WebSocket(wsUrl(`/api/devices/${encodeURIComponent(this.id)}/control`)));
+  // Open in live control only: the server has one control connection per phone, and precise mode
+  // does its actions over REST.
+  openControl(takeover = false) {
+    const id = this.id;
+    const ws = (this.control = new WebSocket(wsUrl(`/api/devices/${encodeURIComponent(id)}/control`,
+      takeover ? { takeover: "true" } : {})));
     ws.onmessage = (ev) => {
       const msg = JSON.parse(ev.data);
       if (msg.t === "result") {
@@ -260,15 +311,36 @@ const view = {
         if (cb) { this.pending.delete(msg.id); cb(msg); }
       } else if (msg.t === "stats") {
         this.live = msg;
-      } else if (msg.t === "error") {
+      } else if (msg.t === "error" || msg.t === "dropped") {
         this.showError(msg.error);
       }
     };
-    ws.onclose = () => {
+    ws.onclose = (ev) => {
       for (const cb of this.pending.values()) cb({ ok: false, error: "control connection lost" });
       this.pending.clear();
-      if (!ws.closed && this.id) this.controlTimer = setTimeout(() => this.id && this.openControl(), 1500);
+      if (ws.closed || this.id !== id || this.control !== ws) return;
+      this.control = null;
+      if (ev.code === 4401) {
+        auth.ask().then(() => { if (this.id === id && this.mode === "direct") this.openControl(); });
+      } else if (ev.code === 4409) {
+        // in use by another client (on connect), or taken over by one: never take it back by itself
+        this.setMode("precise");
+        const taken = (ev.reason || "").includes("taken over");
+        this.showError(taken ? "Live control was taken over by another client." : ev.reason);
+        if (!taken && confirm("Another client controls this phone live. Take over live control?")) {
+          this.setMode("direct", true);
+        }
+      } else if (ev.code !== 4404 && this.mode === "direct") {
+        this.controlTimer = setTimeout(() => this.id === id && this.mode === "direct" && !this.control && this.openControl(),
+          ev.code === 4429 ? 10000 : 1500);
+      }
     };
+  },
+  closeControl() {
+    clearTimeout(this.controlTimer);
+    if (this.control) { this.control.closed = true; this.control.close(); }
+    this.control = null;
+    this.live = null;
   },
   send(msg) {
     if (this.control && this.control.readyState === WebSocket.OPEN) this.control.send(JSON.stringify(msg));
@@ -295,6 +367,15 @@ const view = {
     this.errTimer = setTimeout(() => { $("dv-error").textContent = ""; }, 6000);
   },
 
+  /** The calibration page's current link, to open it in Safari by hand (it changes after each calibration). */
+  async showCalLink() {
+    const id = this.id;
+    try {
+      const url = (await api("GET", `/api/devices/${encodeURIComponent(id)}/calibration`)).page_url || "";
+      if (this.id === id) $("cal-link").textContent = url;
+    } catch (e) { /* shown again after the next calibration */ }
+  },
+
   /* -- modes ------------------------------------------------------------------------------- */
   render() {
     for (const b of document.querySelectorAll("#mode-seg button")) b.classList.toggle("on", b.dataset.mode === this.mode);
@@ -302,10 +383,16 @@ const view = {
     $("screen").classList.toggle("abs", abs);
     $("mode-hint").textContent = this.mode === "precise" ? HINTS.precise : abs ? HINTS.absolute : HINTS.relative;
   },
-  setMode(mode) {
+  setMode(mode, takeover = false) {
     this.disengage();
     this.mode = mode;
     localStorage.setItem("ihc.mode", mode);
+    if (mode === "direct" && this.id && (!this.control || takeover)) {
+      this.closeControl();
+      this.openControl(takeover);
+    } else if (mode !== "direct") {
+      this.closeControl();
+    }
     this.render();
   },
   norm(ev) {
@@ -525,22 +612,25 @@ function wire() {
     const combo = $("key-combo").value.trim();
     if (combo) view.act("key", { combo }).catch(() => {});
   };
-  $("cal-start").onclick = async () => {
-    const id = view.id, btn = $("cal-start"), out = $("cal-status");
-    btn.disabled = true;
+  const calibrate = async (openPage) => {
+    const id = view.id, out = $("cal-status");
+    $("cal-start").disabled = $("cal-open").disabled = true;
     const t0 = Date.now();
     const tick = setInterval(() => { out.textContent = `measuring… ${Math.round((Date.now() - t0) / 1000)} s`; }, 500);
     try {
-      const r = (await api("POST", `/api/devices/${encodeURIComponent(id)}/calibrate`, {})).result;
+      const r = (await api("POST", `/api/devices/${encodeURIComponent(id)}/calibrate`, openPage ? {} : { open_page: false })).result;
       const c = r.calibration || {}, v = c.validation;
       out.textContent = `done: ${c.method}` + (v ? `, error mean ${v.mean} pt (max ${v.max})` : "");
     } catch (e) {
       out.textContent = "failed: " + e.message;
     } finally {
       clearInterval(tick);
-      btn.disabled = false;
+      $("cal-start").disabled = $("cal-open").disabled = false;
+      if (view.id === id) view.showCalLink();  // each link works for one calibration
     }
   };
+  $("cal-start").onclick = () => calibrate(true);
+  $("cal-open").onclick = () => calibrate(false);
 }
 
 /* ---------------------------------------------------------- routing ------------------------- */

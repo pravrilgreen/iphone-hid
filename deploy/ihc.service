@@ -12,7 +12,8 @@ SupplementaryGroups=dialout video input
 Environment=IHC_STATE_DIR=/var/lib/ihc
 StateDirectory=ihc
 LogsDirectory=ihc
-ExecStart=/opt/ihc/.venv/bin/ihc serve --auto --state-dir /var/lib/ihc --host 0.0.0.0 --port 8000 --log /var/log/ihc/ihc.jsonl
+# the API token (made once by install.sh): clients send it as "Authorization: Bearer <token>"
+ExecStart=/opt/ihc/.venv/bin/ihc serve --auto --state-dir /var/lib/ihc --token-file /var/lib/ihc/token --host 0.0.0.0 --port 8000 --log /var/log/ihc/ihc.jsonl
 Restart=always
 RestartSec=2
 # report pacing is timing sensitive: run ahead of ordinary background work

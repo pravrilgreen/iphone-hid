@@ -1,18 +1,55 @@
 """`ihc` command line: serve a farm (real or simulated), discover rigs, list devices.
 
-    ihc serve --auto                       # zero-config: every rig plugged into this host
+    ihc serve --auto --token-file /var/lib/ihc/token   # zero-config: every rig plugged into this host
     ihc serve --sim 4                      # 4 simulated iPhones, console at http://<LAN IP>:8000
     ihc serve --config farm.toml --log logs/farm.jsonl
     ihc discover > farm.toml               # pair serial ports and capture cards by USB hub
     ihc devices                            # every box on the LAN (mDNS), else this host
-    ihc devices --url http://farm-01:8000
+    ihc devices --url http://farm-01:8000 --token-file token.txt
+
+The API token comes from --token, --token-file or $IHC_TOKEN (in that order); without one, anyone
+who reaches the server controls the phones.
 """
 
 from __future__ import annotations
 
 import argparse
+import logging
+import os
+import re
 import socket
 import sys
+from pathlib import Path
+
+
+class _RedactToken(logging.Filter):
+    """Keep ?token= out of uvicorn's access log (WebSockets and <img> URLs carry it)."""
+
+    _pattern = re.compile(r"([?&]token=)[^&\s\"]*")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.args and isinstance(record.args, tuple):
+            record.args = tuple(self._pattern.sub(r"\1***", a) if isinstance(a, str) else a for a in record.args)
+        elif isinstance(record.msg, str):
+            record.msg = self._pattern.sub(r"\1***", record.msg)
+        return True
+
+
+def resolve_token(args: argparse.Namespace) -> str | None:
+    """--token, else --token-file, else $IHC_TOKEN; None when none is set. SystemExit with a message
+    when the token file cannot be read or is empty."""
+    if getattr(args, "token", None):
+        return args.token.strip()
+    path = getattr(args, "token_file", None)
+    if path:
+        try:
+            token = Path(path).read_text().strip()
+        except OSError as e:
+            raise SystemExit(f"ihc: cannot read the token file: {e}") from None
+        if not token:
+            raise SystemExit(f"ihc: the token file {path} is empty")
+        return token
+    return os.environ.get("IHC_TOKEN", "").strip() or None
 
 
 def lan_ip() -> str:
@@ -35,6 +72,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     from .jsonlog import EventLog
     from .registry import load_config, simulated
 
+    token = resolve_token(args)
     log = EventLog(args.log) if args.log else None
     if args.config:
         registry = load_config(args.config, log=log)
@@ -52,14 +90,25 @@ def cmd_serve(args: argparse.Namespace) -> int:
             registry.start_monitors()
         if hasattr(registry, "start_rescan"):  # zero-config: pick up rigs plugged in later
             registry.start_rescan(on_added=None if args.no_monitor else lambda d: d.start_monitor())
-        app = create_app(registry, public_url=public_url, log=log)
+        app = create_app(registry, public_url=public_url, log=log, token=token, allowed_hosts=args.allowed_host or (),
+                         allow_origins=args.allow_origin or ())
         ids = ", ".join(d.id for d in registry.devices()) or "none yet"
         print(f"ihc: {len(registry.devices())} device(s): {ids}", file=sys.stderr)
         print(f"ihc: console at {public_url}/, API reference at {public_url}/docs", file=sys.stderr)
+        if token:
+            print("ihc: API token required (the console asks for it once)", file=sys.stderr)
+        else:
+            who = "anyone on this machine" if args.host in ("127.0.0.1", "localhost", "::1") else \
+                "anyone on this network"
+            print(f"ihc: WARNING: no API token (--token, --token-file or IHC_TOKEN): {who} can control the phones",
+                  file=sys.stderr)
         announcement = _advertise(args.port, public_url, len(registry.devices()), log)
+        logging.getLogger("uvicorn.access").addFilter(_RedactToken())
+        logging.getLogger("uvicorn.error").addFilter(_RedactToken())  # WebSocket handshakes are logged there
         config = uvicorn.Config(
             app, host=args.host, port=args.port, log_level=args.log_level,
             ws_per_message_deflate=False,  # JPEG frames do not compress: deflate would only burn CPU
+            ws_max_size=1 << 20,  # control messages are small JSON
             timeout_graceful_shutdown=3,  # live streams never end on their own
         )
         try:
@@ -120,7 +169,7 @@ def cmd_devices(args: argparse.Namespace) -> int:
     from .client import Farm, IhcError
 
     try:
-        with Farm(*args.url, timeout=args.timeout) as farm:
+        with Farm(*args.url, timeout=args.timeout, token=resolve_token(args)) as farm:
             phones = farm.devices()
     except IhcError as e:
         print(f"ihc: {e}", file=sys.stderr)
@@ -157,6 +206,14 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--host", default="0.0.0.0")
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--public-url", help="URL phones use to reach this server (default http://<LAN IP>:<port>)")
+    s.add_argument("--token", help="API token clients must present (default $IHC_TOKEN; none: no authentication)")
+    s.add_argument("--token-file", metavar="PATH", help="read the API token from this file")
+    s.add_argument("--allowed-host", action="append", metavar="NAME",
+                   help="Host name clients may use besides IP addresses, localhost, *.local and this machine's "
+                        "name (repeatable; DNS rebinding protection; '*' allows any)")
+    s.add_argument("--allow-origin", action="append", metavar="ORIGIN",
+                   help="browser origin allowed to open WebSockets and POST, e.g. https://ci.example.com "
+                        "(repeatable; this server's own pages always are)")
     s.add_argument("--log", metavar="PATH", help="JSON-lines event log")
     s.add_argument("--no-monitor", action="store_true", help="do not start the health monitors")
     s.add_argument("--log-level", default="info", choices=["critical", "error", "warning", "info", "debug"])
@@ -172,6 +229,8 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--url", action="append", default=None,
                    help="host URL (repeatable; default: every box found on the LAN, else http://127.0.0.1:8000)")
     v.add_argument("--timeout", type=float, default=10.0)
+    v.add_argument("--token", help="API token of the hosts (default $IHC_TOKEN)")
+    v.add_argument("--token-file", metavar="PATH", help="read the API token from this file")
     v.set_defaults(fn=cmd_devices)
     return ap
 

@@ -25,9 +25,12 @@ import hmac
 import ipaddress
 import json
 import re
+import secrets
 import socket
+import threading
+from collections import Counter
 from typing import Iterable
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, urlencode, urlsplit, urlunsplit
 
 from starlette.datastructures import Headers
 
@@ -122,6 +125,41 @@ class Policy:
         if self.token is None:
             return True
         return presented is not None and hmac.compare_digest(presented.encode("utf-8", "replace"), self.token)
+
+
+class CalibrationKeys:
+    """The key of each device's calibration page. Safari on the phone cannot carry the API token, so
+    the page gets a key in its URL (?k=) and sends it with its events. Random, and replaced once a
+    calibration ends: a page opened for an earlier calibration (or a guess) cannot feed clicks into a
+    later one. In memory only: a restarted server has new keys."""
+
+    def __init__(self) -> None:
+        self._keys: dict[str, str] = {}
+        self._lock = threading.Lock()
+        self.rejected: Counter[str] = Counter()  # wrong keys presented, per device
+
+    def get(self, device_id: str) -> str:
+        with self._lock:
+            key = self._keys.get(device_id)
+            if key is None:
+                key = self._keys[device_id] = secrets.token_urlsafe(12)  # typeable: [A-Za-z0-9_-]
+            return key
+
+    def rotate(self, device_id: str) -> None:
+        with self._lock:
+            self._keys[device_id] = secrets.token_urlsafe(12)
+
+    def check(self, device_id: str, key: str | None) -> bool:
+        ok = bool(key) and hmac.compare_digest(key.encode("utf-8", "replace"), self.get(device_id).encode())
+        if not ok:
+            self.rejected[device_id] += 1
+        return ok
+
+    def url(self, device_id: str, page_url: str) -> str:
+        """`page_url` with the device's current key as its `k` query parameter."""
+        u = urlsplit(page_url)
+        query = [(n, v) for n, v in parse_qsl(u.query, keep_blank_values=True) if n != "k"]
+        return urlunsplit(u._replace(query=urlencode([*query, ("k", self.get(device_id))])))
 
 
 def needs_token(kind: str, method: str | None, path: str) -> bool:

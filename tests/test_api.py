@@ -23,6 +23,18 @@ with warnings.catch_warnings():  # "use httpx2" notice from starlette.testclient
     from fastapi.testclient import TestClient
 
 MARK = b"ihc-passthrough-test"
+TOKEN = "test-token-0123456789"
+AUTH = {"Authorization": f"Bearer {TOKEN}"}
+
+
+def make_app(reg, **options):
+    """The app as `ihc serve` builds it: with a token, reached as http://testserver."""
+    return create_app(reg, **{"public_url": "http://testserver", "token": TOKEN, **options})
+
+
+def client(app, **kwargs) -> TestClient:
+    """A TestClient that sends the token and declares its bodies JSON, as the SDK and the console do."""
+    return TestClient(app, headers={**AUTH, "Content-Type": "application/json"}, **kwargs)
 
 
 def relaxed(reg):
@@ -36,9 +48,8 @@ def relaxed(reg):
 @pytest.fixture
 def farm():
     reg = relaxed(simulated(2, simulate_timing=False))
-    app = create_app(reg, public_url="http://testserver")
-    with TestClient(app) as client:
-        yield reg, client
+    with client(make_app(reg)) as c:
+        yield reg, c
     reg.close()
 
 
@@ -224,6 +235,24 @@ def test_every_action_endpoint(farm):
     ("media", {"key": "louder"}, "unknown media key"),
     ("open_url", {"url": ""}, "url"),
     ("calibrate", {"options": {"bogus": 1}}, "unknown calibration options"),
+    # calibration options are checked before the phone is touched (types and ranges)
+    ("calibrate", {"options": {"validate": 2}}, "options.validate"),
+    ("calibrate", {"options": {"validate": 101}}, "options.validate"),
+    ("calibrate", {"options": {"validate": 8.0}}, "options.validate: Input should be a valid integer"),
+    ("calibrate", {"options": {"max_error": 0.1}}, "options.max_error"),
+    ("calibrate", {"options": {"max_error": "3"}}, "options.max_error"),
+    ("calibrate", {"options": {"repeats": 6}}, "options.repeats"),
+    ("calibrate", {"options": {"page_timeout": 0.5}}, "options.page_timeout"),
+    ("calibrate", {"options": {"page_timeout": 121}}, "options.page_timeout"),
+    ("calibrate", {"options": {"click_timeout": 0}}, "options.click_timeout"),
+    ("calibrate", {"options": {"coarse_target": 50}}, "options.coarse_target"),
+    ("calibrate", {"options": {"try_absolute": "false"}}, "options.try_absolute: Input should be a valid boolean"),
+    ("calibrate", {"options": {"try_absolute": 0}}, "options.try_absolute"),
+    ("calibrate", {"options": {"coarse_counts": [1]}}, "options.coarse_counts"),
+    ("calibrate", {"options": {"fine_counts": [2, 400]}}, "options.fine_counts"),
+    ("calibrate", {"options": "fast"}, "options"),
+    ("calibrate", {"page_url": "file:///etc/passwd"}, "http:// or https://"),
+    ("calibrate", {"page_url": "http://host/é"}, "cannot type"),
 ])
 def test_invalid_input_is_422_and_sends_nothing(farm, name, body, fragment):
     reg, c = farm
@@ -246,7 +275,7 @@ def test_device_errors_are_409(farm):
 def test_hid_timeout_is_504():
     reg = simulated(1, simulate_timing=False, timeout=0.1)  # short reply timeout: a quick test
     try:
-        with TestClient(create_app(reg)) as c:
+        with client(make_app(reg)) as c:
             chip = reg.extra("sim-01").chip
             chip.powered = False  # the chip stops answering
             try:
@@ -404,7 +433,7 @@ def test_control_absolute_pointer():
     reg = relaxed(simulated(1, simulate_timing=False, absolute=True))
     try:
         dev, rig = reg.get("sim-01"), reg.extra("sim-01")
-        with TestClient(create_app(reg)) as c, c.websocket_connect("/api/devices/sim-01/control") as ws:
+        with client(make_app(reg)) as c, c.websocket_connect("/api/devices/sim-01/control") as ws:
             assert ws.receive_json()["mode"] == "absolute"
             r0 = dev.counters["live_reports"]
             for i in range(1, 41):
@@ -528,28 +557,109 @@ def test_sim_controls(farm):
     assert r.status_code == 404 and "not a simulated device" in r.json()["error"]
 
 
+def page_key(c, device_id: str = "sim-01") -> str:
+    """The calibration page's current key, from the page_url GET .../calibration gives an operator."""
+    url = c.get(f"/api/devices/{device_id}/calibration").json()["page_url"]
+    assert url.startswith(f"http://testserver/calibrate/{device_id}?k=")
+    return url.rpartition("?k=")[2]
+
+
 def test_calibration_page_and_events(farm):
     reg, c = farm
     dev = reg.get("sim-01")
-    r = c.get("/calibrate/sim-01")
+    k = page_key(c)
+    phone = TestClient(c.app, headers={"Content-Type": "application/json"})  # Safari: no API token
+    r = phone.get(f"/calibrate/sim-01?k={k}")
     assert r.status_code == 200 and r.headers["content-type"].startswith("text/html")
     assert "iphone-hid calibration" in r.text and "user-scalable=no" in r.text
     assert "/calibration/events" in r.text and r.headers["cache-control"].startswith("no-cache")
     assert c.get("/calibrate/nope").status_code == 404
 
+    events = f"/api/devices/sim-01/calibration/events?k={k}"
     hello = {"type": "hello", "screen_w": 393, "screen_h": 852, "inner_w": 393, "inner_h": 659, "dpr": 3, "ua": "Safari"}
-    assert c.post("/api/devices/sim-01/calibration/events", json=hello).json()["result"] == {"accepted": 1}
+    assert phone.post(events, json=hello).json()["result"] == {"accepted": 1}
     assert dev.clicks.wait_page(0.1)["inner_h"] == 659
     batch = [{"type": "move", "x": 1, "y": 2}, {"type": "click", "x": 10.5, "y": 20, "button": 0},
              {"type": "click", "x": 11, "y": 21, "button": 0}]
-    assert c.post("/api/devices/sim-01/calibration/events", json=batch).json()["result"] == {"accepted": 3}
+    assert phone.post(events, json=batch).json()["result"] == {"accepted": 3}
     assert dev.clicks.moves == 1
     assert [dev.clicks.next_click(0.1)["x"] for _ in range(2)] == [10.5, 11]
-    for bad in ({"type": "click", "x": 1}, {"type": "tap", "x": 1, "y": 1}, {"type": "hello", "screen_w": 1}, [1]):
-        r = c.post("/api/devices/sim-01/calibration/events", json=bad)
+    for bad in ({"type": "click", "x": 1}, {"type": "tap", "x": 1, "y": 1}, {"type": "hello", "screen_w": 1}, [1],
+                {"type": "click", "x": 1, "y": 2, "button": "left"}, [{"type": "move", "x": 1, "y": 1}] * 501):
+        r = phone.post(events, json=bad)
         assert r.status_code == 422 and r.json()["code"] == "invalid_input", bad
+    r = phone.post(events, content=b'{"type": "click", "x": NaN, "y": 1}')
+    assert r.status_code == 422
     assert dev.clicks.next_click(0.01) is None  # nothing of a rejected batch was pushed
-    assert c.post("/api/devices/nope/calibration/events", json=hello).status_code == 404
+    assert phone.post(f"/api/devices/nope/calibration/events?k={k}", json=hello).status_code == 404
+
+    # only the known fields are kept (pid: the page load)
+    ev = {"type": "click", "x": 5, "y": 6, "button": 0, "pid": "a1b2", "seq": 3, "t": 12.5, "evil": "x" * 100,
+          "ua": "S" * 5000}
+    assert phone.post(events, json=ev).status_code == 200
+    got = dev.clicks.next_click(0.1)
+    assert got == {"type": "click", "x": 5, "y": 6, "button": 0, "pid": "a1b2", "seq": 3, "t": 12.5, "ua": "S" * 512}
+
+
+def test_calibration_key(farm):
+    """The phone's page cannot carry the API token: its events need the page's key instead."""
+    reg, c = farm
+    dev = reg.get("sim-01")
+    phone = TestClient(c.app, headers={"Content-Type": "application/json"})
+    click = {"type": "click", "x": 1, "y": 2}
+    k = page_key(c)
+    assert page_key(c) == k  # stable until a calibration ends
+    assert page_key(c, "sim-02") != k  # one per device
+    for query in ("", "?k=", "?k=wrong", f"?k={page_key(c, 'sim-02')}"):
+        r = phone.post(f"/api/devices/sim-01/calibration/events{query}", json=click)
+        assert r.status_code == 403 and r.json()["code"] == "forbidden", query
+        r = phone.get(f"/calibrate/sim-01{query}")
+        assert r.status_code == 403 and "expired" in r.text, query
+    # a wrong key is refused before the body is even looked at
+    assert phone.post("/api/devices/sim-01/calibration/events?k=wrong", json={"bogus": 1}).status_code == 403
+    assert dev.clicks.next_click(0.01) is None
+    assert phone.post(f"/api/devices/sim-01/calibration/events?k={k}", json=click).status_code == 200
+    assert dev.clicks.next_click(0.1)["x"] == 1
+    # the token is no substitute for the key, and the key none for the token
+    assert c.post("/api/devices/sim-01/calibration/events", json=click).status_code == 403
+    assert phone.get(f"/api/devices/sim-01/calibration?k={k}").status_code == 401
+    # the calibrate endpoint opens the page with the current key, and makes a new one once it ends
+    r = c.post("/api/devices/sim-01/calibrate", json={"open_page": False, "options": {"page_timeout": 1}})
+    assert r.status_code == 409 and "did not load" in r.json()["error"]
+    k2 = page_key(c)
+    assert k2 != k
+    assert phone.post(f"/api/devices/sim-01/calibration/events?k={k}", json=click).status_code == 403
+    assert phone.post(f"/api/devices/sim-01/calibration/events?k={k2}", json=click).status_code == 200
+    # a page_url given by the caller gets the key too (a proxy path: the simulated Safari shows no page there)
+    r = c.post("/api/devices/sim-01/calibrate", json={"page_url": "http://10.0.0.9:8000/ihc/cal/sim-01?x=1",
+                                                      "options": {"page_timeout": 1}})
+    assert r.status_code == 409
+    assert reg.extra("sim-01").phone.url == f"http://10.0.0.9:8000/ihc/cal/sim-01?x=1&k={k2}"
+    assert page_key(c) not in (k, k2)
+
+
+def test_calibration_hints_at_an_expired_page(farm):
+    """A calibration that fails while the page on the phone posts with an old key says so."""
+    reg, c = farm
+    phone = TestClient(c.app, headers={"Content-Type": "application/json"})
+    old = page_key(c)
+    c.post("/api/devices/sim-01/calibrate", json={"open_page": False, "options": {"page_timeout": 1}})
+    stop = threading.Event()
+
+    def stale_page():  # the page opened for the previous calibration keeps sending heartbeats
+        while not stop.is_set():
+            phone.post(f"/api/devices/sim-01/calibration/events?k={old}", json={
+                "type": "hello", "screen_w": 393, "screen_h": 852, "inner_w": 393, "inner_h": 659})
+            time.sleep(0.05)
+
+    t = threading.Thread(target=stale_page)
+    t.start()
+    try:
+        r = c.post("/api/devices/sim-01/calibrate", json={"open_page": False, "options": {"page_timeout": 1}})
+    finally:
+        stop.set()
+        t.join()
+    assert r.status_code == 409 and "expired key" in r.json()["error"], r.text
 
 
 def test_console_is_served_without_caching(farm):
@@ -565,12 +675,12 @@ def test_console_is_served_without_caching(farm):
 def test_calibrate_through_safari_page():
     reg = relaxed(simulated(1, calibrated=False, simulate_timing=False))
     try:
-        with TestClient(create_app(reg, public_url="http://testserver")) as c:
+        with client(make_app(reg)) as c:
             assert c.get("/api/devices/sim-01/calibration").json()["method"] == "guess"
             r = c.post("/api/devices/sim-01/calibrate", json={"options": {"repeats": 1, "validate": 3}})
             assert r.status_code == 200, r.text
             result = r.json()["result"]
-            assert result["page_url"] == "http://testserver/calibrate/sim-01"
+            assert result["page_url"].startswith("http://testserver/calibrate/sim-01?k=")
             assert result["calibration"]["method"] == "safari"
             st = c.get("/api/devices/sim-01").json()
             assert st["calibration"]["calibrated"] and st["calibration"]["method"] == "safari"
@@ -588,9 +698,10 @@ def test_calibrate_on_a_page_opened_by_hand():
     """open_page=false: Spotlight is not used; the page the operator opened is calibrated."""
     reg = relaxed(simulated(1, calibrated=False, simulate_timing=False, absolute=True))
     try:
-        with TestClient(create_app(reg, public_url="http://testserver")) as c:
+        with client(make_app(reg)) as c:
             phone = reg.extra("sim-01").phone
-            phone.open_url("http://testserver/calibrate/sim-01")  # typed in Safari by hand
+            page_url = c.get("/api/devices/sim-01/calibration").json()["page_url"]
+            phone.open_url(page_url)  # typed in Safari by hand
             time.sleep(0.5)
             spotlight = len(reg.extra("sim-01").chip.keyboard.shortcuts)
             r = c.post("/api/devices/sim-01/calibrate", json={"open_page": False, "options": {"validate": 3}})

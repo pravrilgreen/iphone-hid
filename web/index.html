@@ -65,6 +65,9 @@
         <button id="cal-start">Calibrate</button>
         <span class="small" id="cal-status"></span>
       </div>
+      <p class="muted small">If Spotlight does not open, type this link in Safari on the phone (it changes after
+        each calibration), then <button class="link" id="cal-open">calibrate the open page</button>:</p>
+      <p class="small mono" id="cal-link"></p>
 
       <h3>Status</h3>
       <dl class="kv">
@@ -79,6 +82,19 @@
     </aside>
   </section>
 </main>
+
+<dialog id="token-dialog">
+  <form id="token-form" autocomplete="off">
+    <h3>Access token</h3>
+    <p class="small">This box needs its API token. On the box: <code>sudo cat /var/lib/ihc/token</code>
+      (or the <code>--token</code> the server was started with). This browser keeps it.</p>
+    <p class="small err" id="token-error"></p>
+    <div class="row">
+      <input id="token-input" type="password" placeholder="Token" spellcheck="false">
+      <button type="submit">Connect</button>
+    </div>
+  </form>
+</dialog>
 <script src="app.js"></script>
 </body>
 </html>
