@@ -355,7 +355,7 @@ def test_bridge_info_and_capabilities(chip_backend):
     bridge = chip_backend(FakeChip(bridge=True))
     info = bridge.info()
     assert info["version"] == "ihc bridge v1.0"
-    assert info["bridge"] == {"output": "simulator", "rel_run": True,
+    assert info["bridge"] == {"output": "simulator", "rel_run": True, "report_period_ms": None,
                               "collections": ["keyboard", "mouse", "consumer", "system", "absolute"]}
     assert bridge.supports_rel_run() is True
 
@@ -390,3 +390,13 @@ def test_plain_ch9329_rejects_runs(hid):
     with pytest.raises(HidStatusError) as e:
         hid.mouse_rel_runs([(1, 0, 3)], 10)
     assert e.value.status == p.Status.BAD_CMD
+
+
+def test_bridge_reports_its_link_period(chip_backend):
+    chip = FakeChip(bridge=True)
+    chip.link_period = 0.015
+    hid = chip_backend(chip)
+    assert hid.info()["bridge"]["report_period_ms"] == 15.0
+    assert hid.report_period() == 0.015
+    chip.usb_connected = False  # not connected: unknown
+    assert hid.report_period() is None

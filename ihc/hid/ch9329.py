@@ -176,10 +176,14 @@ class CH9329Backend:
             "raw": d.hex(" "),
         }
         if is_bridge(d[0]) and len(d) >= 6:
+            period = int.from_bytes(d[6:8], "little") if len(d) >= 8 else 0
             info["bridge"] = {
                 "output": p.BRIDGE_OUTPUTS.get(d[3], f"unknown ({d[3]:#04x})"),
                 "collections": [name for bit, name in p.BRIDGE_COLLECTIONS.items() if d[4] & bit],
                 "rel_run": bool(d[5] & p.FEATURE_REL_RUN),
+                # how often the phone takes a report (BLE connection interval, USB polling), in
+                # units of 0.25 ms; None while unknown or not connected
+                "report_period_ms": period / 4 if period else None,
             }
         self._info = info
         return info
@@ -193,6 +197,16 @@ class CH9329Backend:
             except HidError:
                 return False
         return bool(self._info.get("bridge", {}).get("rel_run"))
+
+    def report_period(self) -> float | None:
+        """Seconds between the moments the phone takes a report, when the device knows it (ESP32
+        bridge: BLE connection interval or USB polling interval). Asks the device each time: a
+        Bluetooth link can renegotiate."""
+        try:
+            period = self.info().get("bridge", {}).get("report_period_ms")
+        except HidError:
+            return None
+        return period / 1000 if period else None
 
     def keyboard(self, modifiers: int, keys: Sequence[int]) -> None:
         self._hid(p.kb_general(modifiers, keys, self.addr))

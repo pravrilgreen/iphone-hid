@@ -68,13 +68,19 @@ python tools/hid_loopback.py --port $PORT all
 Mong đợi:
 - **`cfg`:** `work_mode 0x80`, `vid 0x1a86`, `pid 0xe129`. Nếu có dòng `WARNING`, chụp nguyên văn.
 - **`bench`:** báo cáo có ack mất khoảng 20–25 ms ở 9600 baud.
-- **`hid_loopback rel`:** mỗi nhịp một dòng `OK`/`LOSS`, gồm số đơn vị nhận/gửi và độ trễ. Nhịp mà phần mềm
-  dùng (20 ms) phải `OK` ở cả chế độ `ack` lẫn `pipelined`.
+- **`hid_loopback rel`:** mỗi nhịp một dòng `OK`/`LOSS`, gồm số đơn vị nhận/gửi, độ trễ, khoảng cách thực
+  giữa các lần gửi (`sent every`) và giữa các lần host nhận được (`arrived every`, kèm min..max). Nhịp mà phần
+  mềm dùng (20 ms) phải `OK` ở cả chế độ `ack` lẫn `pipelined`.
+- **Khoảng `arrived every` min..max** là jitter mà chế độ tương đối sẽ gặp (host + CH340 + poll USB). Ở nhịp
+  20 ms, mong muốn min..max nằm trong khoảng 18,5..21,5 ms. Nếu thấy các giá trị nhảy theo bậc (ví dụ 10/20/30
+  ms) thì `bInterval` của chip không chia hết nhịp, hoặc báo cáo tới sát ranh giới poll: ghi lại và thử nhịp
+  là bội số của `bInterval`.
 - **`hid_loopback abs`:** `ABS_X`/`ABS_Y` đổi theo lưới đã gửi.
 - **`hid_loopback keys`:** số phím nhấn bằng số ký tự, `all released: True`.
 
 **Ghi lại:**
 - `bInterval`;
+- khoảng `arrived every` min..max ở từng nhịp;
 - nhịp nhỏ nhất vẫn `OK`, và từ nhịp nào bắt đầu `LOSS` hoặc bị gộp;
 - độ trễ p50/max;
 - kết quả `abs`.

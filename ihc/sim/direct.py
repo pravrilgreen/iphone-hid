@@ -77,6 +77,9 @@ class DirectHid:
     def supports_rel_run(self) -> bool:
         return self.chip.bridge
 
+    def report_period(self) -> float | None:
+        return self.chip.link_period if self.chip.bridge and self.chip.link_period > 0 else None
+
     def mouse_rel_runs(self, runs, interval_ms: int, buttons: int = 0) -> None:
         for dx, dy, count in runs:
             self._cmd(p.mouse_rel_run(dx, dy, count, interval_ms, buttons))

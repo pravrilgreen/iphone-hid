@@ -14,7 +14,7 @@ from __future__ import annotations
 import sys
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Callable
 
@@ -26,7 +26,7 @@ from .hid import protocol as p
 from .hid.base import HidError, HidPortError
 from .hid.ch9329 import CH9329Backend
 from .input.keyboard import Keyboard
-from .input.pointer import PointerCalibration, PointerError, PointerModel
+from .input.pointer import PointerCalibration, PointerError, PointerModel, pace_interval
 from .video.frame import Frame, FrameSource, encode_jpeg
 from .video.geometry import ScreenRect, fit_screen_rect
 
@@ -93,8 +93,10 @@ class IPhoneDevice:
             try:
                 h["hid"] = h["usb_connected"] = None
                 try:
-                    h["usb_connected"] = self.hid.info()["usb_connected"]
+                    info = self.hid.info()
+                    h["usb_connected"] = info["usb_connected"]
                     h["hid"] = True
+                    h["error"] = self._link_changed(info)
                 except HidPortError as e:
                     h["hid"], h["error"] = False, str(e)
                     self._try_reopen()
@@ -167,6 +169,15 @@ class IPhoneDevice:
 
         self._monitor = threading.Thread(target=run, name=f"monitor-{self.id}", daemon=True)
         self._monitor.start()
+
+    def _link_changed(self, info: dict) -> str | None:
+        """Relative-mode distances were measured at a pace matched to the link's report period
+        (ESP32 bridge); a Bluetooth link that renegotiated its interval invalidates them."""
+        period = info.get("bridge", {}).get("report_period_ms")
+        measured = self.pointer.cal.extra.get("report_period_ms")
+        if self.pointer.cal.mode == "relative" and period and measured and abs(period - measured) > 0.01:
+            return f"link report period changed from {measured} ms to {period} ms since calibration: recalibrate"
+        return None
 
     def _try_reopen(self) -> None:
         if self._reopen_hid is None:
@@ -361,7 +372,11 @@ class IPhoneDevice:
             self.clicks = ClickCollector()  # under the action lock: one calibration at a time
             if page_url:
                 self.open_url(page_url)
+            period = self.hid.report_period() if hasattr(self.hid, "report_period") else None
+            self.pointer.cal = replace(self.pointer.cal, interval=pace_interval(period, PointerCalibration.interval))
             cal = calibrate(self.pointer, self.clicks, log=self._log, **options)
+            if period:
+                cal.extra["report_period_ms"] = round(period * 1000, 3)
             if self.calibration_path:
                 cal.save(self.calibration_path)
             return {"calibration": {"method": cal.method, "reset_reports": cal.reset_reports,

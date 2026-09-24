@@ -196,3 +196,28 @@ def test_frozen_capture_is_reported(farm):
     finally:
         dev.source = real
     assert dev.check()["signal"] is True
+
+
+def test_calibration_pace_follows_the_bridge_link(monkeypatch):
+    import ihc.device as device_mod
+    from ihc.input.pointer import PointerCalibration
+
+    reg = simulated(1, simulate_timing=False, bridge=True)
+    try:
+        dev, rig = rig_of(reg)
+        rig.chip.link_period = 0.015  # a Bluetooth connection interval
+        seen = {}
+
+        def fake_calibrate(pm, clicks, **options):
+            seen["interval"] = pm.cal.interval
+            pm.cal = PointerCalibration(interval=pm.cal.interval, method="safari")  # as calibrate() installs it
+            return pm.cal
+
+        monkeypatch.setattr(device_mod, "calibrate", fake_calibrate)
+        dev.calibrate()
+        assert seen["interval"] == 0.03 and dev.pointer.cal.extra["report_period_ms"] == 15.0
+        assert dev.check()["error"] is None
+        rig.chip.link_period = 0.0225  # the link renegotiated: the calibration no longer holds
+        assert "recalibrate" in dev.check()["error"]
+    finally:
+        reg.close()

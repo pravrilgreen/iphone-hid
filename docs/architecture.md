@@ -72,16 +72,24 @@ Mọi cú click khi hiệu chỉnh đều được giữ trong vùng trang, khô
 4. **Neo lại trước mỗi thao tác**, nên sai số không cộng dồn.
 
 **Giới hạn của chế độ tương đối:** quãng đường phụ thuộc vận tốc, nên **jitter thời gian** ở bất kỳ đâu trên
-đường đi đều thành sai số vị trí:
-- lịch luồng của host;
-- độ trễ USB-serial;
-- chu kỳ poll USB (`bInterval`) của chip HID.
+đường đi đều thành sai số vị trí. Trên mô phỏng, lệch 1 ms ở một báo cáo bước lớn làm lệch khoảng 0,75 pt.
+Các nguồn jitter và cách xử lý:
 
-Phần mềm tự đo thời điểm gửi và làm lại khi host bị khựng, nhưng không thấy được jitter sau cổng serial. Cách
-giảm:
-- đo `bInterval` và jitter bằng bài T0;
-- hạ tốc độ bước lớn (`coarse_target`) nếu sai số kiểm tra cao;
-- dùng firmware ESP32 ở chế độ USB (đặt được `bInterval` = 1 ms);
+| Nguồn | Xử lý |
+|---|---|
+| Lịch luồng của host (Python, GIL) | Đặt `sys.setswitchinterval` 1 ms (mặc định 5 ms). Đo thời điểm bắt đầu gửi **và** thời điểm ghi xong từng báo cáo; lệch quá **1,5 ms** thì làm lại cả thao tác từ neo. |
+| USB-serial (CH340) | Không thấy được từ host. Bài T0 đo bằng `tools/hid_loopback.py` (khoảng cách thực giữa các báo cáo khi tới host). |
+| Chu kỳ link tới iPhone: `bInterval` của USB, connection interval của Bluetooth | Nhịp chạy phải là **bội số** của chu kỳ link. Ở nhịp 20 ms trên link Bluetooth 15 ms, khoảng cách iOS thấy xen kẽ 15/30 ms: trên mô phỏng sai số lên tới 30 pt; ở nhịp 30 ms còn dưới 1 pt. |
+
+**Bridge ESP32 tự tạo nhịp:** lệnh riêng `SEND_MS_REL_RUN` (0x30) giao cả một đoạn chạy cho chip. Chip phát
+từng báo cáo theo đồng hồ của nó, nên jitter của host và USB-serial không còn tới iPhone. Bridge báo chu kỳ
+link trong `GET_INFO` (byte 6–7), và hiệu chỉnh chọn nhịp là bội số nhỏ nhất của chu kỳ đó mà không dưới
+20 ms (Bluetooth 15 ms thành 30 ms). Nếu link Bluetooth đổi chu kỳ sau khi hiệu chỉnh, trạng thái thiết bị
+báo cần hiệu chỉnh lại.
+
+Với CH9329, `bInterval` của chip chưa biết: bài T0 đo nó. Nếu jitter sau cổng serial vẫn lớn thì:
+- hạ tốc độ bước lớn (`coarse_target`);
+- dùng bridge ESP32 ở chế độ USB (tự tạo nhịp, `bInterval` 1 ms);
 - tốt nhất là chế độ tuyệt đối, vốn không bị ảnh hưởng.
 
 ### 3.3 Không mất lệnh
@@ -92,8 +100,9 @@ giảm:
 | Báo cáo trạng thái (nút, phím, vị trí tuyệt đối) | Mang toàn bộ trạng thái nên gửi lại là an toàn. Được gửi lại khi timeout hoặc khi chip báo khung hỏng (E1/E2/E4). |
 | Báo cáo di chuyển tương đối | Không gửi lại mù (có thể đã được thực thi). Thao tác được **làm lại từ đầu, kể cả bước neo góc**. |
 | Đoạn chạy | Gửi liên tục không chờ từng ack (chỉ đường serial giới hạn nhịp), nhưng **mọi ack được thu và kiểm** ở cuối đoạn. Thiếu hay lỗi một ack thì làm lại từ neo. |
-| Nhịp | Thời điểm gửi từng báo cáo được đo. Host bị khựng làm lệch nhịp quá 6 ms thì đoạn đó bị coi là hỏng và làm lại, vì lệch nhịp nghĩa là lệch quãng đường. |
-| Phím | Luôn nhả mọi phím và nút khi kết thúc, kể cả khi lỗi giữa chừng hoặc client ngắt kết nối. |
+| Ack đến muộn | Sau một lần timeout hoặc mất ack, lần trao đổi kế tiếp gửi `GET_INFO` trước và bỏ mọi phản hồi tới trước câu trả lời của nó. Chip trả lời theo thứ tự, nên ack muộn không bao giờ bị tính nhầm cho lệnh sau. |
+| Nhịp | Thời điểm gửi và thời điểm ghi xong từng báo cáo được đo. Lệch quá 1,5 ms thì đoạn đó bị coi là hỏng và làm lại, vì lệch nhịp nghĩa là lệch quãng đường. Với bridge ESP32, chip tự tạo nhịp. |
+| Phím và nút | Luôn nhả mọi phím và nút khi kết thúc. Thao tác nào lỗi giữa chừng thì nhả hết (bàn phím, phím media, chuột tương đối **và** chuột tuyệt đối, vì hai loại báo cáo giữ trạng thái nút riêng). Nếu không xác nhận được việc nhả, lần neo sau sẽ nhả trước rồi mới di chuyển. |
 | Thứ tự | Mỗi thiết bị có một khoá. Thao tác của automation, của người điều khiển trực tiếp và hiệu chỉnh chạy lần lượt, không xen nhau. |
 
 Giới hạn trung thực: không có thị giác, "đã giao" nghĩa là **chip đã nhận và thực thi**. Để kiểm chứng tầng USB

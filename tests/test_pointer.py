@@ -351,3 +351,33 @@ def test_bridge_anchor_is_one_frame():
     pm.anchor(1, 1)
     assert hid.stats["tx"] == tx + 1
     assert chip.pointer.current() == (chip.pointer.width - 1, chip.pointer.height - 1)
+
+
+def test_pace_must_be_a_multiple_of_the_link_period():
+    """Over Bluetooth the phone takes reports at connection events (15 ms here). At a 20 ms pace
+    the spacing iOS sees alternates 15/30 ms and run distances stop repeating; at 30 ms it is
+    uniform again. The bridge reports its period and calibration picks the pace from it."""
+    import random
+
+    from ihc.input.pointer import pace_interval
+
+    def worst_error(interval: float) -> float:
+        chip, hid, clock, _ = _bridge_phone()
+        chip.link_period = 0.015
+        from ihc.sim.rig import exact_calibration
+
+        cal = exact_calibration(chip.pointer, PointerCalibration(interval=interval))
+        pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
+        rnd = random.Random(1)
+        worst = 0.0
+        for _ in range(20):
+            clock.sleep(rnd.uniform(0, 0.05))  # any phase against the link's schedule
+            x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
+            pm.move_to(x, y)
+            px, py = chip.pointer.current()
+            worst = max(worst, abs(px - x), abs(py - y))
+        return worst
+
+    assert pace_interval(0.015) == 0.03 and pace_interval(0.001) == 0.02 and pace_interval(None) == 0.02
+    assert worst_error(0.02) > 5.0
+    assert worst_error(pace_interval(0.015)) < 1.0

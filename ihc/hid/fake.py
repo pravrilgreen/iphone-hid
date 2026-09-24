@@ -13,6 +13,7 @@ hardware: no reply (or, with `noise_on_mismatch`, a few garbage bytes).
 
 from __future__ import annotations
 
+import math
 import os
 import select
 from collections import deque
@@ -205,6 +206,9 @@ class FakeChip:
         self.version = version if version is not None else (p.BRIDGE_VERSION if bridge else 0x30)
         self.clock: Callable[[], float] = time.monotonic  # timing of on-chip runs
         self.sleep: Callable[[float], None] = time.sleep
+        # Bridge only: the phone takes reports at link events this far apart (BLE connection
+        # interval, USB polling); a report waits for the next event. 0 = delivered at once.
+        self.link_period = 0.0
         self.usb_strings = {0: "", 1: "", 2: ""}
         self.events: list[dict] = []  # most recent events; `seq` numbers them across trims
         self.event_seq = 0
@@ -313,10 +317,11 @@ class FakeChip:
         if cmd == C.GET_INFO:
             if self.bridge:
                 collections = {0: 0x1F, 1: 0x0D, 2: 0x12}.get(self.work_mode, 0)
-                extra = (0x7F, collections, p.FEATURE_REL_RUN)
+                period = round(self.link_period * 4000) if self.usb_connected else 0
+                extra = (0x7F, collections, p.FEATURE_REL_RUN, period & 0xFF, period >> 8)
             else:
-                extra = (0, 0, 0)
-            return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, *extra, 0, 0])
+                extra = (0, 0, 0, 0, 0)
+            return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, *extra])
         if cmd == p.CMD_MS_REL_RUN and self.bridge:
             return self._rel_run(d), None
         if cmd == C.GET_PARA_CFG:
@@ -353,6 +358,13 @@ class FakeChip:
             return self._hid(cmd, d), None
         return S.BAD_CMD, None
 
+    def _link_event(self) -> None:
+        """Bridge: hold a report until the phone's next link event takes it."""
+        if self.bridge and self.link_period > 0:
+            now = self.clock()
+            events = math.ceil(now / self.link_period - 1e-9)
+            self.sleep(max(0.0, events * self.link_period - now))
+
     def take_reply_delay(self) -> float:
         return self.reply_delays.pop(0) if self.reply_delays else 0.0
 
@@ -372,6 +384,7 @@ class FakeChip:
         for i in range(count):
             if i:
                 self.sleep(max(0.0, t0 + i * interval / 1000 - self.clock()))
+            self._link_event()
             self.pointer.relative(max(dx, -127), max(dy, -127), buttons, 0)
         self.sleep(max(0.0, t0 + count * interval / 1000 - self.clock()))
         return S.OK
@@ -406,6 +419,7 @@ class FakeChip:
                 self._emit("media", keys=[n for n, b in names.items() if bits & b])
         elif cmd == C.SEND_MS_REL_DATA:
             dx, dy, wheel = (int.from_bytes(d[i : i + 1], "little", signed=True) for i in (2, 3, 4))
+            self._link_event()
             self.pointer.relative(dx, dy, d[1], wheel)
         else:
             x, y = int.from_bytes(d[2:4], "little"), int.from_bytes(d[4:6], "little")

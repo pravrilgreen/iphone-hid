@@ -91,6 +91,16 @@ class DirectionModel:
         return pick[2], pick[3], pick[4]
 
 
+def pace_interval(report_period: float | None, base: float = 0.02) -> float:
+    """The run pace to use over a link that delivers reports every `report_period` seconds: the
+    smallest multiple of it that is at least `base`. Every report of a run then reaches the phone
+    at the same phase of the link's schedule, so the spacing iOS sees is uniform (at 20 ms over a
+    15 ms Bluetooth link, it would alternate 15 and 30 ms and distances would stop repeating)."""
+    if not report_period or report_period <= 0:
+        return base
+    return round(math.ceil(base / report_period - 1e-9) * report_period, 6)
+
+
 def _guess_direction() -> DirectionModel:
     # Placeholder until calibrated: roughly a mid Tracking Speed at the default pace.
     return DirectionModel(RunModel(20.0, 0.0), RunModel(1.2, 0.0))
