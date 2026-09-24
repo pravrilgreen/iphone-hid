@@ -63,6 +63,9 @@ python -m ihc.hid.scan --port $PORT              # mong đợi: 9600 baud: OK
 python tools/hidtest.py --port $PORT "info; cfg; cfg save docs/test-logs/ch9329-cfg-factory.json; bench 200"
 python tools/hid_loopback.py --port $PORT list
 python tools/hid_loopback.py --port $PORT all
+# descriptor của CH9329 (chưa ai công bố): cần cho T1. usbhid-dump có trong gói usbutils;
+# giải mã bằng `pip install hid-tools` rồi `hid-decode`
+sudo usbhid-dump -d 1a86:e129 -e descriptor | tee docs/test-logs/ch9329-descriptor-mode0.txt
 ```
 
 Mong đợi:
@@ -90,6 +93,29 @@ Thử lại ở 115200 baud (xem X1) nếu còn thời gian.
 ---
 
 ## T1. iPhone có theo chuột tuyệt đối không (quan trọng nhất)
+
+Nghiên cứu mới ([research/absolute-pointer.md](research/absolute-pointer.md)): iPhone **có** theo chuột tuyệt
+đối qua USB trên iOS 26 (hai dự án độc lập), với AssistiveTouch bật. Câu hỏi còn lại là descriptor của CH9329.
+Chạy lần lượt 4 cấu hình, **luôn chạy cấu hình B** dù A đạt:
+
+| Lần | HID | Để biết |
+|---|---|---|
+| A | CH9329 work mode 0x00 (mặc định) | rẻ nhất, có ngay |
+| B | ESP32-S3 bản USB, **chỉ chuột tuyệt đối** | cấu hình tham chiếu (giống các dự án đã chạy được). B đạt mà A không thì lỗi ở descriptor của CH9329, không phải iOS |
+| C | CH9329 work mode 0x02 (chỉ chuột), rút/cắm lại | tách ảnh hưởng của bàn phím gộp |
+| D | ESP32-S3 bản USB, tương đối + tuyệt đối | hai con trỏ cùng tồn tại được không |
+
+Giữa hai lần dùng descriptor khác nhau trên cùng một bo, **đổi serial/PID** (firmware ESP32 tự làm theo biến
+thể), nếu không iOS có thể dùng lại descriptor cũ trong cache.
+
+Với mỗi lần, ngoài các bước dưới:
+- con trỏ phải là **chấm tròn** (AssistiveTouch); mũi tên nghĩa là thiết bị bị nhận khác hoặc AssistiveTouch tắt;
+- ghi `abs_settle` mà hiệu chỉnh đo được (thời gian iOS "trượt" con trỏ tới chỗ mới trước khi click);
+- 50 lần tap tại một điểm: đếm lần nào bị "kẹt kéo" (nhả nút bị lỡ);
+- gửi `hidtest ... "abs 0 0"`: con trỏ phải về góc trên trái (xác nhận ngữ nghĩa tuyệt đối; tắt Hot Corners);
+- đổi Tracking Speed lên tối đa rồi tối thiểu, tap lại 5 điểm: chế độ tuyệt đối không được đổi kết quả;
+- (D) một bước tương đối ngay sau một bước tuyệt đối có tiếp tục từ vị trí tuyệt đối không;
+- AssistiveTouch > Devices hiện mấy mục; gán nút Home/App Switcher có áp dụng khi bấm qua báo cáo tuyệt đối không.
 
 Nối dòng USB-C:
 - iPhone → hub USB-C;
@@ -167,8 +193,17 @@ Sau đó rút/cắm nguồn PD và ghi lại thứ gì rớt (hình, HID, sạc)
 2. Trong web console (chế độ **Precise tap**), mở app có danh sách dài. Vuốt 20 lần.
    Mong đợi: không lần nào bị "kẹt" ở trạng thái đang kéo (nhả nút bị lỡ).
 3. Nếu `mode: absolute`, chạy 50 lần tap tại cùng một nút và đếm số lần trượt.
+4. **Vòng Caps Lock** (xác nhận iOS đã xử lý phím, không cần nhìn màn hình): tắt "Caps Lock switches
+   language" trên iPhone, tắt `ihc serve`, rồi:
 
-**Ghi lại:** số lỗi mỗi phần.
+   ```bash
+   python tools/hidtest.py --port $PORT "capscheck n=10"
+   ```
+
+   Đèn Caps Lock do iOS gửi về chip; nếu nó đổi theo mỗi lần bấm thì đây là một cách kiểm tra "iOS còn nhận
+   lệnh" rất rẻ cho phần giám sát.
+
+**Ghi lại:** số lỗi mỗi phần; kết quả `capscheck` (k/10).
 
 ---
 
@@ -177,9 +212,13 @@ Sau đó rút/cắm nguồn PD và ghi lại thứ gì rớt (hình, HID, sạc)
 Lặp lại **Calibrate** 3 lần (ép chế độ tương đối bằng `{"options": {"try_absolute": false}}` nếu cần) và so `validation` giữa các lần. Sau đó đổi Tracking Speed lên/xuống một nấc,
 hiệu chỉnh lại, và so tiếp.
 
+Thử cả hai đầu của Tracking Speed (tối đa và tối thiểu): các hãng Trung Quốc chọn ngược nhau
+([research/china-market.md](research/china-market.md) §2.5).
+
 **Ghi lại:** các `validation` và file hiệu chỉnh (`calib/*.json`, có tham số từng hướng). Sai số tăng rõ giữa
 các lần là dấu hiệu gia tốc iOS không lặp lại. Khi đó tăng `rest` trong file hiệu chỉnh (ví dụ 0,15 s) rồi
-thử lại.
+thử lại. Ghi thêm: vị trí neo ở các góc có lặp lại không (góc màn hình bo tròn; một dự án mở neo vào hai cạnh
+thẳng thay vì góc).
 
 ---
 
@@ -199,8 +238,18 @@ thử lại.
    ```
 3. Thử lại cả hai ở chế độ chỉ bàn phím: `cfg set work_mode=1`, rút/cắm, chạy lại, rồi khôi phục
    `cfg set work_mode=0`.
+4. **Tổ hợp Tab+phím của Full Keyboard Access** (các hãng Trung Quốc dùng cho Home, Khoá máy, Quay lại; Tab là
+   phím thường nên có thể tránh được lỗi phím Cmd/Shift): bật Settings > Accessibility > Keyboards > **Full
+   Keyboard Access**, xem mục Commands (ví dụ Tab+L = Lock Screen), gán thêm Tab+H = Home, Tab+S = Spotlight nếu
+   được, rồi:
 
-**Ghi lại:** kết quả `k/n worked` cho từng lần.
+   ```bash
+   python tools/hidtest.py --port $PORT "trial tab+h n=30 close=none"
+   ```
+
+   Kiểm tra thêm: bật Full Keyboard Access có làm ảnh hưởng con trỏ AssistiveTouch không.
+
+**Ghi lại:** kết quả `k/n worked` cho từng lần; Full Keyboard Access có ảnh hưởng con trỏ không.
 
 ---
 
@@ -258,6 +307,10 @@ Tăng dần số card (1, 2, 3...), thử cả cổng USB 2 và USB 3.
 
 - **L1.** Lightning Digital AV Adapter → capture card: `capture_check.py snapshot` và `probe`. Mong đợi có
   hình. **Ghi lại:** độ phân giải, độ trễ (theo cách ở T6).
+- **L0 (làm trước).** ESP32 BLE với **chỉ chuột tuyệt đối**: một hãng Trung Quốc và một dự án mở cho rằng chuột
+  tuyệt đối chạy qua Bluetooth từ iOS 17. Nếu đúng, dòng Lightning cũng khỏi phải lo gia tốc. Làm các kiểm tra
+  của T1 (chấm tròn, `abs_settle`, 50 tap, `abs 0 0`) qua BLE; giữa hai biến thể firmware phải **Forget** thiết
+  bị trên iPhone và xoá bond trên ESP32 (xem README firmware).
 - **L2.** ESP32 BLE: nạp firmware theo [README firmware](../firmware/esp32_ble_hid/README.md), ghép
   Bluetooth, rồi chạy `hidtest --port <cổng DevKit> "info; move 100 0; run 20 0 10; type abc"`. Dòng
   `bridge:` của `info` phải có `chip-timed runs yes` và `link period` (connection interval iOS cấp, thường 15
@@ -268,7 +321,12 @@ Tăng dần số card (1, 2, 3...), thử cả cổng USB 2 và USB 3.
   - link period có đổi không sau khi khoá/mở máy, sau vài phút không dùng (trạng thái máy báo "recalibrate" nếu
     đổi);
   - có tự kết nối lại sau khi tắt/bật Bluetooth, khởi động lại iPhone hoặc ESP32 không.
-- **L3 (tham khảo).** Lightning to USB 3 Camera Adapter + CH9329: HID có dây có chạy không.
+- **L3.** Lightning to USB 3 Camera Adapter (có cổng sạc) + hub nhỏ + CH9329: HID **có dây** có chạy không, và
+  chuột tuyệt đối có chạy không. Nếu có, dòng Lightning dùng được chuột tuyệt đối có dây như USB-C; khi đó adapter
+  bận cổng Lightning nên hình phải lấy qua AirPlay (xem L4).
+- **L4 (cần chủ dự án duyệt).** Hình qua AirPlay: một máy nhận AirPlay mã nguồn mở (UxPlay, mỗi iPhone một tiến
+  trình, `-vrtp` chuyển thẳng H.264 không giải mã) trên host. Đo độ trễ theo cách ở T6, và độ ổn định khi khoá/mở
+  máy, mất Wi-Fi. Đây là cách các box "群控" của Trung Quốc lấy hình, và là cách duy nhất cho iPhone 16e/17e.
 
 ---
 
@@ -300,6 +358,8 @@ lần rút điện có chủ đích.
   2. Chạy `scan`.
   3. Khôi phục về 9600.
 - **X3. Media keys:** `media volume_up`, `media mute`, `acpi sleep`. **Ghi lại:** phím nào có tác dụng.
+- **X4. Đối chiếu với Sipeed NanoKVM-Go** (59–89 USD, một dây USB-C, chế độ chuột tuyệt đối cho iPhone 15/16/17):
+  đo sai số tap và độ trễ hình trên cùng iPhone 15, so với bộ MS2109 + CH9329.
 
 ---
 

@@ -76,9 +76,11 @@ ways to do that. Calibration picks the right one for each phone automatically.
 ![Absolute and relative pointer modes](docs/images/pointer-modes.png)
 
 - **Absolute pointer (preferred).** One report puts the pointer straight on the target, like a finger.
-  About 0.2 s per tap with sub-point error. The closest open-source project to this one reports that
-  iPhones accept an absolute pointer over USB. This is the first thing to verify on real hardware.
-- **Relative pointer (fallback, and the likely mode over Bluetooth).** iOS accelerates mouse movement, so
+  About 0.2 s per tap with sub-point error. Several independent projects in 2026 drive iPhones this way over
+  USB on iOS 26, with AssistiveTouch on; reports suggest Bluetooth works too. iOS glides the cursor to the new
+  spot, so calibration measures how long to wait before clicking. What remains to verify on hardware is the
+  CH9329's own absolute report; the ESP32-S3 in USB mode is the reference layout if it does not work.
+- **Relative pointer (fallback).** iOS accelerates mouse movement, so
   the same report does not always move the same distance. The box makes movement repeatable anyway:
   1. **anchor:** slam the pointer into the nearest screen corner, where it stops at the edge, so its
      position is known exactly;
@@ -162,6 +164,15 @@ Everything above runs today without hardware. The simulator plays each part of a
   the calibration page, with an accelerated pointer, an optional absolute pointer, and lock and signal loss;
 - **the capture card:** letterboxed HDMI frames, limited colour range, capture latency and JPEG artifacts.
 
+### How this compares with what is on the market
+
+Every iPhone automation product that needs no jailbreak and no app does the same thing at its core: a USB or
+Bluetooth keyboard and mouse driving AssistiveTouch. The cheap Chinese "phone farm" boxes use one HID board per
+phone like this project, calibrate the pointer with a web page on the phone, and take video over AirPlay
+instead of HDMI. Touch-screen (digitizer) emulation stopped working in iOS 13.4, so nobody relies on it. Details,
+with sources: [absolute pointer research](docs/research/absolute-pointer.md) and
+[market survey](docs/research/china-market.md).
+
 ## Using it
 
 **Plug and play.** The box is meant to be a closed appliance:
@@ -244,11 +255,13 @@ click away.
 
 ## Documentation
 
-The detailed documents are in Vietnamese.
+The detailed documents are in Vietnamese, except the two research reports.
 
 - [Getting started](docs/getting-started.md): the simulator first, then real hardware
 - [Architecture](docs/architecture.md)
 - [Feasibility study](docs/feasibility.md): independent research with sources and risks
+- [Research: absolute pointer on iPhone](docs/research/absolute-pointer.md) and
+  [market survey of cheap iPhone-control hardware](docs/research/china-market.md) (English)
 - [Hardware test checklist](docs/phase0-checklist.md)
 - [iPhone setup](docs/iphone-setup.md)
 - [CH9329 protocol notes](docs/ch9329-protocol.md)

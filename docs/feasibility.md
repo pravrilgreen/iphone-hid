@@ -21,6 +21,46 @@
 
 ---
 
+## 0. Cập nhật sau nghiên cứu bổ sung (24/09/2026)
+
+Hai báo cáo mới (tiếng Anh, có nguồn và nhãn tin cậy): [chuột tuyệt đối trên iPhone](research/absolute-pointer.md)
+và [phần cứng giá rẻ của Trung Quốc](research/china-market.md). Những điểm làm thay đổi đánh giá bên dưới:
+
+| Điểm | Trước | Sau | Nguồn chính |
+|---|---|---|---|
+| iPhone theo **chuột tuyệt đối qua USB** (cần AssistiveTouch) | [Likely] | **[Confirmed]**: Aiden (mặc định iOS từ 04/2026), glassbox (iPhone 17 Pro Max, iOS 26.5, cùng kiểu HDMI + USB HID như dự án này), NanoKVM-Go (tài liệu cho iPhone 15/16/17), EasyClick (trích đoạn) | absolute-pointer §1, china-market §2.1 |
+| Chuột tuyệt đối qua **Bluetooth** | [Unknown] | **[Likely]** trên iOS 17/18–26: mirrordeck (Bluetooth Classic, iPhone 15 Pro, iOS 26.5), firmware BLE của EasyClick và AScript (trích đoạn) | absolute-pointer §2 |
+| **Digitizer / màn cảm ứng HID** như chạm thật | chưa xét | **[Contradicted]**: iOS 13.4 đã chặn; thêm collection Touch Screen cạnh chuột còn làm iOS bỏ qua nút chuột | absolute-pointer §3 |
+| CH9329 ở chế độ tuyệt đối trên iPhone | [Unknown] | vẫn **[Unknown]**: chưa ai công bố descriptor của nó; bridge ESP32 USB (chỉ chuột tuyệt đối) là cấu hình tham chiếu | absolute-pointer §7 |
+| Kiến trúc có "lỗi thời" so với thị trường? | | **Không.** Mọi giải pháp iPhone không jailbreak, không app đều dùng chuột + phím HID qua AssistiveTouch (thêm Full Keyboard Access). Các box "群控" của Trung Quốc lấy hình qua **AirPlay** thay vì HDMI | china-market §0–1 |
+
+Việc đã làm theo đó:
+- **Phần mềm:** hiệu chỉnh đo thời gian iOS "trượt" con trỏ tới vị trí tuyệt đối trước khi click (mặc định 0,25 s
+  cho tới khi đo). Lệnh nhả nút qua báo cáo tuyệt đối gửi 3 lần. Mọi phím/nút được nhả khi iPhone vừa nhận phụ
+  kiện (sửa lỗi "kẹt kéo" mà NanoKVM-Go phải có nút "Repair iPhone drag"). Chưa bao giờ gửi báo cáo tuyệt đối
+  (0,0) khi không chủ ý.
+- **Firmware ESP32:** bỏ Report ID khi chỉ có một collection trên BLE; báo cáo tuyệt đối khởi tạo ở giữa màn
+  hình; tên/serial theo biến thể descriptor (iOS lưu cache descriptor); thứ tự interface USB để con trỏ cuối
+  cùng; nhịp chạy theo 0,25 ms; báo lệnh chạy bị trễ.
+- **Checklist:** T0 thêm bước lấy descriptor của CH9329; T1 chạy 4 cấu hình (CH9329 chế độ 0 và 2, ESP32 USB
+  chỉ tuyệt đối, ESP32 USB tương đối + tuyệt đối) và đo thời gian trượt, nhả nút, báo cáo (0,0); T3 thêm vòng
+  Caps Lock (đèn Caps Lock do iOS gửi về chứng minh iOS đã xử lý lệnh phím); T5 thêm tổ hợp Tab+phím của Full
+  Keyboard Access; T9 thử chuột tuyệt đối qua BLE trước tiên.
+
+**Lựa chọn cần chủ dự án quyết định:**
+- **AirPlay thay cho HDMI, nhất là cho dòng Lightning.** Lightning có thể dùng Lightning to USB 3 Camera Adapter +
+  hub để cắm CH9329 có dây (chuột tuyệt đối, không phải ghép Bluetooth), còn hình lấy qua AirPlay (UxPlay, một
+  tiến trình mỗi máy, chuyển thẳng H.264). Bỏ được adapter HDMI 49 USD và capture card, nhưng thêm trễ khoảng
+  100–200 ms, cần mạng cho từng máy và phải bật Screen Mirroring trên máy (làm bằng HID được). Cũng là cách duy
+  nhất lấy hình từ iPhone 16e/17e.
+- **Phím tắt iOS Shortcuts làm kênh phụ** (clipboard để gõ tiếng Việt, xác nhận app đã mở). Cần chủ dự án quyết
+  định Shortcuts do người dùng tự tạo có tính là "cài app" không.
+- **Sipeed NanoKVM-Go** (59–89 USD): một bo nhỏ làm đúng việc của bộ USB-C này (một dây USB-C, khoảng 60 ms ở
+  1080p60, chế độ chuột tuyệt đối cho iPhone). Nên mua một cái để đối chiếu độ chính xác và độ trễ, và cân nhắc
+  cho giai đoạn 5 (mỗi máy một bo).
+
+---
+
 ## 1. Kết luận ngắn
 
 ### 1.1 Phán quyết

@@ -476,6 +476,26 @@ class HidShell(cmd.Cmd):
             self._press(*keymap.parse_combo(combo), 0.05)
             time.sleep(0.1)
 
+    def do_capscheck(self, arg: str) -> None:
+        """capscheck [n=3] [wait=0.5]: press Caps Lock and watch the chip's LED state (GET_INFO): the
+        LED report comes from iOS, so a toggle proves iOS processed the key (end to end, no screen).
+        Presses it again to restore. Turn off "Caps Lock switches language" on the phone first."""
+        a = parse_args(arg, [("n", _int, 3), ("wait", float, 0.5)])
+        ok = 0
+        for i in range(1, a["n"] + 1):
+            before = self.hid.info()["caps_lock"]
+            self._press(0, [keymap.KEYS["capslock"]], 0.05)
+            time.sleep(a["wait"])
+            after = self.hid.info()["caps_lock"]
+            self._press(0, [keymap.KEYS["capslock"]], 0.05)  # back to how it was
+            time.sleep(a["wait"])
+            restored = self.hid.info()["caps_lock"]
+            good = after != before and restored == before
+            ok += good
+            print(f"[{i}] caps lock LED {before} -> {after} -> {restored}: {'round trip OK' if good else 'NO round trip'}")
+            self.log("capscheck", before=before, after=after, restored=restored, ok=good)
+        print(f"capscheck: {ok}/{a['n']} round trips")
+
     def do_trial(self, arg: str) -> None:
         """trial COMBO [n=20] [wait=1.5] [close=esc] [auto=no]: send a shortcut n times and record
         after each try whether it worked (you answer y/n, q stops). `close` is sent after each try

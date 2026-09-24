@@ -30,7 +30,9 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
 6. **Settings > General > Keyboard > Hardware Keyboard:**
    - layout **U.S.**;
    - tắt Auto-Capitalization, Auto-Correction và phím tắt "." (hai lần dấu cách).
-7. **Safari:** để thanh địa chỉ **ở dưới** (mặc định từ iOS 15). Để ở trên thì lúc tìm trang hiệu chỉnh, một
+7. **Khoá xoay dọc (Portrait Orientation Lock): ON** trong Control Center. Hiệu chỉnh và toạ độ đều tính theo
+   màn hình dọc.
+8. **Safari:** để thanh địa chỉ **ở dưới** (mặc định từ iOS 15). Để ở trên thì lúc tìm trang hiệu chỉnh, một
    cú click có thể trúng thanh địa chỉ và bật bàn phím; hiệu chỉnh sẽ dừng an toàn nhưng phải chạy lại.
 
 ## Nên làm
