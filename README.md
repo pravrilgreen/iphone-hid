@@ -147,15 +147,28 @@ sequenceDiagram
 - **State reports** (keys, buttons, absolute position) are simply resent after an ambiguous failure.
 - **Movement reports** may or may not have been applied, so the box does not guess: it redoes the whole
   move from a fresh corner.
-- **Pacing is checked.** With the CH9329, the box times each report and verifies afterwards that none went
-  out more than 1.5 ms off its slot. A late report means the move is redone. With the ESP32 bridge, the
-  chip times whole runs itself, so a busy host cannot disturb the pointer at all.
+- **Pacing is checked.** With the CH9329, the box times each report on a fixed schedule and verifies
+  afterwards that none went out more than 1.5 ms off its slot. A stray report means the move is redone.
+  With the ESP32 bridge, the chip times whole runs itself, so a busy host cannot disturb the pointer at
+  all. Over Bluetooth the pace is also matched to the link's schedule (below).
 - **Nothing stays pressed.** Any action that fails half-way releases every key and button, on both the
   relative and the absolute pointer, before anything else happens. If the release itself cannot be
   confirmed, the next move releases first.
 - **Health is watched continuously:** chip reachable, phone accepting input (a locked phone or an accessory
   prompt shows up here), video frames arriving, fresh and not black. A replugged chip is reopened
   automatically.
+
+### Why timing matters so much in relative mode
+
+![Tap error against report timing](docs/images/timing.png)
+
+iOS accelerates the pointer by speed, so a report that arrives a few milliseconds late moves the pointer
+a different distance. On the left, a host that sometimes stalls: without the pace check some taps miss by
+more than 10 pt; with it, the stray moves are redone and every tap lands; with the ESP32 bridge timing the
+runs, nothing needs redoing. On the right, a Bluetooth link that delivers reports every 15 ms: a 20 ms
+pace makes the spacing iOS sees alternate between 15 and 30 ms and taps miss by up to 30 pt, while a
+30 ms pace (a multiple of the link's schedule, which the bridge reports and calibration uses) lands
+within 1 pt.
 
 ## Accuracy on the simulator
 
