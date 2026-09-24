@@ -10,14 +10,12 @@ Concurrency model:
 - video comes from one pump thread per watched device (ihc.api.stream), shared by every viewer;
 - each /control connection owns a worker thread that sends its HID reports in order
   (ihc.api.control), and releases everything when the connection ends.
-
-Errors are JSON {"error": "..."}: 404 unknown device, 422 bad input, 409 device/HID errors,
-503 no video, 504 HID timeouts.
 """
 
 from __future__ import annotations
 
 import asyncio
+import inspect
 import json
 import math
 import os
@@ -27,9 +25,9 @@ from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Optional, Union
 
-from fastapi import FastAPI, Query, Request, WebSocket
+from fastapi import Body, FastAPI, Path as PathParam, Query, Request, WebSocket
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -38,15 +36,63 @@ from starlette.websockets import WebSocketDisconnect
 
 from ..hid.base import HidError, HidTimeout
 from ..input.pointer import PointerError
-from . import actions
+from . import actions, models
 from .control import LiveSession, dumps
-from .stream import Hubs, MJPEGResponse, Pacer
+from .stream import BOUNDARY, Hubs, MJPEGResponse, Pacer
 
+VERSION = "0.1.0"
 WEB_DIR = Path(__file__).resolve().parents[2] / "web"
 STATUS_INTERVAL = 0.5
 ACK_TIMEOUT = 2.0
-SIM_OPS = ("lock", "unlock", "prompt_accessory", "allow_accessory", "signal_off", "signal_on", "home", "open_app")
-EVENT_TYPES = ("hello", "click", "move")
+SimOp = Literal["lock", "unlock", "prompt_accessory", "allow_accessory", "signal_off", "signal_on", "home", "open_app"]
+DeviceId = PathParam(description="Device id, as listed by GET /api/devices", examples=["sim-01"])
+
+DESCRIPTION = """
+Control iPhones through external hardware only: the screen comes from an HDMI capture card, input goes
+through a HID chip (CH9329, or an ESP32 BLE bridge with the same protocol) acting as mouse and keyboard
+for the iOS AssistiveTouch pointer.
+
+**Coordinates** are normalized by default: (0, 0) is the top-left and (1, 1) the bottom-right corner of the
+phone screen. `space: "pt"` takes iOS points, `space: "frame"` pixels of the captured video frame.
+
+**Ordering**: the actions of one device run one at a time, in arrival order; an action returns once the phone
+has received every report of it. Different devices never wait for each other.
+
+**Errors** are always `{"error": "...", "code": "..."}`: 404 `not_found` (unknown device), 422
+`invalid_input` (nothing was sent to the phone), 409 `device_error` (HID error, phone locked or accessory not
+allowed, pointer or calibration failure), 503 `no_video`, 504 `hid_timeout`.
+
+### Video
+* `GET /api/devices/{id}/mjpeg`: `multipart/x-mixed-replace` JPEG stream (works in an `<img>`, VLC, OpenCV).
+  Without `crop`/`width` the capture card's own JPEG bytes are forwarded untouched (no decode, no encode).
+* **WebSocket** `/api/devices/{id}/stream` (query or JSON message: `fps`, `crop`, `width`, `quality`, `ack`):
+  binary messages are JPEG frames (same passthrough rule), text messages
+  `{"type": "status", ...device status, "frame": {"seq", "ts", "width", "height", "age_ms"}, "screen_rect", "stream"}`
+  about twice a second. A slow client skips frames, it is never queued for. With `ack: true` the client answers
+  each frame with `{"t": "ack"}` and never has more than one frame in flight.
+
+### Live control (KVM)
+**WebSocket** `/api/devices/{id}/control`, JSON messages:
+* `{"t": "mouse", "dx", "dy", "buttons", "wheel"}`: relative input (e.g. Pointer Lock movementX/Y). Moves are
+  coalesced to at most one HID report per ~16 ms tick and split when beyond ±127; a button change goes out at
+  once, after the pending movement, so clicks are never lost or reordered. `buttons`: 1 left, 2 right (Home),
+  4 middle (App Switcher).
+* `{"t": "abs", "x", "y", "buttons", "wheel"}`: absolute position (0..1), for phones in absolute pointer mode.
+* `{"t": "keys", "mods", "keys"}`: full keyboard state (modifier bits, up to 6 HID usages), sent at once.
+* `{"t": "release"}`: release every key and button. Closing the socket always does this too.
+* Actions: `{"t": "tap", "id": 1, "x": 0.5, "y": 0.5}` (same shapes as the POST endpoints), answered with
+  `{"t": "result", "id", "ok", "result" | "error"}` in order with the live input; `{"t": "sync", "id"}` is answered
+  once everything before it was sent.
+* The server sends `{"t": "stats", "reports", "messages", "coalesced", "dropped", "errors", "queue", ...}` every second.
+"""
+
+TAGS = [
+    {"name": "devices", "description": "Devices and their status"},
+    {"name": "video", "description": "Screenshots and live video"},
+    {"name": "actions", "description": "Input actions; each returns once the phone has received it"},
+    {"name": "calibration", "description": "Pointer calibration through a web page opened in Safari on the phone"},
+    {"name": "simulator", "description": "Operator controls of simulated phones (404 on hardware)"},
+]
 
 
 class ApiError(Exception):
@@ -71,11 +117,16 @@ def error_status(exc: BaseException) -> int:
     return 500
 
 
-def _message(exc: BaseException) -> str:
+def error_message(exc: BaseException) -> str:
     text = actions.describe(exc) if isinstance(exc, ValueError) else str(exc)
     if isinstance(exc, OSError) and not isinstance(exc, HidError):
         text = f"no video: {text}" if text else "no video"
     return text or type(exc).__name__
+
+
+def error_json(status: int, message: str, headers=None) -> JSONResponse:
+    return JSONResponse({"error": message, "code": models.CODES.get(status, "internal")}, status_code=status,
+                        headers=headers)
 
 
 class _NoCacheStatic(StaticFiles):
@@ -106,9 +157,7 @@ class StreamSettings:
 
         def flag(key):
             v = data[key]
-            if isinstance(v, str):
-                return v.lower() in ("1", "true", "yes", "on")
-            return bool(v)
+            return v.lower() in ("1", "true", "yes", "on") if isinstance(v, str) else bool(v)
 
         if "fps" in data:
             self.fps = float(number("fps", 0, 120))
@@ -168,7 +217,7 @@ class _Farm:
         except ApiError:
             raise
         except Exception as e:
-            raise ApiError(error_status(e), _message(e)) from e
+            raise ApiError(error_status(e), error_message(e)) from e
 
     def base_url(self, request: Request) -> str:
         return self.public_url or str(request.base_url).rstrip("/")
@@ -179,36 +228,24 @@ class _Farm:
             ex.shutdown(wait=False, cancel_futures=True)
 
 
-async def _json_body(request: Request, default: Any = None) -> Any:
-    raw = await request.body()
-    if not raw.strip():
-        return default
-    try:
-        return json.loads(raw)
-    except ValueError:
-        raise ApiError(422, "the body is not valid JSON") from None
-
-
 def _ok(result: Any = None) -> dict:
     return {"ok": True, "result": result}
 
 
-def _validate_event(ev: Any) -> dict:
-    if not isinstance(ev, dict) or ev.get("type") not in EVENT_TYPES:
-        raise ApiError(422, f"an event must be an object with type one of {', '.join(EVENT_TYPES)}")
-    need = ("screen_w", "screen_h", "inner_w", "inner_h") if ev["type"] == "hello" else ("x", "y")
+def _check_event(ev: models.CalibrationEvent) -> dict:
+    need = ("screen_w", "screen_h", "inner_w", "inner_h") if ev.type == "hello" else ("x", "y")
     for key in need:
-        v = ev.get(key)
-        if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
-            raise ApiError(422, f"{ev['type']} event needs a number {key!r}")
-    return ev
+        v = getattr(ev, key)
+        if v is None or not math.isfinite(v):
+            raise ApiError(422, f"a {ev.type} event needs a number {key!r}")
+    return ev.model_dump(exclude_none=True)
 
 
 def create_app(registry, *, public_url: str | None = None, log=None, web_dir: str | Path | None = None) -> FastAPI:
     """The API and web console for the devices of `registry` (which the caller keeps and closes).
 
     `public_url` is how phones reach this server (the calibration page is opened from it); by
-    default the URL of each request is used."""
+    default the URL of each request is used. `log` is an event log callable (ihc.jsonlog.EventLog)."""
     farm = _Farm(registry, public_url, log)
     web = Path(web_dir) if web_dir else WEB_DIR
 
@@ -219,77 +256,81 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
         finally:
             farm.close()
 
-    app = FastAPI(title="iphone-hid", version="0.1", lifespan=lifespan)
+    app = FastAPI(title="iphone-hid", version=VERSION, description=DESCRIPTION, openapi_tags=TAGS, lifespan=lifespan)
     app.state.farm = farm
 
     # -- errors ---------------------------------------------------------------------------------
 
     @app.exception_handler(ApiError)
     async def _api_error(request, exc: ApiError):
-        return JSONResponse({"error": exc.message}, status_code=exc.status)
+        return error_json(exc.status, exc.message)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(request, exc: RequestValidationError):
-        parts = []
-        for err in exc.errors():
-            loc = ".".join(str(p) for p in err.get("loc", ()) if p not in ("body", "query", "path"))
-            parts.append(f"{loc}: {err.get('msg', 'invalid')}" if loc else err.get("msg", "invalid"))
-        return JSONResponse({"error": "; ".join(parts) or "invalid request"}, status_code=422)
+        return error_json(422, "; ".join(actions.describe_error(e) for e in exc.errors()) or "invalid request")
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(request, exc: StarletteHTTPException):
-        return JSONResponse({"error": str(exc.detail)}, status_code=exc.status_code, headers=getattr(exc, "headers", None))
+        return error_json(exc.status_code, str(exc.detail), getattr(exc, "headers", None))
 
     @app.exception_handler(Exception)
     async def _internal_error(request, exc: Exception):
         farm.log("api_error", path=request.url.path, error=repr(exc))
-        return JSONResponse({"error": f"internal error: {exc}"}, status_code=500)
+        return error_json(500, f"internal error: {exc}")
 
     # -- devices --------------------------------------------------------------------------------
 
-    @app.get("/api/health")
+    @app.get("/api/health", tags=["devices"], summary="Server health", response_model=models.Health)
     async def health():
+        """Liveness and the number of devices; cheap enough for load balancers and monitors."""
         return {"ok": True, "devices": len(registry.devices()), "uptime_s": round(time.time() - farm.started, 1),
-                "public_url": farm.public_url}
+                "public_url": farm.public_url, "version": VERSION}
 
-    @app.get("/api/devices")
+    @app.get("/api/devices", tags=["devices"], summary="List devices", response_model=models.DeviceList)
     async def devices():
+        """Status of every device of this host (never waits for running actions)."""
         return {"devices": [d.status() for d in registry.devices()]}
 
-    @app.get("/api/devices/{device_id}")
-    async def device_status(device_id: str):
+    @app.get("/api/devices/{device_id}", tags=["devices"], summary="Device status", response_model=models.DeviceStatus,
+             responses={404: models.ERRORS[404]})
+    async def device_status(device_id: str = DeviceId):
+        """State (ready, busy, hid_disconnected, hid_offline, no_signal), health, pointer, calibration,
+        HID counters and the last action's result."""
         return farm.device(device_id).status()
-
-    @app.get("/api/devices/{device_id}/calibration")
-    async def calibration(device_id: str):
-        st = farm.device(device_id).status()
-        return {**st["calibration"], "mode": st["pointer"].get("mode", "relative")}
 
     # -- video ----------------------------------------------------------------------------------
 
-    @app.get("/api/devices/{device_id}/screenshot")
-    async def screenshot(device_id: str, format: Literal["jpeg", "jpg", "png"] = "jpeg", crop: bool = True,
-                         quality: int = Query(85, ge=10, le=100)):
+    @app.get("/api/devices/{device_id}/screenshot", tags=["video"], summary="Screenshot", response_class=Response,
+             responses={200: {"content": {"image/jpeg": {}, "image/png": {}}, "description": "The image"},
+                        404: models.ERRORS[404], 503: {"model": models.ErrorResponse, "description": "No video"}})
+    async def screenshot(device_id: str = DeviceId,
+                         format: Literal["jpeg", "jpg", "png"] = Query("jpeg", description="Image format"),
+                         crop: bool = Query(True, description="Crop to the phone screen (else the whole frame)"),
+                         quality: int = Query(85, ge=10, le=100, description="JPEG quality")):
+        """The current screen. An uncropped JPEG is the capture card's own frame."""
         device = farm.device(device_id)
         fmt = "png" if format == "png" else "jpeg"
         data = await farm.on_io(lambda: device.screenshot(fmt=fmt, crop=crop, quality=quality))
         return Response(data, media_type=f"image/{fmt}", headers={"Cache-Control": "no-store"})
 
-    @app.get("/api/devices/{device_id}/mjpeg")
-    async def mjpeg(device_id: str, fps: float = Query(0.0, ge=0, le=120), crop: bool = False,
-                    width: int | None = Query(None, ge=16, le=4096), quality: int = Query(80, ge=10, le=95),
-                    frames: int | None = Query(None, ge=1)):
-        """multipart/x-mixed-replace JPEG stream. Without crop and width the capture card's own
-        JPEG bytes are forwarded untouched; `frames` ends the stream after that many parts."""
+    @app.get("/api/devices/{device_id}/mjpeg", tags=["video"], summary="MJPEG live stream", response_class=Response,
+             responses={200: {"content": {f"multipart/x-mixed-replace; boundary={BOUNDARY}": {}},
+                              "description": "Endless stream of JPEG parts"},
+                        404: models.ERRORS[404], 503: {"model": models.ErrorResponse, "description": "No video"}})
+    async def mjpeg(device_id: str = DeviceId,
+                    fps: float = Query(0.0, ge=0, le=120, description="Frame rate cap (0: every captured frame)"),
+                    crop: bool = Query(False, description="Crop to the phone screen (re-encodes)"),
+                    width: Optional[int] = Query(None, ge=16, le=4096, description="Scale down to this width (re-encodes)"),
+                    quality: int = Query(80, ge=10, le=95, description="JPEG quality of re-encoded frames"),
+                    frames: Optional[int] = Query(None, ge=1, description="End the stream after this many frames")):
+        """Without `crop` and `width` every part is the capture card's own JPEG, forwarded untouched. Cropped
+        or scaled variants are encoded once per frame and shared by all viewers. A slow client skips frames;
+        a frame whose pixels did not change is re-sent at most once a second."""
         device = farm.device(device_id)
         return MJPEGResponse(farm.hubs.get(device), fps=fps, crop=crop, width=width, quality=quality, frames=frames)
 
     @app.websocket("/api/devices/{device_id}/stream")
     async def stream(ws: WebSocket, device_id: str):
-        """Binary messages: JPEG frames (the card's own bytes unless crop/width is asked for).
-        Text messages: {"type": "status", ...} about twice a second. The client may send
-        {"fps", "crop", "width", "quality", "ack"}; with ack on, it answers every frame with
-        {"t": "ack"} and never has more than one frame in flight."""
         await ws.accept()
         device = await _ws_device(ws, device_id)
         if device is None:
@@ -329,25 +370,24 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                 if not settings.ack:
                     acked.set()
 
-        async def sender() -> None:
+        async def sender(w) -> None:
             loop = asyncio.get_running_loop()
             pacer = Pacer(settings.fps)
             seen = last = None
             last_age_ms = None
-            sent, sent_at = 0, deque(maxlen=120)
+            sent, sent_at = 0, deque(maxlen=240)
             next_status = 0.0
             while True:
                 now = loop.time()
                 if now >= next_status:
                     next_status = now + STATUS_INTERVAL
-                    recent = [t for t in sent_at if now - t <= 2.0]
-                    st = device.status()
+                    recent = sum(1 for t in sent_at if now - t <= 2.0)
                     await send_text({
-                        "type": "status", **st,
+                        "type": "status", **device.status(),
                         "frame": None if last is None else {"seq": last.seq, "ts": last.ts, "width": last.width,
                                                             "height": last.height, "age_ms": last_age_ms},
                         "screen_rect": device.screen_rect().to_dict(),
-                        "stream": {"fps": round(len(recent) / 2.0, 1), "source_fps": round(hub.fps, 1), "sent": sent,
+                        "stream": {"fps": round(recent / 2.0, 1), "source_fps": round(hub.fps, 1), "sent": sent,
                                    "passthrough": settings.passthrough and (last is None or last.jpeg is not None),
                                    "crop": settings.crop, "width": settings.width, "ack": settings.ack,
                                    "viewers": hub.watchers, "error": hub.error},
@@ -370,6 +410,8 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                 nxt = await w.next(seen, budget)
                 if nxt is not None:
                     seen = nxt
+                elif hub.error:
+                    continue  # no video: the status says so; do not keep re-sending the last picture
                 if seen is None or not pacer.wanted(seen, loop.time()):
                     continue
                 data = await hub.encoded(seen, crop=settings.crop, width=settings.width, quality=settings.quality)
@@ -385,70 +427,60 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
         farm.log("ws_open", kind="stream", device=device.id)
         async with hub.watch() as w:
-            await _run_until_first_exits(receiver(), sender())
+            await _run_until_first_exits(receiver(), sender(w))
         farm.log("ws_close", kind="stream", device=device.id)
 
     # -- actions --------------------------------------------------------------------------------
 
-    def add_action(name: str, model: type[actions.Body], run) -> None:
-        async def endpoint(device_id: str, request: Request):
+    def add_action(name: str, spec: actions.Spec) -> None:
+        optional = all(not f.is_required() for f in spec.model.model_fields.values())
+
+        async def endpoint(device_id: str, body: Any = None):
             device = farm.device(device_id)
-            params = await _json_body(request, {})
-            if not isinstance(params, dict):
-                raise ApiError(422, "the body must be a JSON object")
-            try:
-                body = model.model_validate(params)
-            except ValueError as e:
-                raise ApiError(422, actions.describe(e)) from None
-            return _ok(await farm.on_device(device, run, device, body))
+            return _ok(await farm.on_device(device, spec.run, device, body if body is not None else spec.model()))
 
+        # FastAPI reads the signature: give it the real body model, so it validates and documents it
+        endpoint.__signature__ = inspect.Signature([
+            inspect.Parameter("device_id", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=str, default=DeviceId),
+            inspect.Parameter("body", inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                              annotation=Optional[spec.model] if optional else spec.model,
+                              default=Body(None) if optional else Body(...)),
+        ])
         endpoint.__name__ = f"action_{name}"
-        schema = model.model_json_schema()
-        app.add_api_route(
-            f"/api/devices/{{device_id}}/{name}", endpoint, methods=["POST"], name=f"action_{name}",
-            summary=name, openapi_extra={"requestBody": {"required": bool(schema.get("required")),
-                                                         "content": {"application/json": {"schema": schema}}}},
-        )
+        app.add_api_route(f"/api/devices/{{device_id}}/{name}", endpoint, methods=["POST"], tags=["actions"],
+                          name=f"action_{name}", summary=spec.summary, description=spec.description,
+                          response_model=models.ActionResponse, responses=models.ERRORS)
 
-    for _name, (_model, _run) in actions.ACTIONS.items():
-        add_action(_name, _model, _run)
+    for _name, _spec in actions.ACTIONS.items():
+        add_action(_name, _spec)
 
-    @app.post("/api/devices/{device_id}/actions")
-    async def run_script(device_id: str, request: Request):
-        """Run a recorded script: {"actions": [{"type": "tap", "x": .5, "y": .5}, {"type": "wait",
-        "seconds": 1}, ...], "stop_on_error": true}. Every step is validated before the first runs."""
+    @app.post("/api/devices/{device_id}/actions", tags=["actions"], summary="Run a script of actions",
+              response_model=models.ScriptResponse, responses={404: models.ERRORS[404], 422: models.ERRORS[422]})
+    async def run_script(body: models.ScriptRequest, device_id: str = DeviceId):
+        """Steps run in order on the device, as one job (other requests for the device wait until it ends).
+        Every step is validated before the first one runs (422 names the bad step). A failing step does not make
+        the request fail: the response has `ok: false`, the first `error`, and every step's result."""
         device = farm.device(device_id)
-        body = await _json_body(request)
-        if isinstance(body, list):
-            body = {"actions": body}
-        if not isinstance(body, dict) or not isinstance(body.get("actions"), list):
-            raise ApiError(422, 'the body must be {"actions": [...], "stop_on_error": true}')
-        stop_on_error = body.get("stop_on_error", True)
-        if not isinstance(stop_on_error, bool):
-            raise ApiError(422, "stop_on_error must be true or false")
         steps = []
-        for i, step in enumerate(body["actions"]):
-            if not isinstance(step, dict):
-                raise ApiError(422, f"actions[{i}] must be an object")
-            kind = step.get("type")
+        for i, step in enumerate(body.actions):
+            params = {k: v for k, v in step.model_dump().items() if k != "type"}
             try:
-                run, parsed = actions.parse(kind, {k: v for k, v in step.items() if k != "type"}, script=True)
+                run, parsed = actions.parse(step.type, params, script=True)
             except ValueError as e:
-                raise ApiError(422, f"actions[{i}] ({kind}): {actions.describe(e)}") from None
-            steps.append((kind, run, parsed))
+                raise ApiError(422, f"actions[{i}] ({step.type}): {actions.describe(e)}") from None
+            steps.append((step.type, run, parsed))
 
         def run_all() -> dict:
             results, t0 = [], time.monotonic()
             for i, (kind, run, parsed) in enumerate(steps):
                 s0 = time.monotonic()
                 try:
-                    result = run(device, parsed)
-                    results.append({"index": i, "type": kind, "ok": True, "result": result,
+                    results.append({"index": i, "type": kind, "ok": True, "result": run(device, parsed),
                                     "seconds": round(time.monotonic() - s0, 3)})
                 except Exception as e:
-                    results.append({"index": i, "type": kind, "ok": False, "error": _message(e),
+                    results.append({"index": i, "type": kind, "ok": False, "error": error_message(e),
                                     "status": error_status(e), "seconds": round(time.monotonic() - s0, 3)})
-                    if stop_on_error:
+                    if body.stop_on_error:
                         break
             return {"steps": results, "completed": sum(r["ok"] for r in results), "total": len(steps),
                     "seconds": round(time.monotonic() - t0, 3)}
@@ -458,32 +490,38 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
         if failed:
             f = failed[0]
             return {"ok": False, "error": f"step {f['index']} ({f['type']}): {f['error']}", "result": out}
-        return _ok(out)
+        return {"ok": True, "result": out}
 
-    @app.post("/api/devices/{device_id}/calibrate")
-    async def calibrate(device_id: str, request: Request):
-        """Open the calibration page in Safari (through Spotlight) and measure the pointer; takes
-        about a minute. The phone must reach `public_url` (same network)."""
+    # -- calibration ----------------------------------------------------------------------------
+
+    @app.get("/api/devices/{device_id}/calibration", tags=["calibration"], summary="Calibration summary",
+             response_model=models.CalibrationSummary, responses={404: models.ERRORS[404]})
+    async def calibration(device_id: str = DeviceId):
+        """How the pointer is calibrated: method ("guess" = not yet, "safari", "sim"), when, the landing error
+        of the validation moves, and the pointer mode."""
+        st = farm.device(device_id).status()
+        return {**st["calibration"], "mode": st["pointer"].get("mode", "relative")}
+
+    @app.post("/api/devices/{device_id}/calibrate", tags=["calibration"], summary="Calibrate the pointer",
+              response_model=models.ActionResponse, responses=models.ERRORS)
+    async def calibrate(request: Request, body: Optional[actions.Calibrate] = Body(None), device_id: str = DeviceId):
+        """Opens the calibration page in Safari through Spotlight, then measures the pointer from the clicks the
+        page reports (about a minute; do not touch the phone meanwhile). The phone must reach `page_url`: by
+        default `<public_url>/calibrate/<id>`, so it must be on the same network as this host."""
         device = farm.device(device_id)
-        params = await _json_body(request, {})
-        try:
-            body = actions.Calibrate.model_validate(params if isinstance(params, dict) else None)
-        except ValueError as e:
-            raise ApiError(422, actions.describe(e)) from None
+        body = body or actions.Calibrate()
         page_url = body.page_url or f"{farm.base_url(request)}/calibrate/{device.id}"
         farm.log("calibrate_start", device=device.id, page_url=page_url)
         result = await farm.on_device(device, lambda: device.calibrate(page_url=page_url, **body.options))
         return _ok({**result, "page_url": page_url})
 
-    @app.post("/api/devices/{device_id}/calibration/events")
-    async def calibration_events(device_id: str, request: Request):
-        """Events from the calibration page (one object, a list, or {"events": [...]}), in order."""
+    @app.post("/api/devices/{device_id}/calibration/events", tags=["calibration"], summary="Calibration page events",
+              response_model=models.ActionResponse, responses={404: models.ERRORS[404], 422: models.ERRORS[422]})
+    async def calibration_events(body: Union[list[models.CalibrationEvent], models.CalibrationEvent],
+                                 device_id: str = DeviceId):
+        """Posted by web/calibrate.html running in Safari on the phone: one event or a list, applied in order."""
         device = farm.device(device_id)
-        body = await _json_body(request)
-        events = body.get("events") if isinstance(body, dict) and "events" in body else body
-        events = events if isinstance(events, list) else [events]
-        for ev in events:
-            _validate_event(ev)
+        events = [_check_event(ev) for ev in (body if isinstance(body, list) else [body])]
         for ev in events:
             device.clicks.push(ev)
         return _ok({"accepted": len(events)})
@@ -498,10 +536,6 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
     @app.websocket("/api/devices/{device_id}/control")
     async def control(ws: WebSocket, device_id: str):
-        """KVM-style control: {"t": "mouse", "dx", "dy", "buttons", "wheel"}, {"t": "abs", "x",
-        "y", "buttons"}, {"t": "keys", "mods", "keys"}, {"t": "release"}, actions as {"t": "tap",
-        "id": 1, ...} (answered with {"t": "result", "id", "ok", ...}) and {"t": "sync", "id"}
-        (answered once everything before it was sent). See ihc.api.control."""
         await ws.accept()
         device = await _ws_device(ws, device_id, key="t")
         if device is None:
@@ -527,34 +561,36 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
                     data = json.loads(msg.get("text") or "null")
                 except ValueError:
                     data = None
-                batch = data if isinstance(data, list) else [data]
-                for item in batch:
+                for item in data if isinstance(data, list) else [data]:
                     if isinstance(item, dict):
                         await session.handle(item)
                     else:
                         await send({"t": "error", "error": "messages must be JSON objects"})
-        except (WebSocketDisconnect, RuntimeError):
+        except (WebSocketDisconnect, RuntimeError, OSError):
             pass
         finally:
             await session.close()  # releases every key and button
-            farm.log("ws_close", kind="control", device=device.id, **{k: v for k, v in session.totals.items()})
+            farm.log("ws_close", kind="control", device=device.id, **dict(session.totals))
 
     # -- simulator ------------------------------------------------------------------------------
 
-    @app.post("/api/devices/{device_id}/sim/{op}")
-    async def sim(device_id: str, op: str, name: str | None = None):
-        """Operator controls of a simulated phone (lock, accessory prompt, HDMI signal, apps)."""
+    @app.post("/api/devices/{device_id}/sim/{op}", tags=["simulator"], summary="Simulated phone control",
+              response_model=models.ActionResponse, responses={404: models.ERRORS[404], 422: models.ERRORS[422]})
+    async def sim(op: SimOp, device_id: str = DeviceId,
+                  name: Optional[str] = Query(None, description="App for open_app, e.g. Targets, Notes, Settings")):
+        """What a person could do to a simulated phone: lock/unlock it, raise or answer the wired-accessory
+        prompt, cut the HDMI signal, go home, open an app. The device's health is checked right after, so the
+        returned `state` is current."""
         device = farm.device(device_id)
         rig = registry.extra(device_id)
-        if rig is None or not hasattr(rig, "phone") or device.info.kind != "sim":
+        if rig is None or not hasattr(rig, "phone") or getattr(device.info, "kind", "") != "sim":
             raise ApiError(404, f"{device_id} is not a simulated device")
-        if op not in SIM_OPS:
-            raise ApiError(404, f"unknown simulator control {op!r}; one of {', '.join(SIM_OPS)}")
 
         def do() -> dict:
             phone = rig.phone
-            if op == "signal_off" or op == "signal_on":
+            if op in ("signal_off", "signal_on"):
                 rig.capture.signal = op == "signal_on"
+                device.frame(newer_than=device.frame().seq)  # the health check must see the new picture
             elif op == "home":
                 phone.go_home()
             elif op == "open_app":
@@ -568,6 +604,24 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
         return _ok(await farm.on_io(do))
 
+    def openapi() -> dict:
+        """The generated schema, with every 422 documented as the API's own error body."""
+        if app.openapi_schema is None:
+            from fastapi.openapi.utils import get_openapi
+
+            schema = get_openapi(title=app.title, version=app.version, description=app.description,
+                                 routes=app.routes, tags=app.openapi_tags)
+            error = {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+            for ops in schema.get("paths", {}).values():
+                for op in ops.values():
+                    if "422" in op.get("responses", {}):
+                        op["responses"]["422"] = {"description": models.ERRORS[422]["description"], "content": error}
+            for name in ("HTTPValidationError", "ValidationError"):
+                schema.get("components", {}).get("schemas", {}).pop(name, None)
+            app.openapi_schema = schema
+        return app.openapi_schema
+
+    app.openapi = openapi
     if web.is_dir():
         app.mount("/", _NoCacheStatic(directory=web, html=True), name="web")
     return app
@@ -579,7 +633,7 @@ async def _ws_device(ws: WebSocket, device_id: str, key: str = "type"):
     try:
         return farm.device(device_id)
     except ApiError as e:
-        await ws.send_text(dumps({key: "error", "error": e.message}))
+        await ws.send_text(dumps({key: "error", "error": e.message, "code": "not_found"}))
         await ws.close(code=4404)
         return None
 
@@ -594,5 +648,5 @@ async def _run_until_first_exits(*coros) -> None:
             t.cancel()
         results = await asyncio.gather(*tasks, return_exceptions=True)
     for r in results:
-        if isinstance(r, Exception) and not isinstance(r, (WebSocketDisconnect, RuntimeError, OSError, asyncio.CancelledError)):
+        if isinstance(r, Exception) and not isinstance(r, (WebSocketDisconnect, RuntimeError, OSError)):
             raise r

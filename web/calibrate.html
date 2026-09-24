@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>iphone-hid calibration</title>
+<style>
+  html, body {
+    position: fixed; inset: 0; margin: 0; padding: 0; overflow: hidden;
+    overscroll-behavior: none; touch-action: none;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    font: 15px -apple-system, system-ui, sans-serif; color: #1c1c1e;
+    background-color: #fff;
+    background-image:
+      linear-gradient(#e5e5ea 1px, transparent 1px),
+      linear-gradient(90deg, #e5e5ea 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  h1 { position: absolute; left: 0; right: 0; top: 32%; margin: 0; padding: 0 16px;
+       text-align: center; font-size: 28px; line-height: 1.25; font-weight: 700; pointer-events: none; }
+  #info { position: absolute; left: 0; right: 0; top: calc(32% + 110px); text-align: center;
+          color: #636366; pointer-events: none; }
+  .h, .v { position: absolute; background: #ff2d55; pointer-events: none; display: none; }
+  .h { height: 1px; width: 44px; margin: 0 0 0 -22px; }
+  .v { width: 1px; height: 44px; margin: -22px 0 0 0; }
+  #ring { position: absolute; width: 16px; height: 16px; margin: -9px 0 0 -9px; border: 1px solid #ff2d55;
+          border-radius: 50%; pointer-events: none; display: none; }
+</style>
+</head>
+<body>
+<h1>iphone-hid calibration — keep this page open</h1>
+<div id="info">waiting…</div>
+<div class="h" id="h"></div><div class="v" id="v"></div><div id="ring"></div>
+<script>
+(function () {
+  "use strict";
+  var id = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
+  var url = "/api/devices/" + encodeURIComponent(id) + "/calibration/events";
+  var queue = [], sending = false, sent = 0, clicks = 0, failures = 0, lastMove = 0, seq = 0;
+  var info = document.getElementById("info");
+
+  function show(text) { info.textContent = text; }
+
+  // Events leave strictly in order: one request at a time, carrying everything queued so far.
+  // `seq` numbers the events of this page load (from 1) and `t` is performance.now() in ms, so
+  // the host can tell a late or stale event from a fresh one.
+  function post(ev) {
+    seq += 1;
+    ev.seq = seq;
+    ev.t = Math.round(performance.now() * 1000) / 1000;
+    queue.push(ev);
+    if (queue.length > 200) {  // offline for a while: drop hover events first, never clicks
+      queue = queue.filter(function (e) { return e.type !== "move"; }).slice(-200);
+    }
+    pump();
+  }
+
+  function pump() {
+    if (sending || !queue.length) return;
+    sending = true;
+    var batch = queue.slice(0, 50);
+    fetch(url, {
+      method: "POST", keepalive: true, cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(batch)
+    }).then(function (r) {
+      if (!r.ok && r.status >= 500) throw new Error("HTTP " + r.status);
+      queue.splice(0, batch.length);
+      sent += batch.length;
+      failures = 0;
+    }).catch(function () {
+      failures += 1;
+    }).then(function () {
+      sending = false;
+      show("clicks " + clicks + " · sent " + sent + (failures ? " · retrying" : "") + " · " + id);
+      if (queue.length) setTimeout(pump, failures ? Math.min(2000, 100 * failures) : 0);
+    });
+  }
+
+  function hello() {
+    post({ type: "hello", screen_w: screen.width, screen_h: screen.height,
+           inner_w: window.innerWidth, inner_h: window.innerHeight,
+           dpr: window.devicePixelRatio, ua: navigator.userAgent });
+  }
+
+  function mark(x, y) {
+    var h = document.getElementById("h"), v = document.getElementById("v"), ring = document.getElementById("ring");
+    h.style.left = x + "px"; h.style.top = y + "px"; h.style.display = "block";
+    v.style.left = x + "px"; v.style.top = y + "px"; v.style.display = "block";
+    ring.style.left = x + "px"; ring.style.top = y + "px"; ring.style.display = "block";
+  }
+
+  function click(e) {
+    clicks += 1;
+    post({ type: "click", x: e.clientX, y: e.clientY, button: e.button || 0 });
+    mark(e.clientX, e.clientY);
+  }
+
+  function move(e) {
+    var now = Date.now();
+    if (now - lastMove < 100) return;  // hover reports only tell whether Safari sees them
+    lastMove = now;
+    post({ type: "move", x: e.clientX, y: e.clientY });
+  }
+
+  if (window.PointerEvent) {
+    document.addEventListener("pointerdown", click, { passive: true });
+    document.addEventListener("pointermove", move, { passive: true });
+  } else if ("onmousedown" in document) {
+    document.addEventListener("mousedown", click, { passive: true });
+    document.addEventListener("mousemove", move, { passive: true });
+  } else {
+    document.addEventListener("click", click, { passive: true });
+  }
+  document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+  window.addEventListener("resize", hello);
+  window.addEventListener("orientationchange", function () { setTimeout(hello, 300); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) hello(); });
+  hello();
+})();
+</script>
+</body>
+</html>

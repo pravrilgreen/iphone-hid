@@ -106,19 +106,21 @@ class LiveSession:
         self._tasks = [asyncio.ensure_future(self._worker()), asyncio.ensure_future(self._stats())]
 
     async def close(self) -> None:
-        """Stop, drop what was not sent yet, and release every key and button (always)."""
+        """Stop, drop what was not sent yet, and release every key and button (always).
+
+        The release is queued before the first await, so it happens even when this coroutine is
+        cancelled (client gone, server shutting down); the executor runs it after any call still
+        in flight."""
         for t in self._tasks:
             t.cancel()
-        await asyncio.gather(*self._tasks, return_exceptions=True)
         self._ops.clear()
-        # the executor runs one call at a time in order: this runs after any call still in flight
         fut = self._executor.submit(self.device.release_all)
+        self._executor.shutdown(wait=False)
         try:
             await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(fut)), 10.0)
-        except Exception:
+        except Exception:  # TimeoutError, HidError: nothing more can be done from here
             pass
-        finally:
-            self._executor.shutdown(wait=False)
+        await asyncio.gather(*self._tasks, return_exceptions=True)
 
     # -- input ----------------------------------------------------------------------------------
 

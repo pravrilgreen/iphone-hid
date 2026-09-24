@@ -1,6 +1,6 @@
 """Action shapes shared by the REST endpoints, recorded scripts and the /control socket.
 
-Every action is validated before it reaches a device (unknown fields, bad coordinates spaces,
+Every action is validated before it reaches a device (unknown fields, bad coordinate spaces,
 untypeable text and unknown keys are rejected up front), then run as one blocking device call.
 """
 
@@ -8,50 +8,75 @@ from __future__ import annotations
 
 import inspect
 import time
+from dataclasses import dataclass
 from typing import Any, Callable, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from ..hid.protocol import MEDIA_KEYS
 from ..input import keymap
 
 Space = Literal["norm", "pt", "frame"]
+SPACE_DOC = ('Coordinate space: "norm" = 0..1 across the phone screen (default), "pt" = iOS points, '
+             '"frame" = pixels of the captured video frame')
 
 
 class Body(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    @model_validator(mode="after")
+    def _on_screen(self):
+        """Normalized coordinates must lie on the screen (other spaces are checked by the device)."""
+        if getattr(self, "space", None) == "norm":
+            for name in ("x", "y", "x1", "y1", "x2", "y2"):
+                v = getattr(self, name, None)
+                if v is not None and not 0.0 <= v <= 1.0:
+                    raise ValueError(f"{name} = {v} is off the screen: normalized coordinates are 0..1")
+        return self
+
 
 class Empty(Body):
-    pass
+    """No parameters."""
 
 
 class Point(Body):
-    x: float
-    y: float
-    space: Space = "norm"
+    """A point on the screen."""
+
+    x: float = Field(description="Horizontal coordinate (0 = left edge in norm space)", examples=[0.5])
+    y: float = Field(description="Vertical coordinate (0 = top edge in norm space)", examples=[0.5])
+    space: Space = Field("norm", description=SPACE_DOC)
 
 
 class Tap(Point):
-    long: bool = False
+    """Tap at a point; `long` holds it (0.8 s) for a long press."""
+
+    long: bool = Field(False, description="Hold instead of tapping")
 
 
 class Swipe(Body):
-    x1: float
-    y1: float
-    x2: float
-    y2: float
-    space: Space = "norm"
-    hold_end: float = Field(0.0, ge=0.0, le=30.0)
-    duration: float | None = Field(None, gt=0.0, le=10.0)
+    """Press at (x1, y1), drag to (x2, y2), release."""
+
+    x1: float = Field(examples=[0.5])
+    y1: float = Field(examples=[0.8])
+    x2: float = Field(examples=[0.5])
+    y2: float = Field(examples=[0.3])
+    space: Space = Field("norm", description=SPACE_DOC)
+    hold_end: float = Field(0.0, ge=0.0, le=30.0, description="Seconds to hold at the end before lifting "
+                                                             "(> 0 turns a fling into a precise drag)")
+    duration: float | None = Field(None, gt=0.0, le=10.0, description="Drag duration in seconds (absolute-pointer "
+                                                                      "phones; relative drags take their calibrated time)")
 
 
 class Scroll(Point):
-    amount: int = Field(ge=-100, le=100)
+    """Scroll the wheel at a point."""
+
+    amount: int = Field(ge=-100, le=100, description="Wheel detents; positive scrolls up", examples=[-3])
 
 
 class TypeText(Body):
-    text: str = Field(max_length=10_000)
+    """Type text on the phone's hardware keyboard (US layout: printable ASCII, \\n and \\t)."""
+
+    text: str = Field(max_length=10_000, examples=["hello world\n"])
 
     @field_validator("text")
     @classmethod
@@ -61,7 +86,11 @@ class TypeText(Body):
 
 
 class Key(Body):
-    combo: str = Field(min_length=1, max_length=100)
+    """Press a key combination."""
+
+    combo: str = Field(min_length=1, max_length=100, description='Modifiers and keys joined by "+", e.g. '
+                                                                 '"cmd+space", "esc", "shift+tab", "cmd+h"',
+                       examples=["cmd+space"])
 
     @field_validator("combo")
     @classmethod
@@ -71,7 +100,9 @@ class Key(Body):
 
 
 class Media(Body):
-    key: str
+    """Press a media key."""
+
+    key: str = Field(description="One of: " + ", ".join(MEDIA_KEYS), examples=["volume_up"])
 
     @field_validator("key")
     @classmethod
@@ -82,7 +113,9 @@ class Media(Body):
 
 
 class OpenUrl(Body):
-    url: str = Field(min_length=1, max_length=2000)
+    """Open a URL in Safari through Spotlight."""
+
+    url: str = Field(min_length=1, max_length=2000, examples=["https://example.com"])
 
     @field_validator("url")
     @classmethod
@@ -92,15 +125,21 @@ class OpenUrl(Body):
 
 
 class Wait(Body):
-    seconds: float = Field(ge=0.0, le=300.0)
+    """Pause a script."""
+
+    seconds: float = Field(ge=0.0, le=300.0, examples=[0.5])
 
 
 CALIBRATE_OPTIONS = {"coarse_counts", "fine_counts", "repeats", "validate", "page_timeout", "click_timeout", "seed"}
 
 
 class Calibrate(Body):
-    page_url: str | None = Field(None, max_length=2000)
-    options: dict[str, Any] = Field(default_factory=dict)
+    """Calibrate the pointer with the Safari calibration page."""
+
+    page_url: str | None = Field(None, max_length=2000, description="URL of the calibration page as the phone "
+                                                                    "reaches it (default <public_url>/calibrate/<id>)")
+    options: dict[str, Any] = Field(default_factory=dict, description="Advanced ihc.calibration.calibrate() options: "
+                                    + ", ".join(sorted(CALIBRATE_OPTIONS)))
 
     @field_validator("options")
     @classmethod
@@ -128,22 +167,36 @@ def _release(d, a: Empty):
     return {"released": True}
 
 
-# name -> (body model, runner(device, body)); runners block and may raise device errors
-ACTIONS: dict[str, tuple[type[Body], Callable[[Any, Any], Any]]] = {
-    "tap": (Tap, lambda d, a: d.tap(a.x, a.y, space=a.space, long=a.long)),
-    "long_press": (Point, lambda d, a: d.tap(a.x, a.y, space=a.space, long=True)),
-    "move": (Point, lambda d, a: d.move(a.x, a.y, space=a.space)),
-    "swipe": (Swipe, _swipe),
-    "scroll": (Scroll, lambda d, a: d.scroll(a.x, a.y, a.amount, space=a.space)),
-    "type": (TypeText, lambda d, a: d.type(a.text)),
-    "key": (Key, lambda d, a: d.key(a.combo)),
-    "home": (Empty, lambda d, a: d.home()),
-    "app_switcher": (Empty, lambda d, a: d.app_switcher()),
-    "media": (Media, lambda d, a: d.media(a.key)),
-    "open_url": (OpenUrl, lambda d, a: d.open_url(a.url)),
-    "release_all": (Empty, _release),
+@dataclass(frozen=True)
+class Spec:
+    model: type[Body]
+    run: Callable[[Any, Any], Any]  # (device, body) -> result; blocks, may raise device errors
+    summary: str
+    description: str = ""
+
+
+ACTIONS: dict[str, Spec] = {
+    "tap": Spec(Tap, lambda d, a: d.tap(a.x, a.y, space=a.space, long=a.long), "Tap",
+                "Move the pointer to the point (anchored, paced relative moves or one absolute report) and click."),
+    "long_press": Spec(Point, lambda d, a: d.tap(a.x, a.y, space=a.space, long=True), "Long press",
+                       "Like tap, holding the button 0.8 s."),
+    "move": Spec(Point, lambda d, a: d.move(a.x, a.y, space=a.space), "Move the pointer",
+                 "Move the pointer to the point without clicking."),
+    "swipe": Spec(Swipe, _swipe, "Swipe / drag", "Press at the start point, drag to the end point, release."),
+    "scroll": Spec(Scroll, lambda d, a: d.scroll(a.x, a.y, a.amount, space=a.space), "Scroll",
+                   "Move to the point, then turn the wheel `amount` detents (positive = up)."),
+    "type": Spec(TypeText, lambda d, a: d.type(a.text), "Type text",
+                 "Type on the hardware keyboard (US layout). Rejected before anything is sent if a character "
+                 "cannot be typed."),
+    "key": Spec(Key, lambda d, a: d.key(a.combo), "Key combination", 'E.g. "cmd+space" (Spotlight), "esc", "cmd+h".'),
+    "home": Spec(Empty, lambda d, a: d.home(), "Home", "Secondary mouse button, mapped to Home in AssistiveTouch."),
+    "app_switcher": Spec(Empty, lambda d, a: d.app_switcher(), "App Switcher",
+                         "Middle mouse button, mapped to App Switcher in AssistiveTouch."),
+    "media": Spec(Media, lambda d, a: d.media(a.key), "Media key", "Volume, play/pause..."),
+    "open_url": Spec(OpenUrl, lambda d, a: d.open_url(a.url), "Open a URL", "Spotlight, type the URL, Return."),
+    "release_all": Spec(Empty, _release, "Release everything", "Release every key and mouse button."),
 }
-SCRIPT_ONLY = {"wait": (Wait, _wait)}
+SCRIPT_ONLY: dict[str, Spec] = {"wait": Spec(Wait, _wait, "Wait")}
 
 
 def parse(kind: str, params: dict, *, script: bool = False) -> tuple[Callable[[Any, Any], Any], Body]:
@@ -151,17 +204,21 @@ def parse(kind: str, params: dict, *, script: bool = False) -> tuple[Callable[[A
     table = {**ACTIONS, **SCRIPT_ONLY} if script else ACTIONS
     if kind not in table:
         raise ValueError(f"unknown action {kind!r}; one of {', '.join(table)}")
-    model, run = table[kind]
-    return run, model.model_validate(params)
+    spec = table[kind]
+    return spec.run, spec.model.model_validate(params)
 
 
 def describe(exc: Exception) -> str:
     """One readable line for a validation error."""
     if isinstance(exc, ValidationError):
-        parts = []
-        for err in exc.errors():
-            loc = ".".join(str(p) for p in err.get("loc", ()) if p != "body")
-            msg = err.get("msg", "invalid").removeprefix("Value error, ")
-            parts.append(f"{loc}: {msg}" if loc else msg)
-        return "; ".join(parts)
+        return "; ".join(describe_error(e) for e in exc.errors())
     return str(exc)
+
+
+def describe_error(err: dict) -> str:
+    """'field: message' for one pydantic/FastAPI error entry."""
+    loc = [str(p) for p in err.get("loc", ()) if p not in ("body", "query", "path")]
+    msg = str(err.get("msg", "invalid")).removeprefix("Value error, ")
+    if err.get("type") == "missing" and not loc:
+        return "a JSON request body is required"
+    return f"{'.'.join(loc)}: {msg}" if loc else msg

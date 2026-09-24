@@ -15,7 +15,6 @@ from __future__ import annotations
 import asyncio
 import math
 import threading
-import time
 from concurrent.futures import Executor, Future
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
@@ -49,8 +48,8 @@ def render_variant(frame: Frame, rect: ScreenRect | None, width: int | None, qua
         if img is None:
             raise ValueError("undecodable frame")
     img = img[round(r0 / factor):round(r1 / factor), round(c0 / factor):round(c1 / factor)]
-    if target < img.shape[1]:
-        h = max(1, round(img.shape[0] * target / img.shape[1]))
+    if target < c1 - c0:
+        h = max(1, round((r1 - r0) * target / (c1 - c0)))  # aspect of the full-resolution box
         img = cv2.resize(img, (target, h), interpolation=cv2.INTER_AREA)
     return encode_jpeg(img, quality)
 
@@ -69,14 +68,17 @@ class Watcher:
         except RuntimeError:  # loop closed: the viewer is gone
             pass
 
-    async def next(self, prev: Frame | None, timeout: float) -> Frame | None:
-        """The newest frame if it is not `prev`, waiting up to `timeout` s for one; None on timeout."""
+    async def next(self, prev: Frame | None, timeout: float, *, fail_fast: bool = False) -> Frame | None:
+        """The newest frame if it is not `prev`, waiting up to `timeout` s for one; None on timeout
+        (or, with `fail_fast`, as soon as the source reports an error before any frame came)."""
         deadline = self.loop.time() + timeout
         while True:
             self._event.clear()
             f = self.hub.latest
             if f is not None and f is not prev:
                 return f
+            if fail_fast and f is None and self.hub.error:
+                return None
             remaining = deadline - self.loop.time()
             if remaining <= 0:
                 return None
@@ -99,6 +101,7 @@ class FrameHub:
         self._lock = threading.Lock()
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
+        self._wanted = threading.Event()
         self._variants: dict[tuple, tuple[object, Future]] = {}
 
     @property
@@ -110,6 +113,7 @@ class FrameHub:
         w = Watcher(self, asyncio.get_running_loop())
         with self._lock:
             self._watchers.add(w)
+            self._wanted.set()
             if self._thread is None and not self._stop.is_set():
                 self._thread = threading.Thread(target=self._pump, name=f"frames-{self.device.id}", daemon=True)
                 self._thread.start()
@@ -118,29 +122,30 @@ class FrameHub:
         finally:
             with self._lock:
                 self._watchers.discard(w)
+                if not self._watchers:  # the next viewer must never get a stale frame
+                    self.latest, self.error = None, None
 
     def close(self) -> None:
         self._stop.set()
+        self._wanted.set()
         t = self._thread
         if t is not None:
             t.join(timeout=3)
 
     def _pump(self) -> None:
-        seq, idle_since, last_t = -1, None, None
+        seq, last_t = -1, None
         while not self._stop.is_set():
             with self._lock:
-                if not self._watchers:
-                    now = time.monotonic()
-                    idle_since = idle_since or now
-                    if now - idle_since >= self.linger:
-                        self._thread = None
-                        self.fps = 0.0
-                        return
-                else:
-                    idle_since = None
                 watchers = list(self._watchers)
+                if not watchers:
+                    self.latest, self.error, self.fps = None, None, 0.0  # never hand a stale frame out
+                    self._wanted.clear()
             if not watchers:
-                self._stop.wait(0.1)
+                if not self._wanted.wait(self.linger):
+                    with self._lock:
+                        if not self._watchers:
+                            self._thread = None
+                            return
                 continue
             try:
                 f = self.device.frame(newer_than=seq, timeout=self.frame_timeout)
@@ -214,24 +219,27 @@ class Pacer:
         self.fps = fps
         self.keepalive = keepalive
         self.last_sent_at = -math.inf
+        self.last_frame: Frame | None = None
         self.last_jpeg: object = None
 
     def delay(self, now: float) -> float:
         return 0.0 if not self.fps else max(0.0, self.last_sent_at + 1.0 / self.fps - now)
 
     def wanted(self, frame: Frame, now: float) -> bool:
-        same = frame.jpeg is not None and frame.jpeg is self.last_jpeg
+        same = frame is self.last_frame or (frame.jpeg is not None and frame.jpeg is self.last_jpeg)
         return not same or now - self.last_sent_at >= self.keepalive
 
     def sent(self, frame: Frame, now: float) -> None:
         self.last_sent_at = now
+        self.last_frame = frame
         self.last_jpeg = frame.jpeg
 
 
-def mjpeg_part(data: bytes) -> bytes:
-    """One multipart part, followed by the next boundary so browsers show it at once."""
+def mjpeg_part(data: bytes, last: bool = False) -> bytes:
+    """One multipart part, followed by the next boundary so browsers show it at once (or by the
+    closing delimiter after the last part)."""
     head = f"Content-Type: image/jpeg\r\nContent-Length: {len(data)}\r\n\r\n".encode()
-    return head + data + f"\r\n--{BOUNDARY}\r\n".encode()
+    return head + data + (f"\r\n--{BOUNDARY}--\r\n" if last else f"\r\n--{BOUNDARY}\r\n").encode()
 
 
 class MJPEGResponse(Response):
@@ -254,10 +262,10 @@ class MJPEGResponse(Response):
 
     async def __call__(self, scope, receive, send) -> None:
         async with self.hub.watch() as w:
-            first = await w.next(None, self.first_timeout)
+            first = await w.next(None, self.first_timeout, fail_fast=True)
             if first is None:
                 msg = self.hub.error or "no video frame in time"
-                await JSONResponse({"error": msg}, status_code=503)(scope, receive, send)
+                await JSONResponse({"error": msg, "code": "no_video"}, status_code=503)(scope, receive, send)
                 return
             await send({"type": "http.response.start", "status": 200, "headers": [
                 (b"content-type", self.media_type.encode()),
@@ -286,10 +294,11 @@ class MJPEGResponse(Response):
         sent = 0
         while True:
             data = await self.hub.encoded(frame, crop=self.crop, width=self.width, quality=self.quality)
-            await send({"type": "http.response.body", "body": mjpeg_part(data), "more_body": True})
-            pacer.sent(frame, loop.time())
             sent += 1
-            if self.frames and sent >= self.frames:
+            last = bool(self.frames) and sent >= self.frames
+            await send({"type": "http.response.body", "body": mjpeg_part(data, last), "more_body": True})
+            pacer.sent(frame, loop.time())
+            if last:
                 return
             while True:
                 delay = pacer.delay(loop.time())
@@ -298,6 +307,8 @@ class MJPEGResponse(Response):
                 nxt = await w.next(frame, 1.0)
                 if nxt is not None:
                     frame = nxt
+                elif self.hub.error:
+                    continue  # no video: do not keep re-sending the last picture
                 if pacer.wanted(frame, loop.time()):
                     break
 
