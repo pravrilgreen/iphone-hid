@@ -1,177 +1,281 @@
 # iphone-hid
 
-**Điều khiển iPhone cho automation chỉ bằng phần cứng gắn ngoài.** Hệ thống xem màn hình iPhone qua cổng
-HDMI và thao tác bằng một bộ chuột + bàn phím "ảo". Với iPhone, đó chỉ là một màn hình ngoài và một bộ chuột,
-bàn phím bình thường:
-- không jailbreak, không bật Developer Mode;
-- không cài app lên máy;
-- không dùng công cụ riêng của Apple hay bên thứ ba dành cho iPhone.
+**Drive real iPhones from a test framework using only external hardware.** A small box watches each
+iPhone's screen over HDMI and operates it through a plug-in keyboard and mouse. To the iPhone this is
+just an external display and an ordinary keyboard and mouse:
 
-Đây là **phần điều khiển iPhone** cho một hệ thống automation lớn hơn. Bên automation chỉ cần gọi "chạm vào
-điểm này", "vuốt từ đây tới đây", "gõ chữ này", "chụp màn hình". Hệ thống lo phần cứng, con trỏ và độ chính
-xác. Người vận hành có một trang web để xem màn hình từng máy trực tiếp và điều khiển như đang cầm máy.
+- no jailbreak and no Developer Mode;
+- no app installed on the phone;
+- no Apple or third-party iPhone tooling on the host.
 
-> **Trạng thái:** phần mềm đã hoàn chỉnh và chạy được trên **iPhone mô phỏng**. Chưa có phần cứng, nên chưa
-> hạng mục nào được kiểm chứng trên máy thật. Mọi hành vi mô phỏng đều dựa trên tài liệu gốc của hãng chip,
-> hành vi iOS đã được ghi nhận và các dự án tương tự. Những điểm còn phải kiểm chứng đều có bài test phần cứng
-> tương ứng. Xem [Lộ trình](#lộ-trình).
+This project is the **iPhone control layer** of a larger automation framework. The framework asks for
+things like "tap here", "swipe from here to there", "type this", "take a screenshot". The box handles the
+hardware, the pointer and the accuracy, and exposes plain HTTP/WebSocket APIs plus a Python SDK. Boxes
+announce themselves on the network, so a test runner finds them without configuration.
 
----
+> **Status:** the software is complete and runs end to end on **simulated iPhones** (a detailed simulator
+> of the chip, the pointer, the screen and the capture card). No hardware has been bought yet, so nothing
+> has been verified on a real phone. Every simulated behaviour follows the chip maker's protocol document,
+> documented iOS behaviour, or comparable open-source projects. Each assumption that still needs a real
+> phone has a matching hardware test in the checklist (see [Roadmap](#roadmap)).
 
-## Nó hoạt động thế nào (từ đầu đến cuối)
+![The web console with four simulated iPhones](docs/images/console-grid.png)
 
-### 1. Mỗi iPhone được nối như sau
-
-**iPhone cổng USB-C (iPhone 15 trở lên):** một dây mang cả hình lẫn điều khiển.
-
-```
-                ┌──────── Hub USB-C (HDMI + USB-A + sạc) ────────┐
-   iPhone ══════│ HDMI  ─────► Capture card ─────► Máy chủ Linux │  hình
-                │ USB-A ◄───── Chip HID ◄───────── Máy chủ Linux │  thao tác
-                │ Sạc   ◄───── Củ sạc 20 W                       │
-                └────────────────────────────────────────────────┘
-```
-
-**iPhone cổng Lightning:** hình qua adapter HDMI của Apple, thao tác qua Bluetooth.
-
-```
-   iPhone ══► Lightning Digital AV Adapter ──HDMI──► Capture card ──► Máy chủ Linux   hình
-   iPhone ◄── Bluetooth ── ESP32 (chuột + bàn phím Bluetooth) ◄───── Máy chủ Linux   thao tác
-```
-
-**Vì sao iPhone Lightning phải dùng ESP32 và Bluetooth, còn iPhone USB-C thì không?**
-- Cổng USB-C của iPhone 15 trở lên làm được hai việc cùng lúc: xuất hình ra HDMI và nhận thiết bị USB. Chỉ
-  cần một hub là có cả hai, và chip HID (CH9329, rẻ, mua về dùng ngay) cắm vào hub như một bộ chuột + bàn
-  phím có dây.
-- iPhone Lightning chỉ có một cổng. Cổng đó phải dùng cho adapter HDMI của Apple thì mới lấy được hình, và cổng
-  phụ trên adapter **chỉ để sạc**, không truyền dữ liệu. Không còn chỗ nào để cắm chuột có dây, nên thao tác
-  phải đi qua **Bluetooth**.
-- Chip CH9329 không có Bluetooth. ESP32 là vi điều khiển giá rẻ có Bluetooth, được nạp firmware để làm bộ
-  chuột + bàn phím Bluetooth. Firmware "nói" đúng ngôn ngữ của CH9329, nên phần mềm trên máy chủ dùng chung cho
-  cả hai dòng máy, không phải sửa gì.
-- Không dùng Bluetooth cho cả iPhone USB-C, vì có dây thì ổn định hơn: không phải ghép đôi, không nhiễu sóng khi
-  nhiều máy đặt cạnh nhau, trễ thấp hơn, và iPhone nhận được chế độ chuột chính xác nhất qua dây (xem dưới).
-- Về lâu dài, có thể thay CH9329 bằng chính ESP32-S3 ở chế độ USB, để hai dòng máy dùng chung một loại phần
-  cứng, và có thêm vài khả năng CH9329 không có.
-
-### 2. Nhìn thấy màn hình
-
-iPhone phản chiếu (mirror) màn hình ra HDMI. Capture card biến tín hiệu đó thành luồng hình nén sẵn. Máy chủ
-chuyển thẳng luồng này tới trình duyệt, không giải nén rồi nén lại, nên xem được nhiều máy cùng lúc mà máy chủ
-không phải gánh nặng. Trong mạng nội bộ, hình tới trình duyệt chậm khoảng 0,15–0,25 giây.
-
-### 3. Chạm đúng chỗ, không cần "nhìn"
-
-iPhone điều khiển bằng chuột thông qua tính năng trợ năng **AssistiveTouch**. Hệ thống không nhận diện hình ảnh,
-nên phải biết chắc con trỏ đang ở đâu. Có hai cách, tự chọn khi hiệu chỉnh:
-
-- **Chuột tuyệt đối:** đặt con trỏ thẳng vào toạ độ cần chạm, như chạm tay. Nhanh (khoảng 0,15 giây mỗi lần
-  chạm) và gần như không sai số. Dự án mã nguồn mở gần nhất với sản phẩm này cho thấy iPhone nhận được cách này
-  qua dây USB. Đây là điều đầu tiên sẽ kiểm chứng khi có phần cứng.
-- **Chuột tương đối** (khi iPhone không nhận chuột tuyệt đối, ví dụ qua Bluetooth):
-  1. trước mỗi lần chạm, đẩy con trỏ vào góc màn hình gần nhất, nơi nó chắc chắn dừng lại, để có một điểm xuất
-     phát biết chắc;
-  2. đi từng trục một, với nhịp đều tuyệt đối, để quãng đường luôn lặp lại được dù iPhone có "tăng tốc" con
-     trỏ;
-  3. vì luôn xuất phát lại từ góc, sai số không bị cộng dồn qua các lần chạm.
-
-**Hiệu chỉnh mỗi máy một lần:** hệ thống tự mở một trang web trên Safari của iPhone. Trang cho biết chính xác
-mỗi cú click rơi vào đâu, và hệ thống dùng đó để đo con trỏ của từng máy (vài giây với chuột tuyệt đối, khoảng
-một phút với chuột tương đối).
-
-### 4. Không mất lệnh
-
-- Mỗi lệnh gửi xuống chip đều được chip **xác nhận**. Không có xác nhận thì hệ thống biết ngay và xử lý, không
-  bao giờ "gửi rồi mong trúng".
-- Lệnh nào gửi lại được an toàn (nhấn/nhả nút, phím, đặt vị trí tuyệt đối) thì được gửi lại.
-- Lệnh di chuyển không rõ đã chạy hay chưa thì cả thao tác được làm lại từ đầu, kể cả bước đẩy con trỏ về góc,
-  chứ không đoán.
-- Nhịp gửi được đo từng lệnh. Nếu máy chủ bị khựng làm lệch nhịp (có thể làm lệch vị trí), thao tác đó cũng
-  được làm lại.
-- Mọi phím và nút luôn được nhả khi kết thúc, kể cả khi có lỗi giữa chừng hoặc người điều khiển đóng trình
-  duyệt.
-- Trước khi có iPhone, một công cụ kiểm tra đọc lại chính xác những gì chip gửi ra cổng USB, để xác nhận chip
-  không đánh rơi hay gộp lệnh.
-
-### 5. Dùng như thế nào
-
-**Người vận hành** mở trang web của máy chủ:
-- thấy lưới các máy đang chạy, kèm trạng thái: sẵn sàng / đang bận / máy khoá / mất hình / mất kết nối;
-- mở một máy để xem màn hình trực tiếp, rồi chọn một trong hai chế độ:
-  - **Điều khiển trực tiếp:** chuột và bàn phím của người vận hành đi thẳng tới iPhone, như dùng máy tính từ
-    xa;
-  - **Chạm chính xác:** click lên hình là chạm đúng điểm đó; kéo là vuốt; cuộn chuột là cuộn;
-- có sẵn nút Home, App Switcher, Spotlight, âm lượng, ô gõ chữ, phím tắt;
-- ghi lại một chuỗi thao tác và phát lại;
-- nút **Hiệu chỉnh** cho mỗi máy.
-
-**Dự án automation** gọi qua API (HTTP/WebSocket) hoặc thư viện Python. Toạ độ tính theo tỉ lệ trên màn
-hình iPhone (0 đến 1), không phụ thuộc camera, độ phân giải hay đời máy. Các lệnh có sẵn:
-- chạm, chạm giữ, vuốt, cuộn;
-- gõ chữ, phím tắt, Home, App Switcher, mở URL;
-- chụp màn hình, xem trạng thái;
-- chạy một kịch bản thao tác.
-
-Một máy chủ quản lý nhiều iPhone. Nhiều máy chủ được gộp lại thành một "farm" từ phía thư viện.
+*The box's web console with four simulated iPhones: home screen, a tap-accuracy test app, Settings, and a
+locked phone that the health check reports as "HID not connected".*
 
 ---
 
-## Cần những gì cho mỗi iPhone
+## How it works, end to end
 
-| Thiết bị | Dòng USB-C | Dòng Lightning | Ghi chú |
+```mermaid
+flowchart LR
+    T["Test framework<br/>(SDK / REST / WebSocket)"] --> BOX
+    O["Operator<br/>(browser)"] --> BOX
+    subgraph BOX["Control box (Linux)"]
+        direction TB
+        API["API + web console"] --> CTRL["Per-phone controller<br/>pointer model · keyboard · health"]
+        CTRL --> DRV["HID driver<br/>every frame acknowledged"]
+        CAP["Capture reader<br/>MJPEG passthrough"] --> API
+    end
+    DRV -- "serial" --> CHIP["HID chip<br/>CH9329 or ESP32"]
+    CHIP -- "USB or Bluetooth<br/>keyboard + mouse" --> PHONE["iPhone"]
+    PHONE -- "HDMI mirror" --> CARD["HDMI capture card"]
+    CARD -- "USB video" --> CAP
+```
+
+1. **Seeing.** The iPhone mirrors its screen to HDMI. A cheap capture card turns that into a compressed
+   (MJPEG) video stream, and the box forwards those frames to the browser or SDK as they are. Nothing is
+   decoded and re-encoded, so one small box can serve several phones.
+2. **Acting.** A HID chip plugged into the phone looks like a keyboard and a mouse. The box sends it short
+   serial commands ("move the mouse by 24 units", "press Cmd+Space"), and the chip acknowledges every one.
+3. **Pointing.** iOS shows a mouse pointer through the AssistiveTouch accessibility feature. The box never
+   looks at the screen to find the pointer. It knows where the pointer is from a per-phone calibration
+   (see [Tapping the right spot](#tapping-the-right-spot-without-looking)).
+
+## How each iPhone is wired
+
+**USB-C iPhones (iPhone 15 and later):** one hub carries video out and keyboard/mouse in.
+
+```mermaid
+flowchart LR
+    P["iPhone 15+<br/>USB-C"] <== "one cable" ==> H["USB-C hub<br/>HDMI + USB-A + PD charging"]
+    H -- "HDMI" --> C["HDMI capture card"]
+    C -- "USB" --> S["Control box"]
+    S -- "USB (serial)" --> X["CH9329 cable<br/>keyboard + mouse"]
+    X -- "USB-A" --> H
+    PD["20 W charger"] --> H
+```
+
+**Lightning iPhones:** video through Apple's HDMI adapter, keyboard and mouse over Bluetooth.
+
+```mermaid
+flowchart LR
+    P["iPhone<br/>Lightning"] --> A["Apple Lightning<br/>Digital AV Adapter"]
+    A -- "HDMI" --> C["HDMI capture card"]
+    C -- "USB" --> S["Control box"]
+    PD["charger"] --> A
+    S -- "USB (serial)" --> E["ESP32-S3 bridge"]
+    E -. "Bluetooth keyboard + mouse" .-> P
+```
+
+### Why Lightning needs an ESP32, and USB-C does not
+
+- **USB-C iPhones can do two things through one port at once:** send video out over HDMI and accept
+  USB devices. A standard hub gives both, and the CH9329 (a cheap, ready-made "serial in, USB keyboard
+  and mouse out" chip) plugs into the hub like any wired keyboard and mouse.
+- **A Lightning iPhone has one port, and the video adapter needs it.** The adapter's second port only
+  charges; it carries no data. There is nowhere left to plug a wired keyboard or mouse, so input has to
+  arrive over **Bluetooth**.
+- **The CH9329 has no Bluetooth.** The ESP32-S3 is a low-cost microcontroller with Bluetooth. Its firmware
+  (in this repository) makes it a Bluetooth keyboard and mouse, and it speaks exactly the same serial
+  protocol as the CH9329. The box software is the same for both kinds of phone.
+- **Why not use Bluetooth for USB-C phones too?** Wired is better where it is possible: no pairing, no
+  radio congestion when many phones sit side by side, lower and steadier latency, and over USB the phone
+  can accept an absolute pointer, the most precise mode (next section).
+- **The same ESP32-S3 can also replace the CH9329 on USB-C phones.** Its firmware has a USB mode that plugs
+  into the hub like the CH9329, and it can time pointer movements on the chip itself, which removes the
+  host's timing noise entirely (see [No lost commands](#no-lost-commands)). One board for both phone
+  families is the long-term plan.
+
+## Tapping the right spot without looking
+
+The box does no image recognition. It must know where the pointer is at every moment, and it has two
+ways to do that. Calibration picks the right one for each phone automatically.
+
+![Absolute and relative pointer modes](docs/images/pointer-modes.png)
+
+- **Absolute pointer (preferred).** One report puts the pointer straight on the target, like a finger.
+  About 0.2 s per tap with sub-point error. The closest open-source project to this one reports that
+  iPhones accept an absolute pointer over USB. This is the first thing to verify on real hardware.
+- **Relative pointer (fallback, and the likely mode over Bluetooth).** iOS accelerates mouse movement, so
+  the same report does not always move the same distance. The box makes movement repeatable anyway:
+  1. **anchor:** slam the pointer into the nearest screen corner, where it stops at the edge, so its
+     position is known exactly;
+  2. **run:** move one axis at a time with same-size reports at a fixed pace, starting from rest, so a run
+     of *n* reports always covers the same distance. Calibration measures that distance for every
+     direction;
+  3. **tap**, then start the next action from a corner again, so errors never add up.
+
+### One-time calibration per phone, through Safari
+
+![The calibration page](docs/images/calibration-page.png)
+
+The box opens a small web page in Safari on the phone (via Spotlight). The page reports exactly where
+each click lands. From click to click the box measures how far the pointer really travels, and checks
+whether the phone follows absolute positioning. Calibration takes seconds in absolute mode and under a
+minute in relative mode. It never clicks outside the page, and it is validated with random taps before it
+is saved. Redo it only if the phone's Tracking Speed setting changes.
+
+## No lost commands
+
+```mermaid
+sequenceDiagram
+    participant B as Control box
+    participant C as HID chip
+    participant P as iPhone
+    B->>C: report (checksummed frame)
+    C->>P: USB / Bluetooth HID report
+    C-->>B: ack, or error code
+    Note over B,C: No ack within 500 ms: before anything else, the box asks the chip<br/>for its status and discards every older reply (a late ack is never<br/>mistaken for a newer one)
+    Note over B: Key or button report failed: resent (resending state is harmless)
+    Note over B: Movement report failed: the whole move is redone from a corner
+```
+
+- **Every command is acknowledged by the chip.** No acknowledgement means the box knows at once; it never
+  "sends and hopes".
+- **State reports** (keys, buttons, absolute position) are simply resent after an ambiguous failure.
+- **Movement reports** may or may not have been applied, so the box does not guess: it redoes the whole
+  move from a fresh corner.
+- **Pacing is checked.** With the CH9329, the box times each report and verifies afterwards that none went
+  out more than 1.5 ms off its slot. A late report means the move is redone. With the ESP32 bridge, the
+  chip times whole runs itself, so a busy host cannot disturb the pointer at all.
+- **Nothing stays pressed.** Any action that fails half-way releases every key and button, on both the
+  relative and the absolute pointer, before anything else happens. If the release itself cannot be
+  confirmed, the next move releases first.
+- **Health is watched continuously:** chip reachable, phone accepting input (a locked phone or an accessory
+  prompt shows up here), video frames arriving, fresh and not black. A replugged chip is reopened
+  automatically.
+
+## Accuracy on the simulator
+
+![Tap accuracy and speed on simulated phones](docs/images/accuracy.png)
+
+Measured by the simulator (random targets across the whole screen, four configurations):
+
+| Mode | Worst tap error | Time per tap (median) | Calibration time |
 |---|---|---|---|
-| Hub USB-C có HDMI + USB-A + sạc PD | ✔ | | nên thử 2–3 mẫu; tham khảo Apple USB-C Digital AV Multiport Adapter |
-| Cáp CH9329 (CH9329 + CH340, hai đầu USB-A) | ✔ | | mua về dùng ngay |
-| Apple Lightning Digital AV Adapter | | ✔ | hàng chính hãng |
-| ESP32-S3 DevKit | | ✔ | nạp firmware có sẵn trong repo |
-| Capture card HDMI → USB (chip MS2109) | ✔ | ✔ | loại nén sẵn MJPEG |
-| Củ sạc PD ≥ 20 W | ✔ | ✔ | |
-| Máy chủ Linux | | | Raspberry Pi 5 cho 1–2 máy; mini PC x86 + card USB mở rộng cho nhiều máy |
+| Absolute pointer | 0.25 pt | 0.18 s | about 6 s |
+| Relative, slow Tracking Speed (0.4) | 0.5 pt | 1.46 s | about 44 s |
+| Relative, default Tracking Speed (1.0) | 0.83 pt | 1.26 s | about 43 s |
+| Relative, fast Tracking Speed (2.5) | 0.46 pt | 1.42 s | about 43 s |
 
-Lưu ý:
-- **iPhone 16e/17e không xuất được HDMI**, nên không dùng được cách này.
-- Mỗi iPhone cần cài đặt tay một lần (bật AssistiveTouch, gán nút chuột, tắt khoá màn hình tự động...). Xem
-  [hướng dẫn cài đặt iPhone](docs/iphone-setup.md).
+The target is 95% of taps within 4 pt (about 5 pixels on a 1080p capture). On a real phone, relative mode
+is the one to watch: its accuracy depends on how repeatable iOS pointer acceleration is, which only the
+hardware tests can tell.
 
-## Hiệu năng mục tiêu
+### The simulator
 
-| Chỉ số | Mục tiêu | Trên mô phỏng |
+![Simulated iPhone screens](docs/images/simulated-screens.png)
+
+Everything above runs today without hardware. The simulator plays each part of a real rig:
+
+- **the HID chip:** byte-exact protocol replies, timing on a 9600-baud serial line, fault injection (lost,
+  late or corrupted replies, unplugged cable, locked phone);
+- **the ESP32 bridge:** the same protocol plus runs timed on the chip;
+- **the iPhone:** home screen, Settings, Spotlight, the app switcher, a tap-accuracy test app and Safari with
+  the calibration page, with an accelerated pointer, an optional absolute pointer, and lock and signal loss;
+- **the capture card:** letterboxed HDMI frames, limited colour range, capture latency and JPEG artifacts.
+
+## Using it
+
+**Plug and play.** The box is meant to be a closed appliance:
+
+1. Cable each phone (hub, capture card, HID chip) to the box. The box pairs each HID chip with the capture
+   card on the same USB hub and names the rig after its USB port, so names survive reboots and replugging.
+2. Power it on. The service starts by itself, finds the rigs, and re-scans when something is plugged in or
+   out.
+3. It announces itself on the local network (mDNS / DNS-SD). Test runners discover every box without
+   configuration.
+4. Calibrate each phone once, from the console or through the API.
+
+**From a test framework** (HTTP/WebSocket API or the Python SDK). Coordinates are fractions of the phone
+screen (0 to 1), so they do not depend on the capture resolution or the phone model:
+
+| Group | Actions |
+|---|---|
+| Touch | tap, long press, swipe or drag, scroll |
+| Keys | type text, key combos (Cmd+Space...), Home, App Switcher, media keys, open a URL |
+| Screen | screenshot (cropped to the phone), live MJPEG stream, frames over WebSocket |
+| State | per-phone status: ready, busy, locked or not accepting input, no video, offline |
+| Farm | list boxes and phones; the SDK treats several boxes as one farm |
+| Live control | a WebSocket that forwards a remote mouse and keyboard with no planning (KVM style) |
+
+The API describes itself (OpenAPI), and a command-line tool covers the same actions for scripts.
+
+**For an operator** the web console shows every phone live. Opening one gives two modes: *Precise tap*
+(clicking on the picture taps that exact spot, dragging swipes) and *Live control* (the operator's mouse
+and keyboard go straight to the phone). Home, App Switcher, Spotlight, typing and calibration are one
+click away.
+
+![One phone in the console](docs/images/console-device.png)
+
+## What each iPhone needs
+
+| Part | USB-C phones | Lightning phones | Notes |
+|---|---|---|---|
+| USB-C hub with HDMI + USB-A + PD charging | ✔ | | try 2–3 models; Apple's USB-C Digital AV Multiport Adapter is the reference |
+| CH9329 cable (CH9329 + CH340, USB-A on both ends) | ✔ | | ready to use, no soldering |
+| Apple Lightning Digital AV Adapter | | ✔ | genuine Apple only |
+| ESP32-S3 DevKit | optional | ✔ | firmware in this repository (Bluetooth or USB mode) |
+| HDMI-to-USB capture card (MS2109 chip) | ✔ | ✔ | the kind that outputs MJPEG |
+| USB-C PD charger, 20 W or more | ✔ | ✔ | |
+| Linux box | | | Raspberry Pi 5 for 1–2 phones; an x86 mini PC with extra USB controllers for more |
+
+- **iPhone 16e and 17e cannot output video over USB-C**, so they cannot be used this way.
+- Each iPhone needs a one-time manual setup: AssistiveTouch on, mouse buttons mapped to Home and App
+  Switcher, auto-lock off, and so on. See the [iPhone setup guide](docs/iphone-setup.md).
+- The limit on phones per box is **USB bandwidth for the capture cards** (about one MS2109 per USB 2 bus),
+  not the control side.
+
+## Performance targets
+
+| Metric | Target | On the simulator |
 |---|---|---|
-| Độ chính xác chạm | 95% trong 4 pt (≈ 5 px ở khung 1080p) | chuột tuyệt đối ≤ 0,3 pt; chuột tương đối ≤ 1 pt |
-| Thời gian một lần chạm | < 1,5 s | tuyệt đối ≈ 0,15 s; tương đối 1,2–1,5 s |
-| Độ trễ hình tới trình duyệt (LAN) | < 0,25 s | cần đo trên máy thật |
-| Lệnh bị mất mà không biết | 0 | mọi lệnh có xác nhận; lệnh lỗi được làm lại hoặc báo lỗi |
+| Tap accuracy | 95% within 4 pt | absolute ≤ 0.3 pt; relative ≤ 1 pt |
+| Time per tap | < 1.5 s | absolute ≈ 0.2 s; relative 1.2–1.5 s |
+| Video latency to the browser (LAN) | < 0.25 s | to be measured on hardware |
+| Commands lost without notice | 0 | every command acknowledged; failures are redone or reported |
 
-Nút thắt khi mở rộng là **băng thông USB cho capture card**, không phải phần điều khiển. Một host chịu được bao
-nhiêu máy sẽ được đo cụ thể khi có phần cứng.
+## Roadmap
 
-## Lộ trình
-
-| Giai đoạn | Nội dung | Trạng thái |
+| Phase | Scope | Status |
 |---|---|---|
-| 0. Kiểm chứng phần cứng | công cụ đo chip, capture card, hiệu chỉnh, checklist 11 bài test | 🟢 công cụ sẵn sàng, chờ phần cứng |
-| 1. Điều khiển HID | driver chip, xác nhận từng lệnh, dò cấu hình, công cụ test | 🟢 xong trên mô phỏng |
-| 1b. Firmware ESP32 | chuột + bàn phím Bluetooth, cùng ngôn ngữ với CH9329 | 🟡 đang hoàn thiện |
-| 2. Con trỏ chính xác | chuột tuyệt đối / tương đối, hiệu chỉnh qua Safari | 🟢 xong trên mô phỏng |
-| 3. API + trang điều khiển | xem live, điều khiển trực tiếp, chạm chính xác, ghi/phát, thư viện Python | 🟡 đang hoàn thiện |
-| 4. Ổn định, nhiều máy | tự kết nối lại, phát hiện máy khoá/mất hình, log, cấu hình farm | 🟢 xong trên mô phỏng |
-| 5. Board nhúng cho từng máy | gắn phần điều khiển + lấy hình vào một board nhỏ theo từng iPhone | ⚪ nghiên cứu |
+| 0. Hardware checks | tools to probe the chip, capture cards and pointer; an 11-step test checklist | 🟢 tools ready, waiting for hardware |
+| 1. HID control | chip driver, acknowledged commands, config and baud tools | 🟢 done on the simulator |
+| 1b. ESP32 bridge | Bluetooth or USB keyboard + mouse, CH9329-compatible, chip-timed runs | 🟢 builds and passes host tests, not yet flashed |
+| 2. Precise pointer | absolute and relative modes, Safari calibration | 🟢 done on the simulator |
+| 3. API, SDK, console | live view, precise tap, live control, Python SDK, CLI | 🟢 done on the simulator |
+| 4. Appliance | auto-discovery of rigs, hot-plug, mDNS, health, service files | 🟢 done on the simulator |
+| 5. One board per phone | control and capture on a small board per iPhone | ⚪ research |
 
-🟢 xong trên mô phỏng · 🟡 đang làm · ⚪ chưa làm.
+🟢 done · 🟡 in progress · ⚪ not started.
 
-## Giới hạn
+## Limits
 
-- Không vượt được passcode/Face ID, không cài app, không đọc dữ liệu hệ thống. iPhone phải được mở khoá sẵn.
-- Nội dung có bảo vệ bản quyền (Netflix...) sẽ ra màn đen trên HDMI.
-- Tự động hoá trên nền tảng của bên thứ ba có thể vi phạm điều khoản sử dụng của nền tảng đó.
+- It cannot get past a passcode or Face ID, install apps, or read system data. Phones must be unlocked.
+- Copy-protected content (Netflix and similar) shows as black on HDMI.
+- Automating third-party services may break their terms of use.
 
-## Tài liệu
+## Documentation
 
-- [Bắt đầu nhanh](docs/getting-started.md): chạy thử trên mô phỏng, rồi trên phần cứng
-- [Kiến trúc](docs/architecture.md)
-- [Đánh giá khả thi](docs/feasibility.md): nghiên cứu độc lập, có nguồn, kèm rủi ro
-- [Checklist kiểm chứng phần cứng](docs/phase0-checklist.md)
-- [Cài đặt iPhone](docs/iphone-setup.md)
-- [Giao thức chip CH9329](docs/ch9329-protocol.md)
-- [Bộ mô phỏng](docs/simulator.md)
-- [Firmware ESP32](firmware/esp32_ble_hid/README.md)
+The detailed documents are in Vietnamese.
+
+- [Getting started](docs/getting-started.md): the simulator first, then real hardware
+- [Architecture](docs/architecture.md)
+- [Feasibility study](docs/feasibility.md): independent research with sources and risks
+- [Hardware test checklist](docs/phase0-checklist.md)
+- [iPhone setup](docs/iphone-setup.md)
+- [CH9329 protocol notes](docs/ch9329-protocol.md)
+- [Simulator](docs/simulator.md)
+- [ESP32 bridge firmware](firmware/esp32_ble_hid/README.md)
