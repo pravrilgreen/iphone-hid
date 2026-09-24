@@ -249,14 +249,15 @@ class CH9329Backend:
         t0 = time.monotonic()
         self._write(frame)
         deadline = t0 + self.timeout
+        block = False
         while True:
-            for f in self._pump(block=False):
+            for f in self._pump(block=block):
                 if f.request_cmd == cmd:
                     self._emit("reply", cmd=f"{cmd:#04x}", rtt_ms=round((time.monotonic() - t0) * 1000, 2))
                     return f
             if time.monotonic() >= deadline:
                 break
-            self._pump(block=True)
+            block = True
         garbage = self._parser.discarded - discarded0
         received = bytes(self._rx_since_send)
         self.stats["timeouts"] += 1

@@ -212,9 +212,16 @@ class HidShell(cmd.Cmd):
         self.log("config", **cfg.to_dict(), warnings=cfg.warnings())
 
     def _cfg_save(self, path: str | None, cfg: ChipConfig) -> Path:
-        out = Path(path) if path else LOG_DIR / f"ch9329-cfg-{time.strftime('%Y%m%d-%H%M%S')}.json"
-        if out.exists():
-            raise ValueError(f"{out} already exists; pick another name")
+        if path:
+            out = Path(path)
+            if out.exists():
+                raise ValueError(f"{out} already exists; pick another name")
+        else:
+            stem = LOG_DIR / f"ch9329-cfg-{time.strftime('%Y%m%d-%H%M%S')}"
+            out, n = stem.with_suffix(".json"), 1
+            while out.exists():
+                n += 1
+                out = stem.with_name(f"{stem.name}-{n}.json")
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps({**cfg.to_dict(), "port": self.hid.port, "saved_at": time.strftime("%Y-%m-%d %H:%M:%S")}, indent=2) + "\n")
         self.log("config_saved", path=str(out))
