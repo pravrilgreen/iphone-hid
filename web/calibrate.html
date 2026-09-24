@@ -39,6 +39,8 @@
   var id = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
   var url = "/api/devices/" + encodeURIComponent(id) + "/calibration/events";
   var HEARTBEAT_MS = 250;
+  // One id per page load: the host tells a reload (or an older tab's leftovers) from this load.
+  var PID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
   var queue = [], sending = false, sent = 0, clicks = 0, failures = 0, lastMove = 0, seq = 0;
   var info = document.getElementById("info");
 
@@ -52,6 +54,7 @@
   function post(ev, optional) {
     if (optional && queue.length > 20) return;
     seq += 1;
+    ev.pid = PID;
     ev.seq = seq;
     ev.t = Math.round(performance.now() * 1000) / 1000;
     queue.push(ev);

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -66,16 +67,37 @@ def hub_of(usb_port: str | None) -> str | None:
     return usb_port.rsplit(".", 1)[0]
 
 
+QUIET_FIRST_S, QUIET_MAX_S = 10.0, 120.0
+
+
+def _node_id(port: str):
+    """Identity of the device node behind `port`: a replugged adapter gets a new one."""
+    try:
+        st = os.stat(port)
+        return (os.path.realpath(port), st.st_rdev, st.st_ctime_ns)
+    except OSError:
+        return None
+
+
 def find_chips(ports: list[str] | None = None, *, sysfs: str = "/sys", timeout: float = 0.25,
-               bauds=SCAN_BAUDS, log=None, skip: set[str] = frozenset()) -> list[ChipFound]:
+               bauds=SCAN_BAUDS, log=None, skip: set[str] = frozenset(), quiet: dict | None = None,
+               clock=time.monotonic) -> list[ChipFound]:
     """Serial ports where a CH9329-protocol device answers GET_INFO (ports whose real path is in
-    `skip`, i.e. already in use, are left alone)."""
+    `skip`, i.e. already in use, are left alone). `quiet` (kept by the caller across scans) backs
+    off ports that did not answer: they are probed again after 10 s, then 20, 40... up to 2 min, or
+    at once when their device node changed (replugged)."""
     if ports is None:  # stable by-path names survive re-enumeration after an unplug
         ports = [(pi.by_path or pi.by_id or [pi.device])[0] for pi in candidate_ports()]
     found = []
+    now = clock()
     for port in ports:
         if os.path.realpath(port) in skip:
             continue
+        node = _node_id(port)
+        if quiet is not None and port in quiet:
+            next_at, delay, seen = quiet[port]
+            if seen == node and now < next_at:
+                continue
         try:
             results = scan_port(port, bauds, timeout=timeout)
         except Exception as e:  # busy, vanished, permission: report and keep going
@@ -86,6 +108,12 @@ def find_chips(ports: list[str] | None = None, *, sysfs: str = "/sys", timeout: 
         if ok:
             r = ok[0]
             found.append(ChipFound(port, r.baud, r.addr, r.info, usb_port_of(port, sysfs)))
+            if quiet is not None:
+                quiet.pop(port, None)
+        elif quiet is not None:
+            prev = quiet.get(port)
+            delay = QUIET_FIRST_S if prev is None or prev[2] != node else min(prev[1] * 2, QUIET_MAX_S)
+            quiet[port] = (now + delay, delay, node)
         if log:
             log("rig_probe", port=port, found=bool(ok), baud=ok[0].baud if ok else None)
     return found
@@ -138,8 +166,10 @@ def pair(chips: list[ChipFound], videos: list[VideoFound]) -> list[RigSpec]:
 
 def find_rigs(ports: list[str] | None = None, *, sysfs: str = "/sys", timeout: float = 0.25,
               log=None, videos: Callable[[], list[VideoFound]] | None = None,
-              skip: set[str] = frozenset(), skip_videos: set[str] = frozenset()) -> list[RigSpec]:
-    """Rigs made of chips and capture cards not in use yet (`skip`, `skip_videos`: real paths)."""
-    chips = find_chips(ports, sysfs=sysfs, timeout=timeout, log=log, skip=skip)
+              skip: set[str] = frozenset(), skip_videos: set[str] = frozenset(),
+              quiet: dict | None = None) -> list[RigSpec]:
+    """Rigs made of chips and capture cards not in use yet (`skip`, `skip_videos`: real paths;
+    `quiet`: see find_chips)."""
+    chips = find_chips(ports, sysfs=sysfs, timeout=timeout, log=log, skip=skip, quiet=quiet)
     free = [v for v in (videos() if videos else find_videos(sysfs)) if os.path.realpath(v.device) not in skip_videos]
     return pair(chips, free)

@@ -136,6 +136,8 @@ class SimPhone:
         self.web_heartbeat = web_heartbeat
         self._web_seq = 0
         self._web_loaded = 0.0
+        self._web_loads = 0
+        self._web_pid = ""
         self._web_beat_at = math.inf
         self._web_seen = (math.nan, math.nan)  # pointer position at the previous tick
         self._web_moved_at = -math.inf  # latest hover report
@@ -217,7 +219,14 @@ class SimPhone:
             if self.locked or self.accessory_prompt:
                 return
             kind = e["event"]
-            if kind == "click":
+            if kind == "button_down" and e.get("button") == "left" and self._web_shown():
+                # web/calibrate.html reports `pointerdown`: where the button went down, even when
+                # the pointer then moves (a press during an absolute glide lands short, as on iOS)
+                left, top, right, bottom = self.calibration_page_rect()
+                if left <= e["x"] <= right and top <= e["y"] <= bottom:
+                    self._last_click = (e["x"], e["y"])
+                    self._web_event({"type": "click", "x": round(e["x"], 2), "y": round(e["y"] - top, 2), "button": 0})
+            elif kind == "click":
                 self._click(e)
             elif kind == "drag":
                 self._drag(e)
@@ -296,8 +305,7 @@ class SimPhone:
         elif verb == "field":
             pass
         elif verb == "web":
-            self._web_event({"type": "click", "x": round(self._last_click[0], 2),
-                             "y": round(self._last_click[1] - self.top, 2), "button": 0})
+            pass  # reported when the button went down (see handle)
 
     def open_url(self, url: str) -> None:
         """Safari on `url` (what Spotlight does with a typed URL and Return)."""
@@ -306,6 +314,8 @@ class SimPhone:
             self.url = url
             self.web_clicks.clear()
             if CALIBRATION_PATH in url:
+                self._web_loads += 1
+                self._web_pid = f"load{self._web_loads}"  # the real page uses a random id per load
                 self._web_seq, self._web_loaded = 0, self._clock()
                 self._web_beat_at = self._web_loaded + (self.web_heartbeat or math.inf)
                 self._web_event(self._web_hello())
@@ -349,7 +359,8 @@ class SimPhone:
     def _web_event(self, event: dict) -> None:
         """An event of the page Safari shows, numbered and timed as web/calibrate.html does."""
         self._web_seq += 1
-        event = {**event, "seq": self._web_seq, "t": round((self._clock() - self._web_loaded) * 1000, 1)}
+        event = {**event, "pid": self._web_pid, "seq": self._web_seq,
+                 "t": round((self._clock() - self._web_loaded) * 1000, 1)}
         if event["type"] == "click":
             self.web_clicks.append((event["x"], event["y"]))
             self._changed()

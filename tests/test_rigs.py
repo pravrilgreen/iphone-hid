@@ -120,3 +120,33 @@ def test_mdns_roundtrip():
         assert any(u.endswith(":18765") for u in urls)
     finally:
         ann.close()
+
+
+def test_ports_that_do_not_answer_are_backed_off(tmp_path, monkeypatch):
+    import ihc.rigs as rigs
+
+    probes = []
+
+    def fake_scan(port, bauds, timeout=0.25):
+        probes.append(port)
+        return []
+
+    monkeypatch.setattr(rigs, "scan_port", fake_scan)
+    now = [100.0]
+    quiet: dict = {}
+    port = str(tmp_path / "ttyUSB9")
+    (tmp_path / "ttyUSB9").write_text("")
+    for _ in range(3):  # three scans 1 s apart: probed once
+        rigs.find_chips([port], sysfs=str(tmp_path), quiet=quiet, clock=lambda: now[0])
+        now[0] += 1
+    assert probes == [port]
+    now[0] += 10  # the first back-off is over: probed again, then twice as long
+    rigs.find_chips([port], sysfs=str(tmp_path), quiet=quiet, clock=lambda: now[0])
+    assert len(probes) == 2 and quiet[port][1] == 20.0
+    (tmp_path / "ttyUSB9").unlink()  # replugged: a new device node is probed at once
+    (tmp_path / "ttyUSB9").write_text("")
+    import os
+
+    os.utime(tmp_path / "ttyUSB9", ns=(1, 1))
+    rigs.find_chips([port], sysfs=str(tmp_path), quiet=quiet, clock=lambda: now[0])
+    assert len(probes) == 3

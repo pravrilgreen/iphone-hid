@@ -125,7 +125,9 @@ class PointerCalibration:
     mode: str = "relative"  # or "absolute" when the phone follows absolute reports
     # absolute grid value = a * points + b, per axis: (ax, bx, ay, by); None = whole screen
     abs_map: tuple[float, float, float, float] | None = None
-    abs_settle: float = 0.08  # iOS glides the cursor to an absolute position; wait before clicking
+    # iOS glides the cursor to an absolute position: wait this long before clicking. Calibration
+    # measures it; until then 0.25 s, the value a comparable project settled on for iOS 26.
+    abs_settle: float = 0.25
     method: str = "guess"  # "guess", "safari", "sim"
     measured_at: str = ""
     notes: str = ""
@@ -206,6 +208,7 @@ class PointerModel:
         # that splits packets on line gaps (CH9329: 3 ms): 16 ms leaves >= 4 ms at 9600 baud.
         self.anchor_interval = anchor_interval
         self.onchip_runs = onchip_runs  # None: ask the device (ESP32 bridge) on first use
+        self.abs_release_repeats = 3
         self.attempts = attempts
         self.timing_retries = 0
         self.position: tuple[float, float] | None = None
@@ -241,8 +244,13 @@ class PointerModel:
                 self.hid.mouse_rel(dx, dy, self.buttons, wheel)
                 break
             except HidStatusError as e:
-                if e.status in NOT_EXECUTED and attempt < self.retries:
+                # a release that could not be delivered (E6, e.g. full Bluetooth buffers) is retried
+                # too: a button left down keeps dragging
+                release = idempotent and not self.buttons and e.status == p.Status.EXEC_ERROR
+                if (e.status in NOT_EXECUTED or release) and attempt < self.retries:
                     self.resends += 1
+                    if release:
+                        self._sleep(0.03)
                     continue
                 if not idempotent:
                     self.position = None
@@ -274,7 +282,10 @@ class PointerModel:
     def _onchip(self) -> bool:
         if self.onchip_runs is None:
             probe = getattr(self.hid, "supports_rel_run", None)
-            self.onchip_runs = bool(probe and probe())
+            answer = probe() if probe else False
+            if answer is None:  # the device could not be asked now: host timing this time, ask again later
+                return False
+            self.onchip_runs = bool(answer)
         return self.onchip_runs
 
     def _chip_run(self, dx: int, dy: int, count: int, interval: float) -> None:
@@ -328,7 +339,10 @@ class PointerModel:
     def _buttons_changed(self) -> None:
         try:
             if self.cal.mode == "absolute" and self._abs is not None:
-                self.send_abs(*self._abs)
+                # a release through the absolute report goes out a few times (harmless: it is a
+                # state): comparable projects saw iOS miss single releases and keep dragging
+                for _ in range(1 if self.buttons else self.abs_release_repeats):
+                    self.send_abs(*self._abs)
             else:
                 self.send()
         except Exception:
@@ -347,6 +361,11 @@ class PointerModel:
         self.buttons = 0
         self._buttons_unsure = True
         self.send()
+        if self._abs_last is None and self.cal.mode == "absolute":
+            # e.g. after a restart: a button may be held through the absolute report from before
+            w, h = self.cal.screen_pt
+            self._abs_last = self.abs_grid(w / 2, h / 2)
+            self.position = None
         if self._abs_last is not None:  # absolute reports were used: release through one too
             if self.cal.mode == "absolute" and self.position is not None:
                 self.send_abs(*self.abs_grid(*self.position))

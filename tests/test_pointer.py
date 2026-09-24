@@ -381,3 +381,52 @@ def test_pace_must_be_a_multiple_of_the_link_period():
     assert pace_interval(0.015) == 0.03 and pace_interval(0.001) == 0.02 and pace_interval(None) == 0.02
     assert worst_error(0.02) > 5.0
     assert worst_error(pace_interval(0.015)) < 1.0
+
+
+def test_undeliverable_releases_are_retried():
+    pm, rec, _ = model()
+    pm.press()
+    rec.fail = [HidStatusError("buffers full", 5, p.Status.EXEC_ERROR)] * 2
+    pm.release()
+    assert rec.reports[-1] == (0, 0, 0, 0) and pm.resends == 2
+    rec.fail = [HidStatusError("buffers full", 5, p.Status.EXEC_ERROR)]
+    with pytest.raises(HidStatusError):  # a press refused is not retried (it would act late)
+        pm.press()
+    kb_rec = Recorder()
+    kb = Keyboard(kb_rec, sleep=lambda s: None)
+    refusals = [HidStatusError("buffers full", 2, p.Status.EXEC_ERROR)]
+    original = kb_rec.keyboard
+
+    def refuse_first_release(mods, keys):
+        if not keys and refusals:
+            raise refusals.pop()
+        original(mods, keys)
+
+    kb_rec.keyboard = refuse_first_release
+    kb.key("a")
+    assert kb_rec.keys[-1] == (0, []) and kb.resends == 1
+
+
+def test_release_all_after_a_restart_covers_the_absolute_report():
+    class Both(Recorder):
+        def mouse_abs(self, x, y, buttons=0, wheel=0):
+            self.reports.append(("abs", x, y, buttons))
+
+    clock = VirtualClock()
+    rec = Both(clock)
+    pm = PointerModel(rec, PointerCalibration(mode="absolute"), clock=clock, sleep=clock.sleep)
+    pm.release_all()  # nothing sent through the absolute report yet in this process
+    assert rec.reports[-1] == ("abs", 2048, 2048, 0)
+
+
+def test_bridge_probe_failure_is_not_remembered():
+    class Flaky(Recorder):
+        answers = [None, True]
+
+        def supports_rel_run(self):
+            return self.answers.pop(0)
+
+    clock = VirtualClock()
+    pm = PointerModel(Flaky(clock), PointerCalibration(), clock=clock, sleep=clock.sleep)
+    assert pm._onchip() is False and pm.onchip_runs is None  # could not ask: host timing this time
+    assert pm._onchip() is True and pm.onchip_runs is True

@@ -268,8 +268,10 @@ def test_absolute_mode():
     watch = Watch(phone, chip)
     t0 = clock()
     cal = calibrate(pm, clicks, click_timeout=0.05)
-    assert clock() - t0 < 10
+    assert clock() - t0 < 12
     assert cal.mode == "absolute" and cal.extra["validation_error_pt"]["max"] < 0.5
+    # the glide takes 60 ms here: the measured wait covers it without the 250 ms default
+    assert chip.pointer.abs_glide <= cal.abs_settle <= 0.15
     assert cal.extra["page_top_pt"] == pytest.approx(phone.top, abs=1.0)
     watch.check()
     errors, hits = tap_errors(phone, pm, clock, n=40)
@@ -348,3 +350,55 @@ def test_collector_keeps_events_in_order():
     for i in range(8):
         c.push({"type": "hello", "seq": i})
     assert [e["seq"] for e in c.take()] == [3, 4, 5, 6, 7] and c.take() == []
+
+
+def test_absolute_settle_follows_the_glide():
+    """A slow glide needs a longer wait before clicking: calibration measures it (clicks sent too
+    early land short, on the page)."""
+    phone, chip, pm, clicks, clock = setup()
+    chip.pointer.absolute = True
+    chip.pointer.abs_glide = 0.2
+    watch = Watch(phone, chip)
+    cal = calibrate(pm, clicks, click_timeout=0.05)
+    assert cal.mode == "absolute" and 0.2 <= cal.abs_settle <= 0.4
+    watch.check()
+    errors, hits = tap_errors(phone, pm, clock, n=20)
+    assert hits == 20 and max(errors) < 1.0
+
+
+def test_looking_for_the_page_stays_right_of_the_status_bar_middle():
+    """Clicks above the page land right of the Dynamic Island: the status bar's left side can hold
+    the "◀ Search" return link after a Spotlight launch."""
+    phone, chip, pm, clicks, clock = setup()
+    watch = Watch(phone, chip)
+    calibrate(pm, clicks, click_timeout=0.05)
+    top = phone.calibration_page_rect()[1]
+    above = [(x, y) for x, y in watch.clicks if y < top]
+    assert above and all(x > 0.66 * phone.model.width_pt for x, _ in above)
+    watch.check()
+
+
+def test_recalibrating_ignores_the_old_page_load():
+    """The previous page load's last heartbeat reaches the new collector first: the calibration
+    follows the page opened for it, not the old one (review m3)."""
+    phone, chip, pm, clicks, clock = setup(open_page=False)
+    clicks.push({"type": "hello", "pid": "old-load", "seq": 912, "t": 450_000.0, "screen_w": 393, "screen_h": 852,
+                 "inner_w": 393, "inner_h": 714, "heartbeat_ms": 250})
+    phone.open_url(URL)
+    cal = calibrate(pm, clicks, click_timeout=0.05, fresh_page=True)
+    assert cal.method == "safari" and cal.extra["validation_error_pt"]["max"] < 2.0
+
+
+def test_page_loaded_again_midway_stops_the_calibration():
+    phone, chip, pm, clicks, clock = setup()
+    seen = [0]
+
+    def reload_after_some_clicks(e):
+        if e["event"] == "click":
+            seen[0] += 1
+            if seen[0] == 6:
+                phone.open_url(URL)
+
+    chip.listeners.append(reload_after_some_clicks)
+    with pytest.raises(CalibrationError, match="loaded again"):
+        calibrate(pm, clicks, click_timeout=0.05)

@@ -30,7 +30,7 @@ from .input.pointer import PointerCalibration, PointerError, PointerModel, pace_
 from .video.frame import Frame, FrameSource, encode_jpeg
 from .video.geometry import ScreenRect, fit_screen_rect
 
-STATES = ("ready", "busy", "hid_disconnected", "hid_offline", "no_signal")
+STATES = ("ready", "busy", "hid_disconnected", "hid_offline", "no_signal", "needs_calibration")
 MAX_FRAME_AGE_S = 2.0  # a capture that delivered nothing newer is frozen or unplugged
 
 
@@ -72,7 +72,7 @@ class IPhoneDevice:
         self._log = log or (lambda event, **fields: None)
         self._action = threading.RLock()
         self._busy_with: str | None = None
-        self._health = {"hid": None, "usb_connected": None, "signal": None, "error": None}
+        self._health = {"hid": None, "usb_connected": None, "signal": None, "error": None, "recalibrate": None}
         self._monitor: threading.Thread | None = None
         self._stop = threading.Event()
         self.counters = {"actions": 0, "errors": 0, "taps": 0, "live_reports": 0}
@@ -89,7 +89,8 @@ class IPhoneDevice:
         """Refresh health: chip reachable and its USB side enumerated, video frames fresh and not
         black. The chip is asked only when no action runs (its previous answer is kept otherwise);
         the video is checked without holding up actions."""
-        h = {"hid": self._health["hid"], "usb_connected": self._health["usb_connected"], "signal": None, "error": None}
+        h = {"hid": self._health["hid"], "usb_connected": self._health["usb_connected"], "signal": None, "error": None,
+             "recalibrate": self._health.get("recalibrate")}
         if self._action.acquire(blocking=False):
             try:
                 h["hid"] = h["usb_connected"] = None
@@ -97,11 +98,17 @@ class IPhoneDevice:
                     info = self.hid.info()
                     h["usb_connected"] = info["usb_connected"]
                     h["hid"] = True
-                    h["error"] = self._link_changed(info)
-                    if self._release_pending:  # an earlier failure could not release: do it now
+                    h["recalibrate"] = self._link_changed(info)
+                    h["error"] = h["recalibrate"]
+                    # The phone just started taking input (monitor start, reconnect, reopened port,
+                    # unlock): whatever state it kept from before may include a held key or button.
+                    if info["usb_connected"] and self._health["usb_connected"] is not True:
+                        self._release_pending = True
+                    if self._release_pending and info["usb_connected"]:
                         self._release_quietly()
                 except HidPortError as e:
                     h["hid"], h["error"] = False, str(e)
+                    self._release_pending = True  # the chip may still hold keys: release once it is back
                     self._try_reopen()
                 except HidError as e:
                     h["hid"], h["error"] = False, str(e)
@@ -132,6 +139,8 @@ class IPhoneDevice:
             return "hid_disconnected"  # phone locked, accessory prompt, cable
         if h["signal"] is False:
             return "no_signal"
+        if h.get("recalibrate"):
+            return "needs_calibration"  # taps would land off: the link's timing changed
         return "ready"
 
     def status(self) -> dict:
@@ -173,13 +182,33 @@ class IPhoneDevice:
         self._monitor = threading.Thread(target=run, name=f"monitor-{self.id}", daemon=True)
         self._monitor.start()
 
+    def _link_period(self) -> float | None:
+        """The bridge's report period (s) to pace runs by; None for a CH9329. A Bluetooth bridge
+        without a link cannot be calibrated: the pace would be chosen blind."""
+        try:
+            info = self.hid.info()
+        except HidError as e:
+            raise PointerError(f"cannot calibrate: the HID device does not answer ({e})") from e
+        bridge = info.get("bridge")
+        if not bridge:
+            return None
+        period = bridge.get("report_period_ms")
+        if period is None and bridge.get("output") == "ble":
+            raise PointerError("cannot calibrate: the bridge has no Bluetooth link to the phone (no link period)")
+        return period / 1000 if period else None
+
     def _link_changed(self, info: dict) -> str | None:
         """Relative-mode distances were measured at a pace matched to the link's report period
-        (ESP32 bridge); a Bluetooth link that renegotiated its interval invalidates them."""
+        (ESP32 bridge); once the pace is no longer a multiple of a renegotiated period they no longer
+        hold, and the device is not ready until it is calibrated again."""
         period = info.get("bridge", {}).get("report_period_ms")
         measured = self.pointer.cal.extra.get("report_period_ms")
-        if self.pointer.cal.mode == "relative" and period and measured and abs(period - measured) > 0.01:
-            return f"link report period changed from {measured} ms to {period} ms since calibration: recalibrate"
+        if self.pointer.cal.mode != "relative" or not period or not measured:
+            return None
+        slots = self.pointer.cal.interval * 1000 / period
+        if abs(slots - round(slots)) > 0.02:
+            return (f"link report period changed from {measured} ms to {period} ms since calibration: the pace "
+                    f"({self.pointer.cal.interval * 1000:g} ms) is no longer a multiple of it; recalibrate")
         return None
 
     def _try_reopen(self) -> None:
@@ -224,7 +253,10 @@ class IPhoneDevice:
                 self._log("action", device=self.id, **self.last_result)
                 return self.last_result
             except Exception as e:
-                if not isinstance(e, HidPortError):  # (with the port gone nothing can be sent)
+                if isinstance(e, HidPortError):  # nothing can be sent now: release once the port is back
+                    self._release_pending = True
+                    self.pointer.mark_buttons_unsure()
+                else:
                     self._release_quietly()  # never leave a key or button held after a failure
                 self.counters["errors"] += 1
                 self.last_result = {"action": name, **fields, "ok": False, "error": f"{type(e).__name__}: {e}"}
@@ -243,15 +275,18 @@ class IPhoneDevice:
             self.pointer.mark_buttons_unsure()
             self._release_pending = True
             return
-        self._release_pending = False
+        released = True
         try:
             self.hid.release_all()
         except HidError:
-            self._release_pending = True
+            released = False
         try:
             self.pointer.release_all()
         except (HidError, PointerError):
-            pass  # the pointer releases again before its next anchor
+            released = False  # (the pointer also releases again before its next anchor)
+        if not released:
+            self._log("release_pending", device=self.id)
+        self._release_pending = not released
 
     def _pt(self, x: float, y: float, space: str) -> tuple[float, float]:
         w, h = self.pointer.cal.screen_pt
@@ -385,9 +420,14 @@ class IPhoneDevice:
             self.clicks = ClickCollector()  # under the action lock: one calibration at a time
             if page_url:
                 self.open_url(page_url)
-            period = self.hid.report_period() if hasattr(self.hid, "report_period") else None
-            self.pointer.cal = replace(self.pointer.cal, interval=pace_interval(period, PointerCalibration.interval))
-            cal = calibrate(self.pointer, self.clicks, log=self._log, **options)
+            period = self._link_period()
+            old = self.pointer.cal
+            self.pointer.cal = replace(old, interval=pace_interval(period, PointerCalibration.interval))
+            try:
+                cal = calibrate(self.pointer, self.clicks, log=self._log, fresh_page=bool(page_url), **options)
+            except BaseException:
+                self.pointer.cal = old  # untouched, pace included
+                raise
             if period:
                 cal.extra["report_period_ms"] = round(period * 1000, 3)
             if self.calibration_path:
@@ -424,9 +464,16 @@ class IPhoneDevice:
             self.counters["live_reports"] += 1
 
     def release_all(self) -> None:
+        """Release every key and button; raises (and keeps retrying from the health monitor) if the
+        phone could not be told."""
         with self._action:
-            self.hid.release_all()
-            self.pointer.release_all()
+            try:
+                self.hid.release_all()
+                self.pointer.release_all()
+            except (HidError, PointerError):
+                self._release_pending = True
+                raise
+            self._release_pending = False
 
 
 def _is_blank(frame: Frame, rect: ScreenRect) -> bool:

@@ -64,6 +64,8 @@ EDGE_MARGIN = 0.06  # runs are planned to stop at least this fraction of the pag
 SAFETY = 1.25  # on the worst case predicted for a run: timing jitter, a model not quite linear
 CONFIRM_MARGIN_S = 0.3  # an event the page stamped this long after a click surely came after it
 POLL_S = 0.01
+PAGE_CLOCK_SLACK_S = 0.002
+FRESH_PAGE_S = 20.0  # a page opened for this calibration has been loaded for less than this  # page timestamps are rounded (Safari coarsens performance.now to ~1 ms)
 ENTRY_TOP_TOLERANCE_PT = 12.0  # the page offset from the way onto the page is rough (a few points)
 
 
@@ -105,10 +107,18 @@ class ClickCollector:
             self._events.clear()
         return out
 
-    def wait_page(self, timeout: float) -> dict:
-        if not self._hello.wait(timeout):
-            raise CalibrationError("the calibration page did not load on the phone")
-        return self.page
+    def wait_page(self, timeout: float, fresh: bool = False) -> dict:
+        """The page's latest hello. With `fresh`, one from a page loaded in the last FRESH_PAGE_S
+        seconds (it was just opened: an older page's last heartbeat is not it)."""
+        deadline = time.monotonic() + timeout
+        while True:
+            if not self._hello.wait(max(0.0, deadline - time.monotonic())):
+                raise CalibrationError("the calibration page did not load on the phone")
+            page = self.page
+            t = page.get("t") if page else None
+            if not fresh or not isinstance(t, (int, float)) or t <= FRESH_PAGE_S * 1000:
+                return page
+            self._hello.clear()
 
     def next_click(self, timeout: float) -> dict | None:
         """The next click event, dropping the other events before it."""
@@ -253,6 +263,8 @@ class _Session:
         self.log = log or (lambda event, **fields: None)
         self.count = 0
         self.size = (float(page["inner_w"]), float(page["inner_h"]))
+        self.pid = page.get("pid")  # page load id: events of another load are not answers
+        self.page_t = float(page["t"]) if isinstance(page.get("t"), (int, float)) else math.inf
         # a page that numbers, times and heartbeats its events can prove a miss; an older one cannot
         beat = page.get("heartbeat_ms")
         self.heartbeat = float(beat) / 1000 if beat and "seq" in page and "t" in page else 0.0
@@ -274,6 +286,21 @@ class _Session:
         fresh = now - self._pulled <= 3 * POLL_S
         self._pulled = now
         for ev in self.clicks.take():
+            pid, t = ev.get("pid"), ev.get("t")
+            if pid is not None and self.pid is not None and pid != self.pid:
+                # Another load of the page. Its `t` counts from its own load: smaller than the
+                # current load's means it was loaded later (a reload, the page just opened),
+                # larger means an older load's leftovers, which are ignored.
+                newer = isinstance(t, (int, float)) and t < self.page_t - 1000 * CONFIRM_MARGIN_S
+                if not newer:
+                    continue
+                if self.count or ev.get("type") != "hello":
+                    raise CalibrationError("the calibration page was loaded again (reload, second tab?) in the "
+                                           "middle of the calibration: start it again")
+                self.pid, self.seq, self.page_t = pid, None, -math.inf  # before the first click: follow it
+                self.size = (float(ev.get("inner_w", self.size[0])), float(ev.get("inner_h", self.size[1])))
+            if isinstance(t, (int, float)):
+                self.page_t = max(self.page_t, t)
             seq = ev.get("seq")
             if isinstance(seq, (int, float)) and not isinstance(seq, bool):
                 seq = int(seq)
@@ -298,8 +325,9 @@ class _Session:
             self._inbox.append(ev)
 
     def _before(self, ev: dict, t: float) -> bool:
-        """The page surely generated `ev` before host time t."""
-        return isinstance(ev.get("t"), (int, float)) and ev["t"] / 1000 < t - self.offset
+        """The page surely generated `ev` before host time t (beyond the page clock's rounding: a
+        press is reported when the button goes down, which can be right at t)."""
+        return isinstance(ev.get("t"), (int, float)) and ev["t"] / 1000 < t - self.offset - PAGE_CLOCK_SLACK_S
 
     def _after(self, ev: dict, t: float) -> bool:
         """The page surely generated `ev` after host time t, provided the fastest event reached the
@@ -380,14 +408,16 @@ def calibrate(
     page_timeout: float = 15.0,
     click_timeout: float = 2.0,
     max_error: float = MAX_ERROR_PT,
+    fresh_page: bool = False,
     seed: int = 0,
     log=None,
 ) -> PointerCalibration:
     """Measure `pm`'s phone with the calibration page already open (or opening) in Safari.
     On success the new calibration is installed in `pm` and returned. `click_timeout` is how late
     a page event may be (beyond the page's heartbeat period); `max_error` the largest validation
-    landing error accepted, in points."""
-    page = clicks.wait_page(page_timeout)
+    landing error accepted, in points; `fresh_page`: the page was just opened for this calibration
+    (an older page's leftover events are then ignored)."""
+    page = clicks.wait_page(page_timeout, fresh=fresh_page)
     W, H = float(page["screen_w"]), float(page["screen_h"])
     inner_w, inner_h = float(page["inner_w"]), float(page["inner_h"])
     if abs(inner_w - W) > 1:
@@ -404,6 +434,8 @@ def calibrate(
         rates(0).add(1, per)
         rates(1).bound.append((1, 1.5 * per))  # the same pointer: Y is taken as X, with a margin
         cal = _try_absolute(s, W, H, inner_h, max_error) if try_absolute else None
+        if cal is not None:
+            cal = replace(cal, abs_settle=_measure_settle(s, cal, W, inner_h, max_error))
         if cal is None:
             pos = _resync(s) if s.unsure else s.click()  # the absolute test may have moved the pointer (on the page)
             cal = _measure(s, W, H, inner_h, pos, rates, coarse_counts, fine_counts, repeats, coarse_target)
@@ -432,8 +464,10 @@ def _top_max(H: float, inner_h: float) -> float:
 
 
 def _enter_page(s: _Session, W: float, H: float, inner_h: float) -> tuple[tuple[float, float], float]:
-    """Anchor top-left, two single reports right, then down until a click lands on the page.
-    Returns the page position and how far one report from rest went (from the two to the right).
+    """Anchor top-right, two single reports left, then down until a click lands on the page.
+    Returns the page position and how far one report from rest went (from the two to the left).
+    The right side of the status bar holds only indicators: its left side can hold the "◀ Search"
+    return link after a Spotlight launch, and its middle the Dynamic Island.
 
     The page top is at most `top_max` down (_top_max) and the page is inner_h tall, so its bottom
     is at least inner_h down: the pointer must reach top_max but stay above inner_h, and it stays
@@ -452,9 +486,9 @@ def _enter_page(s: _Session, W: float, H: float, inner_h: float) -> tuple[tuple[
     floor = ENTRY_FLOOR * inner_h
 
     def start(down: int = 0) -> None:
-        pm.anchor(-1, -1)
-        pm.run(0, 1, 0)
-        pm.run(0, 1, 0)
+        pm.anchor(1, -1)
+        pm.run(0, -1, 0)
+        pm.run(0, -1, 0)
         for _ in range(down):
             pm.run(1, 1, 0)
 
@@ -489,9 +523,9 @@ def _enter_page(s: _Session, W: float, H: float, inner_h: float) -> tuple[tuple[
         if s.confirmed:
             per_max = top_max / down
     pos = _confirm(s, pos)
-    if pos[0] >= W - 2:
+    if pos[0] <= 2:
         raise CalibrationError("one report moves the pointer across half the screen: lower the Tracking Speed")
-    per = pos[0] / 2
+    per = (W - pos[0]) / 2  # (from the right edge, at W or 1 pt inside it: rounded up)
     # the pointer went `down` reports from the top edge; each covers about what one did along X
     s.entry_top = down * per - pos[1]
     return pos, per
@@ -556,6 +590,10 @@ def _try_absolute(s: _Session, W, H, inner_h, max_error: float) -> PointerCalibr
     try:
         got = _abs_click(s, *g, miss_ok=True)
     except HidError as e:
+        # refused (e.g. no absolute report in this profile): make sure its button is up, which also
+        # proves the link works; if even that fails the error stands
+        pm.buttons = 0
+        pm.send_abs(*g)
         s.log("absolute_unsupported", error=str(e))
         return None
     if got is None or abs(got[0] - W / 2) > 0.1 * W:
@@ -609,6 +647,52 @@ def _try_absolute(s: _Session, W, H, inner_h, max_error: float) -> PointerCalibr
     return replace(pm.cal, mode="absolute", abs_map=(round(ax, 5), round(bx, 3), round(ay, 5), 0.0),
                    method="safari", measured_at=time.strftime("%Y-%m-%d %H:%M:%S"),
                    notes=pm.cal.notes + notes, extra={**pm.cal.extra, "page_top_pt": round(top, 2)})
+
+
+SETTLE_DELAYS = (0.03, 0.06, 0.1, 0.15, 0.25, 0.4)
+
+
+def _measure_settle(s: _Session, cal: PointerCalibration, W, inner_h, max_error: float, repeats: int = 3) -> float:
+    """How long iOS takes to glide the cursor to an absolute position: jump across the page, wait,
+    click, for growing waits; the first wait at which every repeat lands on the target (within
+    half the acceptance error) wins, plus a margin. Both points are on the page, so a click sent
+    too early still lands on it."""
+    pm = s.pm
+    ax, bx, ay, _ = cal.abs_map
+    c = ay * cal.extra.get("page_top_pt", 0.0)
+    points = [(0.2 * W, 0.3 * inner_h), (0.8 * W, 0.7 * inner_h)]
+    grid = [(round(ax * x + bx), round(ay * y + c)) for x, y in points]
+    tol = max(1.0, max_error / 2)
+    at = 0  # the point the pointer rests at: start there
+    pm.send_abs(*grid[at])
+    pm._sleep(SETTLE_DELAYS[-1])
+    for delay in SETTLE_DELAYS:
+        ok = True
+        for _ in range(repeats):
+            dst = 1 - at
+
+            def do(dst=dst):
+                pm.send_abs(*grid[dst])
+                pm._sleep(delay)
+                pm.buttons = 1
+                try:
+                    pm.send_abs(*grid[dst])
+                    pm._sleep(0.06)
+                finally:
+                    pm.buttons = 0
+                    pm.send_abs(*grid[dst])
+                pm.rest()
+
+            got = s.act(do)
+            at = dst
+            if math.dist(got, points[dst]) > tol:
+                ok = False
+                pm._sleep(SETTLE_DELAYS[-1])  # let the glide finish before the next jump
+                break
+        s.log("absolute_settle", delay=delay, ok=ok)
+        if ok:
+            return round(min(SETTLE_DELAYS[-1], delay * 1.25 + 0.02), 3)
+    return SETTLE_DELAYS[-1]
 
 
 def _measure(s: _Session, W, H, inner_h, pos, rates: _Rates, coarse_counts, fine_counts, repeats,

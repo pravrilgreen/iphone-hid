@@ -235,10 +235,13 @@ class _ScriptedSerial:
     """Serial stand-in whose reply shows up in full exactly when the driver does a blocking read."""
 
     def __init__(self, *args, **kwargs):
-        self.is_open = True
+        self.is_open = False
         self._rx = bytearray()
         self._armed = b""
         self._checks = 0
+
+    def open(self):
+        self.is_open = True
 
     def write(self, data):
         frame = p.decode(bytes(data))
@@ -400,3 +403,33 @@ def test_bridge_reports_its_link_period(chip_backend):
     assert hid.report_period() == 0.015
     chip.usb_connected = False  # not connected: unknown
     assert hid.report_period() is None
+
+
+def test_port_opens_without_asserting_dtr_rts(monkeypatch):
+    """ESP32 dev boards reset on DTR/RTS: the driver opens the port with both low."""
+    import ihc.hid.ch9329 as ch
+
+    seen = {}
+
+    class Recording(_ScriptedSerial):
+        def open(self):
+            seen["lines"] = (self.dtr, self.rts)
+            super().open()
+
+    monkeypatch.setattr(ch.serial, "Serial", Recording)
+    CH9329Backend("/dev/null", 9600).close()
+    assert seen["lines"] == (False, False)
+
+
+def test_release_all_retries_and_reports_what_stayed_held(chip_backend):
+    chip = FakeChip()
+    hid = chip_backend(chip)
+    hid.keyboard(0, [0x04])
+    chip.fail_next = [p.Status.EXEC_ERROR] * 2  # buffers full for a moment
+    hid.release_all()
+    assert not chip.keyboard.pressed
+    hid.keyboard(0, [0x04])
+    chip.fail_next = [p.Status.EXEC_ERROR] * 3  # still refused after every attempt: say so
+    with pytest.raises(HidStatusError):
+        hid.release_all()
+    assert chip.keyboard.pressed == {0x04}

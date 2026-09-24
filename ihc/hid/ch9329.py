@@ -140,7 +140,13 @@ class CH9329Backend:
         self.async_errors: list[tuple[int, int | None]] = []
         self.stats: Counter[str] = Counter()
         try:
-            self._ser = serial.Serial(port, baud, timeout=_POLL_S, write_timeout=2.0, exclusive=exclusive)
+            ser = serial.Serial(timeout=_POLL_S, write_timeout=2.0, exclusive=exclusive)
+            ser.port, ser.baudrate = port, baud
+            # Keep DTR/RTS low: ESP32 dev boards wire them to reset/boot, and asserting them on open
+            # (pyserial's default) can reset the bridge into its bootloader.
+            ser.dtr = ser.rts = False
+            ser.open()
+            self._ser = ser
         except (serial.SerialException, OSError) as e:
             raise HidPortError(explain_open_error(port, e)) from e
 
@@ -188,14 +194,14 @@ class CH9329Backend:
         self._info = info
         return info
 
-    def supports_rel_run(self) -> bool:
+    def supports_rel_run(self) -> bool | None:
         """Whether the device times relative runs itself (ESP32 bridge). Asked once, then cached;
-        False when the device cannot be asked right now."""
+        None when the device cannot be asked right now (ask again later)."""
         if self._info is None:
             try:
                 self.info()
             except HidError:
-                return False
+                return None
         return bool(self._info.get("bridge", {}).get("rel_run"))
 
     def report_period(self) -> float | None:
@@ -266,20 +272,38 @@ class CH9329Backend:
             self.stats["timeouts"] += 1
             raise HidTimeout(f"no reply to {_cmd_name(p.CMD_MS_REL_RUN)} within {self.timeout * 1000:.0f} ms after the run")
 
-    def release_all(self) -> None:
-        """Best effort: release every key, media/power key and relative mouse button. (An absolute
-        pointer button is released by a report at its position: see PointerModel.release_all.)"""
+    def release_all(self, attempts: int = 3, retry_wait: float = 0.03) -> None:
+        """Release every key, media/power key and relative mouse button. Each release is a state, so
+        it is simply sent again after a failure (a Bluetooth bridge answers E6 while its buffers are
+        full). Every release is tried; afterwards the first failure is raised, so the caller knows
+        something may still be held. (An absolute pointer button is released by a report at its
+        position: see PointerModel.release_all.)"""
         frames = (
             p.kb_general(0, [], self.addr),
             p.kb_media(0, self.addr),
             p.kb_acpi(0, self.addr),
             p.mouse_rel(0, 0, 0, 0, self.addr),
         )
+        failed: HidError | None = None
         for frame in frames:
-            try:
-                self._hid(frame)
-            except HidError:
-                pass
+            for attempt in range(attempts):
+                try:
+                    self._hid(frame)
+                    break
+                except HidPortError:
+                    raise
+                except HidStatusError as e:
+                    if e.status in (p.Status.BAD_PARAM, p.Status.BAD_CMD):  # not in this work mode: nothing to release
+                        break
+                    err = e
+                except HidError as e:
+                    err = e
+                if attempt == attempts - 1:
+                    failed = failed or err
+                else:
+                    time.sleep(retry_wait)
+        if failed is not None:
+            raise failed
 
     def get_config(self) -> ChipConfig:
         d = self._request(p.Cmd.GET_PARA_CFG).data

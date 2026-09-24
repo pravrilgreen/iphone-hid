@@ -11,6 +11,7 @@ import time
 from contextlib import contextmanager
 from typing import Callable, Sequence
 
+from ..hid import protocol as p
 from ..hid.base import HidBackend, HidError, HidStatusError, HidTimeout
 from . import keymap
 from .pointer import NOT_EXECUTED
@@ -28,7 +29,10 @@ class Keyboard:
         self._sleep = sleep
 
     def report(self, mods: int, keys: Sequence[int]) -> None:
-        """Send one key-state report, resending it after an ambiguous failure."""
+        """Send one key-state report, resending it after an ambiguous failure. A release is also
+        resent when the device could not deliver it (E6: e.g. a Bluetooth bridge's buffers were
+        full for a moment): a key left down would auto-repeat into the app."""
+        release = not mods and not keys
         for attempt in range(self.retries + 1):
             try:
                 self.hid.keyboard(mods, keys)
@@ -37,8 +41,11 @@ class Keyboard:
                 if attempt == self.retries:
                     raise
             except HidStatusError as e:
-                if e.status not in NOT_EXECUTED or attempt == self.retries:
+                retry = e.status in NOT_EXECUTED or (release and e.status == p.Status.EXEC_ERROR)
+                if not retry or attempt == self.retries:
                     raise
+                if e.status == p.Status.EXEC_ERROR:
+                    self._sleep(0.03)
             self.resends += 1
 
     def type(self, text: str) -> None:

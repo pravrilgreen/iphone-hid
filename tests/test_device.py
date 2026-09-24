@@ -105,7 +105,7 @@ def test_screenshot_status_and_health(farm):
     img = cv2.imdecode(np.frombuffer(dev.screenshot("png"), np.uint8), cv2.IMREAD_COLOR)
     assert img.shape[:2] == (1080, 498)
     assert dev.screenshot("jpeg", crop=False)[:2] == b"\xff\xd8"
-    assert dev.check() == {"hid": True, "usb_connected": True, "signal": True, "error": None}
+    assert dev.check() == {"hid": True, "usb_connected": True, "signal": True, "error": None, "recalibrate": None}
     s = dev.status()
     assert s["state"] == "ready" and s["screen"]["rect"]["w"] == 498
     assert s["calibration"]["calibrated"] and s["hid"]["stats"]["tx"] > 0
@@ -259,3 +259,45 @@ def test_simulated_signal_cut_shows_at_once(farm):
         assert dev.check()["signal"] is False
     finally:
         rig.capture.signal = True
+
+
+def test_releases_when_the_phone_starts_taking_input(farm):
+    """A held key or button can survive a restart, a replug or a lock: the first health check that
+    finds the phone taking input releases everything."""
+    dev, rig = rig_of(farm[0], 1)
+    dev.check()
+    rig.chip.keyboard.report(0, [0x04])  # held from before (e.g. the previous process died)
+    rig.chip.usb_connected = False  # locked
+    assert dev.check()["usb_connected"] is False
+    rig.chip.usb_connected = True  # unlocked
+    dev.check()
+    assert not rig.chip.keyboard.pressed and not dev._release_pending
+
+
+def test_failed_calibration_keeps_the_old_pace(monkeypatch):
+    import ihc.device as device_mod
+    from ihc.input.pointer import PointerCalibration, PointerError
+
+    reg = simulated(1, simulate_timing=False, bridge=True)
+    try:
+        dev, rig = rig_of(reg)
+        rig.chip.link_period = 0.015
+        dev.pointer.cal = PointerCalibration(interval=0.03, method="safari", extra={"report_period_ms": 15.0})
+
+        def failing(pm, clicks, **options):
+            assert pm.cal.interval == pytest.approx(0.0225)  # measured at the new link's pace...
+            raise RuntimeError("page lost")
+
+        monkeypatch.setattr(device_mod, "calibrate", failing)
+        rig.chip.link_period = 0.0225  # renegotiated: calibration picks 22.5 ms, then fails
+        with pytest.raises(RuntimeError):
+            dev.calibrate()
+        assert dev.pointer.cal.interval == 0.03  # the installed model is untouched
+        assert dev.check()["recalibrate"] and dev.state == "needs_calibration"
+        rig.chip.bridge_output = 0x01  # a Bluetooth bridge without a link: no calibration at all
+        rig.chip.usb_connected = False
+        rig.chip.link_period = 0.0
+        with pytest.raises(PointerError, match="no Bluetooth link|does not answer|no link"):
+            dev.calibrate()
+    finally:
+        reg.close()

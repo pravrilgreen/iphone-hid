@@ -215,6 +215,7 @@ class FakeChip:
         # Bridge only: the phone takes reports at link events this far apart (BLE connection
         # interval, USB polling); a report waits for the next event. 0 = delivered at once.
         self.link_period = 0.0
+        self.bridge_output = 0x7F  # GET_INFO byte 3: 0x01 Bluetooth, 0x02 USB, 0x7F simulator
         self.usb_strings = {0: "", 1: "", 2: ""}
         self.events: list[dict] = []  # most recent events; `seq` numbers them across trims
         self.event_seq = 0
@@ -334,7 +335,7 @@ class FakeChip:
             if self.bridge:
                 collections = {0: 0x1F, 1: 0x0D, 2: 0x12}.get(self.work_mode, 0)
                 period = round(self.link_period * 4000) if self.usb_connected else 0
-                extra = (0x7F, collections, p.FEATURE_REL_RUN, period & 0xFF, period >> 8)
+                extra = (self.bridge_output, collections, p.FEATURE_REL_RUN, period & 0xFF, period >> 8)
             else:
                 extra = (0, 0, 0, 0, 0)
             return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, *extra])

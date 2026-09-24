@@ -278,8 +278,10 @@ def auto(
         def open_video(device: str):
             return V4L2Capture(device, width=video_size[0], height=video_size[1], fps=fps)
 
+    quiet: dict = {}  # ports that did not answer, probed again with a back-off
     reg = AutoRegistry(lambda ports_in_use, videos_in_use: find_rigs(ports, sysfs=sysfs, timeout=probe_timeout, log=log,
-                                                                   skip=ports_in_use, skip_videos=videos_in_use),
+                                                                   skip=ports_in_use, skip_videos=videos_in_use,
+                                                                   quiet=quiet),
                        lambda spec: _build_rig(spec, state, open_video, video_size, log))
     reg.rescan()
     return reg
@@ -337,7 +339,7 @@ def _build_rig(spec, state: Path, open_video, video_size, log) -> IPhoneDevice:
     cal_path = state / f"{spec.id}.json"
     device = IPhoneDevice(
         DeviceInfo(spec.id, "", "hardware"),
-        open_hid(),
+        _open_or_offline(open_hid, c.port, c.baud, log),  # (it may have been unplugged since the probe)
         open_video(spec.video.device) if spec.video else NoVideo(video_size),
         calibration=PointerCalibration.load(cal_path) if cal_path.exists() else None,
         calibration_path=cal_path,
