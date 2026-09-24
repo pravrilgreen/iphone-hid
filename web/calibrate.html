@@ -38,6 +38,7 @@
   "use strict";
   var id = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
   var url = "/api/devices/" + encodeURIComponent(id) + "/calibration/events";
+  var HEARTBEAT_MS = 250;
   var queue = [], sending = false, sent = 0, clicks = 0, failures = 0, lastMove = 0, seq = 0;
   var info = document.getElementById("info");
 
@@ -45,15 +46,15 @@
 
   // Events leave strictly in order: one request at a time, carrying everything queued so far.
   // `seq` numbers the events of this page load (from 1) and `t` is performance.now() in ms, so
-  // the host can tell a late or stale event from a fresh one.
-  function post(ev) {
+  // the host can tell a late or stale event from a fresh one, and a gap in `seq` from a miss.
+  // A queued event is never dropped (that would be a gap): optional ones (hover, heartbeat) are
+  // simply not created while the network is backed up.
+  function post(ev, optional) {
+    if (optional && queue.length > 20) return;
     seq += 1;
     ev.seq = seq;
     ev.t = Math.round(performance.now() * 1000) / 1000;
     queue.push(ev);
-    if (queue.length > 200) {  // offline for a while: drop hover events first, never clicks
-      queue = queue.filter(function (e) { return e.type !== "move"; }).slice(-200);
-    }
     pump();
   }
 
@@ -79,10 +80,12 @@
     });
   }
 
-  function hello() {
+  // `hello` describes the page; repeated every HEARTBEAT_MS it also proves the event channel is
+  // alive: an event stamped after a click that arrives without the click means the click missed.
+  function hello(optional) {
     post({ type: "hello", screen_w: screen.width, screen_h: screen.height,
            inner_w: window.innerWidth, inner_h: window.innerHeight,
-           dpr: window.devicePixelRatio, ua: navigator.userAgent });
+           dpr: window.devicePixelRatio, ua: navigator.userAgent, heartbeat_ms: HEARTBEAT_MS }, optional);
   }
 
   function mark(x, y) {
@@ -102,7 +105,7 @@
     var now = Date.now();
     if (now - lastMove < 100) return;  // hover reports only tell whether Safari sees them
     lastMove = now;
-    post({ type: "move", x: e.clientX, y: e.clientY });
+    post({ type: "move", x: e.clientX, y: e.clientY }, true);
   }
 
   if (window.PointerEvent) {
@@ -116,10 +119,11 @@
   }
   document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
-  window.addEventListener("resize", hello);
-  window.addEventListener("orientationchange", function () { setTimeout(hello, 300); });
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) hello(); });
-  hello();
+  window.addEventListener("resize", function () { hello(false); });
+  window.addEventListener("orientationchange", function () { setTimeout(function () { hello(false); }, 300); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) hello(false); });
+  setInterval(function () { if (!document.hidden) hello(true); }, HEARTBEAT_MS);
+  hello(false);
 })();
 </script>
 </body>

@@ -76,6 +76,12 @@ class SimPointer:
     # button pressed through one is released only through the same one. iOS sees their union.
     _rel_buttons: int = field(default=0, repr=False)
     _abs_buttons: int = field(default=0, repr=False)
+    # When the report reached the phone, if the chip knows it better than clock() at processing
+    # time (the pty rig: when its bytes crossed the line, not when a Python thread got to them).
+    at: float | None = field(default=None, repr=False)
+
+    def _now(self) -> float:
+        return self.clock() if self.at is None else self.at
 
     def __post_init__(self) -> None:
         if self.x < 0:
@@ -95,7 +101,7 @@ class SimPointer:
                 self._glide = None
 
     def absolute_report(self, ax: int, ay: int, buttons: int, wheel: int) -> None:
-        now = self.clock()
+        now = self._now()
         self._settle_glide(now)
         tx = min(max(ax / 4095 * self.width, 0.0), self.width - 1)
         ty = min(max(ay / 4095 * self.height, 0.0), self.height - 1)
@@ -108,7 +114,7 @@ class SimPointer:
             self.emit("scroll", amount=wheel, x=round(self.x, 1), y=round(self.y, 1))
 
     def relative(self, dx: int, dy: int, buttons: int, wheel: int) -> None:
-        now = self.clock()
+        now = self._now()
         self._settle_glide(now)
         if dx or dy:  # velocity comes from motion reports only
             dt = min(now - self._last_t, self.idle_reset) if self._last_t else self.idle_reset
@@ -259,28 +265,38 @@ class FakeChip:
     def events_of(self, event: str) -> list[dict]:
         return [e for e in self.events if e["event"] == event]
 
-    def receive(self, data: bytes) -> bytes:
+    def receive(self, data: bytes, at: float | None = None) -> bytes:
+        """`at`: when these bytes finished arriving (defaults to now). Reports in them reach the
+        simulated phone at that time, whatever the delay before this thread ran."""
         with self._lock:
-            self._buf += data
-            out = bytearray()
-            while True:
-                start = self._buf.find(p.HEADER)
-                if start < 0:
-                    del self._buf[: len(self._buf) - (1 if self._buf[-1:] == p.HEADER[:1] else 0)]
-                    break
-                del self._buf[:start]
-                if len(self._buf) < 5:
-                    break
-                if self._buf[4] > p.MAX_DATA_LEN:
-                    del self._buf[:2]
-                    continue
-                total = 6 + self._buf[4]
-                if len(self._buf) < total:
-                    break  # ASSUMPTION: the real chip would answer E1 after its packet interval
-                raw = bytes(self._buf[:total])
-                del self._buf[:total]
-                out += self._handle(raw)
-            return bytes(out)
+            if not self.bridge:  # (the bridge times its own reports)
+                self.pointer.at = at
+            try:
+                return self._receive(data)
+            finally:
+                self.pointer.at = None
+
+    def _receive(self, data: bytes) -> bytes:
+        self._buf += data
+        out = bytearray()
+        while True:
+            start = self._buf.find(p.HEADER)
+            if start < 0:
+                del self._buf[: len(self._buf) - (1 if self._buf[-1:] == p.HEADER[:1] else 0)]
+                break
+            del self._buf[:start]
+            if len(self._buf) < 5:
+                break
+            if self._buf[4] > p.MAX_DATA_LEN:
+                del self._buf[:2]
+                continue
+            total = 6 + self._buf[4]
+            if len(self._buf) < total:
+                break  # ASSUMPTION: the real chip would answer E1 after its packet interval
+            raw = bytes(self._buf[:total])
+            del self._buf[:total]
+            out += self._handle(raw)
+        return bytes(out)
 
     def _handle(self, raw: bytes) -> bytes:
         addr, cmd = raw[2], raw[3]
@@ -519,7 +535,7 @@ class FakeSerialDevice:
                     self._write(b"\xf0\x0f\xfe")
                 continue
             if not self.simulate_timing:
-                out = self.chip.receive(data)
+                out = self.chip.receive(data, at=arrived)
                 if out:
                     delay = self.chip.take_reply_delay()
                     with self._tx_cond:
@@ -534,7 +550,7 @@ class FakeSerialDevice:
                 delay = self._rx_free_at - time.monotonic()
                 if delay > 0:
                     time.sleep(delay)
-                out = self.chip.receive(part)
+                out = self.chip.receive(part, at=self._rx_free_at)
                 if out:
                     start = max(time.monotonic() + self.processing_s + self.chip.take_reply_delay(), self._tx_free_at)
                     self._tx_free_at = start + len(out) * 10 / baud

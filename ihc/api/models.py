@@ -162,6 +162,7 @@ class CalibrationEvent(_Open):
     screen_h: float | None = None
     inner_w: float | None = Field(None, description="hello: innerWidth")
     inner_h: float | None = None
+    heartbeat_ms: int | None = Field(None, description="hello: the page repeats hello this often (ms) while visible")
     dpr: float | None = None
     ua: str | None = None
 

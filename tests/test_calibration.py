@@ -94,7 +94,9 @@ def dropping(rate: float, seed: int):
 def legacy_of(network):
     """`network` carrying the events of an older page (no seq, no t, no heartbeat)."""
     def wrap(push):
-        strip = lambda ev: push({k: v for k, v in ev.items() if k not in ("seq", "t", "heartbeat_ms")})  # noqa: E731
+        def strip(ev):
+            push({k: v for k, v in ev.items() if k not in ("seq", "t", "heartbeat_ms")})
+
         inner = network(strip) if network else strip
         return lambda ev: None if ev["type"] == "hello" and ev["seq"] > 1 else inner(ev)
     return wrap

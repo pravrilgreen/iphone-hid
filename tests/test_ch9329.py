@@ -285,8 +285,8 @@ def test_late_reply_is_never_taken_for_the_next_ack(chip_backend):
     time.sleep(0.2)  # the late ack is now waiting in the input
     receive = chip.receive
 
-    def lose_keyboard_frames(data: bytes) -> bytes:
-        return b"" if data[3:4] == bytes([p.Cmd.SEND_KB_GENERAL_DATA]) else receive(data)
+    def lose_keyboard_frames(data: bytes, at=None) -> bytes:
+        return b"" if data[3:4] == bytes([p.Cmd.SEND_KB_GENERAL_DATA]) else receive(data, at)
 
     chip.receive = lose_keyboard_frames
     with pytest.raises(HidTimeout):
@@ -302,9 +302,9 @@ def test_keyboard_resends_after_a_late_ack_and_releases(chip_backend):
     from ihc.input.keyboard import Keyboard
 
     chip = FakeChip()
-    hid = chip_backend(chip, timeout=0.1)
+    hid = chip_backend(chip, timeout=0.3)
     kb = Keyboard(hid)
-    chip.reply_delays = [0.2]
+    chip.reply_delays = [0.45]  # late for the press, well inside the resync that follows
     kb.key("cmd+space")
     assert kb.resends == 1 and not chip.keyboard.pressed
     assert chip.keyboard.shortcuts == ["cmd+space"]
