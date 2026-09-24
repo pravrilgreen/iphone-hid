@@ -512,7 +512,8 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
         body = body or actions.Calibrate()
         page_url = body.page_url or f"{farm.base_url(request)}/calibrate/{device.id}"
         farm.log("calibrate_start", device=device.id, page_url=page_url)
-        result = await farm.on_device(device, lambda: device.calibrate(page_url=page_url, **body.options))
+        opened = page_url if body.open_page else None
+        result = await farm.on_device(device, lambda: device.calibrate(page_url=opened, **body.options))
         return _ok({**result, "page_url": page_url})
 
     @app.post("/api/devices/{device_id}/calibration/events", tags=["calibration"], summary="Calibration page events",

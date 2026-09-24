@@ -195,13 +195,17 @@ class RemoteDevice:
         """Release every key and mouse button."""
         return self._action("release_all")
 
-    def calibrate(self, page_url: str | None = None, timeout: float = 600.0, **options) -> dict:
+    def calibrate(self, page_url: str | None = None, timeout: float = 600.0, open_page: bool = True,
+                  **options) -> dict:
         """Calibrate the pointer through the Safari calibration page (about a minute; the phone
-        must reach the server, by default at <public_url>/calibrate/<id>). `options` go to
-        ihc.calibration.calibrate (repeats, validate, ...)."""
+        must reach the server, by default at <public_url>/calibrate/<id>). With open_page=False the
+        page must already be open in Safari (typed by hand, e.g. when Spotlight does not open).
+        `options` go to ihc.calibration.calibrate (validate, try_absolute, max_error, ...)."""
         body: dict[str, Any] = {"options": options} if options else {}
         if page_url:
             body["page_url"] = page_url
+        if not open_page:
+            body["open_page"] = False
         return self._action("calibrate", timeout=timeout, **body)
 
     def calibration(self) -> dict:

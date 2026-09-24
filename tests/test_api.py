@@ -582,3 +582,22 @@ def test_calibrate_through_safari_page():
             assert phone.tap_log[-1]["hit"]
     finally:
         reg.close()
+
+
+def test_calibrate_on_a_page_opened_by_hand():
+    """open_page=false: Spotlight is not used; the page the operator opened is calibrated."""
+    reg = relaxed(simulated(1, calibrated=False, simulate_timing=False, absolute=True))
+    try:
+        with TestClient(create_app(reg, public_url="http://testserver")) as c:
+            phone = reg.extra("sim-01").phone
+            phone.open_url("http://testserver/calibrate/sim-01")  # typed in Safari by hand
+            time.sleep(0.5)
+            spotlight = len(reg.extra("sim-01").chip.keyboard.shortcuts)
+            r = c.post("/api/devices/sim-01/calibrate", json={"open_page": False, "options": {"validate": 3}})
+            assert r.status_code == 200, r.text
+            assert r.json()["result"]["calibration"]["method"] == "safari"
+            assert len(reg.extra("sim-01").chip.keyboard.shortcuts) == spotlight  # no Cmd+Space sent
+            r = c.post("/api/devices/sim-01/calibrate", json={"options": {"try_absolute": False, "bogus": 1}})
+            assert r.status_code == 422
+    finally:
+        reg.close()

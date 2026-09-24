@@ -139,6 +139,8 @@ class Calibrate(Body):
 
     page_url: str | None = Field(None, max_length=2000, description="URL of the calibration page as the phone "
                                                                     "reaches it (default <public_url>/calibrate/<id>)")
+    open_page: bool = Field(True, description="open the page through Spotlight first; false: it is already open "
+                                              "in Safari (opened by hand)")
     options: dict[str, Any] = Field(default_factory=dict, description="Advanced ihc.calibration.calibrate() options: "
                                     + ", ".join(sorted(CALIBRATE_OPTIONS)))
 
