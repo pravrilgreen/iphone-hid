@@ -76,6 +76,7 @@ class IPhoneDevice:
         self._monitor: threading.Thread | None = None
         self._stop = threading.Event()
         self.counters = {"actions": 0, "errors": 0, "taps": 0, "live_reports": 0}
+        self._release_pending = False
         self.last_result: dict | None = None
 
     @property
@@ -97,6 +98,8 @@ class IPhoneDevice:
                     h["usb_connected"] = info["usb_connected"]
                     h["hid"] = True
                     h["error"] = self._link_changed(info)
+                    if self._release_pending:  # an earlier failure could not release: do it now
+                        self._release_quietly()
                 except HidPortError as e:
                     h["hid"], h["error"] = False, str(e)
                     self._try_reopen()
@@ -231,10 +234,20 @@ class IPhoneDevice:
                 self._busy_with = outer
 
     def _release_quietly(self) -> None:
+        """Best effort after a failure. If the chip does not answer at all, nothing is tried (each
+        release would only wait for its own timeout); the health monitor releases everything once
+        the chip answers again, and the pointer releases before its next anchor anyway."""
+        try:
+            self.hid.sync()  # after a lost reply this resynchronises, and fails fast if the chip is gone
+        except HidError:
+            self.pointer.mark_buttons_unsure()
+            self._release_pending = True
+            return
+        self._release_pending = False
         try:
             self.hid.release_all()
         except HidError:
-            pass
+            self._release_pending = True
         try:
             self.pointer.release_all()
         except (HidError, PointerError):

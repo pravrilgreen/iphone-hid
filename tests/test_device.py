@@ -221,3 +221,41 @@ def test_calibration_pace_follows_the_bridge_link(monkeypatch):
         assert "recalibrate" in dev.check()["error"]
     finally:
         reg.close()
+
+
+def test_release_after_the_chip_comes_back():
+    from ihc.hid.base import HidTimeout
+
+    reg = simulated(1, simulate_timing=False, timeout=0.15)
+    try:
+        dev, rig = rig_of(reg)
+        original = dev.pointer.drag_by
+
+        died = []
+
+        def chip_dies(*args, **kwargs):
+            rig.chip.powered = False  # e.g. the phone side lost power with the button down
+            died.append(time.monotonic())
+            raise HidTimeout("gone")
+
+        dev.pointer.drag_by = chip_dies
+        with pytest.raises(HidError):
+            dev.swipe(0.5, 0.5, 0.5, 0.3)
+        assert time.monotonic() - died[0] < 1.2  # no long chain of doomed releases
+        dev.pointer.drag_by = original
+        assert rig.chip.pointer.buttons == 1 and dev._release_pending
+        rig.chip.powered = True
+        dev.check()  # the monitor's next round
+        assert rig.chip.pointer.buttons == 0 and not dev._release_pending
+    finally:
+        reg.close()
+
+
+def test_simulated_signal_cut_shows_at_once(farm):
+    dev, rig = rig_of(farm[0], 1)
+    assert dev.check()["signal"] is True
+    rig.capture.signal = False
+    try:
+        assert dev.check()["signal"] is False
+    finally:
+        rig.capture.signal = True

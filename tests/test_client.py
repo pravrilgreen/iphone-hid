@@ -222,3 +222,28 @@ def test_cli_serve_starts_and_shuts_down_cleanly():
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_farm_discover_finds_announced_boxes(hosts, monkeypatch):
+    pytest.importorskip("zeroconf")
+    from urllib.parse import urlparse
+
+    from ihc import discovery
+
+    url = urlparse(hosts[0].url)
+    ann = discovery.advertise(url.port, name="ihc-sdk-test", devices=2, address=url.hostname)
+    try:
+        if not ann.active:
+            pytest.skip("zeroconf could not start")
+        try:
+            farm = Farm.discover(wait=1.5, timeout=30)
+        except IhcError:
+            pytest.skip("no multicast on this network")
+        with farm:
+            assert hosts[0].url in farm.urls
+            assert {d.id for d in farm.devices()} >= {"sim-01", "sim-02"}
+    finally:
+        ann.close()
+    monkeypatch.setattr(discovery, "discover", lambda wait: [])
+    with pytest.raises(IhcError, match="no ihc box"):
+        Farm.discover(wait=0.1)

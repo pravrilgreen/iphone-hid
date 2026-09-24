@@ -54,7 +54,7 @@ class SimHdmiCapture:
         self.pointer_visible = pointer_visible
         self.pointer_autohide = pointer_autohide
         self.style = style
-        self.signal = True
+        self._signal = True
         self._clock = clock
         self._sleep = sleep
         self._lock = threading.Lock()
@@ -71,6 +71,17 @@ class SimHdmiCapture:
         self._last_key: tuple | None = None
         self._seq = -1
         self.rendered = 0
+
+    @property
+    def signal(self) -> bool:
+        return self._signal
+
+    @signal.setter
+    def signal(self, on: bool) -> None:
+        """Plug or unplug the HDMI signal; the next frame shows the change (no cached frame)."""
+        with self._lock:
+            self._signal = on
+            self._last = None
 
     @property
     def size(self) -> tuple[int, int]:

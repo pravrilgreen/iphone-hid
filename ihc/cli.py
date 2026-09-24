@@ -4,6 +4,7 @@
     ihc serve --sim 4                      # 4 simulated iPhones, console at http://<LAN IP>:8000
     ihc serve --config farm.toml --log logs/farm.jsonl
     ihc discover > farm.toml               # pair serial ports and capture cards by USB hub
+    ihc devices                            # every box on the LAN (mDNS), else this host
     ihc devices --url http://farm-01:8000
 """
 
@@ -43,7 +44,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
         registry = auto(log=log, state_dir=args.state_dir)
     else:
         registry = simulated(args.sim, model=args.model, calibrated=not args.uncalibrated, log=log,
-                             absolute=args.sim_absolute)
+                             absolute=args.sim_absolute, bridge=args.sim_bridge)
     public_url = (args.public_url or f"http://{lan_ip()}:{args.port}").rstrip("/")
     announcement = None
     try:
@@ -150,6 +151,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--model", default="iphone-15", help="simulated model (default iphone-15)")
     s.add_argument("--uncalibrated", action="store_true", help="simulated phones start uncalibrated")
     s.add_argument("--sim-absolute", action="store_true", help="simulated phones follow absolute pointer reports")
+    s.add_argument("--sim-bridge", action="store_true", help="simulate the ESP32 bridge instead of a CH9329")
     s.add_argument("--state-dir", metavar="PATH", default=None,
                    help="with --auto: where calibration files live (default $IHC_STATE_DIR or ~/.local/share/ihc)")
     s.add_argument("--host", default="0.0.0.0")
@@ -167,7 +169,8 @@ def build_parser() -> argparse.ArgumentParser:
     d.set_defaults(fn=cmd_discover)
 
     v = sub.add_parser("devices", help="list the devices of one or more hosts")
-    v.add_argument("--url", action="append", default=None, help="host URL (repeatable; default http://127.0.0.1:8000)")
+    v.add_argument("--url", action="append", default=None,
+                   help="host URL (repeatable; default: every box found on the LAN, else http://127.0.0.1:8000)")
     v.add_argument("--timeout", type=float, default=10.0)
     v.set_defaults(fn=cmd_devices)
     return ap
@@ -179,7 +182,9 @@ def main(argv: list[str] | None = None) -> int:
         print("ihc: --sim needs at least 1 device", file=sys.stderr)
         return 2
     if args.command == "devices" and not args.url:
-        args.url = ["http://127.0.0.1:8000"]
+        from .discovery import discover
+
+        args.url = discover(1.5) or ["http://127.0.0.1:8000"]
     return args.fn(args)
 
 

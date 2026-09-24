@@ -3,6 +3,7 @@
     from ihc.client import Farm
 
     farm = Farm("http://farm-01:8000", "http://farm-02:8000")   # one or more hosts
+    farm = Farm.discover()                                      # or every box on the LAN (mDNS)
     for phone in farm.devices():
         print(phone.id, phone.model, phone.state)
 
@@ -220,12 +221,25 @@ class RemoteDevice:
 
 
 class Farm:
-    """The phones of one or more hosts: Farm("http://host-a:8000", "http://host-b:8000")."""
+    """The phones of one or more hosts: Farm("http://host-a:8000", "http://host-b:8000"), or every
+    box on the local network: Farm.discover()."""
 
     def __init__(self, *base_urls: str, timeout: float = 60):
         if not base_urls:
             raise ValueError("Farm needs at least one base URL, e.g. Farm('http://host:8000')")
         self.hosts = [Host(u, timeout) for u in base_urls]
+
+    @classmethod
+    def discover(cls, wait: float = 2.0, timeout: float = 60) -> Farm:
+        """Every box announcing itself on the LAN (mDNS service _ihc._tcp; needs the `zeroconf`
+        package). IhcError when none answers within `wait` seconds."""
+        from .discovery import discover
+
+        urls = discover(wait)
+        if not urls:
+            raise IhcError(f"no ihc box answered on the local network within {wait:.0f} s "
+                           "(is zeroconf installed, and are the boxes on this subnet?)")
+        return cls(*urls, timeout=timeout)
 
     @property
     def urls(self) -> list[str]:

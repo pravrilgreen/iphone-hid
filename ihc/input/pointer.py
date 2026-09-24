@@ -335,6 +335,11 @@ class PointerModel:
             self._buttons_unsure = True
             raise
 
+    def mark_buttons_unsure(self) -> None:
+        """A button may be held on the phone (a release could not be sent): the next anchor
+        releases first."""
+        self._buttons_unsure = True
+
     def release_all(self) -> None:
         """Release every button on both pointer reports: the relative and the absolute pointer
         are separate HID reports with separate button states. Raises if the phone could not be
@@ -378,13 +383,14 @@ class PointerModel:
         el, et, er, eb = self.cal.edges
         return (el if sx < 0 else w - er, et if sy < 0 else h - eb)
 
-    def run(self, axis: int, coarse: int, fine: int) -> None:
+    def run(self, axis: int, coarse: int, fine: int, *, strict: bool = True) -> None:
         """A coarse run then a fine run along one axis (signed report counts), each from rest.
 
         The distance a run covers depends on its pace (iOS acceleration is speed-based). The bridge
         times runs itself; otherwise the send times are checked (when each report started, and
         when it had left): a report off its slot (host stalled) makes the position unknown, and the
-        caller redoes the move."""
+        caller redoes the move. With `strict` off (a drag, which cannot be redone while the button
+        is down) an off-slot report only makes the position unknown."""
         for n, units in ((coarse, self.cal.step), (fine, self.cal.fine_step)):
             if not n:
                 continue
@@ -402,7 +408,11 @@ class PointerModel:
                         self.send(dx, dy)
                         starts.append(self.last_sent)
                         ends.append(self._clock())
-                self._check_pace(starts, ends if verified else [])
+                try:
+                    self._check_pace(starts, ends if verified else [])
+                except PointerDesync:
+                    if strict:
+                        raise
             self.rest()
 
     def _check_pace(self, starts: list[float], ends: list[float]) -> None:
@@ -512,7 +522,7 @@ class PointerModel:
             if d:
                 sign = 1 if d > 0 else -1
                 nc, nf, got = self.cal.direction(axis, sign).plan(abs(d))
-                self.run(axis, sign * nc, sign * nf)
+                self.run(axis, sign * nc, sign * nf, strict=False)
                 moved[axis] = sign * got
         if self.position is not None:
             self.position = (self.position[0] + moved[0], self.position[1] + moved[1])
