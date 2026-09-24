@@ -130,7 +130,8 @@ class Wait(Body):
     seconds: float = Field(ge=0.0, le=300.0, examples=[0.5])
 
 
-CALIBRATE_OPTIONS = {"coarse_counts", "fine_counts", "repeats", "validate", "page_timeout", "click_timeout", "seed"}
+CALIBRATE_OPTIONS = {"coarse_counts", "fine_counts", "repeats", "validate", "page_timeout", "click_timeout", "seed",
+                     "try_absolute", "max_error", "coarse_target"}
 
 
 class Calibrate(Body):
