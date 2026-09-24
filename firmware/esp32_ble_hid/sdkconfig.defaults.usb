@@ -1,0 +1,18 @@
+# USB variant: layered on sdkconfig.defaults.
+#   idf.py -B build_usb -D SDKCONFIG=build_usb/sdkconfig \
+#          -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.usb" set-target esp32s3 build
+
+CONFIG_BRIDGE_OUTPUT_USB=y
+
+# No Bluetooth in this variant.
+# CONFIG_BT_ENABLED is not set
+
+# The native USB port belongs to TinyUSB, so the USB Serial/JTAG console is gone, and UART0 is
+# the protocol port: no console at all (logs can be moved to a spare UART with
+# CONFIG_ESP_CONSOLE_UART_CUSTOM for debugging).
+CONFIG_ESP_CONSOLE_NONE=y
+
+# TinyUSB (espressif/esp_tinyusb): four HID interfaces (keyboard, mouse, pointer, extras).
+CONFIG_TINYUSB_HID_COUNT=4
+# CONFIG_TINYUSB_CDC_ENABLED is not set
+# CONFIG_TINYUSB_MSC_ENABLED is not set

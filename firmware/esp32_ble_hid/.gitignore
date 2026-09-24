@@ -1,0 +1,14 @@
+# ESP-IDF build outputs (idf.py build / -B build_usb) and generated configuration
+/build/
+/build_*/
+/sdkconfig
+/sdkconfig.old
+/managed_components/
+/dependencies.lock
+
+# Host tests (make -C test_host)
+/test_host/build/
+
+# Editors / Python
+__pycache__/
+*.pyc

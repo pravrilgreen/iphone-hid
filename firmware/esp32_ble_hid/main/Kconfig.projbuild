@@ -1,4 +1,73 @@
-menu "CH9329 BLE HID bridge"
+menu "CH9329 HID bridge"
+
+    choice BRIDGE_OUTPUT
+        prompt "HID output to the phone"
+        default BRIDGE_OUTPUT_BLE
+        help
+            How the keyboard/mouse reports reach the phone. The host side (UART0, CH9329 frames)
+            is the same for both. Build the USB variant with
+            idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.usb" build
+
+        config BRIDGE_OUTPUT_BLE
+            bool "Bluetooth LE HID (Lightning iPhones)"
+            help
+                Needs CONFIG_BT_ENABLED + NimBLE (sdkconfig.defaults).
+
+        config BRIDGE_OUTPUT_USB
+            bool "USB HID on the native USB port (TinyUSB)"
+            depends on SOC_USB_OTG_SUPPORTED
+            help
+                The DevKit's "USB" connector (GPIO19/20) becomes a USB keyboard/mouse for the
+                phone or its hub; the host stays on the "UART" connector. Needs esp_tinyusb and
+                CONFIG_TINYUSB_HID_COUNT=4 (sdkconfig.defaults.usb).
+    endchoice
+
+    choice BRIDGE_POINTERS
+        prompt "Pointer collections"
+        default BRIDGE_POINTERS_REL_AND_ABS
+        help
+            Which pointing devices the phone sees in the composite (0x00) and mouse-only (0x02)
+            work modes. iOS follows relative mice with AssistiveTouch; an absolute pointer is
+            reported to work over USB (Aiden) and is unproven over Bluetooth LE. If iOS misbehaves
+            with both at once, build with one of them only. Commands for a missing pointer are
+            answered E6 (relative) or per BRIDGE_ABS_MOUSE_REJECT (absolute).
+
+        config BRIDGE_POINTERS_REL_AND_ABS
+            bool "Relative mouse and absolute pointer"
+        config BRIDGE_POINTERS_REL_ONLY
+            bool "Relative mouse only"
+        config BRIDGE_POINTERS_ABS_ONLY
+            bool "Absolute pointer only"
+    endchoice
+
+    config BRIDGE_ABS_MOUSE_REJECT
+        bool "Answer SEND_MS_ABS_DATA with E5 when the build has no absolute pointer"
+        default n
+        help
+            Only matters with BRIDGE_POINTERS_REL_ONLY. Default: answer 00 and drop the report
+            (like a CH9329 whose USB host ignores the absolute mouse).
+
+    config BRIDGE_VID
+        hex "USB vendor id (USB device descriptor, BLE PnP ID)"
+        default 0x303A
+        help
+            0x303A is Espressif's vendor id. The default product ids below are development
+            values in the range Espressif's TinyUSB examples use; get your own PID (Espressif
+            allocates PIDs under 0x303A for ESP32-S2/S3 products) or use your own VID before
+            deploying. The CH9329 parameter block's VID/PID bytes are stored and read back but
+            not used, so the bridge never presents WCH's ids.
+
+    config BRIDGE_PID_COMPOSITE
+        hex "Product id, composite profile (work mode 0x00 / 0x03)"
+        default 0x4008
+
+    config BRIDGE_PID_KEYBOARD
+        hex "Product id, keyboard-only profile (work mode 0x01)"
+        default 0x4004
+
+    config BRIDGE_PID_MOUSE
+        hex "Product id, mouse-only profile (work mode 0x02)"
+        default 0x4002
 
     config BRIDGE_UART_PORT_NUM
         int "UART port for the CH9329 protocol"
@@ -6,8 +75,8 @@ menu "CH9329 BLE HID bridge"
         default 0
         help
             UART0 is wired to the DevKit's USB-UART bridge chip (the port marked "UART"/"COM").
-            The console is moved to the USB Serial/JTAG port (sdkconfig.defaults), so UART0
-            carries nothing but protocol frames after boot.
+            The console is moved to the USB Serial/JTAG port (BLE build) or disabled (USB build),
+            so UART0 carries nothing but protocol frames after boot.
 
     config BRIDGE_UART_TX_GPIO
         int "UART TX GPIO"
@@ -20,17 +89,26 @@ menu "CH9329 BLE HID bridge"
         default 44
 
     config BRIDGE_NOTIFY_WAIT_MS
-        int "Max wait for BLE notification buffers (ms)"
+        int "Max wait for the HID link to accept a report (ms)"
         range 0 400
         default 100
         help
-            When the BLE stack has no free buffer for a HID report, the bridge task waits up to
-            this long (retrying every 1 ms) before answering the command with E6. It never
-            answers 00 for a report that was not queued. Must stay well below the host's 500 ms
-            reply timeout.
+            BLE: how long to wait for a free notification buffer. USB: how long to wait for the
+            endpoint to be free (previous report read, bus resumed). The bridge retries every
+            1 ms, then answers E6. It never answers 00 for a report that was not delivered.
+
+    config BRIDGE_USB_CONFIRM_WAIT_MS
+        int "USB: max wait for the host to read a queued report (ms)"
+        depends on BRIDGE_OUTPUT_USB
+        range 1 200
+        default 50
+        help
+            A USB report is answered 00 only after tud_hid_report_complete_cb() confirms the host
+            read it. With the 1 ms polling interval that normally takes 1-2 ms.
 
     config BRIDGE_CONN_ITVL_MIN
-        int "Requested connection interval min (units of 1.25 ms)"
+        int "BLE: requested connection interval min (units of 1.25 ms)"
+        depends on BRIDGE_OUTPUT_BLE
         range 6 3200
         default 12
         help
@@ -41,48 +119,44 @@ menu "CH9329 BLE HID bridge"
             rejected; the connection then keeps the iPhone's own parameters.
 
     config BRIDGE_CONN_ITVL_MAX
-        int "Requested connection interval max (units of 1.25 ms)"
+        int "BLE: requested connection interval max (units of 1.25 ms)"
+        depends on BRIDGE_OUTPUT_BLE
         range 6 3200
         default 12
 
     config BRIDGE_CONN_LATENCY
-        int "Requested peripheral latency (connection events)"
+        int "BLE: requested peripheral latency (connection events)"
+        depends on BRIDGE_OUTPUT_BLE
         range 0 30
         default 0
         help
             0: the bridge is USB-powered and should answer LED writes promptly.
 
     config BRIDGE_CONN_SUPERVISION_TIMEOUT_MS
-        int "Requested supervision timeout (ms)"
+        int "BLE: requested supervision timeout (ms)"
+        depends on BRIDGE_OUTPUT_BLE
         range 100 32000
         default 6000
         help
             The current Apple guideline asks for 6 s to 18 s (older editions: 2 s to 6 s). This
             is how long a silently vanished phone still counts as connected: see README
-            "Reliability". Shorter values may be rejected by iOS.
-
-    config BRIDGE_ABS_MOUSE_REJECT
-        bool "Answer SEND_MS_ABS_DATA with E5 instead of accepting and ignoring it"
-        default n
-        help
-            iOS only moves its pointer for relative mice, so the bridge has no absolute pointer
-            report. By default it answers 00 and drops the command (like a CH9329 whose USB host
-            ignores the absolute mouse); enable this to make the host see an error instead.
+            ("Độ tin cậy"). Shorter values may be rejected by iOS.
 
     config BRIDGE_PAIR_BUTTON_GPIO
-        int "Button that clears all bonds when held 3 s (-1 = none)"
+        int "Button that forgets paired phones when held 3 s (-1 = none)"
         range -1 48
         default 0
         help
-            GPIO0 is the DevKit's BOOT button. Holding it for 3 s after boot deletes every stored
-            bond (both key sets, as Apple's guidelines require), then the bridge waits for a new
-            pairing. Remove the bridge from the iPhone too (Settings > Bluetooth > (i) > Forget).
+            GPIO0 is the DevKit's BOOT button. BLE: holding it for 3 s after boot deletes every
+            stored bond (both key sets, as Apple's guidelines require), then the bridge waits
+            for a new pairing. Remove the bridge on the iPhone too (Settings > Bluetooth > (i) >
+            Forget This Device). USB: no effect.
 
     config BRIDGE_DEVICE_NAME_PREFIX
-        string "BLE name prefix when no product string is set"
+        string "Device name prefix when no product string is set"
         default "HID Bridge"
         help
-            The advertised name is "<prefix> XXXX" (last two bytes of the Bluetooth address),
-            unless SET_USB_STRING stored a product string, which then becomes the name.
+            The BLE name / USB product string is "<prefix> XXXX" (last two bytes of the
+            Bluetooth MAC), unless SET_USB_STRING stored a product string, which is used instead.
 
 endmenu

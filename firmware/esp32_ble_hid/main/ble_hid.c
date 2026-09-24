@@ -1,5 +1,19 @@
 /*
- * BLE HID over GATT peripheral on NimBLE (see ble_hid.h for the GATT layout and threading).
+ * BLE HID over GATT peripheral on NimBLE: the hid_link implementation for
+ * CONFIG_BRIDGE_OUTPUT_BLE (see hid_link.h for the delivery contract).
+ *
+ * GATT database (identical in every work mode, so a bonded iPhone's cached handles stay valid;
+ * only the Report Map value changes with the profile, announced with Service Changed):
+ *
+ *   Device Information 0x180A  Manufacturer, Model, Serial, Firmware rev, Software rev, PnP ID
+ *   Battery            0x180F  Battery Level (always 100 %: USB powered)
+ *   HID                0x1812  HID Information, Report Map, HID Control Point, Protocol Mode,
+ *                              Report id 1 input (keyboard), id 1 output (LEDs), id 2 input
+ *                              (mouse), id 3 input (consumer), id 4 input (system), id 5 input
+ *                              (absolute pointer)
+ *
+ * Threading: hid_link_send() and hid_link_shutdown() block and run in the bridge task, never in
+ * the NimBLE host task. GAP/GATT callbacks (host task) only copy small values and never wait.
  *
  * API usage follows the ESP-IDF NimBLE examples (examples/bluetooth/nimble/bleprph and blehr,
  * Apache-2.0 / CC0), the NimBLE host headers and ESP-IDF's own nimble HID service
@@ -19,7 +33,9 @@
  *   - Device Information Service not advertised; Service Changed present because the Report Map
  *     changes with the work mode.
  */
-#include "ble_hid.h"
+#include "sdkconfig.h"
+
+#if CONFIG_BRIDGE_OUTPUT_BLE
 
 #include <stdio.h>
 #include <string.h>
@@ -34,6 +50,7 @@
 #include "freertos/task.h"
 #include "host/ble_hs.h"
 #include "host/ble_store.h"
+#include "hid_link.h"
 #include "host/util/util.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -87,19 +104,14 @@ static const char *TAG = "ble_hid";
 static const uint8_t HID_INFO[4] = {0x11, 0x01, 0x00, 0x03};
 
 /* Report Reference descriptors: {report id, type (1 input, 2 output)}. */
-enum { RR_KB_IN = 0, RR_KB_OUT, RR_MOUSE_IN, RR_CONSUMER_IN, RR_SYSTEM_IN, RR_COUNT };
+enum { RR_KB_IN = 0, RR_KB_OUT, RR_MOUSE_IN, RR_CONSUMER_IN, RR_SYSTEM_IN, RR_ABS_IN, RR_COUNT };
 static const uint8_t REPORT_REF[RR_COUNT][2] = {
     {HID_REPORT_ID_KEYBOARD, 1}, {HID_REPORT_ID_KEYBOARD, 2}, {HID_REPORT_ID_MOUSE, 1},
-    {HID_REPORT_ID_CONSUMER, 1}, {HID_REPORT_ID_SYSTEM, 1},
+    {HID_REPORT_ID_CONSUMER, 1}, {HID_REPORT_ID_SYSTEM, 1},   {HID_REPORT_ID_ABS_POINTER, 1},
 };
 
-static const uint8_t INPUT_LEN[BLE_HID_IN_COUNT] = {
-    CH9329_KB_REPORT_LEN, CH9329_MOUSE_REPORT_LEN, CH9329_CONSUMER_REPORT_LEN, CH9329_SYSTEM_REPORT_LEN,
-};
-static const uint8_t INPUT_ID[BLE_HID_IN_COUNT] = {
-    HID_REPORT_ID_KEYBOARD, HID_REPORT_ID_MOUSE, HID_REPORT_ID_CONSUMER, HID_REPORT_ID_SYSTEM,
-};
-static const char *const INPUT_NAME[BLE_HID_IN_COUNT] = {"keyboard", "mouse", "consumer", "system"};
+#define N_IN HID_COLL_COUNT /* one input report characteristic per collection */
+#define MAX_IN_LEN 8u       /* largest input payload (keyboard) */
 
 enum {
     DIS_MANUFACTURER = 0,
@@ -116,28 +128,39 @@ enum {
     HID_CHR_CONTROL,
     HID_CHR_PROTOCOL,
     HID_CHR_KB_OUT,
-    HID_CHR_IN_BASE, /* + ble_hid_input_t */
+    HID_CHR_IN_BASE, /* + hid_coll_t */
 };
 
 /* ---- state -------------------------------------------------------------------------------- */
 
 /* Shared between the NimBLE host task (writer, in GAP/GATT callbacks) and the bridge task
- * (reader, in ble_hid_send / ble_hid_link_ready). Short critical sections only. */
+ * (reader, in hid_link_send / hid_link_ready). Short critical sections only. */
 static portMUX_TYPE s_lock = portMUX_INITIALIZER_UNLOCKED;
 static struct {
     uint16_t conn;
     bool encrypted;
-    bool subscribed[BLE_HID_IN_COUNT];
+    bool subscribed[N_IN];
     bool stalled; /* buffers stayed full for a whole wait: link presumed dead until progress */
     uint8_t leds;
     uint8_t protocol_mode;
     bool suspended;
-    uint8_t last[BLE_HID_IN_COUNT][CH9329_KB_REPORT_LEN]; /* value returned on a GATT read */
+    uint8_t last[N_IN][MAX_IN_LEN]; /* value returned on a GATT read */
 } s_st = {.conn = BLE_HS_CONN_HANDLE_NONE, .protocol_mode = 1};
-static ble_hid_stats_t s_stats;
 
-/* Set once in ble_hid_start(), read-only afterwards. */
+typedef struct {
+    uint32_t notify_ok;
+    uint32_t notify_refused; /* not connected / not encrypted / not subscribed / not in profile */
+    uint32_t notify_timeout; /* buffers stayed full for CONFIG_BRIDGE_NOTIFY_WAIT_MS */
+    uint32_t notify_error;   /* other NimBLE errors */
+    uint32_t buffer_waits;   /* reports that had to wait for a buffer at least once */
+    uint32_t connections;
+} ble_stats_t;
+static ble_stats_t s_stats;
+
+/* Set once in hid_link_start(), read-only afterwards. */
 static hid_profile_t s_profile;
+static unsigned s_colls;   /* collections in the Report Map */
+static unsigned s_primary; /* ... that GET_INFO's link status requires */
 static uint16_t s_appearance;
 static char s_name[NAME_MAX_LEN + 1];
 static char s_manufacturer[CH9329_STR_MAX + 1];
@@ -146,7 +169,7 @@ static char s_fw_rev[48]; /* esp_app_desc_t.version: 32 bytes */
 static char s_sw_rev[48]; /* "ESP-IDF " + esp_app_desc_t.idf_ver (32 bytes) */
 static uint8_t s_pnp[7];
 static const char *const MODEL = "ESP32-S3 BLE HID bridge"; /* <= 26 chars (Apple) */
-static const uint8_t *s_map;
+static uint8_t s_map[HID_DESC_MAX];
 static size_t s_map_len;
 
 /* Host task only. */
@@ -158,7 +181,7 @@ static struct ble_npl_event s_clear_ev;
 static struct ble_npl_callout s_param_retry;
 static EventGroupHandle_t s_events;
 
-static uint16_t s_in_handle[BLE_HID_IN_COUNT];
+static uint16_t s_in_handle[N_IN];
 static uint16_t s_kb_out_handle;
 static uint16_t s_battery_handle;
 
@@ -289,13 +312,13 @@ static int hid_access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gat
         }
         return rc;
     default:
-        if (which >= HID_CHR_IN_BASE && which < HID_CHR_IN_BASE + BLE_HID_IN_COUNT && read) {
+        if (which >= HID_CHR_IN_BASE && which < HID_CHR_IN_BASE + N_IN && read) {
             const size_t in = which - HID_CHR_IN_BASE;
-            uint8_t copy[CH9329_KB_REPORT_LEN];
+            uint8_t copy[MAX_IN_LEN];
             portENTER_CRITICAL(&s_lock);
             memcpy(copy, s_st.last[in], sizeof(copy));
             portEXIT_CRITICAL(&s_lock);
-            return append(ctxt->om, copy, INPUT_LEN[in]);
+            return append(ctxt->om, copy, hid_coll_input_len((hid_coll_t)in));
         }
         return BLE_ATT_ERR_UNLIKELY;
     }
@@ -381,7 +404,7 @@ static const struct ble_gatt_svc_def GATT_SERVICES[] = {
                     .arg = (void *)(uintptr_t)HID_CHR_PROTOCOL,
                     .flags = F_ENC_READ | BLE_GATT_CHR_F_WRITE_NO_RSP | BLE_GATT_CHR_F_WRITE_ENC,
                 },
-                INPUT_REPORT(BLE_HID_IN_KEYBOARD, RR_KB_IN),
+                INPUT_REPORT(HID_COLL_KEYBOARD, RR_KB_IN),
                 {
                     .uuid = BLE_UUID16_DECLARE(UUID_CHR_REPORT),
                     .access_cb = hid_access,
@@ -398,9 +421,10 @@ static const struct ble_gatt_svc_def GATT_SERVICES[] = {
                             {0},
                         },
                 },
-                INPUT_REPORT(BLE_HID_IN_MOUSE, RR_MOUSE_IN),
-                INPUT_REPORT(BLE_HID_IN_CONSUMER, RR_CONSUMER_IN),
-                INPUT_REPORT(BLE_HID_IN_SYSTEM, RR_SYSTEM_IN),
+                INPUT_REPORT(HID_COLL_MOUSE, RR_MOUSE_IN),
+                INPUT_REPORT(HID_COLL_CONSUMER, RR_CONSUMER_IN),
+                INPUT_REPORT(HID_COLL_SYSTEM, RR_SYSTEM_IN),
+                INPUT_REPORT(HID_COLL_ABS_POINTER, RR_ABS_IN),
                 {0},
             },
     },
@@ -409,23 +433,9 @@ static const struct ble_gatt_svc_def GATT_SERVICES[] = {
 
 /* ---- link state helpers ------------------------------------------------------------------- */
 
-/* Reports the phone must be receiving for GET_INFO to say "connected". */
-static bool is_primary(ble_hid_input_t in)
+static bool in_profile(hid_coll_t c)
 {
-    switch (s_profile) {
-    case HID_PROFILE_KEYBOARD:
-        return in == BLE_HID_IN_KEYBOARD;
-    case HID_PROFILE_MOUSE:
-        return in == BLE_HID_IN_MOUSE;
-    case HID_PROFILE_COMPOSITE:
-    default:
-        return in == BLE_HID_IN_KEYBOARD || in == BLE_HID_IN_MOUSE;
-    }
-}
-
-static bool in_profile(ble_hid_input_t in)
-{
-    return (hid_profile_report_ids(s_profile) & (1u << INPUT_ID[in])) != 0u;
+    return (s_colls & HID_COLL_BIT(c)) != 0u;
 }
 
 static void reset_link_state(uint16_t conn)
@@ -618,7 +628,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         const bool ours = event->subscribe.conn_handle == s_st.conn;
         int which = -1;
         if (ours) {
-            for (int i = 0; i < BLE_HID_IN_COUNT; i++) {
+            for (int i = 0; i < N_IN; i++) {
                 if (event->subscribe.attr_handle == s_in_handle[i]) {
                     s_st.subscribed[i] = event->subscribe.cur_notify != 0;
                     which = i;
@@ -627,7 +637,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         }
         portEXIT_CRITICAL(&s_lock);
         if (which >= 0) {
-            ESP_LOGI(TAG, "%s report notifications %s (reason %u)", INPUT_NAME[which],
+            ESP_LOGI(TAG, "%s report notifications %s (reason %u)", hid_coll_name((hid_coll_t)which),
                      event->subscribe.cur_notify ? "on" : "off", (unsigned)event->subscribe.reason);
         }
         return 0;
@@ -703,7 +713,7 @@ static void on_sync(void)
          * pending indication for bonded ones, sent when they reconnect. */
         ble_svc_gatt_changed(0x0001, 0xFFFF);
         s_db_changed = false;
-        ESP_LOGI(TAG, "Service Changed queued for bonded peers (profile changed)");
+        ESP_LOGI(TAG, "Service Changed queued for bonded peers (report map changed)");
     }
     advertise(true);
 }
@@ -721,14 +731,20 @@ static void copy_str(char *dst, size_t cap, const char *src, const char *fallbac
     snprintf(dst, cap, "%s", s);
 }
 
-esp_err_t ble_hid_start(const ble_hid_config_t *cfg)
+esp_err_t hid_link_start(const hid_link_config_t *cfg)
 {
     s_events = xEventGroupCreate();
     if (s_events == NULL) {
         return ESP_ERR_NO_MEM;
     }
     s_profile = cfg->profile < HID_PROFILE_COUNT ? cfg->profile : HID_PROFILE_COMPOSITE;
-    s_map = hid_report_map(s_profile, &s_map_len);
+    s_colls = cfg->collections & HID_COLL_ALL;
+    s_primary = hid_link_primary(s_colls);
+    s_map_len = hid_desc_build(s_map, sizeof(s_map), s_colls, true);
+    if (s_map_len == 0u) {
+        ESP_LOGE(TAG, "no report map for collections 0x%02X", s_colls);
+        return ESP_ERR_INVALID_ARG;
+    }
     s_appearance = s_profile == HID_PROFILE_MOUSE ? APPEARANCE_MOUSE : APPEARANCE_KEYBOARD;
 
     /* Local Name: printable ASCII, no ':' or ';' (Apple), at most 29 characters. */
@@ -751,12 +767,12 @@ esp_err_t ble_hid_start(const ble_hid_config_t *cfg)
     s_pnp[5] = 0x00; /* product version 1.00 */
     s_pnp[6] = 0x01;
 
-    /* The GATT layout never changes; the Report Map does, with the work mode. Remember which
-     * profile the bonded iPhones last saw so a change can be announced (on_sync). */
-    uint8_t last_profile = 0xFF;
-    if (!persist_get_u8("gatt_profile", &last_profile) || last_profile != (uint8_t)s_profile) {
-        s_db_changed = last_profile != 0xFF; /* first boot: nobody has a cache to invalidate */
-        persist_set_u8("gatt_profile", (uint8_t)s_profile);
+    /* The GATT layout never changes; the Report Map does, with the work mode and the pointer
+     * choice. Remember what the bonded iPhones last saw so a change can be announced (on_sync). */
+    uint8_t last_colls = 0xFF;
+    if (!persist_get_u8("gatt_colls", &last_colls) || last_colls != (uint8_t)s_colls) {
+        s_db_changed = last_colls != 0xFF; /* first boot: nobody has a cache to invalidate */
+        persist_set_u8("gatt_colls", (uint8_t)s_colls);
     }
 
     esp_err_t err = nimble_port_init();
@@ -798,17 +814,18 @@ esp_err_t ble_hid_start(const ble_hid_config_t *cfg)
     ble_npl_event_init(&s_clear_ev, clear_bonds_cb, NULL);
     ble_npl_callout_init(&s_param_retry, nimble_port_get_dflt_eventq(), param_retry_cb, NULL);
 
-    ESP_LOGI(TAG, "profile %s, name \"%s\", report map %u bytes", hid_profile_name(s_profile), s_name,
-             (unsigned)s_map_len);
+    ESP_LOGI(TAG, "profile %s, collections 0x%02X, name \"%s\", report map %u bytes", hid_profile_name(s_profile),
+             s_colls, s_name, (unsigned)s_map_len);
     nimble_port_freertos_init(host_task);
     return ESP_OK;
 }
 
 /* ---- bridge-task API ---------------------------------------------------------------------- */
 
-uint8_t ble_hid_send(ble_hid_input_t which, const uint8_t *data, size_t len)
+uint8_t hid_link_send(hid_coll_t which, const uint8_t *data, size_t len)
 {
-    if ((unsigned)which >= BLE_HID_IN_COUNT || data == NULL || len != INPUT_LEN[which] || !in_profile(which)) {
+    if ((unsigned)which >= N_IN || data == NULL || len != hid_coll_input_len(which) || len > MAX_IN_LEN ||
+        !in_profile(which)) {
         /* A report the current Report Map does not declare would be ignored by the iPhone. */
         portENTER_CRITICAL(&s_lock);
         s_stats.notify_refused++;
@@ -854,7 +871,7 @@ uint8_t ble_hid_send(ble_hid_input_t which, const uint8_t *data, size_t len)
             portENTER_CRITICAL(&s_lock);
             s_stats.notify_error++;
             portEXIT_CRITICAL(&s_lock);
-            ESP_LOGW(TAG, "%s report not queued: NimBLE error %d", INPUT_NAME[which], rc);
+            ESP_LOGW(TAG, "%s report not queued: NimBLE error %d", hid_coll_name(which), rc);
             return CH9329_STATUS_EXEC_FAILED;
         }
         waited = true;
@@ -866,7 +883,7 @@ uint8_t ble_hid_send(ble_hid_input_t which, const uint8_t *data, size_t len)
             s_st.stalled = true;
             s_stats.notify_timeout++;
             portEXIT_CRITICAL(&s_lock);
-            ESP_LOGW(TAG, "%s report not queued: BLE buffers full for %d ms", INPUT_NAME[which],
+            ESP_LOGW(TAG, "%s report not queued: BLE buffers full for %d ms", hid_coll_name(which),
                      CONFIG_BRIDGE_NOTIFY_WAIT_MS);
             return CH9329_STATUS_EXEC_FAILED;
         }
@@ -874,7 +891,7 @@ uint8_t ble_hid_send(ble_hid_input_t which, const uint8_t *data, size_t len)
     }
 }
 
-bool ble_hid_link_ready(void)
+bool hid_link_ready(void)
 {
     /* A stall ends as soon as the stack's queue drains again (the phone acknowledged), even if
      * no report was sent since: a host that waits for "connected" before sending must see it. */
@@ -884,8 +901,8 @@ bool ble_hid_link_ready(void)
         s_st.stalled = false;
     }
     bool ready = s_st.conn != BLE_HS_CONN_HANDLE_NONE && s_st.encrypted && !s_st.stalled;
-    for (int i = 0; i < BLE_HID_IN_COUNT; i++) {
-        if (is_primary((ble_hid_input_t)i) && !s_st.subscribed[i]) {
+    for (int i = 0; i < N_IN; i++) {
+        if ((s_primary & HID_COLL_BIT(i)) != 0u && !s_st.subscribed[i]) {
             ready = false;
         }
     }
@@ -893,7 +910,7 @@ bool ble_hid_link_ready(void)
     return ready;
 }
 
-uint8_t ble_hid_leds(void)
+uint8_t hid_link_leds(void)
 {
     portENTER_CRITICAL(&s_lock);
     const uint8_t leds = s_st.leds;
@@ -901,7 +918,7 @@ uint8_t ble_hid_leds(void)
     return leds;
 }
 
-void ble_hid_disconnect(uint32_t timeout_ms)
+void hid_link_shutdown(uint32_t timeout_ms)
 {
     portENTER_CRITICAL(&s_lock);
     const uint16_t conn = s_st.conn;
@@ -915,14 +932,25 @@ void ble_hid_disconnect(uint32_t timeout_ms)
     }
 }
 
-void ble_hid_clear_bonds(void)
+void hid_link_forget_peers(void)
 {
     ble_npl_eventq_put(nimble_port_get_dflt_eventq(), &s_clear_ev);
 }
 
-void ble_hid_stats(ble_hid_stats_t *out)
+uint8_t hid_link_output_id(void)
+{
+    return CH9329_OUTPUT_BLE;
+}
+
+void hid_link_log_stats(void)
 {
     portENTER_CRITICAL(&s_lock);
-    *out = s_stats;
+    const ble_stats_t st = s_stats;
+    const bool conn = s_st.conn != BLE_HS_CONN_HANDLE_NONE;
     portEXIT_CRITICAL(&s_lock);
+    ESP_LOGI(TAG, "ble: connected %d, connections %lu | notify ok %lu refused %lu timeout %lu error %lu waits %lu", conn,
+             (unsigned long)st.connections, (unsigned long)st.notify_ok, (unsigned long)st.notify_refused,
+             (unsigned long)st.notify_timeout, (unsigned long)st.notify_error, (unsigned long)st.buffer_waits);
 }
+
+#endif /* CONFIG_BRIDGE_OUTPUT_BLE */
