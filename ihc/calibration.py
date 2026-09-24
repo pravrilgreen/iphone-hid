@@ -239,6 +239,7 @@ def _measure(s: _Session, W, H, inner_h, pos, coarse_counts, fine_counts, repeat
     rate: dict[int, float] = {}  # rough points per coarse report, per axis
     for axis, span in ((0, W), (1, inner_h)):
         pos = _approach(s, pos, centre[axis], axis, span, rate)
+    pos = _tune_steps(s, pos, W, centre)
     samples: dict[tuple[int, int, bool], list[tuple[int, float]]] = {}
 
     def predicted(axis: int, fine: bool, n: int) -> float:
@@ -347,6 +348,38 @@ def _measure(s: _Session, W, H, inner_h, pos, coarse_counts, fine_counts, repeat
     scale = (W ** 2 + H ** 2) ** 0.5 / (start[0] ** 2 + start[1] ** 2) ** 0.5
     return replace(pm.cal, reset_reports=max(2 * reset, round(reset * scale) + 2), method="safari",
                    measured_at=time.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+COARSE_TARGET_PT = 20.0  # travel per coarse report: fast, while a fine run still covers one of them
+FINE_TARGET_PT = 1.0  # travel per fine report: the resolution of a tap
+
+
+def _tune_steps(s: _Session, pos, W: float, centre) -> tuple[float, float]:
+    """Pick report sizes for this phone so a coarse report moves about 20 pt and a fine one about
+    1 pt, whatever the Tracking Speed. Distance grows faster than the report size (acceleration),
+    so the size is corrected a few times from measured runs along X around the page centre."""
+    pm = s.pm
+    for fine, target, lo, hi, n in ((False, COARSE_TARGET_PT, 4, 100, 3), (True, FINE_TARGET_PT, 1, 8, 8)):
+        for _ in range(4):
+            step = pm.cal.fine_step if fine else pm.cal.step
+            sign = 1 if pos[0] < centre[0] else -1
+            before = pos
+            try:
+                pm.run(0, 0 if fine else sign * n, sign * n if fine else 0)
+            except PointerDesync:
+                pos = s.must_click()
+                continue
+            pos = s.must_click()
+            per = abs(pos[0] - before[0]) / n
+            if per <= 0:
+                new = min(hi, step * 2)
+            else:
+                new = min(hi, max(lo, round(step * (target / per) ** 0.7)))
+            s.log("calibration_step", fine=fine, step=step, per_report_pt=round(per, 2), next=new)
+            if new == step or (per and abs(per - target) / target < 0.25):
+                break
+            pm.cal = replace(pm.cal, **({"fine_step": new} if fine else {"step": new}))
+    return pos
 
 
 def _approach(s: _Session, pos, target: float, axis: int, span: float, rate: dict[int, float]) -> tuple[float, float]:

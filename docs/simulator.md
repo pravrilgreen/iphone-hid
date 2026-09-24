@@ -44,7 +44,7 @@ Có hai cách chạy:
 | Cấu hình | Sai số tap tối đa | Thời gian mỗi tap | Hiệu chỉnh |
 |---|---|---|---|
 | Tuyệt đối | 0,25 pt | 0,16 s | 5 s, 20 click |
-| Tương đối, Tracking 0,4–2,5, iPhone SE / 15 / 15 Pro Max | 0,4–2,1 pt | 1,1–1,7 s | 41–74 s, 84–119 click |
+| Tương đối, Tracking 0,4–2,5, iPhone SE / 15 / 15 Pro Max | 0,45–1,0 pt | median 1,2–1,5 s (max 2 s) | 42–51 s |
 
 Tất cả 100% trúng mục tiêu; không có cú click nào khi hiệu chỉnh rơi ngoài trang.
 

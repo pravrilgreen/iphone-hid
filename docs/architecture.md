@@ -43,7 +43,7 @@ sim: iPhone mô phỏng (UI, con trỏ, Safari, HDMI + MJPEG) cắm vào đúng 
 | Chế độ | Khi nào | Cách làm | Trên mô phỏng |
 |---|---|---|---|
 | **Tuyệt đối** | iPhone theo báo cáo chuột tuyệt đối (dự án Aiden cho thấy iOS nhận qua USB; phải kiểm chứng với CH9329, bài T1) | một báo cáo đặt con trỏ đúng chỗ, chờ khoảng 80 ms cho iOS trượt con trỏ tới, rồi click | sai số ≤ 0,3 pt, khoảng 0,15 s/tap |
-| **Tương đối** | iPhone chỉ theo chuột tương đối (có thể xảy ra với CH9329; gần như chắc chắn với Bluetooth) | neo góc gần nhất rồi chạy từng trục (3.2) | sai số ≤ 1–2 pt, khoảng 1,1–1,7 s/tap |
+| **Tương đối** | iPhone chỉ theo chuột tương đối (có thể xảy ra với CH9329; gần như chắc chắn với Bluetooth) | neo góc gần nhất rồi chạy từng trục (3.2) | sai số ≤ 1 pt, khoảng 1,2–1,5 s/tap |
 
 **Hiệu chỉnh** quyết định chế độ:
 1. Host mở một trang web trên Safari của iPhone (qua Spotlight, hoặc người dùng gõ địa chỉ).
@@ -58,8 +58,9 @@ Mọi cú click khi hiệu chỉnh đều được giữ trong vùng trang, khô
 
 1. **Neo:** gửi các báo cáo (±127, ±127) để dồn con trỏ vào **góc gần mục tiêu nhất**. Con trỏ dừng ở mép
    màn hình nên vị trí sau khi neo là biết chắc.
-2. **Chạy từng trục:** trục X trước, Y sau. Mỗi trục gồm một đoạn bước lớn (24 đơn vị) và một đoạn bước nhỏ
-   (3 đơn vị), mỗi đoạn:
+2. **Chạy từng trục:** trục X trước, Y sau. Mỗi trục gồm một đoạn bước lớn và một đoạn bước nhỏ. Cỡ bước do
+   hiệu chỉnh chọn cho từng máy: bước lớn đi khoảng 20 pt, bước nhỏ khoảng 1 pt mỗi báo cáo, bất kể Tracking
+   Speed. Mỗi đoạn:
    - bắt đầu **từ trạng thái đứng yên** (nghỉ ít nhất 0,1 s);
    - gửi đều **một báo cáo mỗi 20 ms**, tính từ lúc bắt đầu gửi báo cáo này tới lúc bắt đầu gửi báo cáo
      sau.

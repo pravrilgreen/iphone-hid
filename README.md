@@ -137,8 +137,8 @@ Lưu ý:
 
 | Chỉ số | Mục tiêu | Trên mô phỏng |
 |---|---|---|
-| Độ chính xác chạm | 95% trong 4 pt (≈ 5 px ở khung 1080p) | chuột tuyệt đối ≤ 0,3 pt; chuột tương đối ≤ 2,1 pt |
-| Thời gian một lần chạm | < 1,5 s | tuyệt đối ≈ 0,15 s; tương đối 1,1–1,7 s |
+| Độ chính xác chạm | 95% trong 4 pt (≈ 5 px ở khung 1080p) | chuột tuyệt đối ≤ 0,3 pt; chuột tương đối ≤ 1 pt |
+| Thời gian một lần chạm | < 1,5 s | tuyệt đối ≈ 0,15 s; tương đối 1,2–1,5 s |
 | Độ trễ hình tới trình duyệt (LAN) | < 0,25 s | cần đo trên máy thật |
 | Lệnh bị mất mà không biết | 0 | mọi lệnh có xác nhận; lệnh lỗi được làm lại hoặc báo lỗi |
 
