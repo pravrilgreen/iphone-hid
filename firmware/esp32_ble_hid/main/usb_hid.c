@@ -49,7 +49,7 @@ static const char *TAG = "usb_hid";
 
 #define MAX_ITF 4
 #define EP_SIZE 16    /* >= largest report + id byte (extras: 1 + 3) */
-#define POLL_MS 1     /* bInterval: the phone polls each endpoint every 1 ms */
+#define POLL_MS 1     /* bInterval: the phone polls each endpoint every 1 ms (GET_INFO bytes 6-7) */
 #define MAX_POWER_MA 100
 #define MAX_IN_LEN 8u /* largest input payload (keyboard) */
 
@@ -407,6 +407,13 @@ uint8_t hid_link_leds(void)
     const uint8_t leds = s_leds;
     portEXIT_CRITICAL(&s_lock);
     return leds;
+}
+
+uint16_t hid_link_report_period(void)
+{
+    /* The bInterval every IN endpoint declares; the ESP32-S3's USB is full speed, where
+     * bInterval counts 1 ms frames. Unknown (0) until the phone configured the device. */
+    return tud_mounted() ? (uint16_t)(POLL_MS * CH9329_PERIOD_UNITS_PER_MS) : 0u;
 }
 
 void hid_link_shutdown(uint32_t timeout_ms)

@@ -99,6 +99,7 @@ static const char *TAG = "ble_hid";
 
 #define PARAM_RETRY_MS 5000u
 #define EVT_DISCONNECTED BIT0
+#define ITVL_TO_PERIOD 5u /* conn_itvl counts 1.25 ms; GET_INFO's report period counts 0.25 ms */
 
 /* HID Information: bcdHID 1.11, country 0, flags RemoteWake | NormallyConnectable. */
 static const uint8_t HID_INFO[4] = {0x11, 0x01, 0x00, 0x03};
@@ -144,6 +145,7 @@ static struct {
     uint8_t leds;
     uint8_t protocol_mode;
     bool suspended;
+    uint16_t period; /* connection interval in 0.25 ms units (GET_INFO bytes 6-7), 0 = none */
     uint8_t last[N_IN][MAX_IN_LEN]; /* value returned on a GATT read */
 } s_st = {.conn = BLE_HS_CONN_HANDLE_NONE, .protocol_mode = 1};
 
@@ -448,6 +450,7 @@ static void reset_link_state(uint16_t conn)
     s_st.leds = 0;
     s_st.protocol_mode = 1;
     s_st.suspended = false;
+    s_st.period = 0;
     memset(s_st.last, 0, sizeof(s_st.last));
     portEXIT_CRITICAL(&s_lock);
 }
@@ -578,6 +581,21 @@ static void log_conn(const char *what, uint16_t conn)
              (unsigned)d.supervision_timeout, d.sec_state.encrypted, d.sec_state.bonded);
 }
 
+/* GET_INFO's report period: notifications reach the phone only at connection events, so the
+ * connection interval is the grid the host should pace pointer reports on. The descriptor holds
+ * the interval in effect (after a failed update too: the old one). */
+static void update_period(uint16_t conn)
+{
+    struct ble_gap_conn_desc d;
+    /* conn_itvl <= 3200 (4 s) by the specification: x5 fits in 16 bits. */
+    const uint16_t period = ble_gap_conn_find(conn, &d) == 0 ? (uint16_t)(d.conn_itvl * ITVL_TO_PERIOD) : 0u;
+    portENTER_CRITICAL(&s_lock);
+    if (s_st.conn == conn) {
+        s_st.period = period;
+    }
+    portEXIT_CRITICAL(&s_lock);
+}
+
 static int gap_event(struct ble_gap_event *event, void *arg)
 {
     (void)arg;
@@ -589,6 +607,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
             return 0;
         }
         reset_link_state(event->connect.conn_handle);
+        update_period(event->connect.conn_handle);
         s_param_retried = false;
         portENTER_CRITICAL(&s_lock);
         s_stats.connections++;
@@ -647,6 +666,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         if (event->conn_update.status != 0) {
             ESP_LOGW(TAG, "connection parameter update failed: %d", event->conn_update.status);
         }
+        update_period(event->conn_update.conn_handle);
         log_conn("connection parameters", event->conn_update.conn_handle);
         if (!s_param_retried) {
             struct ble_gap_conn_desc d;
@@ -916,6 +936,15 @@ uint8_t hid_link_leds(void)
     const uint8_t leds = s_st.leds;
     portEXIT_CRITICAL(&s_lock);
     return leds;
+}
+
+uint16_t hid_link_report_period(void)
+{
+    /* Set on CONNECT and CONN_UPDATE, cleared on DISCONNECT (host task). */
+    portENTER_CRITICAL(&s_lock);
+    const uint16_t period = s_st.period;
+    portEXIT_CRITICAL(&s_lock);
+    return period;
 }
 
 void hid_link_shutdown(uint32_t timeout_ms)

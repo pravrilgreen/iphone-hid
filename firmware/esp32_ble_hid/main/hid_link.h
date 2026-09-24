@@ -48,6 +48,11 @@ bool hid_link_ready(void);
 /* Keyboard LEDs written by the phone (bit0 Num, bit1 Caps, bit2 Scroll). */
 uint8_t hid_link_leds(void);
 
+/* GET_INFO bytes 6-7: how often the phone takes a report, in 0.25 ms units; 0 while not
+ * connected. BLE: the current connection interval. USB: the IN endpoints' polling interval,
+ * while configured. */
+uint16_t hid_link_report_period(void);
+
 /* Leave the phone cleanly before a restart (BLE: terminate the connection; USB: detach). */
 void hid_link_shutdown(uint32_t timeout_ms);
 

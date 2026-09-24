@@ -443,6 +443,7 @@ static uint8_t dispatch(ch9329_core_t *c, uint8_t cmd, const uint8_t *d, uint8_t
             return CH9329_STATUS_BAD_PARAM;
         }
         const uint8_t leds = c->sink.leds != NULL ? c->sink.leds(c->sink.ctx) : 0u;
+        const uint16_t period = c->sink.report_period != NULL ? c->sink.report_period(c->sink.ctx) : 0u;
         memset(r->data, 0, 8u);
         r->data[0] = CH9329_BRIDGE_VERSION;
         r->data[1] = link_ready(c) ? 0x01u : 0x00u;
@@ -450,6 +451,8 @@ static uint8_t dispatch(ch9329_core_t *c, uint8_t cmd, const uint8_t *d, uint8_t
         r->data[3] = c->output;
         r->data[4] = c->collections;
         r->data[5] = rel_run_supported(c) ? CH9329_FEATURE_REL_RUN : 0x00u;
+        r->data[6] = (uint8_t)(period & 0xFFu); /* little-endian, 0.25 ms units */
+        r->data[7] = (uint8_t)(period >> 8);
         r->len = 8u;
         return CH9329_STATUS_OK;
     }

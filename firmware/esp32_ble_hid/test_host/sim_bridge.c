@@ -28,10 +28,15 @@
  *     failat K           the K-th next report is refused (K >= 1), the others go through
  *     delay MS           every report takes MS ms before it is accepted (waiting for BLE buffers)
  *     leds N             keyboard LED byte reported by GET_INFO
+ *     period N           report period in 0.25 ms units (GET_INFO bytes 6-7; 0..65535, 0 = unknown
+ *                        / not connected). Default 60 (a 15 ms BLE connection interval); 0 with
+ *                        --not-ready (no phone connected at boot)
  *
  * RESET is simulated as a reboot of the core: the stored configuration becomes active, as on
  * the ESP32. SEND_MS_REL_RUN (0x30) runs on the real monotonic clock. GET_INFO reports output
- * 0x7F (simulator) and the collections of the running work mode with both pointers.
+ * 0x7F (simulator), the collections of the running work mode with both pointers, and the report
+ * period set by "period" (independent of "ready": the firmware keeps its connection interval
+ * while a report type is unsubscribed or the buffers are stalled).
  *
  * Timing: bytes are fed with the time they were read, minus the time the simulated sink spent
  * blocked ("delay"). The firmware gets the same effect from its separate UART reader task:
@@ -64,6 +69,7 @@ typedef struct {
     unsigned fail_skip; /* reports to let through before fail_next applies */
     unsigned delay_ms;
     uint8_t leds;
+    uint16_t period; /* GET_INFO bytes 6-7, 0.25 ms units */
     bool have_flash;
     ch9329_persist_t flash;
     bool restart;
@@ -198,6 +204,11 @@ static uint8_t cb_leds(void *ctx)
     return ((sim_t *)ctx)->leds;
 }
 
+static uint16_t cb_report_period(void *ctx)
+{
+    return ((sim_t *)ctx)->period;
+}
+
 static bool cb_load(void *ctx, ch9329_persist_t *out)
 {
     sim_t *s = ctx;
@@ -244,6 +255,8 @@ static bool control(sim_t *s, const char *line)
         s->delay_ms = (unsigned)v;
     } else if (strcmp(word, "leds") == 0 && numeric && v <= 0xFFu) {
         s->leds = (uint8_t)v;
+    } else if (strcmp(word, "period") == 0 && numeric && v <= 0xFFFFu) {
+        s->period = (uint16_t)v;
     } else if (strcmp(word, "reject") == 0) {
         if (strcmp(arg, "none") == 0) {
             s->reject = 0;
@@ -306,6 +319,8 @@ int main(int argc, char **argv)
     }
     static sim_t sim;
     sim.ready = !(argc > 2 && strcmp(argv[2], "--not-ready") == 0);
+    /* Connected at the bridge's requested BLE interval (15 ms), or no phone at all. */
+    sim.period = sim.ready ? (uint16_t)(15u * CH9329_PERIOD_UNITS_PER_MS) : 0u;
     sim.events = fopen(argv[1], "a");
     if (sim.events == NULL) {
         perror("sim_bridge: events file");
@@ -345,6 +360,7 @@ int main(int argc, char **argv)
         .abs_mouse_report = cb_abs,
         .link_ready = cb_ready,
         .leds = cb_leds,
+        .report_period = cb_report_period,
         .persist_load = cb_load,
         .persist_store = cb_store,
         .request_restart = cb_restart,

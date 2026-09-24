@@ -135,7 +135,7 @@ static const char *const V_ABS_MOVE = "57 AB 00 04 07 02 00 40 01 15 02 00 67";
 
 /* Replies (success = CMD|0x80 + status 00; SUM by hand). */
 /* GET_INFO: version 0x40 (bridge), link, LEDs, output 0 (not set), collections 0, features
- * bit0 (the fake sink has a clock: SEND_MS_REL_RUN supported). */
+ * bit0 (the fake sink has a clock: SEND_MS_REL_RUN supported), report period 0 (unknown). */
 static const char *const R_INFO_READY = "57 AB 00 81 08 40 01 00 00 00 01 00 00 CD";
 static const char *const R_INFO_IDLE = "57 AB 00 81 08 40 00 00 00 00 01 00 00 CC";
 static const char *const R_KB_OK = "57 AB 00 82 01 00 85";
@@ -352,8 +352,61 @@ TEST(test_get_info_bridge_bytes)
     rig_init();
     ch9329_core_set_link_info(&R.core, CH9329_OUTPUT_USB, 0x1F);
     R.fake.leds = 0x02;
+    R.fake.report_period = 4; /* USB, bInterval 1 ms */
     feed_hex(V_GET_INFO, 0);
-    CHECK_REPLY(0, "57 AB 00 81 08 40 01 02 02 1F 01 00 00 F0");
+    CHECK_REPLY(0, "57 AB 00 81 08 40 01 02 02 1F 01 04 00 F4");
+}
+
+/* GET_INFO bytes 6-7: the sink's report period, u16 little-endian in 0.25 ms units, asked again
+ * on every GET_INFO (a BLE link renegotiates its interval at any time). */
+TEST(test_get_info_report_period)
+{
+    rig_init();
+    feed_hex(V_GET_INFO, 0);
+    CHECK_REPLY(0, R_INFO_READY); /* default 0: unknown / not connected */
+
+    R.fake.report_period = 60; /* 15 ms connection interval */
+    feed_hex(V_GET_INFO, 1);
+    CHECK_REPLY(1, "57 AB 00 81 08 40 01 00 00 00 01 3C 00 09");
+
+    R.fake.report_period = 0x1234; /* byte 6 = low byte, byte 7 = high byte */
+    feed_hex(V_GET_INFO, 2);
+    CHECK_REPLY(2, "57 AB 00 81 08 40 01 00 00 00 01 34 12 13");
+
+    R.fake.report_period = 0xFFFF;
+    feed_hex(V_GET_INFO, 3);
+    CHECK_REPLY(3, "57 AB 00 81 08 40 01 00 00 00 01 FF FF CB");
+
+    /* Not gated by byte 1: a connected link whose reports are not all deliverable still has
+     * its interval. */
+    R.fake.report_period = 60;
+    R.fake.ready = false;
+    feed_hex(V_GET_INFO, 4);
+    CHECK_REPLY(4, "57 AB 00 81 08 40 00 00 00 00 01 3C 00 08");
+
+    /* Disconnected: the platform reports 0 again. */
+    R.fake.ready = true;
+    R.fake.report_period = 0;
+    feed_hex(V_GET_INFO, 5);
+    CHECK_REPLY(5, R_INFO_READY);
+
+    /* Every value round-trips (the other bytes do not move). */
+    fake_clear(&R.fake);
+    size_t n = 0;
+    for (uint32_t v = 0; v <= 0xFFFFu; v += (v < 512u ? 1u : 251u)) {
+        R.fake.report_period = (uint16_t)v;
+        feed_hex(V_GET_INFO, 10u + (uint32_t)n);
+        const fake_event_t *e = fake_nth(&R.fake, FK_REPLY, 0);
+        CHECK(e != NULL && e->len == 14);
+        if (e != NULL && e->len == 14) {
+            CHECK_EQ((uint32_t)e->bytes[11] | ((uint32_t)e->bytes[12] << 8), v);
+            CHECK_EQ(e->bytes[10], CH9329_FEATURE_REL_RUN);
+        }
+        fake_clear(&R.fake);
+        n++;
+    }
+    CHECK(n > 700);
+    CHECK_EQ(R.fake.bad_replies, 0);
 }
 
 /* ---- SEND_MS_REL_RUN (vendor 0x30) ------------------------------------------------------- */
@@ -1140,7 +1193,8 @@ TEST(test_null_sink_callbacks)
     ch9329_core_init(&R.core, &s, NULL);
     CHECK(R.core.used_defaults);
     feed_hex(V_GET_INFO, 0);
-    CHECK_REPLY(0, "57 AB 00 81 08 40 00 00 00 00 00 00 00 CB"); /* no clock: no REL_RUN */
+    /* No clock: no REL_RUN. No report_period: bytes 6-7 are 0. */
+    CHECK_REPLY(0, "57 AB 00 81 08 40 00 00 00 00 00 00 00 CB");
     feed_hex(V_PRESS_A, 1);
     CHECK_EQ(reply_status(1), CH9329_STATUS_EXEC_FAILED);
     uint8_t cfg[CH9329_CFG_SIZE];
@@ -1559,6 +1613,7 @@ void run_proto_tests(void)
     RUN(test_abs_mouse_link_down_e6);
     RUN(test_abs_mouse_without_pointer);
     RUN(test_get_info_bridge_bytes);
+    RUN(test_get_info_report_period);
     RUN(test_rel_run_schedule);
     RUN(test_rel_run_back_to_back_keeps_the_schedule);
     RUN(test_rel_run_late_steps_sent_not_skipped);

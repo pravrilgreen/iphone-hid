@@ -58,7 +58,11 @@ extern "C" {
  *   byte 4  HID collections of the running profile: bit0 keyboard, bit1 relative mouse,
  *           bit2 consumer, bit3 system, bit4 absolute pointer (hid_report_map.h HID_COLL_*)
  *   byte 5  vendor features: bit0 SEND_MS_REL_RUN (0x30)
- *   byte 6-7 0
+ *   byte 6-7 report period: how often the phone actually takes a HID report, u16 little-endian
+ *           (byte 6 low) in units of 0.25 ms; 0 = unknown / not connected. BLE: the current
+ *           connection interval (60 = 15 ms); USB: the interrupt IN endpoints' polling interval
+ *           (4 = 1 ms). Read on every GET_INFO: a BLE link can renegotiate its interval. The host
+ *           paces pointer reports at a multiple of it, so the phone sees evenly spaced reports.
  */
 #define CH9329_BRIDGE_VERSION 0x40u
 #define CH9329_OUTPUT_UNKNOWN 0x00u
@@ -66,6 +70,7 @@ extern "C" {
 #define CH9329_OUTPUT_USB 0x02u
 #define CH9329_OUTPUT_SIM 0x7Fu
 #define CH9329_FEATURE_REL_RUN 0x01u
+#define CH9329_PERIOD_UNITS_PER_MS 4u /* GET_INFO bytes 6-7 count 0.25 ms */
 
 enum ch9329_cmd {
     CH9329_CMD_GET_INFO = 0x01,
@@ -176,8 +181,8 @@ typedef struct {
 
 /*
  * Every callback is optional (NULL): a NULL report callback makes the command fail with E6,
- * NULL link_ready means "never ready", NULL leds means 0, NULL persist_store means "cannot
- * store" (E6), NULL persist_load means "nothing stored".
+ * NULL link_ready means "never ready", NULL leds and NULL report_period mean 0, NULL
+ * persist_store means "cannot store" (E6), NULL persist_load means "nothing stored".
  *
  * Report callbacks are the ONLY authority on delivery. They return CH9329_STATUS_OK only once
  * the report has really been handed to the HID link for this exact report (BLE: connected,
@@ -202,6 +207,9 @@ typedef struct {
     uint8_t (*abs_mouse_report)(void *ctx, const uint8_t report[CH9329_ABS_REPORT_LEN]);
     bool (*link_ready)(void *ctx);   /* GET_INFO byte 1 only (see above) */
     uint8_t (*leds)(void *ctx);      /* keyboard LED output report: bit0 num, bit1 caps, bit2 scroll */
+    /* GET_INFO bytes 6-7: current report period in 0.25 ms units, 0 = unknown / not connected.
+     * Asked on every GET_INFO (like leds) because the link can change it at any time. */
+    uint16_t (*report_period)(void *ctx);
     bool (*persist_load)(void *ctx, ch9329_persist_t *out);
     bool (*persist_store)(void *ctx, const ch9329_persist_t *p);
     /* RESET was accepted: the platform restarts once the reply (if any) has left the wire. */
@@ -307,7 +315,8 @@ void ch9329_core_feed(ch9329_core_t *c, const uint8_t *data, size_t len, uint32_
 void ch9329_core_poll(ch9329_core_t *c, uint32_t now_ms);
 uint32_t ch9329_core_ms_until_timeout(const ch9329_core_t *c, uint32_t now_ms);
 void ch9329_core_set_rx_slack(ch9329_core_t *c, uint32_t slack_ms);
-/* What GET_INFO bytes 3 and 4 report (set by the platform once it knows its profile). */
+/* What GET_INFO bytes 3 and 4 report (set by the platform once it knows its profile). Bytes
+ * 1, 2 and 6-7 change while running: they come from the sink (link_ready, leds, report_period). */
 void ch9329_core_set_link_info(ch9329_core_t *c, uint8_t output, uint8_t collections);
 /* Scale a CH9329 absolute coordinate (0..4095) to the HID logical range 0..32767. */
 uint16_t ch9329_abs_scale(uint16_t grid);

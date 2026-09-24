@@ -115,8 +115,10 @@ idf.py -B build_usb -p /dev/ttyUSB0 flash
 
 - **Kết quả:** cả hai biến thể **0 warning, 0 error**. Code của bridge được biên dịch với `-Werror -Wshadow
   -Wsign-compare -Wunused-parameter`; lõi giao thức thêm `-Wextra -Wconversion -Wsign-conversion`.
-  - Ảnh BLE **557 776 byte**. Kiểm tra bằng `nm`: có NimBLE, không có TinyUSB.
-  - Ảnh USB **291 216 byte**. Có TinyUSB, không có Bluetooth.
+  - Ảnh BLE **557 936 byte**. Kiểm tra bằng `nm`: có NimBLE, không có TinyUSB.
+  - Ảnh USB **291 296 byte**. Có TinyUSB, không có Bluetooth.
+  - Kích thước trên là của lần build lại sau khi thêm chu kỳ báo cáo (GET_INFO byte 6–7), cùng bộ công cụ và cùng
+    lệnh, vẫn 0 warning.
   - Phân vùng app là 1,5 MB (`partitions.csv`).
 - **Chưa làm:**
   - Chưa build qua đường Component Manager thật (registry bị chặn).
@@ -152,7 +154,7 @@ idf.py -B build_usb -p /dev/ttyUSB0 flash
 
 | Lệnh / hành vi | CH9329 | Bridge |
 |---|---|---|
-| `0x01 GET_INFO` | version 0x30…, byte 1 = USB đã enumerate | version **0x40** ("ihc bridge v1.0"). Byte 1 = **1 chỉ khi báo cáo thật sự tới được iPhone** (xem dưới). Byte 2 = LED do iPhone ghi. Byte 3–5 = thông tin bridge |
+| `0x01 GET_INFO` | version 0x30…, byte 1 = USB đã enumerate | version **0x40** ("ihc bridge v1.0"). Byte 1 = **1 chỉ khi báo cáo thật sự tới được iPhone** (xem dưới). Byte 2 = LED do iPhone ghi. Byte 3–7 = thông tin bridge |
 | `0x02` bàn phím | có | có. **00 chỉ khi báo cáo đã giao** (xem Độ tin cậy) |
 | `0x03` media: `02 b1 b2 b3` | có | consumer control, report id 3, 24 bit theo đúng thứ tự bit của CH9329 |
 | `0x03` ACPI: `01 bits` | có | System Control (Power/Sleep/Wake), report id 4. iOS xử lý thế nào: chưa rõ |
@@ -185,10 +187,23 @@ idf.py -B build_usb -p /dev/ttyUSB0 flash
 | 3 | đầu ra: `0x01` BLE, `0x02` USB, `0x7F` bộ mô phỏng host |
 | 4 | các collection HID đang có: bit0 bàn phím, bit1 chuột tương đối, bit2 consumer, bit3 system, bit4 con trỏ tuyệt đối |
 | 5 | tính năng: bit0 có `SEND_MS_REL_RUN` |
-| 6–7 | 0 |
+| 6–7 | **chu kỳ báo cáo**: iPhone thực sự nhận báo cáo HID bao lâu một lần. Số 16 bit **little-endian** (byte 6 là byte thấp), đơn vị **0,25 ms**. BLE: connection interval hiện tại (`60` = 15 ms). USB: chu kỳ poll của endpoint IN (`bInterval` 1 ms → `4`). `0` = chưa biết / chưa kết nối |
 
 Byte 1 = 0 không có nghĩa là mọi lệnh đều hỏng. Mỗi lệnh HID tự nhận câu trả lời thật của riêng nó. Ví dụ bàn phím
 vẫn chạy khi iPhone chưa subscribe báo cáo chuột.
+
+**Byte 6–7 dùng để làm gì:** iOS tăng tốc chuột tương đối theo tốc độ. Cùng một chuỗi báo cáo chỉ cho cùng quãng
+đường khi các báo cáo tới iPhone cách nhau đều. Qua BLE, báo cáo chỉ lên sóng ở các connection event. Host gửi mỗi
+20 ms mà interval là 15 ms thì iPhone nhận lúc cách 15 ms, lúc cách 30 ms, và quãng đường không lặp lại được. Host nên
+canh nhịp con trỏ theo **bội số** của chu kỳ này, và hỏi lại GET_INFO trước khi canh nhịp, vì iPhone đổi được
+interval bất cứ lúc nào.
+
+- **BLE:** đọc từ connection descriptor của NimBLE (`ble_gap_conn_find()`) khi kết nối và mỗi khi thông số kết nối
+  đổi (`BLE_GAP_EVENT_CONN_UPDATE`). `conn_itvl` tính theo 1,25 ms nên giá trị = `conn_itvl × 5`. Về 0 khi mất kết
+  nối. Có giá trị ngay khi kết nối, kể cả khi byte 1 còn là 0 (chưa mã hoá, chưa subscribe).
+- **USB:** hằng số `bInterval` mà firmware tự khai báo cho mọi endpoint IN (1 ms, full speed) → `4`. Chỉ báo khi
+  iPhone đã cấu hình thiết bị, ngược lại 0.
+- **Bộ mô phỏng host:** mặc định `60` (15 ms), `0` khi chạy với `--not-ready`. Đổi bằng lệnh `period` trên stdin.
 
 ### Lệnh mở rộng `0x30 SEND_MS_REL_RUN`
 
@@ -206,7 +221,7 @@ vẫn chạy khi iPhone chưa subscribe báo cáo chuột.
   - `F0 E5`: count = 0, buttons > 7, hoặc `(count−1)·interval > 2000 ms`.
 - Báo cáo đi trễ (link chậm) được gửi ngay, không bị bỏ. Lịch là tuyệt đối nên không cộng dồn độ trễ.
 - Trên BLE, báo cáo chỉ lên sóng theo từng connection interval (15 ms). Chọn `interval_ms` là bội số của interval đó
-  thì nhịp mới đều trên iPhone.
+  thì nhịp mới đều trên iPhone. Interval hiện tại đọc ở GET_INFO byte 6–7.
 - Driver hiện tại chưa có hàm cho lệnh này: dùng `transact_raw()`. Lưu ý thời gian trả lời có thể tới 2 s, lâu hơn
   timeout 500 ms mặc định.
 
@@ -320,7 +335,7 @@ make -C test_host check    # cả hai
 
 `e2e` dùng `/home/user/iphone-hid/.venv/bin/python` nếu có.
 
-**Unit test** (`test_host/test_proto.c`, `test_hid_desc.c`): 70 test, khoảng 55 000 phép kiểm, tất cả qua. Bao gồm:
+**Unit test** (`test_host/test_proto.c`, `test_hid_desc.c`): 72 test, khoảng 58 000 phép kiểm, tất cả qua. Bao gồm:
 
 - **Khung mẫu trong tài liệu WCH:**
   - GET_INFO `57 AB 00 01 00 03`;
@@ -350,6 +365,8 @@ make -C test_host check    # cả hai
     đúng thứ tự, mỗi lệnh đúng một trả lời.
 - **Con trỏ tuyệt đối và GET_INFO:** đổi thang 0..4095 → 0..32767; X/Y ngoài dải → E5; build không có con trỏ tuyệt
   đối; các byte GET_INFO của bridge.
+- **Chu kỳ báo cáo (GET_INFO byte 6–7):** mặc định 0; đặt giá trị; thứ tự little-endian (0x1234 → `34 12`); không phụ
+  thuộc byte 1; về 0 khi mất kết nối; hơn 700 giá trị đọc lại đúng mà các byte khác không đổi.
 - **REL_RUN (đồng hồ giả):** đúng lịch; bước trễ gửi ngay chứ không bỏ; dừng ở bước lỗi đầu tiên; kiểm tra tham số;
   E3 khi không có đồng hồ.
 - **Descriptor HID:** parser HID tự viết kiểm **mọi** tổ hợp collection, có và không có report id. Kiểm kích thước
@@ -357,7 +374,7 @@ make -C test_host check    # cả hai
 - Fuzz 20 000 luồng ngẫu nhiên.
 - Mọi khung trả lời trong mọi test đều qua một bộ kiểm header/LEN/checksum độc lập.
 
-**E2E** (`test_host/e2e_host_driver.py` + `test_host/sim_bridge.c`): 79 phép kiểm, tất cả qua.
+**E2E** (`test_host/e2e_host_driver.py` + `test_host/sim_bridge.c`): 107 phép kiểm, tất cả qua.
 
 - `sim_bridge` chạy lõi C sau một pseudo-terminal.
 - Script dùng `from ihc.hid.ch9329 import CH9329Backend` và `ihc.hid.scan.probe` **không sửa đổi** để chạy:
@@ -371,8 +388,11 @@ make -C test_host check    # cả hai
   - chờ bộ đệm 120 ms vẫn trong timeout 500 ms;
   - REL_RUN đúng số bước, đúng thời gian, dừng ở bước lỗi thứ 3;
   - loạt 200 lệnh không chờ ack có 7 lỗi xen giữa → đúng 7 E6 tới host, 193 báo cáo giao đúng thứ tự;
-  - địa chỉ 0x05/0x06/broadcast.
-- Phía mô phỏng BLE được điều khiển qua stdin của `sim_bridge` (`ready`, `reject`, `fail`, `failat`, `delay`, `leds`).
+  - địa chỉ 0x05/0x06/broadcast;
+  - chu kỳ báo cáo, đọc thẳng từ payload thô của GET_INFO (byte 6–7): mặc định 15 ms, đổi sang 30 ms / 1 ms / 0x1234,
+    về 0 khi không có iPhone.
+- Phía mô phỏng BLE được điều khiển qua stdin của `sim_bridge` (`ready`, `reject`, `fail`, `failat`, `delay`, `leds`,
+  `period`).
 
 ## Phải kiểm chứng trên phần cứng
 
@@ -380,8 +400,8 @@ make -C test_host check    # cả hai
    Bluetooth, sau khi mất nguồn.
 2. **iOS có subscribe mọi báo cáo input không**, kể cả chuột khi AssistiveTouch tắt. Nếu không, GET_INFO byte 1 sẽ là 0
    dù bàn phím vẫn chạy.
-3. **Thông số kết nối iOS cấp thực tế:** log `connection parameters: … interval …`. Đo độ trễ bằng `hidtest bench`.
-   Thử `BRIDGE_CONN_ITVL_MIN=9` (11,25 ms).
+3. **Thông số kết nối iOS cấp thực tế:** log `connection parameters: … interval …`, và GET_INFO byte 6–7 phải khớp
+   (`interval × 5`). Đo độ trễ bằng `hidtest bench`. Thử `BRIDGE_CONN_ITVL_MIN=9` (11,25 ms).
 4. **Con trỏ:**
    - chuột tương đối với AssistiveTouch;
    - **con trỏ tuyệt đối qua BLE (chưa ai chứng minh)** và qua USB;

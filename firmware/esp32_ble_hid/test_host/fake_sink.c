@@ -131,6 +131,11 @@ static uint8_t cb_leds(void *ctx)
     return ((fake_t *)ctx)->leds;
 }
 
+static uint16_t cb_report_period(void *ctx)
+{
+    return ((fake_t *)ctx)->report_period;
+}
+
 static bool cb_load(void *ctx, ch9329_persist_t *out)
 {
     fake_t *f = ctx;
@@ -201,6 +206,7 @@ ch9329_sink_t fake_sink(fake_t *f)
         .abs_mouse_report = cb_abs,
         .link_ready = cb_ready,
         .leds = cb_leds,
+        .report_period = cb_report_period,
         .persist_load = cb_load,
         .persist_store = cb_store,
         .request_restart = cb_restart,

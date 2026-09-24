@@ -6,8 +6,10 @@ portable C core running behind a pseudo-terminal (sim_bridge).
 
 Exits non-zero on the first failed check. Uses the public driver API plus transact_raw(); the
 SEND_MS_REL_RUN helper also calls the driver's internal _write/_pump to time the single reply
-(the driver itself is not modified). The simulated BLE side (link up/down, unsubscribed report types, full notification buffers, slow
-buffers) is driven through sim_bridge's stdin control lines.
+(the driver itself is not modified). The simulated BLE side (link up/down, unsubscribed report
+types, full notification buffers, slow buffers, report period) is driven through sim_bridge's
+stdin control lines. GET_INFO bytes 6-7 (report period) are checked on the raw payload,
+independently of how the driver decodes them.
 """
 
 from __future__ import annotations
@@ -33,9 +35,17 @@ from ihc.hid.scan import probe  # noqa: E402
 CHECKS = 0
 
 # GET_INFO of the simulator: version 0x40 ("ihc bridge v1.0"), link, LEDs, output 0x7F (simulator),
-# collections 0x1F (keyboard, mouse, consumer, system, absolute pointer), features 0x01 (REL_RUN).
-INFO_COMPOSITE = "40 01 00 7f 1f 01 00 00"
+# collections 0x1F (keyboard, mouse, consumer, system, absolute pointer), features 0x01 (REL_RUN),
+# report period 60 x 0.25 ms = 15 ms (u16 little-endian: 3c 00).
+INFO_COMPOSITE = "40 01 00 7f 1f 01 3c 00"
 CMD_REL_RUN = 0x30
+
+
+def info_period(info: dict) -> int:
+    """GET_INFO bytes 6-7 from the raw payload: report period in 0.25 ms units (0 = unknown)."""
+    raw = bytes.fromhex(info["raw"])
+    check(len(raw) == 8, f"GET_INFO payload length {len(raw)}")
+    return int.from_bytes(raw[6:8], "little")
 
 
 def abs_scale(v: int) -> int:
@@ -167,6 +177,16 @@ def basic_session(sim: Sim) -> None:
         check(hid.info()["caps_lock"], "caps lock LED reported")
         sim.ctl("leds 0")
 
+        # Report period (GET_INFO bytes 6-7, 0.25 ms units, little-endian), asked on every GET_INFO:
+        # the 15 ms default, a renegotiated 30 ms BLE interval, USB's 1 ms, a value that needs
+        # both bytes, and 0 once the phone is gone.
+        check(info_period(hid.info()) == 60, "report period 15 ms by default")
+        for units, raw67 in ((120, "78 00"), (4, "04 00"), (0x1234, "34 12"), (0, "00 00"), (60, "3c 00")):
+            sim.ctl(f"period {units}")
+            info = hid.info()
+            check(info["raw"].endswith(raw67) and info_period(info) == units, f"period {units}: {info['raw']}")
+            check(info["raw"][:17] == INFO_COMPOSITE[:17], f"period {units} leaves bytes 0-5 alone: {info['raw']}")
+
         # Configuration block as the host tools see it.
         cfg = hid.get_config()
         check(cfg.warnings() == [], f"config warnings {cfg.warnings()}")
@@ -191,7 +211,7 @@ def basic_session(sim: Sim) -> None:
         check(any(ln.startswith("RESTART work_mode=01") for ln in sim.lines()), "restart into work mode 1")
         hid.keyboard(0x08, [0x2C])  # Cmd+Space still works
         hid.keyboard(0, [])
-        check(hid.info()["raw"] == "40 01 00 7f 01 01 00 00", "GET_INFO: keyboard collection only")
+        check(hid.info()["raw"] == "40 01 00 7f 01 01 3c 00", "GET_INFO: keyboard collection only")
         expect_status(lambda: hid.mouse_rel(1, 1), p.Status.EXEC_ERROR, "mouse in keyboard-only mode")
         expect_status(lambda: hid.mouse_abs(1, 1), p.Status.EXEC_ERROR, "abs pointer in keyboard-only mode")
         expect_status(lambda: hid.media(p.MEDIA_KEYS["mute"]), p.Status.EXEC_ERROR, "media in keyboard-only mode")
@@ -356,10 +376,13 @@ def main(binary: str) -> None:
         reliability_session(sim)
         address_session(sim)
 
-    # No iPhone connected at boot: GET_INFO says so and HID commands fail with E6.
+    # No iPhone connected at boot: GET_INFO says so (link 0, report period 0 = unknown) and HID
+    # commands fail with E6.
     with simulator(binary, "--not-ready") as sim:
         with CH9329Backend(sim.port, 9600) as hid:
-            check(not hid.info()["usb_connected"], "link status 0 when not ready")
+            info = hid.info()
+            check(not info["usb_connected"], "link status 0 when not ready")
+            check(info_period(info) == 0, f"report period 0 when not connected: {info['raw']}")
             expect_status(lambda: hid.keyboard(0, [0x04]), p.Status.EXEC_ERROR, "keyboard without link")
             expect_status(lambda: hid.mouse_abs(0, 0), p.Status.EXEC_ERROR, "abs pointer without link")
         check(sim.reports() == [], "nothing delivered without a link")

@@ -80,6 +80,12 @@ static uint8_t sink_leds(void *ctx)
     return hid_link_leds();
 }
 
+static uint16_t sink_report_period(void *ctx)
+{
+    (void)ctx;
+    return hid_link_report_period();
+}
+
 /* SEND_MS_REL_RUN pacing (bridge task): 1 ms FreeRTOS ticks, esp_timer milliseconds. */
 static uint32_t sink_clock(void *ctx)
 {
@@ -221,6 +227,7 @@ void app_main(void)
         .abs_mouse_report = sink_abs,
         .link_ready = sink_link_ready,
         .leds = sink_leds,
+        .report_period = sink_report_period,
         .persist_load = sink_load,
         .persist_store = sink_store,
         .request_restart = sink_restart,

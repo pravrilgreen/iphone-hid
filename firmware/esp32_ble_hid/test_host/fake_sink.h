@@ -32,6 +32,7 @@ typedef struct {
     bool ready;
     unsigned reject_kinds; /* bit (1u << FK_MOUSE) etc.: report type not subscribed */
     uint8_t leds;
+    uint16_t report_period; /* GET_INFO bytes 6-7 (0.25 ms units); 0 by default */
     uint8_t hid_status;    /* returned by every report callback while ready (OK by default) */
     uint8_t script[64];    /* if script_n > 0: per-call statuses consumed before hid_status */
     size_t script_n, script_pos;
