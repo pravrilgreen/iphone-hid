@@ -1,0 +1,47 @@
+# ESP32-S3 CH9329-compatible BLE HID bridge. Target: idf.py set-target esp32s3
+
+# ---- flash / partitions ----------------------------------------------------------------------
+# 4 MB is the smallest flash on ESP32-S3 modules; larger chips work unchanged.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# ---- console: keep UART0 for the CH9329 protocol ---------------------------------------------
+# Logs (bootloader and app) go to the chip's own USB Serial/JTAG port, never to UART0, so the
+# host driver on the USB-UART port only ever sees protocol frames (plus the ROM boot banner,
+# which only an eFuse can silence, see README).
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# 1 ms ticks: the bridge waits for BLE buffers in 1 ms steps and times UART gaps in ms.
+CONFIG_FREERTOS_HZ=1000
+
+# ---- Bluetooth: BLE only, NimBLE host, peripheral role ---------------------------------------
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
+CONFIG_BT_CONTROLLER_ENABLED=y
+CONFIG_BT_NIMBLE_ROLE_PERIPHERAL=y
+CONFIG_BT_NIMBLE_ROLE_BROADCASTER=y
+# CONFIG_BT_NIMBLE_ROLE_CENTRAL is not set
+# CONFIG_BT_NIMBLE_ROLE_OBSERVER is not set
+CONFIG_BT_NIMBLE_MAX_CONNECTIONS=1
+# Legacy advertising (ADV_IND), as Apple's Accessory Design Guidelines ask for.
+# CONFIG_BT_NIMBLE_EXT_ADV is not set
+# A GATT caching server would refuse notifications to "change-unaware" clients.
+# CONFIG_BT_NIMBLE_GATT_CACHING is not set
+
+# Bonding: Just Works + LE Secure Connections, keys kept in NVS so the iPhone reconnects by itself.
+CONFIG_BT_NIMBLE_SECURITY_ENABLE=y
+CONFIG_BT_NIMBLE_SM_LEGACY=y
+CONFIG_BT_NIMBLE_SM_SC=y
+CONFIG_BT_NIMBLE_NVS_PERSIST=y
+CONFIG_BT_NIMBLE_MAX_BONDS=3
+
+# NimBLE logs every notification at INFO: keep its log quiet so the hot path stays fast.
+CONFIG_BT_NIMBLE_LOG_LEVEL_WARNING=y
+
+# mbuf pools stay at the ESP32-S3 defaults (msys_1 12 x 256 B + msys_2 24 x 320 B). HID reports
+# may only use them while more than BRIDGE_MSYS_RESERVE blocks are free, so a report burst can
+# never starve the stack's own ATT responses and L2CAP signalling (see main/ble_hid.c).

@@ -1,0 +1,5 @@
+# Name,   Type, SubType, Offset,  Size,     Flags
+# NVS holds the CH9329 parameter block, the GATT profile marker and the BLE bonds.
+nvs,      data, nvs,     0x9000,  0x10000,
+phy_init, data, phy,     0x19000, 0x1000,
+factory,  app,  factory, 0x20000, 0x180000,

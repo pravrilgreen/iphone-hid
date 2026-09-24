@@ -1,0 +1,88 @@
+menu "CH9329 BLE HID bridge"
+
+    config BRIDGE_UART_PORT_NUM
+        int "UART port for the CH9329 protocol"
+        range 0 2
+        default 0
+        help
+            UART0 is wired to the DevKit's USB-UART bridge chip (the port marked "UART"/"COM").
+            The console is moved to the USB Serial/JTAG port (sdkconfig.defaults), so UART0
+            carries nothing but protocol frames after boot.
+
+    config BRIDGE_UART_TX_GPIO
+        int "UART TX GPIO"
+        range 0 48
+        default 43
+
+    config BRIDGE_UART_RX_GPIO
+        int "UART RX GPIO"
+        range 0 48
+        default 44
+
+    config BRIDGE_NOTIFY_WAIT_MS
+        int "Max wait for BLE notification buffers (ms)"
+        range 0 400
+        default 100
+        help
+            When the BLE stack has no free buffer for a HID report, the bridge task waits up to
+            this long (retrying every 1 ms) before answering the command with E6. It never
+            answers 00 for a report that was not queued. Must stay well below the host's 500 ms
+            reply timeout.
+
+    config BRIDGE_CONN_ITVL_MIN
+        int "Requested connection interval min (units of 1.25 ms)"
+        range 6 3200
+        default 12
+        help
+            12 = 15 ms. Apple Accessory Design Guidelines (section "Connection Parameters"):
+            Interval Min >= 15 ms and a multiple of 15 ms; either Interval Max >= Interval Min
+            + 15 ms, or both 15 ms. For BLE HID accessories "a connection interval down to
+            11.25 ms (9) may be accepted by some devices". A request outside the rules may be
+            rejected; the connection then keeps the iPhone's own parameters.
+
+    config BRIDGE_CONN_ITVL_MAX
+        int "Requested connection interval max (units of 1.25 ms)"
+        range 6 3200
+        default 12
+
+    config BRIDGE_CONN_LATENCY
+        int "Requested peripheral latency (connection events)"
+        range 0 30
+        default 0
+        help
+            0: the bridge is USB-powered and should answer LED writes promptly.
+
+    config BRIDGE_CONN_SUPERVISION_TIMEOUT_MS
+        int "Requested supervision timeout (ms)"
+        range 100 32000
+        default 6000
+        help
+            The current Apple guideline asks for 6 s to 18 s (older editions: 2 s to 6 s). This
+            is how long a silently vanished phone still counts as connected: see README
+            "Reliability". Shorter values may be rejected by iOS.
+
+    config BRIDGE_ABS_MOUSE_REJECT
+        bool "Answer SEND_MS_ABS_DATA with E5 instead of accepting and ignoring it"
+        default n
+        help
+            iOS only moves its pointer for relative mice, so the bridge has no absolute pointer
+            report. By default it answers 00 and drops the command (like a CH9329 whose USB host
+            ignores the absolute mouse); enable this to make the host see an error instead.
+
+    config BRIDGE_PAIR_BUTTON_GPIO
+        int "Button that clears all bonds when held 3 s (-1 = none)"
+        range -1 48
+        default 0
+        help
+            GPIO0 is the DevKit's BOOT button. Holding it for 3 s after boot deletes every stored
+            bond (both key sets, as Apple's guidelines require), then the bridge waits for a new
+            pairing. Remove the bridge from the iPhone too (Settings > Bluetooth > (i) > Forget).
+
+    config BRIDGE_DEVICE_NAME_PREFIX
+        string "BLE name prefix when no product string is set"
+        default "HID Bridge"
+        help
+            The advertised name is "<prefix> XXXX" (last two bytes of the Bluetooth address),
+            unless SET_USB_STRING stored a product string, which then becomes the name.
+
+endmenu
