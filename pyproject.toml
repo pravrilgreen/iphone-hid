@@ -6,9 +6,9 @@ requires-python = ">=3.10"
 dependencies = ["pyserial>=3.5"]
 
 [project.optional-dependencies]
-vision = ["opencv-python", "numpy", "Pillow"]
-api = ["fastapi", "uvicorn", "websockets"]
-dev = ["pytest"]
+vision = ["opencv-python-headless", "numpy", "Pillow"]
+api = ["fastapi", "uvicorn[standard]", "httpx"]
+dev = ["pytest", "pytest-timeout"]
 
 [build-system]
 requires = ["setuptools>=61"]
