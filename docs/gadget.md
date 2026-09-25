@@ -8,8 +8,8 @@ One Orange Pi 5 Plus per iPhone does the whole job:
 
 No HID chip, no capture card. The only other parts are a USB-C hub and cables.
 
-First time with a board? Start with the 10-minute [quick test](quick-test.md) (Vietnamese): does the
-iPhone take the board's mouse, with nothing installed.
+First time with a board? Start with the [quick test](quick-test.md) (Vietnamese), with nothing
+installed: does the iPhone take the board's mouse, then does the board capture the iPhone's screen.
 
 ## What you need
 
@@ -99,13 +99,15 @@ python3 tools/hidtest.py --gadget "info; abstest"
 centre, then asks what you saw. Set up the iPhone first as in [iphone-setup.md](iphone-setup.md)
 (AssistiveTouch on).
 
-**Video:**
+**Video**, with the hub's HDMI in the board's HDMI IN and the iPhone unlocked:
 
 ```
-python3 tools/capture_check.py list
+python3 tools/capture_check.py list          # the hdmirx node, and what the source sends
 python3 tools/capture_check.py probe --device /dev/video0 --seconds 10
 python3 tools/capture_check.py snapshot --device /dev/video0
 ```
+
+`list` reads the signal straight from the driver when v4l-utils is not installed.
 
 ## How it works
 

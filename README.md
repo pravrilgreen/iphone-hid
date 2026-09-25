@@ -278,8 +278,8 @@ Home, App Switcher, Spotlight, typing and calibration are one click away.
 
 The detailed documents are in Vietnamese, except the box guide and the two research reports.
 
-- [Quick test: the iPhone takes the board's mouse](docs/quick-test.md): the first 10-minute check,
-  nothing installed
+- [Quick test: mouse and video on the board](docs/quick-test.md): the first checks, nothing
+  installed: the iPhone takes the board's mouse, then the board captures the iPhone's screen
 - [The all-in-one box: Orange Pi 5 Plus](docs/gadget.md) (English): parts, wiring, checks,
   troubleshooting
 - [Getting started](docs/getting-started.md): the simulator first, then real hardware

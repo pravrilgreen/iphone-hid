@@ -33,6 +33,7 @@ from ihc.jsonlog import EventLog  # noqa: E402
 from ihc.registry import open_video_source  # noqa: E402
 from ihc.video.capture import V4L2Capture, list_video_devices  # noqa: E402
 from ihc.video.pipe import is_hdmi_input  # noqa: E402
+from ihc.video.v4l2 import describe_signal  # noqa: E402
 
 LOG_DIR = Path(os.environ.get("IHC_TEST_LOG_DIR") or ROOT / "docs" / "test-logs")
 
@@ -47,7 +48,10 @@ def formats(device: str) -> str:
 def dv_timings(device: str) -> str:
     """What the HDMI source sends right now (resolution, refresh), or why nothing."""
     if not shutil.which("v4l2-ctl"):
-        return ""
+        try:
+            return describe_signal(device)
+        except OSError as e:
+            return f"cannot open: {e}"
     r = subprocess.run(["v4l2-ctl", "-d", device, "--query-dv-timings"], capture_output=True, text=True, timeout=10)
     return (r.stdout or r.stderr).strip()
 

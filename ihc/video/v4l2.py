@@ -311,6 +311,33 @@ def set_edid(device: str, edid: bytes | None = None, *, ioctl=None) -> None:
         os.close(fd)
 
 
+NO_SIGNAL = {
+    errno.ENOLINK: "no signal: nothing plugged in, or the source sends no picture",
+    errno.ENOLCK: "signal not stable yet",
+    errno.ERANGE: "signal out of the receiver's range",
+}
+
+
+def describe_signal(device: str, *, ioctl=None) -> str:
+    """One line on what an HDMI input receives right now, straight from the driver (for a board
+    without v4l-utils)."""
+    ioctl = ioctl or _libc_ioctl()
+    fd = os.open(device, os.O_RDWR | os.O_NONBLOCK)
+    try:
+        dv = DvTimings()
+        try:
+            ioctl(fd, VIDIOC_QUERY_DV_TIMINGS, dv)
+        except OSError as e:
+            return NO_SIGNAL.get(e.errno, f"no DV timings ({e.strerror})")
+    finally:
+        os.close(fd)
+    bt = dv.u.bt
+    total = (bt.width + bt.hfrontporch + bt.hsync + bt.hbackporch) * \
+        (bt.height + bt.vfrontporch + bt.vsync + bt.vbackporch)
+    rate = f"{bt.pixelclock / total:.2f}" if total and bt.pixelclock else "?"
+    return f"{bt.width}x{bt.height}{'i' if bt.interlaced else 'p'}{rate}, pixel clock {bt.pixelclock / 1e6:.2f} MHz"
+
+
 class V4L2Reader:
     """cv2.VideoCapture look-alike over a V4L2 capture node: read() -> (ok, 1-D JPEG buffer)."""
 

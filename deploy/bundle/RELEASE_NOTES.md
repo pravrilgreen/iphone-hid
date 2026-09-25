@@ -22,9 +22,10 @@ The console is then at `http://<board address>:8000`.
 - `./ihc-box-...run --extract DIR` only unpacks, to try the tools without installing (`DIR/bin/ihc
   gadget status`).
 
-First check, 10 minutes, nothing installed (does the iPhone take the board's mouse?):
-[docs/quick-test.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/quick-test.md).
+First checks, nothing installed (does the iPhone take the board's mouse, does the board capture the
+iPhone's screen?): [docs/quick-test.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/quick-test.md).
 Wiring, checks and troubleshooting: [docs/gadget.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/gadget.md).
 
-This version has not yet been checked on a real board: it passed the test suite and a smoke test of
-the bundle under ARM64 emulation with an Ubuntu 22.04 user space.
+Checked on a real board: an Orange Pi 5 Plus on Armbian (vendor kernel 6.1) with an iPhone 15 takes
+the board's keyboard and mouse. The HDMI input has not been checked on a real board yet: it passed
+the test suite and a smoke test of the bundle under ARM64 emulation with an Ubuntu 22.04 user space.

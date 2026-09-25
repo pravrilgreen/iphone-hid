@@ -1,7 +1,9 @@
-# Thử nhanh: iPhone nhận chuột từ Orange Pi 5 Plus
+# Thử nhanh: chuột và hình trên Orange Pi 5 Plus
 
-Bài thử đầu tiên, khoảng 10 phút. Mục tiêu duy nhất: xác nhận **cắm iPhone vào thì gửi được sự kiện chuột**.
-Không cài gì lên board, không cần HDMI, không cần server, không cần internet.
+Hai bài thử đầu tiên, không cài gì lên board, không cần internet:
+
+1. **Chuột** (khoảng 10 phút): cắm iPhone vào thì gửi được sự kiện chuột. Chưa cần HDMI, chưa cần server.
+2. **Hình** (khoảng 10 phút): board thu được màn hình iPhone qua cổng HDMI IN, rồi xem trực tiếp trên trình duyệt.
 
 ## Chuẩn bị
 
@@ -23,7 +25,7 @@ Không cài gì lên board, không cần HDMI, không cần server, không cần
     C–C nối thẳng. Khi đó iPhone chỉ hỏi "Trust This Computer" và không bao giờ nhận chuột. Kiểm tra bằng
     `lsusb | grep -i apple`: thấy "Apple ... iPhone" là đang sai chiều; nối đúng thì lệnh này không in gì.
 
-## Chạy trên Orange Pi
+## Thử chuột
 
 ```bash
 ./ihc-box-*-linux-aarch64.run --extract ~/ihc          # chỉ giải nén, không cài service
@@ -46,7 +48,7 @@ iPhone theo được chuột tuyệt đối: mỗi tap nhanh và chính xác nh�
 
 Thử xong thì gỡ: `sudo ~/ihc/bin/ihc gadget down`. Log của `ihc-hidtest` nằm trong `~/ihc-test-logs/`.
 
-## Nếu không được
+### Nếu chuột không được
 
 Dừng ở bước hỏng và gửi lại nguyên văn kết quả của bước đó.
 
@@ -58,7 +60,60 @@ Dừng ở bước hỏng và gửi lại nguyên văn kết quả của bước
 | 4 | báo `NOT connected` | iPhone đang khoá, hoặc chưa bấm Allow |
 | 4 | báo connected nhưng con trỏ không nhúc nhích | gửi nguyên văn output |
 
+## Thử hình qua HDMI IN
+
+Giữ nguyên dây USB của bài chuột, cắm thêm một dây HDMI:
+
+```
+iPhone 15 ─ dây USB-C liền của hub ─ HUB ─ cổng USB-A của hub ─ dây USB-A→USB-C ─ Type-C USB3/DP của Pi   (chuột, như trên)
+                                      ├─ cổng HDMI của hub ─ dây HDMI ─ cổng HDMI IN của Pi                (hình, mới)
+                                      └─ sạc PD ─ cổng USB-C cái trên thân hub                              (nên có)
+```
+
+- Pi có 3 cổng HDMI: 2 cổng **ra** màn hình và 1 cổng **HDMI IN**. Chỉ cổng có chữ **HDMI IN** in bên cạnh mới thu
+  được hình; cắm vào cổng ra thì không thấy gì.
+- Hub phải xuất HDMI bằng DisplayPort Alt Mode (UGREEN Revodok 105 đúng loại này), không phải DisplayLink.
+- Không phải bật gì trên iPhone: mở khoá là iPhone tự phản chiếu màn hình ra HDMI.
+- Đọc `/dev/video*` cần quyền nhóm `video`. Nếu báo `Permission denied`: `sudo usermod -aG video $USER`, đăng xuất
+  rồi đăng nhập lại.
+
+```bash
+~/ihc/bin/ihc-capture-check list                                           # 1. tìm cổng HDMI IN
+~/ihc/bin/ihc-capture-check snapshot --device /dev/videoN                  # 2. chụp 1 khung hình
+~/ihc/bin/ihc-capture-check probe --device /dev/videoN --seconds 10        # 3. đo tốc độ khung hình
+```
+
+1. Tìm dòng có chữ `hdmirx` (vd `/dev/video0  stream_hdmirx`); `/dev/videoN` của nó là cổng HDMI IN, dùng cho bước
+   2 và 3. Dòng "the source sends" bên dưới cho biết tín hiệu: `1920x1080p60.00` hay `3840x2160p30.00` là có hình,
+   `no signal` là chưa có (iPhone đang khoá, cắm nhầm cổng HDMI, hoặc hub không xuất hình).
+2. Lưu ảnh vào `~/ihc-test-logs/snap-<giờ>.jpg`. Mở ảnh đó (trên màn hình của Pi, hoặc chép về máy), phải thấy đúng
+   màn hình iPhone. Mỗi lần mở cổng, board báo cho iPhone là màn hình 1080p60, nên iPhone chuyển sang 1920×1080 sau
+   vài giây (màn hình iPhone nháy một cái là bình thường).
+3. In ra số khung hình mỗi giây và dung lượng mỗi khung. Bài thử đạt nếu được khoảng 20–30 fps ở 1920×1080. Thêm
+   `--encoder builtin` (luôn có) hoặc `--encoder mpp` / `--encoder gst` (chỉ khi image có GStreamer) để so sánh.
+
+**Xem trực tiếp và điều khiển trên trình duyệt:**
+
+```bash
+~/ihc/bin/ihc serve --auto --token test
+```
+
+Mở `http://<địa chỉ IP của Pi>:8000` (trên máy cùng mạng, hoặc trình duyệt ngay trên Pi: `http://localhost:8000`),
+nhập token `test`. Phải thấy màn hình iPhone chạy trực tiếp; bấm vào hình là tap lên iPhone. Tap còn lệch là bình
+thường: hiệu chỉnh là bài thử sau. Trước khi chạy, tắt `ihc-hidtest` và `ihc-capture-check` nếu còn đang chạy, để
+chỉ một chương trình điều khiển iPhone. `Ctrl+C` để dừng.
+
+### Nếu hình không được
+
+| Hiện tượng | Nguyên nhân thường gặp |
+|---|---|
+| `list` không có dòng nào chứa `hdmirx` | kernel của image không có driver HDMI IN. Gửi kết quả của `ls /dev/video*`, `cat /sys/class/video4linux/*/name` và `sudo dmesg \| grep -i hdmi` |
+| `no signal` | mở khoá iPhone; kiểm tra dây HDMI cắm vào cổng **HDMI IN**; thử cắm lại hub vào iPhone. Cắm thử cổng HDMI của hub vào một màn hình bất kỳ: màn hình cũng không có hình thì lỗi ở hub hoặc dây |
+| `Permission denied` | thêm nhóm `video` như trên, hoặc chạy lệnh với `sudo` |
+| `snapshot` báo `delivers XXXX, which this reader cannot convert` | gửi nguyên văn dòng đó |
+| ảnh chụp sai màu hoặc bị xé ngang | gửi ảnh chụp và kết quả của `list` |
+
 ## Bước tiếp theo
 
-Chuột chạy rồi thì cài hộp đầy đủ và làm tiếp các bài thử còn lại: hình qua HDMI IN, hiệu chỉnh, độ trễ, chạy bền.
+Chuột và hình chạy rồi thì cài hộp đầy đủ và làm tiếp các bài thử còn lại: hiệu chỉnh, độ trễ, chạy bền.
 Xem [gadget.md](gadget.md) và [phase0-checklist.md](phase0-checklist.md).

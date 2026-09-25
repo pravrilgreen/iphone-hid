@@ -246,6 +246,18 @@ def test_no_signal_is_an_error_to_retry(node):
         reader(node, FakeDriver(signal=False))
 
 
+def test_describe_signal(node):
+    def ioctl(fd, req, arg):  # CTA-861 1080p60: 2200 x 1125 total at 148.5 MHz
+        assert req == v.VIDIOC_QUERY_DV_TIMINGS
+        bt = arg.u.bt
+        bt.width, bt.height, bt.pixelclock = 1920, 1080, 148_500_000
+        bt.hfrontporch, bt.hsync, bt.hbackporch = 88, 44, 148
+        bt.vfrontporch, bt.vsync, bt.vbackporch = 4, 5, 36
+
+    assert v.describe_signal(node, ioctl=ioctl) == "1920x1080p60.00, pixel clock 148.50 MHz"
+    assert v.describe_signal(node, ioctl=FakeDriver(signal=False).ioctl).startswith("no signal")
+
+
 def test_frames_beyond_the_rate_are_not_encoded(node, monkeypatch):
     drv = FakeDriver()
     t = [100.0]
