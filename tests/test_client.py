@@ -178,7 +178,10 @@ def test_mjpeg_viewer_disconnect_is_cleaned_up(hosts):
             with http.stream("GET", f"{a.url}/api/devices/sim-01/mjpeg?crop={crop}&fps=10") as r:
                 assert r.status_code == 200
                 got = b""
-                for chunk in r.iter_bytes():
+                # hold the iterator: a generator freed after `break` is finalized at once, and
+                # httpx then closes the connection, so the server would see the client leave
+                chunks = r.iter_bytes()
+                for chunk in chunks:
                     got += chunk
                     if got.count(b"Content-Length") >= 2:
                         break
