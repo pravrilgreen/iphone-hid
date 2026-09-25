@@ -175,6 +175,23 @@ the driver, so the iPhone mirrors at 1920×1080 rather than 4K. Video restarts b
 signal goes away or changes. `ihc-capture-check probe --device /dev/video0 --encoder builtin`
 (or `mpp`, `gst`) compares them.
 
+## Other Orange Pi 5 boards
+
+The box needs two things from the board: a USB port that can be a **device** with a standard cable,
+and an **HDMI input**. From the boards' vendor (6.1) and mainline device trees and their published
+specifications:
+
+| Board | USB device port | HDMI input | For the box |
+|---|---|---|---|
+| **5 Plus** | Type-C next to the USB 3 ports: USB-C controller (FUSB302) with role switching, so a USB-A to USB-C cable makes it a device | Yes (HDMI 2.0) | All-in-one, as described here |
+| **5 Ultra** | None with a standard cable: the Type-C port is power only. The OTG controller sits behind a USB-A port | Yes (on by default) | Video yes. Keyboard and mouse through a CH9329 cable, or untested: that USB-A port as a device over a USB-A to USB-A cable, which is outside the USB specification |
+| **5 Max** | As the Ultra; its device tree also fixes the OTG controller to host | No (two HDMI outputs) | Needs a USB capture card for video and a CH9329 cable for keyboard and mouse |
+
+Armbian ships an overlay, `rk3588-dwc3-peripheral`, that turns the OTG controller of the Ultra and
+the Max into a device. On those boards it would face a USB-A port, and a USB-A to USB-A cable can
+put two power supplies on one line. The software supports the CH9329 cable and USB capture cards as
+well, so those two boards work with them.
+
 ## Troubleshooting
 
 | Symptom | Cause and fix |
