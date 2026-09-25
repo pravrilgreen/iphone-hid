@@ -162,6 +162,20 @@ rút/cắm), vì descriptor gộp có thể là nguyên nhân. Khôi phục bằ
 
 ## T2. Hub: hình + HID + sạc cùng lúc
 
+**Chọn hub.** Không cần hub đặt riêng: một hub USB-C thương mại là đủ, nếu có đủ 4 điều sau.
+1. **HDMI qua DisplayPort Alt Mode.** Đa số hub USB-C có HDMI làm vậy. Tránh hub dùng **DisplayLink** (ghi
+   "cần cài driver", hay dock nhiều màn hình), vì iPhone không có driver đó. Tránh hub chỉ dành cho Thunderbolt/USB4.
+2. **Cổng USB-A có dữ liệu** (không phải cổng chỉ sạc). USB 2.0 là đủ: chip HID chạy full-speed, và iPhone 15
+   thường cũng chỉ có USB 2.
+3. **Cổng USB-C sạc PD vào** (PD pass-through), để iPhone được sạc và hub có nguồn nuôi chip HID. Củ sạc nên
+   30 W trở lên, vì hub giữ lại một phần công suất.
+4. **Một đầu USB-C cắm vào máy** (không phải hub cho iPad có kẹp hay đế riêng).
+
+Nên thử 2–3 mẫu: Apple USB-C Digital AV Multiport Adapter là mẫu tham chiếu (Apple ghi hỗ trợ iPhone 15), cộng
+1–2 hub phổ thông loại "HDMI + USB-A + PD 60–100 W". Thử nhanh ngay khi mua, chưa cần máy chủ: cắm hub vào
+iPhone, HDMI vào TV, một bàn phím USB vào cổng USB-A, sạc vào cổng PD; thấy hình trên TV, gõ được vào Notes và
+iPhone báo đang sạc, cả ba cùng lúc, là dùng được.
+
 Làm với từng hub (ưu tiên Apple USB-C Digital AV Multiport Adapter, cộng 2 hãng khác):
 
 ```bash

@@ -215,7 +215,7 @@ click away.
 
 | Part | USB-C phones | Lightning phones | Notes |
 |---|---|---|---|
-| USB-C hub with HDMI + USB-A + PD charging | ✔ | | try 2–3 models; Apple's USB-C Digital AV Multiport Adapter is the reference |
+| USB-C hub with HDMI + USB-A + PD charging | ✔ | | an ordinary off-the-shelf hub: HDMI through DisplayPort Alt Mode (not DisplayLink), a USB-A port with data, PD charging in; Apple's USB-C Digital AV Multiport Adapter is the reference |
 | CH9329 cable (CH9329 + CH340, USB-A on both ends) | ✔ | | ready to use, no soldering |
 | Apple Lightning Digital AV Adapter | | ✔ | genuine Apple only |
 | ESP32-S3 DevKit | optional | ✔ | firmware in this repository (Bluetooth or USB mode) |
