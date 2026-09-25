@@ -153,6 +153,22 @@ cuối dòng đó, cách bằng dấu cách (chỉ giữ một dòng `overlays=`
 dòng `stream_hdmirx`. Nếu overlay lỗi, board vẫn khởi động bình thường nhưng bỏ qua overlay; muốn trả lại như cũ thì
 `sudo cp /boot/armbianEnv.txt.bak /boot/armbianEnv.txt`.
 
+**Đã reboot mà vẫn `status=disabled`:** script khởi động của Armbian trước bản 24.11 chỉ tìm file
+`<overlay_prefix>-<tên>.dtbo`. Với `overlay_prefix=rockchip-rk3588`, nó tìm `rockchip-rk3588-rk3588-hdmirx.dtbo`,
+không thấy thì bỏ qua mà không báo gì. Dùng `user_overlays`: mọi phiên bản script đều nạp file trong
+`/boot/overlay-user` theo đúng tên.
+
+```bash
+sudo mkdir -p /boot/overlay-user
+sudo cp /boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo /boot/overlay-user/
+sudo sed -i 's/ rk3588-hdmirx$//' /boot/armbianEnv.txt          # bỏ khỏi dòng overlays=
+echo 'user_overlays=rk3588-hdmirx' | sudo tee -a /boot/armbianEnv.txt
+sudo reboot
+```
+
+Từ bản 0.1.8, `ihc-capture-check list` đọc script khởi động và nói rõ phải làm cách nào: thêm vào `overlays=`, dùng
+`user_overlays`, hay chỉ cần reboot. Nó cũng liệt kê các mục khác trong `overlays=` mà script không tìm thấy file.
+
 ## Bước tiếp theo
 
 Chuột và hình chạy rồi thì cài hộp đầy đủ và làm tiếp các bài thử còn lại: hiệu chỉnh, độ trễ, chạy bền.

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import gzip
 import os
+import time
 from pathlib import Path
 
 WORDS = ("hdmirx", "hdmi_receiver", "hdmi-receiver", "hdmi-rx", "hdmi_rx", "hdmiin", "hdmi-in")
@@ -101,6 +102,91 @@ def boot_overlays(root: Path) -> tuple[list[str], list[str]]:
     return shipped, env
 
 
+def boot_env(root: Path) -> tuple[Path | None, dict[str, str]]:
+    """The boot environment file (Armbian, Orange Pi) and its key=value settings."""
+    for name in ("armbianEnv.txt", "orangepiEnv.txt"):
+        path = root / "boot" / name
+        try:
+            text = path.read_text(errors="replace")
+        except OSError:
+            continue
+        settings = {}
+        for line in text.splitlines():
+            key, sep, value = line.partition("=")
+            if sep:
+                settings[key.strip()] = value.strip()
+        return path, settings
+    return None, {}
+
+
+def boot_time(root: Path) -> float | None:
+    try:
+        return time.time() - float((root / "proc" / "uptime").read_text().split()[0])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def overlay_advice(root: Path, dtbo: str) -> tuple[list[str], str]:
+    """(findings, verdict) on getting the boot script to apply the overlay `dtbo` (a path relative
+    to root).
+
+    Armbian's boot script loads each overlays= entry as overlay/<overlay_prefix>-<entry>.dtbo; since
+    Armbian 24.11 it also tries overlay/<entry>.dtbo. On an older script a kernel overlay whose name
+    does not start with the prefix (rk3588-hdmirx.dtbo with overlay_prefix=rockchip-rk3588) cannot
+    be named in overlays= at all: it is skipped without a word. user_overlays= (files in
+    /boot/overlay-user) works with every version."""
+    name = Path(dtbo).name.removesuffix(".dtbo")
+    overlay_dir = root / Path(dtbo).parent
+    env_path, env = boot_env(root)
+    env_file = f"/boot/{env_path.name if env_path else 'armbianEnv.txt'}"
+    prefix = env.get("overlay_prefix", "")
+    listed, user_listed = env.get("overlays", "").split(), env.get("user_overlays", "").split()
+    try:
+        script = (root / "boot" / "boot.cmd").read_text(errors="replace")
+    except OSError:
+        script = ""
+    plain = "overlay/${overlay_file}.dtbo" in script  # the Armbian 24.11+ fallback
+
+    def found(entry: str) -> bool:
+        return (overlay_dir / f"{prefix}-{entry}.dtbo").is_file() or (plain and (overlay_dir / f"{entry}.dtbo").is_file())
+
+    findings = []
+    if script and listed:
+        skipped = [e for e in listed if not found(e)]
+        if skipped:
+            findings.append(f"boot script: skips these overlays= entries, no such file for it: {' '.join(skipped)}")
+    if prefix and name.startswith(prefix + "-"):
+        entry: str | None = name[len(prefix) + 1:]
+    else:
+        entry = name if plain else None  # (no boot.cmd to read: do not count on the fallback)
+    user_file = root / "boot" / "overlay-user" / f"{name}.dtbo"
+    user_steps = (f"use user_overlays, which every boot script version loads: `sudo mkdir -p /boot/overlay-user && "
+                  f"sudo cp /{dtbo} /boot/overlay-user/`, add the line user_overlays={name} to {env_file} "
+                  f"(or add {name} to that line if there is one)"
+                  + (f", remove {name} from overlays=" if name in listed else "") + ", then reboot")
+    if (entry is not None and entry in listed) or (name in user_listed and user_file.is_file()):
+        booted = boot_time(root)
+        try:
+            edited = env_path.stat().st_mtime if env_path else None
+        except OSError:
+            edited = None
+        if booted is not None and edited is not None and edited > booted:
+            return findings, f"{env_file} names the overlay but changed after this boot: reboot"
+        return findings, (f"{env_file} names the overlay but this boot did not apply it: when one overlay fails to "
+                          f"apply, the boot script drops them all (its messages are on the serial console); try "
+                          f"with this overlay alone")
+    if name in listed or name in user_listed:
+        reason = (f"this boot script looks for /boot/{Path(dtbo).parent.relative_to('boot')}/{prefix}-{name}.dtbo, "
+                  f"which does not exist, so it skips {name}" if name in listed
+                  else f"user_overlays names {name} but /boot/overlay-user/{name}.dtbo does not exist")
+        return findings, f"{reason}: {user_steps}"
+    if entry is not None:
+        return findings, (f"the device tree has the HDMI input but leaves it off; this image ships the overlay that "
+                          f"turns it on: add {entry} to the overlays= line of {env_file} (keep what is there, "
+                          f"separate with a space), then reboot")
+    return findings, f"the device tree has the HDMI input but leaves it off; this image ships the overlay: {user_steps}"
+
+
 def diagnose(root: str = "/", release: str | None = None) -> list[str]:
     """Readable findings, then a verdict line starting with '=> '."""
     r = Path(root)
@@ -138,11 +224,8 @@ def diagnose(root: str = "/", release: str | None = None) -> list[str]:
         verdict = ("this kernel's device tree does not describe the HDMI input: use a board image made for "
                    "HDMI input (Orange Pi's own image enables it)")
     elif not enabled and shipped:
-        name = Path(shipped[0]).name.removesuffix(".dtbo")
-        env = next((f for f in ("armbianEnv.txt", "orangepiEnv.txt") if (r / "boot" / f).is_file()), "armbianEnv.txt")
-        verdict = (f"the device tree has the HDMI input but leaves it off; this image ships the overlay that turns "
-                   f"it on: add {name} to the overlays= line of /boot/{env} (keep what is there, separate "
-                   f"with a space), then reboot")
+        findings, verdict = overlay_advice(r, shipped[0])
+        out += findings
     elif not enabled:
         verdict = ("the device tree has the HDMI input but leaves it off (status disabled): it needs a device "
                    "tree overlay that turns it on, or a board image that enables it (Orange Pi's own image)")

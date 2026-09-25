@@ -52,6 +52,20 @@ either role, and the board, which prefers to be the host, may end up as the host
 
    One `overlays=` line only: add the name to it, separated by a space, rather than a second line.
    If the board does not boot the overlay, the boot script says so and starts without it.
+
+   Armbian boot scripts older than 24.11 load an `overlays=` entry only as
+   `<overlay_prefix>-<entry>.dtbo`; with `overlay_prefix=rockchip-rk3588`, `rk3588-hdmirx` is then
+   skipped without a word. Use `user_overlays` instead, which every version loads by name:
+
+   ```
+   sudo mkdir -p /boot/overlay-user
+   sudo cp /boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo /boot/overlay-user/
+   echo 'user_overlays=rk3588-hdmirx' | sudo tee -a /boot/armbianEnv.txt
+   sudo reboot
+   ```
+
+   `ihc-capture-check list` reads the boot script and says which way this board needs, or that it
+   only needs a reboot.
 2. Check that the USB-C port can act as a device:
 
    ```

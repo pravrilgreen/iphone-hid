@@ -31,6 +31,7 @@ follows both the relative mouse and the absolute pointer. Pick **Absolute** unde
 console (or `ihc serve --pointer absolute`, or `IHC_POINTER=absolute` in `/etc/default/ihc`): clicks
 on the live view then land where you click, with no calibration. Armbian leaves the HDMI input off
 in the board's device tree: turn it on with its `rk3588-hdmirx` overlay (docs/gadget.md, "Set up the
-board"); `ihc-capture-check list` says what a board lacks. The HDMI input has not been checked on a real board yet: it
+board"), through `user_overlays` on boot scripts older than Armbian 24.11. `ihc-capture-check list`
+says what a board lacks and which way its boot script takes the overlay. The HDMI input has not been checked on a real board yet: it
 passed the test suite and a smoke test of the bundle under ARM64 emulation with an Ubuntu 22.04 user
 space.
