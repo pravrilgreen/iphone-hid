@@ -118,3 +118,7 @@ def test_gadget_flag_does_not_swallow_the_commands(monkeypatch, capsys):
     assert tool.main(["--gadget", "--no-log", "info; move 10 0"]) == 0
     assert opened[0] == "ihc" and ("rel", (10, 0, 0, 0)) in opened
     assert "USB connected" in capsys.readouterr().out
+
+    Stub.wake = lambda self: {"before": "suspended", "after": "configured"}
+    assert tool.main(["--gadget", "--no-log", "wake"]) == 0
+    assert "USB state suspended -> configured" in capsys.readouterr().out

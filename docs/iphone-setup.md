@@ -26,17 +26,28 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
    - **Increase Contrast: ON** nếu có.
    - **Tracking Speed:** chọn một mức, ghi lại, và **không đổi nữa**. Hiệu chỉnh con trỏ chỉ đúng với mức đã đo.
 4. **Settings > Display & Brightness:**
-   - **Auto-Lock: Never.** Máy khoá thì phụ kiện có dây ngừng hoạt động.
+   - **Auto-Lock: Never.** Bắt buộc. Máy ngủ thì cổng USB bị tắt (suspend), máy ngừng nhận lệnh chuột và phím, và
+     hình qua USB-C cũng tắt.
+   - Không có lựa chọn Never? Nguyên nhân là **Low Power Mode** đang bật (nó ép Auto-Lock về 30 giây), hoặc máy có
+     profile quản lý (MDM) hay Screen Time đặt thời gian khoá.
+   - Giảm độ sáng xuống mức thấp vừa đủ nhìn trên hình thu. Màn OLED sáng liên tục với hình tĩnh dễ bị lưu ảnh.
    - Display Zoom: **Default**.
 5. **Settings > Privacy & Security > Wired Accessories** (iOS 26+):
-   - chọn **Automatically Allow When Unlocked** hoặc **Ask for New Accessories**;
+   - dàn máy chuyên dụng chọn **Always Allow**, để bàn phím và chuột vẫn chạy nếu máy lỡ khoá hoặc khởi động lại
+     (kém an toàn hơn: phụ kiện lạ cũng được nhận);
+   - máy dùng chung với người chọn **Automatically Allow When Unlocked**, và chấp nhận là máy khoá quá 1 giờ thì phải
+     có người mở khoá;
    - cắm thử và chấp nhận phụ kiện một lần trong lúc máy đang mở khoá.
-6. **Settings > General > Keyboard > Hardware Keyboard:**
+   - Kiểm tra lại mục này sau mỗi lần cập nhật iOS (iOS 26.2 đã tự đổi nó về Always Allow).
+6. **Passcode:** máy chuyên cho tự động hoá thì nên **tắt passcode**, nếu các app đang dùng cho phép. Không có
+   passcode thì USB Restricted Mode và việc tự khởi động lại sau 72 giờ khoá không áp dụng, và box mở được màn khoá
+   chỉ bằng nút Home. Phải giữ passcode thì bắt buộc chọn Always Allow ở mục 5.
+7. **Settings > General > Keyboard > Hardware Keyboard:**
    - layout **U.S.**;
    - tắt Auto-Capitalization, Auto-Correction và phím tắt "." (hai lần dấu cách).
-7. **Khoá xoay dọc (Portrait Orientation Lock): ON** trong Control Center. Hiệu chỉnh và toạ độ đều tính theo
+8. **Khoá xoay dọc (Portrait Orientation Lock): ON** trong Control Center. Hiệu chỉnh và toạ độ đều tính theo
    màn hình dọc.
-8. **Safari:** để thanh địa chỉ **ở dưới** (mặc định từ iOS 15). Để ở trên thì lúc tìm trang hiệu chỉnh, một
+9. **Safari:** để thanh địa chỉ **ở dưới** (mặc định từ iOS 15). Để ở trên thì lúc tìm trang hiệu chỉnh, một
    cú click có thể trúng thanh địa chỉ và bật bàn phím; hiệu chỉnh sẽ dừng an toàn nhưng phải chạy lại.
 
 ## Nên làm
@@ -44,7 +55,8 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
 - **Tắt thông báo** hoặc bật Focus để popup không che màn hình khi đang chạy automation.
 - **Tắt tự cập nhật iOS**, tránh máy tự khởi động lại giữa chừng.
 - **Bật Optimized/Limit charging** (Battery > Charging > giới hạn 80%). Máy cắm sạc 24/7 sẽ nhẹ pin hơn.
-- **Tắt Low Power Mode** (nó ép Auto-Lock về 30 giây).
+- **Tắt Low Power Mode** (nó ép Auto-Lock về 30 giây). Giữ máy luôn được sạc qua hub để iOS không tự bật lại
+  chế độ này khi pin yếu.
 
 ## Kiểm tra nhanh sau khi cài
 

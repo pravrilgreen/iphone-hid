@@ -5,6 +5,7 @@
     sudo ihc gadget up --profile AR # both pointers, the absolute one first
     ihc gadget status               # is a USB device controller there, did the phone enumerate?
     sudo ihc gadget down
+    sudo ihc gadget wake            # USB remote wakeup of a phone that suspended the bus (locked)
 
 Then check it with the same commands as a CH9329: `ihc-hidtest --gadget "info; move 100 0"`
 (from a source checkout: `python3 tools/hidtest.py --gadget ...`).
@@ -82,6 +83,7 @@ def add_arguments(ap: argparse.ArgumentParser) -> None:
     up.add_argument("--pid", type=lambda s: int(s, 0), default=g.COMPOSITE_GADGET_PID, help="USB product id")
     up.add_argument("--replace", action="store_true", help="tear down an existing gadget of this name first")
     sub.add_parser("down", help="unbind and remove the gadget")
+    sub.add_parser("wake", help="USB remote wakeup: wake a phone that suspended the bus (locked, asleep)")
     st = sub.add_parser("status", help="controllers, binding, USB state, device nodes")
     st.add_argument("--json", action="store_true")
 
@@ -93,6 +95,16 @@ def run(args: argparse.Namespace) -> int:
             print(json.dumps(status, indent=2))
         else:
             _print_status(status)
+        return 0
+
+    if args.cmd == "wake":  # (root, or the udev rule giving the controller's srp attribute to group ihc)
+        udc = g.bound_udc(args.name, args.configfs)
+        try:
+            before, after = g.wake_host(udc)
+        except g.GadgetError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        print(f"{udc}: USB state {before} -> {after}")
         return 0
 
     _need_root()

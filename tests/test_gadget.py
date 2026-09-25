@@ -373,6 +373,52 @@ def test_gadget_tool_status_without_root(capsys, tmp_path):
     assert "not set up" in capsys.readouterr().out
 
 
+def test_config_says_the_gadget_may_wake_the_host(fs):
+    configfs, sysfs = fs
+    g.gadget_up("ihc", "RA", configfs=str(configfs), sysfs=str(sysfs))
+    assert (configfs / "ihc" / "configs" / "c.1" / "bmAttributes").read_text() == "0xa0"
+    g.gadget_down("ihc", configfs=str(configfs))
+    g.gadget_up("ihc", "RA", configfs=str(configfs), sysfs=str(sysfs), remote_wakeup=False)
+    assert (configfs / "ihc" / "configs" / "c.1" / "bmAttributes").read_text() == "0x80"
+
+
+def test_remote_wakeup_through_the_controllers_srp_attribute(fs):
+    """A locked phone suspends the bus; `srp` makes the controller signal remote wakeup."""
+    configfs, sysfs = fs
+    udc = sysfs / "class" / "udc" / "fc000000.usb"
+    (udc / "state").write_text("suspended\n")
+    (udc / "srp").write_text("")
+    clock = [0.0]
+
+    def sleep(dt):
+        clock[0] += dt
+        if clock[0] >= 0.2:  # the phone resumes the bus a moment later
+            (udc / "state").write_text("configured\n")
+
+    before, after = g.wake_host("fc000000.usb", str(sysfs), sleep=sleep, clock=lambda: clock[0])
+    assert (udc / "srp").read_text() == "1"
+    assert (before, after) == ("suspended", "configured")
+
+    (udc / "state").write_text("suspended\n")  # a phone that stays asleep: give up after the timeout
+    assert g.wake_host("fc000000.usb", str(sysfs), timeout=0.5, sleep=lambda dt: clock.__setitem__(0, clock[0] + dt),
+                       clock=lambda: clock[0]) == ("suspended", "suspended")
+    with pytest.raises(g.GadgetError, match="not bound"):
+        g.udc_wakeup("", str(sysfs))
+    with pytest.raises(g.GadgetError, match="cannot signal remote wakeup"):
+        g.udc_wakeup("nope.usb", str(sysfs))
+
+
+def test_gadget_tool_wake(fs, capsys, monkeypatch):
+    from ihc import gadget_cli
+
+    configfs, sysfs = fs
+    g.gadget_up("ihc", "RA", configfs=str(configfs), sysfs=str(sysfs))
+    seen = []
+    monkeypatch.setattr(g, "wake_host", lambda udc: seen.append(udc) or ("suspended", "configured"))
+    assert gadget_cli.main(["--configfs", str(configfs), "wake"]) == 0
+    assert seen == ["fc000000.usb"] and "suspended -> configured" in capsys.readouterr().out
+
+
 def test_every_profile_fits_the_kernels_hid_limit():
     assert all(len(fns) <= g.MAX_HID_FUNCTIONS for fns in g.PROFILES.values())
 

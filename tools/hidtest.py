@@ -189,6 +189,15 @@ class HidShell(cmd.Cmd):
             print(f"chip {i['version']} ({i['version_raw']:#04x}) | USB {usb} (status {i['usb_status']:#04x}) | {leds}")
         self.log("info", **i)
 
+    def do_wake(self, arg: str) -> None:
+        """wake: USB remote wakeup (gadget only): wakes a phone that suspended the bus (locked, asleep).
+        Its screen stays off until it gets input: follow with a key or a move, e.g. `wake; key space`."""
+        if not hasattr(self.hid, "wake"):
+            raise ValueError("wake needs --gadget: a CH9329 cannot signal remote wakeup")
+        r = self.hid.wake()
+        print(f"USB state {r['before']} -> {r['after']}")
+        self.log("wake", **r)
+
     def do_watch(self, arg: str) -> None:
         """watch [interval=0.5] [duration=0]: poll GET_INFO and print every change, until Ctrl+C
         (or `duration` seconds). Use it while locking/unlocking the iPhone or answering popups."""

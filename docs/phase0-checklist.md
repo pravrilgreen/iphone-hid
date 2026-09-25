@@ -21,6 +21,7 @@ Mỗi bài trên iPhone cần chạy trên cả **iOS 26.x và iOS 27**.
 | Q6 | Khoá máy, rút/cắm USB, HDMI, sạc, khởi động lại hộp: có tự hồi phục không? | B6 |
 | Q7 | Độ trễ hình tới trình duyệt? Con trỏ có hiện trên HDMI không? | B7 |
 | Q8 | Chạy liên tục 72 giờ có ổn không? | B8 |
+| Q10 | iPhone lỡ ngủ (Auto-Lock) thì box có đánh thức và điều khiển lại được không? | B9 |
 | Q9 | (Dự phòng) Cáp CH9329 giao báo cáo có đủ không, và iPhone có theo chuột tuyệt đối của nó không? | D1–D3 |
 
 ---
@@ -432,6 +433,33 @@ Có một lần rút điện có chủ đích (cả board và sạc), rồi cắ
 - nhiệt độ board (`cat /sys/class/thermal/thermal_zone*/temp`) và iPhone (nóng tay hay không);
 - % pin iPhone đầu và cuối;
 - hub có reset lần nào không.
+
+---
+
+## B9. Máy ngủ và đánh thức
+
+Làm với bản 0.1.9 trở lên. Dựng lại gadget để nó khai báo remote wakeup, rồi cho máy ngủ có chủ đích:
+
+```bash
+sudo ~/ihc/bin/ihc gadget up --replace --owner $USER
+# trên iPhone: Auto-Lock = 30 giây (chỉ để thử), để yên cho màn hình tắt, rồi đợi thêm 1 phút
+~/ihc/bin/ihc gadget status                              # 1. USB state lúc máy ngủ: configured hay suspended?
+~/ihc/bin/ihc-hidtest --gadget "info; move 50 0"         # 2. lệnh có tới không? (mong đợi: không)
+sudo ~/ihc/bin/ihc gadget wake                           # 3. remote wakeup: state trước -> sau
+~/ihc/bin/ihc-hidtest --gadget "key space"               # 4. màn hình có sáng lên màn khoá không?
+~/ihc/bin/ihc-hidtest --gadget "home"                    # 5. không có passcode: có vào màn hình chính không?
+```
+
+Nếu máy có passcode: sau bước 5, thử gõ passcode bằng `ihc-hidtest --gadget "type 123456; key enter"` (thay bằng
+passcode thật).
+
+**Ghi lại:**
+- USB state ở từng bước;
+- màn hình sáng lên ở bước nào (3, 4 hay 5);
+- gõ passcode bằng bàn phím có được không;
+- làm lại sau khi máy đã khoá hơn 1 giờ, với từng lựa chọn của Wired Accessories.
+
+Trả Auto-Lock về Never sau khi thử.
 
 ---
 

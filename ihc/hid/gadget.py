@@ -38,6 +38,10 @@ CONFIGFS = "/sys/kernel/config/usb_gadget"
 DEFAULT_NAME = "ihc"
 LINUX_FOUNDATION_VID = 0x1D6B
 COMPOSITE_GADGET_PID = 0x0104
+# configuration bmAttributes: bit 7 always set; bit 5 = the device may wake a host that suspended the
+# bus (a locked, sleeping phone): see udc_wakeup()
+USB_CONFIG_ATT_ONE = 0x80
+USB_CONFIG_ATT_WAKEUP = 0x20
 
 # -- report descriptors (HID 1.11 and the HID Usage Tables; the report layouts of the CH9329 API,
 #    each collection on its own interface, so without report IDs) ------------------------------
@@ -160,6 +164,35 @@ def bound_udc(name: str = DEFAULT_NAME, configfs: str = CONFIGFS) -> str:
         return ""
 
 
+def udc_wakeup(udc: str, sysfs: str = "/sys") -> None:
+    """Signal USB remote wakeup to a host that suspended the bus (e.g. a locked iPhone): the UDC
+    core's `srp` attribute calls usb_gadget_wakeup(). The controller only signals it when the link is
+    suspended, and the write never reports whether it did: watch the USB state (wake_host)."""
+    if not udc:
+        raise GadgetError("the gadget is not bound to a USB device controller (`sudo ihc gadget up`)")
+    path = Path(sysfs) / "class" / "udc" / udc / "srp"
+    try:
+        _write(path, "1")
+    except OSError as e:
+        hint = " (needs root, or the udev rule of deploy/99-ihc.rules)" if e.errno in (errno.EACCES, errno.EPERM) else ""
+        raise GadgetError(f"cannot signal remote wakeup through {path}: {e.strerror or e}{hint}") from e
+
+
+def wake_host(udc: str, sysfs: str = "/sys", timeout: float = 2.0, *,
+              sleep: Callable[[float], None] = time.sleep, clock: Callable[[], float] = time.monotonic
+              ) -> tuple[str | None, str | None]:
+    """Remote wakeup, then wait up to `timeout` for the host to use the bus again. Returns the USB
+    state (before, after)."""
+    before = udc_state(udc, sysfs)
+    udc_wakeup(udc, sysfs)
+    deadline = clock() + timeout
+    state = udc_state(udc, sysfs)
+    while state != "configured" and clock() < deadline:
+        sleep(0.05)
+        state = udc_state(udc, sysfs)
+    return before, state
+
+
 def udc_users(configfs: str = CONFIGFS) -> dict[str, str]:
     """UDC -> the configfs gadget bound to it (e.g. an ADB gadget from the board's own image)."""
     root = Path(configfs)
@@ -221,8 +254,9 @@ def _mkdir(path: Path) -> None:
 
 def gadget_up(name: str = DEFAULT_NAME, profile: str = "RA", *, udc: str | None = None, configfs: str = CONFIGFS,
               sysfs: str = "/sys", vendor: int = LINUX_FOUNDATION_VID, product: int = COMPOSITE_GADGET_PID,
-              serial: str | None = None) -> str:
-    """Create the HID gadget and bind it to a UDC (needs root). Returns the UDC name."""
+              serial: str | None = None, remote_wakeup: bool = True) -> str:
+    """Create the HID gadget and bind it to a UDC (needs root). Returns the UDC name. With
+    `remote_wakeup` the configuration says the gadget may wake a host that suspended the bus."""
     if profile not in PROFILES:
         raise GadgetError(f"unknown profile {profile!r}; one of {', '.join(PROFILES)}")
     root = Path(configfs)
@@ -261,7 +295,7 @@ def gadget_up(name: str = DEFAULT_NAME, profile: str = "RA", *, udc: str | None 
         conf = g / "configs" / "c.1"
         (conf / "strings" / "0x409").mkdir(parents=True, exist_ok=True)
         _write(conf / "strings" / "0x409" / "configuration", "keyboard + mouse")
-        _write(conf / "bmAttributes", "0x80")
+        _write(conf / "bmAttributes", f"{USB_CONFIG_ATT_ONE | (USB_CONFIG_ATT_WAKEUP if remote_wakeup else 0):#04x}")
         _write(conf / "MaxPower", "100")
         for fn in PROFILES[profile]:
             spec = FUNCTIONS[fn]
@@ -449,6 +483,13 @@ class GadgetBackend:
 
     def udc_state(self) -> str | None:
         return udc_state(self.udc, self._sysfs)
+
+    def wake(self, timeout: float = 2.0) -> dict:
+        """USB remote wakeup of a phone that suspended the bus (locked, asleep). The phone's screen
+        stays off until it gets input: send a key or a pointer move after this."""
+        before, after = wake_host(self.udc, self._sysfs, timeout)
+        self._emit("wake", before=before, after=after)
+        return {"before": before, "after": after}
 
     def info(self) -> dict:
         """The CH9329 GET_INFO fields: whether the phone enumerated the gadget, keyboard LEDs."""

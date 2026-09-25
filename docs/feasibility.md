@@ -301,6 +301,18 @@ Việc đã làm theo đó:
   Tức là với "Always Allow", HID có dây gõ được passcode trên màn khoá.
   **[Unknown]** Chưa rõ điều này có đúng ngay sau khi khởi động lại (BFU) không (B6).
 - **[Likely]** Từ iOS 18.1, máy tự khởi động lại về BFU khi ở trạng thái khoá liên tục 72 giờ ([Magnet Forensics](https://www.magnetforensics.com/blog/understanding-the-security-impacts-of-ios-18s-inactivity-reboot/), trích đoạn). Nếu giữ máy luôn mở khoá (Auto-Lock = Never) thì nhiều khả năng không bị ảnh hưởng. Đây là suy luận từ cơ chế đếm theo thời gian khoá.
+- **[Chắc, mã kernel]** Box đánh thức được bus USB đang ngủ. Khi máy khoá và tắt màn hình, iPhone ngừng poll HID
+  (báo cáo của box hết giờ chờ). Để đánh thức:
+  - gadget khai báo cờ remote wakeup (bit 5 của `bmAttributes`; `ihc gadget up` đặt 0xA0 từ bản 0.1.9);
+  - ghi `1` vào `/sys/class/udc/<udc>/srp`, core UDC sẽ gọi `usb_gadget_wakeup()`;
+  - DWC3 trong kernel 6.1 của Rockchip (`__dwc3_gadget_wakeup`) chỉ phát tín hiệu này khi đường truyền đang ở trạng
+    thái suspend.
+
+  Lệnh: `ihc gadget wake`, hoặc `wake` trong `ihc-hidtest`. **[Chưa biết]** iPhone có nhận tín hiệu này và bật màn
+  hình khi có phím hay chuột theo sau không. Đó là thí nghiệm B9.
+- **[Có thể]** Bấm một phím trên bàn phím ngoài sẽ đưa iPhone ra màn khoá, và gõ được passcode bằng bàn phím đó
+  ([OS X Daily](https://osxdaily.com/2013/08/22/unlock-ios-device-with-external-keyboard/), trích đoạn; bài cũ, phải
+  thử lại trên iOS 26).
 - **Hệ quả vận hành:**
   - Auto-Lock = Never.
   - Tắt tự cập nhật iOS.

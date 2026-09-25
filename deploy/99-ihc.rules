@@ -2,6 +2,8 @@
 
 # The all-in-one box: this board's HID gadget nodes (set up by `ihc gadget up`) belong to the service.
 KERNEL=="hidg[0-9]*", MODE="0660", GROUP="ihc"
+# ... and may signal USB remote wakeup to a phone that suspended the bus (`ihc gadget wake`).
+SUBSYSTEM=="udc", ACTION=="add", RUN+="/bin/chgrp ihc /sys%p/srp", RUN+="/bin/chmod g+w /sys%p/srp"
 
 # CH9329 cables (USB-serial bridges CH340/CH341/CH9102/CH343, CP210x): readable by the dialout group,
 # and ModemManager must never probe them (it sends AT commands).
