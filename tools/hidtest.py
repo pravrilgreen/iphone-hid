@@ -4,6 +4,7 @@
     python tools/hidtest.py --port /dev/ttyUSB0             # shell; type `help`
     python tools/hidtest.py --port /dev/ttyUSB0 info        # run one command and exit
     python tools/hidtest.py --port /dev/ttyUSB0 "move 200 0; click"
+    python tools/hidtest.py --gadget                        # this board is the keyboard/mouse (tools/gadget.py up)
     python tools/hidtest.py --fake                          # dry run against the simulated chip
 
 Each session appends a JSON-lines log (default docs/test-logs/hidtest-<time>.jsonl) holding every
@@ -32,6 +33,7 @@ from ihc.hid import protocol as p  # noqa: E402
 from ihc.hid.base import HidError, HidTimeout  # noqa: E402
 from ihc.hid.ch9329 import CH9329Backend  # noqa: E402
 from ihc.hid.config import ChipConfig, parse_value  # noqa: E402
+from ihc.hid.gadget import GadgetBackend, gadget_status  # noqa: E402
 from ihc.hid.scan import candidate_ports, list_serial_ports  # noqa: E402
 from ihc.input import keymap  # noqa: E402
 from ihc.jsonlog import EventLog  # noqa: E402
@@ -162,6 +164,10 @@ class HidShell(cmd.Cmd):
     def default(self, line: str) -> None:
         raise ValueError(f"unknown command {line.split()[0]!r}; type `help`")
 
+    def _chip_only(self, command: str) -> None:
+        if not isinstance(self.hid, CH9329Backend):
+            raise ValueError(f"{command} talks to a CH9329 or the ESP32 bridge over serial; this is a USB gadget")
+
     def run_script(self, text: str) -> None:
         for part in text.split(";"):
             if self.onecmd(part):
@@ -175,7 +181,11 @@ class HidShell(cmd.Cmd):
         i = self.hid.info()
         usb = "connected" if i["usb_connected"] else "NOT connected"
         leds = ", ".join(f"{k.replace('_', ' ')} {'on' if i[k] else 'off'}" for k in ("num_lock", "caps_lock", "scroll_lock"))
-        print(f"chip {i['version']} ({i['version_raw']:#04x}) | USB {usb} (status {i['usb_status']:#04x}) | {leds}")
+        if "gadget" in i:
+            print(f"{i['version']} | USB {usb} (state {i['usb_state']}) | {leds} | "
+                  f"interfaces {', '.join(i['gadget']['functions'])}")
+        else:
+            print(f"chip {i['version']} ({i['version_raw']:#04x}) | USB {usb} (status {i['usb_status']:#04x}) | {leds}")
         if "bridge" in i:
             b = i["bridge"]
             period = f"{b['report_period_ms']} ms" if b["report_period_ms"] else "unknown"
@@ -223,6 +233,7 @@ class HidShell(cmd.Cmd):
         cfg restore FILE         write a backup back (asks for YES)
         cfg default              factory defaults: 9600 baud, address 0 (asks for YES)
         Writes take effect at the next power-up: unplug and replug the HID end of the cable."""
+        self._chip_only("cfg")
         sub, _, rest = arg.strip().partition(" ")
         handlers = {"": self._cfg_show, "show": self._cfg_show, "save": self._cfg_save_cmd, "set": self._cfg_set,
                     "restore": self._cfg_restore, "default": self._cfg_default}
@@ -321,12 +332,14 @@ class HidShell(cmd.Cmd):
 
     def do_reset(self, arg: str) -> None:
         """reset: software-reset the chip; the iPhone sees the accessory disconnect and reconnect."""
+        self._chip_only("reset")
         self.hid.reset()
         self.buttons = 0
         print("reset sent")
 
     def do_usbstr(self, arg: str) -> None:
         """usbstr: read the vendor/product/serial USB string settings."""
+        self._chip_only("usbstr")
         for kind, name in ((0, "vendor"), (1, "product"), (2, "serial")):
             s = self.hid.get_usb_string(kind)
             print(f"{name:8} {s!r}")
@@ -576,12 +589,15 @@ class HidShell(cmd.Cmd):
             lost, errors = self.hid.stats["lost_acks"] - lost0, len(self.hid.async_errors) - err0
         finally:
             self.hid.wait_ack = saved
-        wire_ms = (11 + 7) * 10 / self.hid.baud * 1000
+        wire_ms = (11 + 7) * 10 / self.hid.baud * 1000 if self.hid.baud else None
         rate = n / send_s if send_s else float("inf")
         print(f"GET_INFO round trip:       {_stats_ms(info)}")
         print(f"mouse report with ack:     {_stats_ms(acked)}  -> {1 / statistics.fmean(acked):.0f} reports/s")
         print(f"mouse report, no ack wait: {rate:.0f} reports/s; lost acks {lost}, error replies {errors}")
-        print(f"wire time per report + ack at {self.hid.baud} baud: {wire_ms:.1f} ms")
+        if wire_ms is not None:
+            print(f"wire time per report + ack at {self.hid.baud} baud: {wire_ms:.1f} ms")
+        else:
+            print("(gadget: an ack here means the phone polled the report)")
         self.log("bench", n=n, baud=self.hid.baud, info_ms=[round(s * 1000, 2) for s in info],
                  acked_ms=[round(s * 1000, 2) for s in acked], no_ack_rate=round(rate, 1), lost_acks=lost, error_replies=errors)
 
@@ -589,6 +605,7 @@ class HidShell(cmd.Cmd):
         """raw HEX...: send bytes and print what comes back for 0.3 s. A full frame (57 AB ...)
         goes out verbatim, bad checksum included; otherwise the first byte is CMD and the rest DATA,
         framed for you. Flash-writing commands are refused: use `cfg`."""
+        self._chip_only("raw")
         data = bytes.fromhex(arg.replace(",", " "))
         if not data:
             raise ValueError("usage: raw HEX...")
@@ -684,6 +701,8 @@ def main(argv: list[str] | None = None, *, ask=input) -> int:
     src = ap.add_mutually_exclusive_group()
     src.add_argument("--port", help="serial port, e.g. /dev/serial/by-id/... (default: the only USB serial port)")
     src.add_argument("--fake", action="store_true", help="talk to a simulated chip instead of hardware")
+    src.add_argument("--gadget", nargs="?", const="ihc", metavar="NAME",
+                     help="this board is the keyboard and mouse (Linux USB gadget set up by tools/gadget.py)")
     ap.add_argument("--fake-bridge", action="store_true", help="with --fake: simulate the ESP32 bridge")
     ap.add_argument("--baud", type=int, default=9600, help="default 9600 (factory setting)")
     ap.add_argument("--addr", type=_int, default=0, help="chip address, default 0")
@@ -703,6 +722,14 @@ def main(argv: list[str] | None = None, *, ask=input) -> int:
 
         hid = FakeBackend(FakeChip(bridge=args.fake_bridge), baud=args.baud, simulate_timing=True, **opts)
         port_info = {"fake": True}
+    elif args.gadget:
+        try:
+            hid = GadgetBackend(args.gadget, timeout=args.timeout, wait_ack=not args.no_ack, trace=log)
+        except HidError as e:
+            log("error", kind=type(e).__name__, error=str(e))
+            print(f"error: {e}", file=sys.stderr)
+            return 2
+        port_info = {"gadget": gadget_status(args.gadget)}
     else:
         port = args.port or _auto_port()
         try:
