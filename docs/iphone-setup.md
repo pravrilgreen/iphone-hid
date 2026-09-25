@@ -1,5 +1,7 @@
 # Cài đặt iPhone (làm tay một lần cho mỗi máy)
 
+Chỉ dùng iPhone có cổng USB-C: iPhone 15 trở lên, trừ 16e và 17e (hai máy này không xuất hình qua USB-C).
+
 Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên bản iOS và mọi khác biệt vào log test.
 
 ## Bắt buộc
@@ -13,7 +15,9 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
    - nút giữa (Button 3) = **App Switcher**.
 
    Phần mềm dùng đúng hai gán này cho lệnh `home` và `app_switcher`. Thiết bị chỉ hiện trong danh sách sau
-   khi cắm HID lần đầu.
+   khi cắm HID lần đầu. Với hộp Orange Pi, tên USB của thiết bị là `ihc keyboard + mouse`. Chuột tương đối và chuột
+   tuyệt đối là hai interface riêng, nên iOS có thể hiện nhiều mục: gán nút cho mọi mục hiện ra. Đổi profile
+   gadget (serial USB khác) có thể làm iOS coi là thiết bị mới, khi đó phải gán lại.
 3. **Settings > Accessibility > Pointer Control:**
    - **Automatically Hide Pointer: OFF.** Con trỏ tự ẩn thì không nhìn thấy được.
    - **Pointer Size:** tăng lên khoảng 2/3 thanh trượt.
@@ -39,18 +43,19 @@ Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên b�
 
 - **Tắt thông báo** hoặc bật Focus để popup không che màn hình khi đang chạy automation.
 - **Tắt tự cập nhật iOS**, tránh máy tự khởi động lại giữa chừng.
-- **Bật Optimized/Limit charging** (iPhone 15+: Battery > Charging > giới hạn 80%). Máy cắm sạc 24/7 sẽ nhẹ pin
-  hơn.
+- **Bật Optimized/Limit charging** (Battery > Charging > giới hạn 80%). Máy cắm sạc 24/7 sẽ nhẹ pin hơn.
 - **Tắt Low Power Mode** (nó ép Auto-Lock về 30 giây).
-- **Dòng Lightning:** vào Settings > Bluetooth để ghép với ESP32 (xem `firmware/esp32_ble_hid/README.md`).
 
 ## Kiểm tra nhanh sau khi cài
 
-Cắm HID và chạy:
+Cắm HID (hộp: cổng USB-A của hub → cáp USB-A → USB-C → cổng Type-C của board, gadget đã bật) và chạy trên board:
 
 ```bash
-python tools/hidtest.py --port <cổng> "info; move 200 0; move 0 200; home"
+python3 tools/hidtest.py --gadget "info; move 200 0; move 0 200; home"
 ```
+
+Với cáp CH9329 (phương án dự phòng), thay `--gadget` bằng `--port <cổng>`. Nếu server đang chạy như service, dừng
+nó trước (`sudo systemctl stop ihc`) để hai tiến trình không cùng gửi lệnh, rồi bật lại sau khi kiểm tra.
 
 Kết quả đúng:
 - `info` báo `USB connected`;

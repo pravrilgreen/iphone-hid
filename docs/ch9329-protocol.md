@@ -1,9 +1,12 @@
 # Giao thức serial CH9329: ghi chú đã đối chiếu
 
+Cáp CH9329 là **phương án dự phòng** cho bàn phím + chuột: dùng khi image của board không có chế độ USB device,
+hoặc trên một host Linux khác. Cấu hình chính là hộp Orange Pi 5 Plus, trong đó chính board là bàn phím + chuột
+(Linux USB gadget, [gadget.md](gadget.md)). Hai đường có cùng API trong phần mềm.
+
 Nguồn: tài liệu của WCH **"CH9329芯片串口通信协议" V1.0** (nằm trong gói CH9329EVT.ZIP) và datasheet
 **CH9329DS1 V1.0**. Các khung mẫu in trong tài liệu được dùng làm dữ liệu kiểm thử chuẩn trong
-`tests/test_protocol.py` và trong test host của firmware ESP32. Thư viện `pych9329-hid` (MIT) chỉ dùng để
-đối chiếu, không copy code.
+`tests/test_protocol.py`. Thư viện `pych9329-hid` (MIT) chỉ dùng để đối chiếu, không copy code.
 
 Ký hiệu: ✅ tài liệu gốc ghi rõ · ⚠️ tài liệu không ghi, đang giả định · 🔬 phải đo trên phần cứng.
 
@@ -22,7 +25,7 @@ Ký hiệu: ✅ tài liệu gốc ghi rõ · ⚠️ tài liệu không ghi, đan
 - Chip nhận khung lỗi thì hoặc trả khung lỗi, hoặc bỏ qua im lặng. Vì vậy driver phải chịu được cả hai.
 - Chip coi một gói đã kết thúc nếu quá **packet interval** (mặc định 3 ms) mà không nhận thêm byte. ⚠️ Chưa rõ
   gửi dồn nhiều khung sát nhau có ổn không. Driver gửi từng khung và `flush()` đến khi bytes ra hết đường
-  truyền. 🔬 Bài `bench` ở giai đoạn 0 sẽ đo.
+  truyền. 🔬 Bài D1 (`bench`) của giai đoạn 0 sẽ đo.
 
 ### Địa chỉ ✅
 
@@ -45,7 +48,7 @@ Ký hiệu: ✅ tài liệu gốc ghi rõ · ⚠️ tài liệu không ghi, đan
 | E6 | ERR_OPERATE | khung đúng nhưng thực thi thất bại |
 
 ⚠️ Tài liệu không nói lệnh gửi HID sẽ phản hồi thế nào khi phía USB chưa được enumerate (iPhone khoá, chưa cho
-phép phụ kiện). Chip giả trả E6. 🔬 Bài `watch` ở giai đoạn 0 sẽ ghi lại hành vi thật.
+phép phụ kiện). Chip giả trả E6. 🔬 Bài D3 (`watch`) của giai đoạn 0 sẽ ghi lại hành vi thật.
 
 ## Bảng lệnh ✅
 
@@ -121,7 +124,7 @@ Serial mode: 0 giao thức, 1 ASCII, 2 trong suốt; 0x8x là chọn bằng châ
   nên ghi lại nguyên văn sẽ bị từ chối. `ChipConfig.for_write()` đổi sang giá trị phần mềm tương đương và
   thông báo rõ khi làm vậy.
 - **Mọi thay đổi chỉ có hiệu lực ở lần cấp nguồn tiếp theo.** ⚠️ Chưa rõ lệnh `RESET` có áp dụng không.
-  🔬 Checklist giai đoạn 0 có bước thử.
+  🔬 Bài D2 của checklist giai đoạn 0 thử điều này.
 
 ## Cứu chip ✅
 
@@ -146,8 +149,9 @@ Serial mode: 0 giao thức, 1 ASCII, 2 trong suốt; 0x8x là chọn bằng châ
 
 - **Cách né bug phím tắt bằng "profile chỉ bàn phím":** đổi sang work mode 0x01 bắt buộc phải cấp nguồn lại
   chip. Trên cáp thành phẩm, chip lấy nguồn từ phía iPhone/hub, nên phải rút cáp. Đây là thao tác tay, không
-  làm được trong lúc chạy. Nếu bug phím tắt xảy ra thường xuyên, phương án thực tế là HID tự làm trên
-  ESP32-S3/RP2040 (TinyUSB), có thể re-enumerate bằng phần mềm. Xem `docs/feasibility.md`.
-- **Thông lượng:** mỗi báo cáo chuột kèm ack mất 18 byte trên dây, tức 18,75 ms ở 9600 baud (~50 báo cáo/s).
-  Ở 115200 baud còn khoảng 1,6 ms. Pacer mặc định 25 ms/báo cáo nên 9600 baud là đủ. Nâng baud chỉ giúp
-  giảm độ trễ từng lệnh.
+  làm được trong lúc chạy. Nếu bug phím tắt xảy ra thường xuyên, dùng gadget của hộp: nó đổi profile bằng phần
+  mềm (`sudo ihc gadget up --replace --profile K`). Xem `docs/feasibility.md`, mục 3.4.
+- **Thông lượng:** mỗi báo cáo chuột kèm ack mất 18 byte trên dây (11 byte gửi đi, 7 byte ack), tức 18,75 ms ở
+  9600 baud (~50 báo cáo/s) nếu chờ từng ack. Ở 115200 baud còn khoảng 1,6 ms. Nhịp chạy mặc định là 20 ms/báo
+  cáo; trong một đoạn chạy, driver không chờ từng ack (ack đi đường riêng, UART full-duplex), nên mỗi báo cáo
+  chỉ chiếm khoảng 11,5 ms dây gửi ở 9600 baud. Nâng baud giúp giảm độ trễ từng lệnh và tăng biên cho nhịp.

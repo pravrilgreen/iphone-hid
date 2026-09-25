@@ -7,6 +7,11 @@
   - **VKCOM/devicehub** ESP32 firmware and host code (GitHub raw);
   - **Sipeed NanoKVM-Go** wiki pages (GitHub raw);
   - the UxPlay and quicktime_video_hack READMEs, Apple developer forum 699205, and Apple's MDM docs JSON.
+- **Updated 2026-09-25** for the project's current scope: USB-C iPhones only, one Orange Pi 5 Plus box per phone
+  (its USB-C port is the phone's keyboard and mouse as a Linux USB gadget, its HDMI input takes the video), with a
+  CH9329 cable as the fallback. The project does not use Bluetooth or support Lightning phones. Vendor facts about
+  those stay below as market evidence; the recommendations are reworded for the box. Risk IDs (R…) refer to
+  `docs/feasibility.md`, test IDs (B1–B8, D1–D3, X2) to `docs/phase0-checklist.md`.
 - **Access limits:** the egress proxy blocked most Chinese sites (CSDN, Zhihu, Juejin, ieasyclick, iosautot,
   doc.some3c.com, gamesir.com, doc.xiaoji.com) and several English ones. For those, only the search snippet was
   seen, and they are marked **(snippet)**. Re-open them before relying on exact wording.
@@ -29,10 +34,9 @@
    - **Sipeed NanoKVM-Go**: its "Follow Mouse" (absolute) mode is documented for iPhone 15/16/17, with 4-point
      calibration.
 
-   R1 is very likely to resolve in our favour on USB-C.
-3. **A vendor claims absolute also works over BLE on iOS 17+.** EasyClick ships absolute BLE firmware for the
-   ESP32-C3 (snippet). If true, the Lightning line also escapes relative-mode acceleration. This should become
-   the **first BLE test**.
+   R2 (absolute pointer) is very likely to resolve in our favour.
+3. **A vendor claims absolute also works over BLE on iOS 17+** (EasyClick, snippet). The project is wired only, so
+   this is just more evidence that iOS follows absolute pointers.
 4. **The Chinese "box" vendors (iMouse, SOME 3C, EasyClick) use AirPlay mirroring, not HDMI, for video.** For
    Lightning phones they often add a wired OTG/Ethernet link. They also use **iOS Shortcuts** as a side channel for
    clipboard, file transfer, restart and toggles, and **Full Keyboard Access "Tab+key" chords** for system actions.
@@ -80,15 +84,14 @@
   - Together with Aiden's code, that makes three independent vendors.
 - **Confidence:** **[Likely]**, strong: absolute over USB works on iOS 17+ iPhones. **[Unknown]**: whether the
   CH9329's mixed rel+abs descriptor (report ID 2, 0..4095) is accepted. Neither vendor uses a CH9329 for absolute.
-  EasyClick uses an ESP32-S3; Sipeed uses its own SoC gadget.
+  EasyClick uses an ESP32-S3; Sipeed uses its own SoC gadget, which is the approach the box takes.
 - **Adopt:**
-  1. Keep T1 as the first test.
-  2. If the CH9329 fails, go straight to ESP32-S3 TinyUSB absolute. That is the same chip EasyClick ships for this
-     exact job.
-  3. Add a "release everything, then one idle absolute report" repair step right after enumeration, mirroring
-     NanoKVM's "Repair iPhone drag". It is cheap insurance against a stuck button on connect.
-  4. Require Orientation Lock (portrait) in `docs/iphone-setup.md`.
-  5. Keep the 6-parameter affine fit; NanoKVM's 4-point calibration shows a pure linear map is not enough (the
+  1. Keep the absolute test first (B4). The box's gadget exposes its own absolute-pointer interface, so the CH9329
+     question only matters for the fallback (D3).
+  2. Release everything right after enumeration, mirroring NanoKVM's "Repair iPhone drag" (done in the host
+     software). It is cheap insurance against a stuck button on connect.
+  3. Require Orientation Lock (portrait) in `docs/iphone-setup.md` (done).
+  4. Keep the 6-parameter affine fit; NanoKVM's 4-point calibration shows a pure linear map is not enough (the
      crop and offset matter).
 - **Sources:**
   - [EasyClick 3-way comparison (snippet)](https://juejin.cn/post/7677077660527525934)
@@ -96,34 +99,24 @@
   - [EasyClick HID guide (snippet)](https://juejin.cn/post/7647909099691311138)
   - NanoKVM-Go [introduction](https://github.com/sipeed/sipeed_wiki/blob/main/docs/hardware/en/kvm/NanoKVM_Go/introduction.md), [quick_start](https://github.com/sipeed/sipeed_wiki/blob/main/docs/hardware/en/kvm/NanoKVM_Go/quick_start.md), [user_guide](https://github.com/sipeed/sipeed_wiki/blob/main/docs/hardware/en/kvm/NanoKVM_Go/user_guide.md), [faq](https://github.com/sipeed/sipeed_wiki/blob/main/docs/hardware/en/kvm/NanoKVM_Go/faq.md), [PR #1038](https://github.com/sipeed/sipeed_wiki/pull/1038)
 
-### 2.2 Absolute pointer over BLE on iOS 17+: test it first on the ESP32
+### 2.2 Absolute pointer over BLE on iOS 17+ (evidence only)
 - **Evidence:** EasyClick's BLE tutorial for the ESP32-C3 offers "relative and absolute coordinate firmware
   builds"; "absolute mouse works well on iOS 17+ with no compensation and more accurate taps" (snippet). The
   comparison article gives iOS 18+ for the BLE mode (snippet). The only counter-evidence is old: iPad iOS 13, 2020
   ([forum 652700](https://developer.apple.com/forums/thread/652700)).
 - **Confidence:** **[Likely]**, one vendor, snippet only. **[Unknown]** which descriptor they use.
-- **Adopt:** make it test **T9(b0)**, before any BLE relative work. Add a descriptor option to
-  `firmware/esp32_ble_hid`:
-  - Generic Desktop / Mouse / Pointer, Physical collection;
-  - X/Y 16-bit absolute (0..32767), buttons, relative wheel;
-  - that is, the Aiden/PiKVM layout carried over HOGP.
-
-  If it works, Lightning phones get sub-point taps and the whole acceleration and pacer problem disappears there.
+- **Adopt:** nothing. The project is wired USB only. This is one more sign that iOS follows an absolute pointer
+  with the Aiden/PiKVM layout (Generic Desktop / Mouse / Pointer, Physical collection, X/Y 16-bit 0..32767).
 - **Sources:** [EasyClick BLE tutorial (snippet)](https://ieasyclick.com/en/iosdocs/advance/ios-usb-ble/), [comparison (snippet)](https://juejin.cn/post/7677077660527525934).
 
-### 2.3 Lightning: wired USB HID through the Camera Adapter, video through AirPlay (the "OTG network cable" design)
+### 2.3 AirPlay video (what the box vendors use)
 - **What the vendors do:**
   - iMouse and SOME 3C phones get HID over OTG and video over **AirPlay**.
   - SOME 3C advertises an "intranet OTG network cable" for internet access.
   - The iMouse SDK has per-device AirPlay settings (`air_ratio`, `air_fps`, `air_refresh`), auto-connect, a
     receiver name, an mDNS rule and port 17000.
-  - A Lightning to USB 3 Camera Adapter (with charge port) plus a small hub carries **HID + a USB Ethernet adapter
-    + charging** at the same time.
-- **Gain for `iphone-hid`:**
-  - USB HID on Lightning phones, so **absolute** (2.1) and no BLE pairing or reconnect problems;
-  - no US$49 Digital AV Adapter and no capture card per phone.
-- **Cost:**
-  - an AirPlay receiver, a new component that needs the owner's approval before it is used;
+- **Cost compared with HDMI:**
+  - an AirPlay receiver, a new component that would need the owner's approval;
   - H.264 decode, or passthrough;
   - about 100–200 ms latency (AirServer about 150 ms (snippet); the Airplay-SDK vendor claims about 120 ms
     (snippet));
@@ -140,8 +133,8 @@
   mirroring unattended. [Confirmed, Apple docs JSON]
 - **Confidence:** **[Likely]** that it works. **[Unknown]** whether AirPlay mirroring stays up for 24/7 operation
   (locks, network blips, prompts).
-- **Adopt:** as the **Lightning-line alternative** to evaluate in T9 (e: Camera Adapter + hub + CH9329 + USB
-  Ethernet), subject to owner approval of AirPlay. It is also the only video path for 16e/17e.
+- **Adopt:** not for now. The box reads the phone's HDMI output through its own HDMI input. AirPlay is the only
+  video path for the 16e/17e, which the project does not support; keep this as a reference if that changes.
 - **Sources:**
   - [iMouse SDK (PyPI)](https://pypi.org/project/imouse-xp/): `models/config_model.py`, `api/device_api.py`
   - [SOME 3C board (snippet)](https://some3c.com/products/iphone-farm-ios-automation-control-board)
@@ -164,17 +157,18 @@
     KeyboardFn") in a USB HID descriptor for iOS 15+.
 - **Why it matters:**
   - Tab is an ordinary key, not a HID modifier. Tab+key chords therefore likely avoid the Aiden Cmd/Shift/Option bug
-    (R4), which is a hypothesis to test.
+    (R6), which is a hypothesis to test.
   - They need no pointer position.
-  - The CH9329 cannot send Fn; the ESP32 firmware can.
+  - The CH9329 cannot send Fn. The box's gadget could, with the vendor usage added to its keyboard descriptor (not
+    done; whether iOS accepts it from a non-Apple device is [Unknown]).
 - **Confidence:** [Confirmed] the Apple command list (snippet of Apple's page) and the iMouse traffic (devicehub
   code). **[Unknown]** whether FKA interferes with the AssistiveTouch pointer; the vendors run both together, so it
   probably does not.
 - **Adopt:**
   1. Add FKA to the phone setup.
   2. Remap FKA commands to Tab+letter chords for Home, App Switcher, Control Center, Spotlight and Lock.
-  3. Add a Fn usage to the ESP32 descriptor.
-  4. Add a T5 variant: Tab-chords vs Cmd-chords.
+  3. If Tab chords are not enough, try an Apple Fn usage in the gadget keyboard descriptor, under its own serial.
+  4. Test Tab chords against Cmd chords (B4).
 - **Sources:**
   - [devicehub imouse.js](https://github.com/VKCOM/devicehub/blob/master/lib/units/ios-device/plugins/touch/imouse.js)
   - [Apple FKA (snippet)](https://support.apple.com/guide/iphone/control-iphone-with-an-external-keyboard-ipha4375873f/ios)
@@ -183,7 +177,7 @@
   - [iMouse author on the Fn key (snippet)](https://blog.csdn.net/qq_41057894/article/details/127928033)
   - [Apple Fn usage 0xFF/0x03 (snippet)](https://github.com/qmk/qmk_firmware/issues/2179)
 
-### 2.5 Relative-mode refinements from devicehub and iMouse (for BLE, if 2.2 fails)
+### 2.5 Relative-mode refinements from devicehub and iMouse (only if absolute fails)
 - **Edge anchoring that avoids the rounded corner** [Confirmed, code]. The firmware reset (`'0'`) runs these steps,
   after which the host sets the position to `(14 × single_step, 0)`:
   1. `move(-127,-127)` into the corner;
@@ -193,7 +187,8 @@
   5. `move(0,-127)` to the top edge.
 
   The anchor is defined by two **straight edges**, not by the curved corner, where the pointer's clamp point is
-  ambiguous. **Adopt this instead of a pure corner slam.** It addresses A4 and T4 directly.
+  ambiguous. **Adopt this instead of a pure corner slam** if relative mode is ever needed. It addresses A4 directly
+  (tested in B5).
 - **A discrete step table at a fixed cadence** [Confirmed, code]:
   - only ±1, ±4, ±8-count reports, one axis per report, at 15–20 ms intervals, max Tracking Speed;
   - measured displacements 13/3, 70/3 and 178/3 units, a **1 : 5.4 : 13.7** ratio;
@@ -206,7 +201,7 @@
   - devicehub, SOME 3C and iMouse set **max** Tracking Speed and max AssistiveTouch Tracking Sensitivity.
   - EasyClick's BLE guide sets AssistiveTouch Tracking Sensitivity to **slowest**.
 
-  Test both extremes in T4. Max means fewer reports and faster anchoring; min probably means finer resolution.
+  Test both extremes in B5. Max means fewer reports and faster anchoring; min probably means finer resolution.
 - **Swipe "brake"** [Confirmed, SDK parameter]: `mouse_swipe(..., step_sleep, steping, brake)`, where brake means
   "stop immediately when the swipe ends". This is presumably a pause before release to kill fling, which fits
   Aiden's fling-velocity observation. Adopt a hold-still-before-release option for precise scrolls.
@@ -229,7 +224,7 @@
   - The iMouse and SOME 3C calibration page is the same design as the `iphone-hid` Safari calibration and the
     feasibility §3.3 web-app advice.
   - More importantly, the vendor ships tables shared **between different phones**. That is indirect evidence that
-    iOS acceleration is deterministic per model and iOS version at fixed settings, which bears on R2.
+    iOS acceleration is deterministic per model and iOS version at fixed settings, which bears on R4.
 - **Confidence:** [Confirmed] the API. [Likely] reproducibility; theirs may be coarser than 4 pt.
 - **Adopt:** a profile cache keyed by `(ProductType, iOS build, Tracking Speed, Sensitivity, orientation)`. A new
   phone then runs only a short validation (a few taps) instead of the full relative calibration.
@@ -268,27 +263,28 @@
   - [Cassinelli: automations run immediately (snippet)](https://matthewcassinelli.com/automations-run-immediately-shortcuts-notifications/)
 
 ### 2.8 Confirming that a command reached iOS (cheap, no vision)
-- **Caps Lock LED round trip.** Send a Caps Lock tap, then watch the LED byte in CH9329 `GET_INFO` (already parsed
-  in `ihc/hid/ch9329.py`), or the ESP32's output-report callback. Then toggle it back.
+- **Caps Lock LED round trip.** Send a Caps Lock tap, then watch the keyboard LED state: the output report the
+  box's gadget reads from its keyboard node (`ihc/hid/gadget.py`), or the LED byte in CH9329 `GET_INFO`
+  (`ihc/hid/ch9329.py`). Then toggle it back. `hidtest capscheck` does this.
   - It proves that the iOS HID stack processed a keyboard report end to end, which is stronger than a chip ack.
   - iPad keyboards' Caps Lock LEDs do light, except when "Caps Lock switches language" is on. Turn that off.
-  - **[Unknown]** on iPhone; test in T3. Sources: [Apple Community (snippet)](https://discussions.apple.com/thread/251390352),
+  - **[Unknown]** on iPhone; test in B4. Sources: [Apple Community (snippet)](https://discussions.apple.com/thread/251390352),
     `docs/ch9329-protocol.md`.
 - **Frame-difference "something changed"** in a region after a tap. This is not recognition. NanoKVM-Go ships frame
   difference detection with about 0.2 s reaction and about 2.5 % CPU. The vendors all verify through video. [Likely]
   ([CNX (snippet)](https://www.cnx-software.com/2026/07/01/sipeed-nanokvm-go-an-4k-usb-c-kvm-with-recall-like-function-ai-integration/)).
 - **Shortcuts automation callbacks** (2.7), and the existing calibration-page heartbeat.
 
-### 2.9 Off-the-shelf per-phone unit for USB-C phones (Phase 5 reference)
+### 2.9 Off-the-shelf per-phone unit for USB-C phones (a benchmark for the box)
 - **NanoKVM-Go:**
   - 45×40×15 mm; dual A53, with an NPU on Go+;
   - one USB-C cable to the iPhone (DP Alt + HID + PD passthrough via an auxiliary port);
   - **about 60 ms at 1080p60**, Wi-Fi 6, Tailscale, an MCP server, about 1.6 W;
   - US$59–89.
-- It is essentially the `iphone-hid` USB-C rig on one board with on-board H.264. Use it as a **benchmark and
-  possible Phase 5 hardware**: buy one and compare its absolute accuracy and latency against the MS2109 + CH9329
-  rig.
-- Openterface Mini-KVM (MS2109 + CH9329 + hubs, under 140 ms (snippet)) is the same parts `iphone-hid` uses,
+- It is the same idea as the `iphone-hid` box (one board per phone, DP Alt Mode video plus USB HID), smaller and
+  with on-board H.264. Use it as a **benchmark**: buy one and compare its absolute accuracy and latency with the
+  Orange Pi 5 Plus box on the same iPhone (X2).
+- Openterface Mini-KVM (MS2109 + CH9329 + hubs, under 140 ms (snippet)) is the parts of the `iphone-hid` fallback,
   pre-packaged.
 - **Confidence:** [Confirmed] vendor specs; [Unknown] programmatic API depth and long-run robustness.
 - **Sources:** NanoKVM-Go wiki (above);
@@ -301,13 +297,10 @@
   - EasyClick and devicehub: one ESP32 per phone.
   - EasyClick's own marketing calls Bluetooth boards "一机一板，还要刷固件、配对" (one board per phone, plus
     flashing and pairing).
-- **devicehub gives each board a unique BLE identity:** a `N<name>` command sets the advertised name and
-  randomizes 3 MAC bytes, so iOS never confuses boards. Worth copying for ESP32 pairing hygiene. [Confirmed, code]
-- **One ESP32 serving several iPhones** (NimBLE allows up to about 9 connections) is theoretically possible, but no
-  vendor does it, and per-link connection-event timing would hurt relative-mode pacing. **Not recommended**
-  [Unknown] ([ESP32 forum (snippet)](https://www.esp32.com/viewtopic.php?t=4026)).
-- **Video scales by receiver instances** (AirPlay) or by USB 2 buses (HDMI capture, R7). The iMouse config also
-  shows the image-analysis worker pools (`opencv_num`, `ocr_num`).
+- The box follows the same pattern: one Orange Pi 5 Plus per phone.
+- **Video scales by receiver instances** (AirPlay) or, with HDMI, by capture inputs: one HDMI input per box, or one
+  USB capture card per USB 2 bus on a multi-phone fallback host. The iMouse config also shows the image-analysis
+  worker pools (`opencv_num`, `ocr_num`).
 
 ---
 
@@ -315,15 +308,15 @@
 
 | Idea | Why not | Evidence |
 |---|---|---|
-| **HID digitizer / touchscreen** (real touches) | BLE digitizer and stylus descriptors worked up to **iOS 13.3.1** and stopped in **13.4**. GameSir and Flydigi "Bluetooth touch mapping" broke at the same time (Apple "closed the touch-screen interface while optimizing CarPlay"). USB digitizer on current iOS: Aiden says it is not converted to a cursor, and whether it produces touches is untested. NanoKVM's "Multi-touch Screen" mode is documented for controlling from phones, not for iPhone targets. Low prior; only worth a 1-hour ESP32-S3 USB test if everything else fails | [Confirmed] [forum 699205](https://developer.apple.com/forums/thread/699205); [Apple Community (snippet)](https://discussions.apple.com/thread/251260646); [GameSir G6 13.4 guide (snippet)](https://doc.xiaoji.com/en/g6/detail/544.html) |
+| **HID digitizer / touchscreen** (real touches) | BLE digitizer and stylus descriptors worked up to **iOS 13.3.1** and stopped in **13.4**. GameSir and Flydigi "Bluetooth touch mapping" broke at the same time (Apple "closed the touch-screen interface while optimizing CarPlay"). USB digitizer on current iOS: Aiden says it is not converted to a cursor, and whether it produces touches is untested. NanoKVM's "Multi-touch Screen" mode is documented for controlling from phones, not for iPhone targets. Low prior; only worth a 1-hour test with a separate gadget (its own identity) if everything else fails | [Confirmed] [forum 699205](https://developer.apple.com/forums/thread/699205); [Apple Community (snippet)](https://discussions.apple.com/thread/251260646); [GameSir G6 13.4 guide (snippet)](https://doc.xiaoji.com/en/g6/detail/544.html) |
 | **Game converters' "exact taps"** | After iOS 13.4 they use mouse clicks through AssistiveTouch (GameSir fw 1.25; **broken again from iOS 14.2**, cause unknown), game-integrated SDKs (Flydigi 智联, only in partner games), modified IPAs (改包), or physical capacitive emitters | [GameSir (snippet)](https://gamesir.com/pages/g6-solution); [Flydigi 智联 (snippet)](https://zhuanlan.zhihu.com/p/57406933); [Flydigi capacitive (snippet)](http://www.gamelook.com.cn/2018/06/333423/) |
 | **Disabling pointer acceleration** | No setting exists (iPadOS 26 still has none); vendors either go absolute or tabulate it | [Apple Community (snippet)](https://discussions.apple.com/thread/256143470) |
 | **Voice Control grid** ("Show grid", "Tap 22", recursive sub-grid) | Deterministic positions, but needs spoken audio into the mic: slow and fragile. Only as a manual fallback | [BBC a11y (snippet)](https://bbc.github.io/accessibility-news-and-you/assistive-technology/testing-steps/voice-control-ios.html) |
 | **Switch Control point scanning** | Timing-based gliding crosshair; slow, and accuracy depends on the scan speed | [Apple 119835 (snippet)](https://support.apple.com/en-us/119835) |
 | **Physical capacitive tappers / robot arms** | Fixed positions or expensive; at most about 10 taps/s; no keyboard | See table rows 8–9 |
-| **QuickTime USB capture (qvh, 3uAirPlayer USB)** | Needs host iPhone tooling and Trust pairing (forbidden by the project rules); status bar forced to demo mode. Low latency, and it would free Lightning phones from the AV adapter, so revisit only if the rules change | [qvh README](https://github.com/danielpaulus/quicktime_video_hack); [3uAirPlayer (snippet)](https://www.3u.com/tutorial/articles/14739/3uairplayer-ios-device-user-guide-dual-wireless-and-usb-cable-solution) |
+| **QuickTime USB capture (qvh, 3uAirPlayer USB)** | Needs host iPhone tooling and Trust pairing (forbidden by the project rules); status bar forced to demo mode. Low latency, so revisit only if the rules change | [qvh README](https://github.com/danielpaulus/quicktime_video_hack); [3uAirPlayer (snippet)](https://www.3u.com/tutorial/articles/14739/3uairplayer-ios-device-user-guide-dual-wireless-and-usb-cable-solution) |
 | **Cloud phones / proxy IPA / EasyClick "USB_HID 免硬件"** | Install a signed app, a runner or WDA, or need Developer Mode | [testerhome (snippet)](https://testerhome.com/topics/20866); [EasyClick (snippet)](https://juejin.cn/post/7683016577462288419) |
-| **Host Bluetooth as the HID** (Wormhole style) | One radio identity per host; no gain over one ESP32 per phone | [sspai (snippet)](https://sspai.com/post/60970) |
+| **Host Bluetooth as the HID** (Wormhole style) | One radio identity per host; the project is wired USB only | [sspai (snippet)](https://sspai.com/post/60970) |
 
 ---
 
@@ -345,22 +338,22 @@
   - EasyClick's relative firmware applies a single "compensation rate" (gain) and still drifts on long swipes.
 - **Confirming delivery.** The vendors check through video. Cheap additions: the Caps Lock LED round trip, frame
   difference, and Shortcuts callbacks (2.8).
-- **Several phones per box.** One HID board per phone behind USB hubs or backplanes, with a unique BLE name and MAC
-  per board; video through one AirPlay receiver per phone, or one capture card per USB 2 bus. Nobody multiplexes
-  one HID radio across phones.
+- **Several phones per box.** The vendors use one HID board per phone behind USB hubs or backplanes (Bluetooth
+  boards each get a unique name and MAC); video through one AirPlay receiver per phone, or one capture card per USB 2
+  bus. Nobody multiplexes one HID device across phones. `iphone-hid` uses one box per phone.
 
 ---
 
 ## 5. Suggested test-plan deltas
 
-- **T1:** also test after enumeration with the "release all + idle absolute report" repair (NanoKVM). Enable
-  Orientation Lock. Record whether 0..4095 maps to the full panel or to a cropped area; EasyClick hints at
-  notch-dependent scale.
-- **T3:** add the Caps Lock LED round trip as an end-to-end delivery probe.
-- **T4:** compare corner-slam anchoring with **devicehub edge anchoring**. Run Tracking Speed/Sensitivity at
-  **max and min**. Use a 3-size step table (1/4/8 counts) at 15–20 ms.
-- **T5:** add Tab+letter FKA chords (remapped commands) against Cmd chords.
-- **T9 (b0, new, first):** ESP32 BLE with an **absolute** descriptor on iOS 17+/26/27.
-- **T9 (e, extended):** Lightning Camera Adapter + hub with CH9329 (absolute) + USB Ethernet, with AirPlay (UxPlay
-  `-vrtp`) latency measured glass to glass. This needs owner approval.
-- **Optional:** buy one NanoKVM-Go (about US$60–90) as a reference for accuracy and latency on an iPhone 15.
+All of these are in `docs/phase0-checklist.md`, except where noted.
+
+- **B4:** check where the pointer sits right after enumeration (the host already releases everything on connect,
+  like NanoKVM's repair). Orientation Lock on. Record whether the absolute grid maps to the full panel or to a
+  cropped area; EasyClick hints at notch-dependent scale.
+- **B4:** the Caps Lock LED round trip as an end-to-end delivery probe (`capscheck`).
+- **B4:** Tab+letter FKA chords (remapped commands) against Cmd chords.
+- **B5 (only if relative mode is needed):** run Tracking Speed/Sensitivity at **max and min**. Not yet in the
+  checklist: compare corner-slam anchoring with **devicehub edge anchoring**, and a 3-size step table (1/4/8
+  counts) at 15–20 ms.
+- **X2 (optional):** buy one NanoKVM-Go (about US$60–90) as a reference for accuracy and latency on the same iPhone.
