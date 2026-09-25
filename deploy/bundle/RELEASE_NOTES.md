@@ -28,7 +28,8 @@ Wiring, checks and troubleshooting: [docs/gadget.md](https://github.com/pravrilg
 
 Checked on a real board: an iPhone 15 on an Orange Pi 5 Plus with Armbian (vendor kernel 6.1)
 follows the board's relative mouse. It ignored the absolute pointer in the default layout; this
-version adds the `AR` layout to try next to `A`. That Armbian image shows no HDMI input device:
-`ihc-capture-check list` now says why. The HDMI input has not been checked on a real board yet: it
+version adds the `AR` layout to try next to `A`. Armbian leaves the HDMI input off in the board's
+device tree: turn it on with its `rk3588-hdmirx` overlay (docs/gadget.md, "Set up the board");
+`ihc-capture-check list` now says what a board lacks. The HDMI input has not been checked on a real board yet: it
 passed the test suite and a smoke test of the bundle under ARM64 emulation with an Ubuntu 22.04 user
 space.

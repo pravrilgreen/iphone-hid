@@ -122,11 +122,28 @@ chỉ một chương trình điều khiển iPhone. `Ctrl+C` để dừng.
 
 | Hiện tượng | Nguyên nhân thường gặp |
 |---|---|
-| `list` không có dòng nào chứa `hdmirx` (hoặc báo `no /dev/video* devices`) | image của board chưa bật HDMI IN. Từ bản 0.1.5, `list` tự in lý do: device tree tắt cổng, kernel thiếu driver, hay driver chưa nạp (dòng bắt đầu bằng `=>`). Gửi lại toàn bộ kết quả đó cùng `sudo dmesg \| grep -i hdmirx` |
+| `list` không có dòng nào chứa `hdmirx` (hoặc báo `no /dev/video* devices`) | image của board chưa bật HDMI IN. Từ bản 0.1.5, `list` tự in lý do: device tree tắt cổng, kernel thiếu driver, hay driver chưa nạp (dòng bắt đầu bằng `=>`). **Armbian** (kernel vendor 6.1) thuộc trường hợp đầu: driver có sẵn nhưng device tree tắt cổng. Bật bằng overlay có sẵn: thêm `rk3588-hdmirx` vào dòng `overlays=` trong `/boot/armbianEnv.txt` rồi khởi động lại (xem bên dưới). Trường hợp khác thì gửi lại toàn bộ kết quả của `list` cùng `sudo dmesg \| grep -i hdmirx` |
 | `no signal` | mở khoá iPhone; kiểm tra dây HDMI cắm vào cổng **HDMI IN**; thử cắm lại hub vào iPhone. Cắm thử cổng HDMI của hub vào một màn hình bất kỳ: màn hình cũng không có hình thì lỗi ở hub hoặc dây |
 | `Permission denied` | thêm nhóm `video` như trên, hoặc chạy lệnh với `sudo` |
 | `snapshot` báo `delivers XXXX, which this reader cannot convert` | gửi nguyên văn dòng đó |
 | ảnh chụp sai màu hoặc bị xé ngang | gửi ảnh chụp và kết quả của `list` |
+
+### Bật HDMI IN trên Armbian
+
+Kernel vendor 6.1 của Armbian có sẵn driver HDMI IN, nhưng device tree của Orange Pi 5 Plus để cổng này ở trạng thái
+tắt. Armbian có sẵn overlay để bật:
+
+```bash
+ls /boot/dtb/rockchip/overlay/ | grep hdmirx              # phải thấy rk3588-hdmirx.dtbo
+sudo cp /boot/armbianEnv.txt /boot/armbianEnv.txt.bak     # sao lưu trước khi sửa
+sudo nano /boot/armbianEnv.txt
+```
+
+Tìm dòng `overlays=`. Nếu chưa có thì thêm dòng `overlays=rk3588-hdmirx`; nếu đã có thì thêm `rk3588-hdmirx` vào
+cuối dòng đó, cách bằng dấu cách (chỉ giữ một dòng `overlays=`). Lưu (`Ctrl+O`, `Enter`, `Ctrl+X`) rồi
+`sudo reboot`. Khởi động xong, `ls /sys/class/video4linux` phải có `video0`, và `ihc-capture-check list` phải có
+dòng `stream_hdmirx`. Nếu overlay lỗi, board vẫn khởi động bình thường nhưng bỏ qua overlay; muốn trả lại như cũ thì
+`sudo cp /boot/armbianEnv.txt.bak /boot/armbianEnv.txt`.
 
 ## Bước tiếp theo
 

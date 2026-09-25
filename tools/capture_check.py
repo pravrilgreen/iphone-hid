@@ -37,6 +37,8 @@ from ihc.video.pipe import is_hdmi_input  # noqa: E402
 from ihc.video.v4l2 import describe_signal  # noqa: E402
 
 LOG_DIR = Path(os.environ.get("IHC_TEST_LOG_DIR") or ROOT / "docs" / "test-logs")
+# a new EDID makes the source replug: an HDMI input takes a few seconds to deliver its first frame
+FIRST_FRAME_S = 15
 
 
 def formats(device: str) -> str:
@@ -73,7 +75,7 @@ def open_capture(device: str, fourcc: str, size: tuple[int, int], fps: int, *, h
 def probe(device: str, fourcc: str, size: tuple[int, int], fps: int, seconds: float, **source) -> dict:
     cap = open_capture(device, fourcc, size, fps, **source)
     try:
-        f = cap.latest(timeout=5)
+        f = cap.latest(timeout=FIRST_FRAME_S)
         t_end = time.monotonic() + seconds
         stamps, sizes, seq = [f.ts], [len(f.jpeg) if f.jpeg else 0], f.seq
         while time.monotonic() < t_end:
@@ -175,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             cap = open_capture(args.device[0], args.fourcc, size, args.fps, **source)
             try:
-                f = cap.latest(timeout=5)
+                f = cap.latest(timeout=FIRST_FRAME_S)
             finally:
                 cap.close()
             out = Path(args.out or LOG_DIR / f"snap-{time.strftime('%Y%m%d-%H%M%S')}.jpg")

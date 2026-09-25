@@ -39,7 +39,19 @@ either role, and the board, which prefers to be the host, may end up as the host
 
 ## Set up the board
 
-1. Install the board's Ubuntu or Debian image. The Orange Pi image ships the HDMI input driver.
+1. Install the board's Ubuntu or Debian image. The Orange Pi image turns the HDMI input on. Armbian
+   (vendor kernel 6.1) has the driver built in but leaves the HDMI input off in the board's device
+   tree; it ships an overlay that turns it on:
+
+   ```
+   ls /boot/dtb/rockchip/overlay/ | grep hdmirx       # rk3588-hdmirx.dtbo
+   sudo cp /boot/armbianEnv.txt /boot/armbianEnv.txt.bak
+   sudo nano /boot/armbianEnv.txt                     # add rk3588-hdmirx to the overlays= line
+   sudo reboot
+   ```
+
+   One `overlays=` line only: add the name to it, separated by a space, rather than a second line.
+   If the board does not boot the overlay, the boot script says so and starts without it.
 2. Check that the USB-C port can act as a device:
 
    ```
@@ -153,7 +165,7 @@ signal goes away or changes. `ihc-capture-check probe --device /dev/video0 --enc
 | `ihc gadget up` says the controller is used by another gadget | The image runs its own gadget, usually ADB. `ihc gadget status` names it. Stop it, then run `up` again |
 | `ihc gadget status` stays at `not attached` | Wrong cable or wrong port. Use USB-A to USB-C, and the Type-C port next to the USB 3 ports |
 | `info` says NOT connected on the iPhone | The iPhone is locked, or it asked to allow the accessory. Unlock it and answer Allow |
-| No `rk_hdmirx` video device | The board image does not turn the HDMI input on. `ihc-capture-check list` says why: the device tree leaves it off, the kernel has no driver, or the driver module is not loaded. Orange Pi's own image enables it |
+| No `rk_hdmirx` video device | The board image does not turn the HDMI input on. `ihc-capture-check list` says why: the device tree leaves it off, the kernel has no driver, or the driver module is not loaded. On Armbian, enable the `rk3588-hdmirx` overlay (Set up the board, step 1). Orange Pi's own image enables it |
 | `abstest`: the pointer does not move | Try the other layouts, `--profile A` then `--profile AR` (see Profiles). If none moves it, the box works with the relative mouse, which the server uses by default; note the iOS version |
 | Video at 4K, or `hdmi_input_edid` with an error in the server log | The driver refused the EDID: replug the HDMI cable and restart the service; if it persists, send the log line |
 | Video status "no usable HDMI signal" | The iPhone is locked, or the hub gets no picture out of it: unlock it, replug the hub |

@@ -47,6 +47,24 @@ def test_node_left_off_by_the_device_tree(board):
     assert "leaves it off" in v
 
 
+def test_armbian_ships_the_overlay(board):
+    """Armbian's vendor kernel: rk_hdmirx built in, the Orange Pi 5 Plus node disabled, and the
+    rk3588-hdmirx overlay in /boot."""
+    dt_node(board, "hdmirx-controller@fdee0000", "disabled")
+    dt_node(board, "hdmiin-sound", compatible="rockchip,hdmi")  # enabled, but only the sound card
+    (board / "boot" / f"config-{RELEASE}").write_text("CONFIG_VIDEO_ROCKCHIP_HDMIRX=y\n")
+    overlays = board / "boot" / "dtb" / "rockchip" / "overlay"
+    overlays.mkdir(parents=True)
+    for name in ("rk3588-hdmirx.dtbo", "rk3588-i2c0-m1.dtbo"):
+        (overlays / name).write_bytes(b"")
+    (board / "boot" / "armbianEnv.txt").write_text("overlay_prefix=rk3588\noverlays=\n")
+    lines, v = verdict(board)
+    assert "overlay available: boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo" in lines
+    assert "kernel config: CONFIG_VIDEO_ROCKCHIP_HDMIRX=y" in lines
+    assert not any("hdmiin-sound" in line for line in lines)
+    assert "add rk3588-hdmirx to the overlays= line of /boot/armbianEnv.txt" in v
+
+
 def test_enabled_without_a_driver(board):
     dt_node(board, "hdmirx-controller@fdee0000")  # no status property: enabled
     (board / "proc").mkdir()

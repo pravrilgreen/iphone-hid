@@ -14,11 +14,13 @@ import os
 from pathlib import Path
 
 WORDS = ("hdmirx", "hdmi_receiver", "hdmi-receiver", "hdmi-rx", "hdmi_rx", "hdmiin", "hdmi-in")
+# device tree nodes of the receiver itself (not e.g. the Orange Pi 5 Plus's always-on hdmiin-sound card)
+NODE_WORDS = ("hdmirx", "hdmi_receiver", "hdmi-receiver")
 
 
-def _matches(name: str) -> bool:
+def _matches(name: str, words: tuple[str, ...] = WORDS) -> bool:
     name = name.lower()
-    return any(w in name for w in WORDS)
+    return any(w in name for w in words) and "sound" not in name
 
 
 def _prop(node: Path, prop: str) -> list[str]:
@@ -35,7 +37,7 @@ def dt_nodes(root: Path) -> list[tuple[str, str, str]]:
     out = []
     for parent in (base, base / "reserved-memory"):
         for node in sorted(parent.iterdir()) if parent.is_dir() else []:
-            if node.is_dir() and _matches(node.name):
+            if node.is_dir() and _matches(node.name, NODE_WORDS):
                 status = (_prop(node, "status") or ["okay"])[0]  # no status property = enabled
                 out.append((str(node.relative_to(base)), status, ", ".join(_prop(node, "compatible"))))
     return out
@@ -135,6 +137,12 @@ def diagnose(root: str = "/", release: str | None = None) -> list[str]:
     if not receivers:
         verdict = ("this kernel's device tree does not describe the HDMI input: use a board image made for "
                    "HDMI input (Orange Pi's own image enables it)")
+    elif not enabled and shipped:
+        name = Path(shipped[0]).name.removesuffix(".dtbo")
+        env = next((f for f in ("armbianEnv.txt", "orangepiEnv.txt") if (r / "boot" / f).is_file()), "armbianEnv.txt")
+        verdict = (f"the device tree has the HDMI input but leaves it off; this image ships the overlay that turns "
+                   f"it on: add {name} to the overlays= line of /boot/{env} (keep what is there, separate "
+                   f"with a space), then reboot")
     elif not enabled:
         verdict = ("the device tree has the HDMI input but leaves it off (status disabled): it needs a device "
                    "tree overlay that turns it on, or a board image that enables it (Orange Pi's own image)")
