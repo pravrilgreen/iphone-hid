@@ -296,7 +296,7 @@ nó.
 Cài hộp như sản phẩm thật: gadget lúc boot và server.
 
 ```bash
-sudo sh deploy/install.sh
+sudo ./ihc-box-*-linux-aarch64.run                   # file từ bản release; hoặc từ mã nguồn: sudo sh deploy/install.sh
 sudo cat /var/lib/ihc/token                          # token cho web console và API
 systemctl status ihc-gadget ihc
 ```

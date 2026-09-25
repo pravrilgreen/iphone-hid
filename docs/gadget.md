@@ -52,11 +52,20 @@ either role, and the board, which prefers to be the host, may end up as the host
    v4l2-ctl -d /dev/video0 --query-dv-timings
    ```
 
-4. Install the software. It sets up the gadget at every boot, then starts the server:
+4. Install the software. Download `ihc-box-<version>-linux-aarch64.run` from the
+   [latest release](https://github.com/pravrilgreen/iphone-hid/releases/latest), copy it to the
+   board, and run it. It is one self-contained file with its own Python and libraries: it installs
+   the box in `/opt/ihc`, sets up the gadget at every boot, then starts the server.
 
    ```
-   sudo sh deploy/install.sh
+   chmod +x ihc-box-*-linux-aarch64.run
+   sudo ./ihc-box-*-linux-aarch64.run
    ```
+
+   From a source checkout instead: `sudo sh deploy/install.sh` (installs the same services with pip).
+   After installing, the commands are `ihc`, `ihc-hidtest` and `ihc-capture-check`. Stop the server
+   (`sudo systemctl stop ihc`) before trying them by hand, so two programs do not drive the phone at
+   once.
 
 The console is at `http://<board address>:8000`. The phone appears as `iphone-` followed by the last
 six characters of the board's serial number (for example `iphone-b40d9e`), so every box of a farm

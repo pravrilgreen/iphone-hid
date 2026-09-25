@@ -87,11 +87,18 @@ USB 3.0/DP), đọc màn hình qua cổng HDMI IN của chính nó, và chạy s
 
    Không in gì thì xem mục Troubleshooting của [gadget.md](gadget.md#troubleshooting), hoặc dùng phương án dự
    phòng ở mục 5.
-4. Cài hộp: gadget được dựng lúc boot (`ihc-gadget.service`), rồi server chạy `ihc serve --auto` (`ihc.service`):
+4. Cài hộp: gadget được dựng lúc boot (`ihc-gadget.service`), rồi server chạy `ihc serve --auto` (`ihc.service`).
+   Cách nhanh nhất: tải file `ihc-box-<version>-linux-aarch64.run` ở
+   [bản release mới nhất](https://github.com/pravrilgreen/iphone-hid/releases/latest), chép vào board rồi chạy.
+   File này có sẵn Python và mọi thư viện, không cần pip:
 
    ```bash
-   sudo sh deploy/install.sh
+   chmod +x ihc-box-*-linux-aarch64.run
+   sudo ./ihc-box-*-linux-aarch64.run
    ```
+
+   Từ mã nguồn thì dùng `sudo sh deploy/install.sh` (cài bằng pip). Cài bằng file release thì các lệnh là
+   `ihc`, `ihc-hidtest`, `ihc-capture-check` (thay cho `python3 tools/hidtest.py`, `python3 tools/capture_check.py`).
 
 5. Kiểm tra (mở khoá iPhone, chọn **Allow** nếu iOS hỏi về phụ kiện):
 
