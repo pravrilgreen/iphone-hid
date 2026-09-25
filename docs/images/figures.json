@@ -39,29 +39,19 @@
     }
   },
   "timing": {
-    "CH9329, no pace check": {
+    "steady host": {
+      "max_error_pt": 0.73,
+      "redos": 0,
+      "failed": 0
+    },
+    "busy host, no pace check": {
       "max_error_pt": 11.82,
       "redos": 0,
       "failed": 0
     },
-    "CH9329, pace checked (1.5 ms)": {
+    "busy host, pace checked (1.5 ms)": {
       "max_error_pt": 1.25,
       "redos": 71,
-      "failed": 0
-    },
-    "ESP32 bridge, timed on the chip": {
-      "max_error_pt": 0.78,
-      "redos": 0,
-      "failed": 0
-    },
-    "20 ms pace": {
-      "max_error_pt": 31.1,
-      "redos": 0,
-      "failed": 0
-    },
-    "30 ms pace (multiple of 15 ms)": {
-      "max_error_pt": 0.75,
-      "redos": 0,
       "failed": 0
     }
   }
