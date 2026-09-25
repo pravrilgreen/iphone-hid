@@ -1,8 +1,8 @@
 # iphone-hid control box: starts at boot, finds the rigs by itself, restarts on failure.
 [Unit]
 Description=iphone-hid control box
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target ihc-gadget.service
+After=network-online.target ihc-gadget.service
 
 [Service]
 Type=simple

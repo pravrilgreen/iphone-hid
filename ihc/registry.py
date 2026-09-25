@@ -1,6 +1,15 @@
 """Device registry: builds IPhoneDevice objects from a farm config or from simulators.
 
-Config (TOML):
+Config (TOML). The all-in-one box (this board is the keyboard and mouse, video from its HDMI input):
+
+    [[device]]
+    id = "iphone"
+    model = "iPhone 15"
+    hid = { gadget = "ihc" }
+    video = { device = "/dev/video0", input = "hdmi", fps = 30 }
+    calibration = "calib/iphone.json"
+
+A CH9329 cable and a USB capture card:
 
     [[device]]
     id = "iphone-01"
@@ -8,6 +17,8 @@ Config (TOML):
     hid = { port = "/dev/serial/by-path/...-port0", baud = 9600 }
     video = { device = "/dev/v4l/by-path/...-video-index0", size = "1920x1080", fps = 30 }
     calibration = "calib/iphone-01.json"
+
+`video.command` runs any command that writes JPEG images to stdout instead ({device} is replaced).
 
 Physical paths (/dev/serial/by-path, /dev/v4l/by-path) name USB ports, not enumeration order, so a
 phone keeps its id across reboots as long as its cables stay in the same ports. `discover()` pairs
@@ -28,6 +39,7 @@ from pathlib import Path
 from .device import DeviceInfo, IPhoneDevice
 from .hid.base import HidPortError
 from .hid.ch9329 import CH9329Backend
+from .hid.gadget import GadgetBackend
 from .input.pointer import PointerCalibration
 from .models import find_model
 from .video.geometry import ScreenRect
@@ -122,16 +134,26 @@ def load_config(path: str | Path, log=None) -> Registry:
     for entry in cfg.get("device", []):
         dev_id = entry["id"]
         hid_cfg = entry["hid"]
-        port, baud = hid_cfg["port"], int(hid_cfg.get("baud", 9600))
-        addr = int(hid_cfg.get("addr", 0))
+        if "gadget" in hid_cfg:
+            port, baud = f"gadget:{hid_cfg['gadget']}", 0
 
-        def open_hid(port=port, baud=baud, addr=addr) -> CH9329Backend:
-            return CH9329Backend(port, baud, addr=addr, trace=None)
+            def open_hid(name=hid_cfg["gadget"]) -> GadgetBackend:
+                return GadgetBackend(name)
+        else:
+            port, baud = hid_cfg["port"], int(hid_cfg.get("baud", 9600))
+            addr = int(hid_cfg.get("addr", 0))
+
+            def open_hid(port=port, baud=baud, addr=addr) -> CH9329Backend:
+                return CH9329Backend(port, baud, addr=addr, trace=None)
 
         video = entry["video"]
         w, h = (int(v) for v in str(video.get("size", "1920x1080")).lower().split("x"))
-        source = V4L2Capture(video["device"], width=w, height=h, fps=int(video.get("fps", 30)),
-                             fourcc=video.get("fourcc", "MJPG"))
+        fps = int(video.get("fps", 30))
+        if video.get("input") == "hdmi" or video.get("command"):
+            source = open_video_source(video["device"], size=(w, h), fps=fps, hdmi=True, command=video.get("command"),
+                                       edid=video.get("edid", "hdmi"), log=log)
+        else:
+            source = V4L2Capture(video["device"], width=w, height=h, fps=fps, fourcc=video.get("fourcc", "MJPG"))
         calib = entry.get("calibration")
         model = find_model(entry.get("model", ""))
         rect = entry.get("screen_rect")  # [x, y, w, h] in frame pixels, when geometry is not enough
@@ -147,6 +169,42 @@ def load_config(path: str | Path, log=None) -> Registry:
         )
         reg.add(device)
     return reg
+
+
+def open_video_source(device: str, *, size: tuple[int, int] = (1920, 1080), fps: int = 30, hdmi: bool = False,
+                      command: str | None = None, edid: str | None = "hdmi", encoder: str = "auto", log=None):
+    """A FrameSource for `device`: a USB capture card directly (MJPEG passthrough), or an HDMI input
+    (`hdmi`, e.g. the Orange Pi 5 Plus rk_hdmirx) through a JPEG-encoding command."""
+    from .video.capture import V4L2Capture
+    from .video.pipe import hdmi_in_command, open_pipe, set_edid
+
+    if command:
+        return V4L2Capture(device, fps=fps, open_fn=open_pipe(command.replace("{device}", device)), max_failures=3)
+    if not hdmi:
+        return V4L2Capture(device, width=size[0], height=size[1], fps=fps)
+    if edid:
+        error = set_edid(device, edid)
+        if log:
+            log("hdmi_input_edid", device=device, edid=edid, error=error)
+    try:
+        argv = hdmi_in_command(device, fps=fps, encoder=encoder)
+    except OSError as e:
+        message = str(e)
+
+        def unavailable(*args):
+            raise OSError(message)
+
+        return V4L2Capture(device, fps=fps, open_fn=unavailable)
+    if log:
+        log("hdmi_input", device=device, command=argv)
+    return V4L2Capture(device, fps=fps, open_fn=open_pipe(argv), max_failures=3)
+
+
+def _video_name(device: str, sysfs: str = "/sys") -> str:
+    try:
+        return (Path(sysfs) / "class" / "video4linux" / os.path.basename(os.path.realpath(device)) / "name").read_text().strip()
+    except OSError:
+        return ""
 
 
 def _initial_calibration(path: Path | None, model) -> PointerCalibration | None:
@@ -266,22 +324,27 @@ def auto(
     fps: int = 30,
     probe_timeout: float = 0.25,
     open_video=None,
+    gadget=None,
 ) -> Registry:
     """Zero-config registry: every rig found on this host (see ihc.rigs), calibration files kept
-    in `state_dir` under the rig id."""
-    from .rigs import find_rigs
+    in `state_dir` under the rig id. `gadget`: how to look for this board's own USB gadget (default
+    ihc.rigs.find_gadget)."""
+    from .rigs import find_gadget, find_rigs
+
+    look_for_gadget = gadget or (lambda: find_gadget(sysfs=sysfs))
 
     state = Path(state_dir) if state_dir else default_state_dir()
     if open_video is None:
-        from .video.capture import V4L2Capture
+        from .video.pipe import is_hdmi_input
 
         def open_video(device: str):
-            return V4L2Capture(device, width=video_size[0], height=video_size[1], fps=fps)
+            return open_video_source(device, size=video_size, fps=fps, hdmi=is_hdmi_input(_video_name(device, sysfs)),
+                                     log=log)
 
     quiet: dict = {}  # ports that did not answer, probed again with a back-off
     reg = AutoRegistry(lambda ports_in_use, videos_in_use: find_rigs(ports, sysfs=sysfs, timeout=probe_timeout, log=log,
                                                                    skip=ports_in_use, skip_videos=videos_in_use,
-                                                                   quiet=quiet),
+                                                                   quiet=quiet, gadget=look_for_gadget),
                        lambda spec: _build_rig(spec, state, open_video, video_size, log))
     reg.rescan()
     return reg
@@ -331,15 +394,22 @@ class AutoRegistry(Registry):
 
 
 def _build_rig(spec, state: Path, open_video, video_size, log) -> IPhoneDevice:
-    c = spec.chip
+    if spec.gadget is not None:
+        port, baud = spec.gadget.port, 0
 
-    def open_hid(port=c.port, baud=c.baud, addr=c.addr) -> CH9329Backend:
-        return CH9329Backend(port, baud, addr=addr)
+        def open_hid(name=spec.gadget.name) -> GadgetBackend:
+            return GadgetBackend(name)
+    else:
+        c = spec.chip
+        port, baud = c.port, c.baud
+
+        def open_hid(port=c.port, baud=c.baud, addr=c.addr) -> CH9329Backend:
+            return CH9329Backend(port, baud, addr=addr)
 
     cal_path = state / f"{spec.id}.json"
     device = IPhoneDevice(
         DeviceInfo(spec.id, "", "hardware"),
-        _open_or_offline(open_hid, c.port, c.baud, log),  # (it may have been unplugged since the probe)
+        _open_or_offline(open_hid, port, baud, log),  # (it may have been unplugged since the probe)
         open_video(spec.video.device) if spec.video else NoVideo(video_size),
         calibration=PointerCalibration.load(cal_path) if cal_path.exists() else None,
         calibration_path=cal_path,
@@ -347,6 +417,7 @@ def _build_rig(spec, state: Path, open_video, video_size, log) -> IPhoneDevice:
         log=log,
     )
     if log:
-        log("rig_found", id=spec.id, port=c.port, baud=c.baud, chip=c.info.get("version"),
+        log("rig_found", id=spec.id, port=port, baud=baud,
+            chip=spec.chip.info.get("version") if spec.chip else f"USB gadget on {spec.gadget.udc}",
             video=spec.video.device if spec.video else None, notes=spec.notes)
     return device

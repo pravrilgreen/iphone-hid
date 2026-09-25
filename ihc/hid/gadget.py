@@ -2,7 +2,7 @@
 
 For boards whose USB controller can work as a device: the Orange Pi 5 Plus Type-C port, the USB-C
 port of a Raspberry Pi 4/5, the data port of a Pi Zero 2 W, and so on. The kernel's HID function
-(f_hid) is set up through configfs (`gadget_up`, or `tools/gadget.py up`): one USB interface per
+(f_hid) is set up through configfs (`gadget_up`, or `sudo ihc gadget up`): one USB interface per
 report type, without report IDs, in the order keyboard, consumer control, system control, relative
 mouse, absolute pointer (the order the ESP32 bridge uses). Each interface is a /dev/hidgN node.
 
@@ -210,7 +210,7 @@ def gadget_up(name: str = DEFAULT_NAME, profile: str = "RA", *, udc: str | None 
         raise GadgetError(f"{configfs} not found: load the gadget framework first (`sudo modprobe libcomposite`)")
     g = root / name
     if g.exists():
-        raise GadgetError(f"a gadget named {name!r} already exists: tear it down first (`tools/gadget.py down`)")
+        raise GadgetError(f"a gadget named {name!r} already exists: tear it down first (`ihc gadget down`)")
     udcs = list_udcs(sysfs)
     if udc is None:
         if not udcs:
@@ -390,14 +390,14 @@ class GadgetBackend:
         paths = nodes if nodes is not None else gadget_nodes(name, configfs, sysfs, dev)
         if not paths:
             raise HidPortError(f"no USB gadget {name!r} with HID functions on this board: set it up with "
-                               "`sudo python3 tools/gadget.py up`")
+                               "`sudo ihc gadget up` (or `sudo python3 tools/gadget.py up`)")
         self._nodes: dict[str, HidgNode] = {}
         try:
             for fn, path in paths.items():
                 self._nodes[fn] = open_node(path, read=FUNCTIONS[fn].out_reports)
         except OSError as e:
             self.close()
-            hint = " (permission: `tools/gadget.py up` gives the nodes to the user who ran it with sudo)" \
+            hint = " (permission: `ihc gadget up` gives the nodes to the user who ran it with sudo, or --owner)" \
                 if e.errno == errno.EACCES else ""
             raise HidPortError(f"cannot open {e.filename or path}: {e.strerror or e}{hint}") from e
 

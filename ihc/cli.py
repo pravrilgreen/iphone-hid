@@ -5,6 +5,7 @@
     ihc serve --config farm.toml --log logs/farm.jsonl
     ihc discover > farm.toml               # pair serial ports and capture cards by USB hub
     ihc devices                            # every box on the LAN (mDNS), else this host
+    sudo ihc gadget up                     # this board becomes the phone's keyboard and mouse
     ihc devices --url http://farm-01:8000 --token-file token.txt
 
 The API token comes from --token, --token-file or $IHC_TOKEN (in that order); without one, anyone
@@ -232,6 +233,12 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--token", help="API token of the hosts (default $IHC_TOKEN)")
     v.add_argument("--token-file", metavar="PATH", help="read the API token from this file")
     v.set_defaults(fn=cmd_devices)
+
+    from . import gadget_cli
+
+    gd = sub.add_parser("gadget", help="make this board the phone's USB keyboard and mouse (up/down/status)")
+    gadget_cli.add_arguments(gd)
+    gd.set_defaults(fn=gadget_cli.run)
     return ap
 
 

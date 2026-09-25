@@ -18,8 +18,6 @@ import subprocess
 import time
 from pathlib import Path
 
-import numpy as np
-
 # Markers inside entropy-coded data that are not the end of the image: stuffed 0xFF00 and RSTn.
 _NOT_END = frozenset({0x00, *range(0xD0, 0xD8)})
 _STANDALONE = frozenset({0x01, *range(0xD0, 0xD8)})
@@ -83,6 +81,8 @@ class PipeCapture:
         return self.proc.poll() is None
 
     def read(self):
+        import numpy as np  # (lazy: HID-only installs do not need numpy to import this module)
+
         deadline = time.monotonic() + self.read_timeout
         fd = self.proc.stdout.fileno()
         while True:
@@ -170,6 +170,20 @@ def hdmi_in_command(device: str, *, fps: int = 30, quality: int = 80, encoder: s
         return ["ffmpeg", "-hide_banner", "-loglevel", "error", "-f", "v4l2", "-i", device, "-r", str(fps),
                 "-f", "mjpeg", "-q:v", str(q), "-"]
     raise ValueError(f"unknown encoder {encoder!r} (auto, mpp, gst or ffmpeg)")
+
+
+def set_edid(device: str, edid: str = "hdmi") -> str | None:
+    """Advertise one of v4l2-ctl's predefined EDIDs on the HDMI input ("hdmi": 1080p60), so the
+    phone mirrors at 1920x1080 rather than 4K: smaller JPEGs to encode and stream. Best effort: the
+    error text, or None once set. The phone sees the display reconnect."""
+    if not shutil.which("v4l2-ctl"):
+        return "v4l2-ctl not found (install v4l-utils)"
+    try:
+        r = subprocess.run(["v4l2-ctl", "-d", device, f"--set-edid=type={edid}"], capture_output=True, text=True,
+                           timeout=10)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return str(e)
+    return None if r.returncode == 0 else ((r.stderr or r.stdout).strip()[-300:] or f"exit {r.returncode}")
 
 
 def is_hdmi_input(name: str) -> bool:

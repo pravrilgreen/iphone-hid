@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""capture_check: check an HDMI capture card (formats, real frame rate, MJPEG passthrough, bandwidth).
+"""capture_check: check a video input (formats, real frame rate, JPEG passthrough, bandwidth).
 
     python tools/capture_check.py list
     python tools/capture_check.py probe --device /dev/video0 [--fourcc MJPG] [--size 1920x1080] [--fps 30] [--seconds 10]
     python tools/capture_check.py multi --device /dev/video0 --device /dev/video2 [--seconds 20]   # several cards at once
     python tools/capture_check.py snapshot --device /dev/video0 [--out docs/test-logs/snap.jpg]
+
+A board's HDMI input (Orange Pi 5 Plus rk_hdmirx) is recognised by its name and read through a JPEG
+encoder, as `ihc serve` does (`--hdmi` forces it, `--encoder mpp|gst|ffmpeg` picks the encoder,
+`--keep-edid` leaves the input's EDID alone instead of advertising 1080p60).
 
 No image analysis: it measures delivery only. Results go to a JSON-lines log in docs/test-logs/.
 """
@@ -25,7 +29,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from ihc.jsonlog import EventLog  # noqa: E402
+from ihc.registry import open_video_source  # noqa: E402
 from ihc.video.capture import V4L2Capture, list_video_devices  # noqa: E402
+from ihc.video.pipe import is_hdmi_input  # noqa: E402
 
 LOG_DIR = ROOT / "docs" / "test-logs"
 
@@ -37,8 +43,29 @@ def formats(device: str) -> str:
     return (r.stdout or r.stderr).strip()
 
 
-def probe(device: str, fourcc: str, size: tuple[int, int], fps: int, seconds: float) -> dict:
-    cap = V4L2Capture(device, size[0], size[1], fps, fourcc)
+def dv_timings(device: str) -> str:
+    """What the HDMI source sends right now (resolution, refresh), or why nothing."""
+    if not shutil.which("v4l2-ctl"):
+        return ""
+    r = subprocess.run(["v4l2-ctl", "-d", device, "--query-dv-timings"], capture_output=True, text=True, timeout=10)
+    return (r.stdout or r.stderr).strip()
+
+
+def device_name(device: str) -> str:
+    return next((d["name"] for d in list_video_devices() if d["device"] == device or device in d["links"]), "")
+
+
+def open_capture(device: str, fourcc: str, size: tuple[int, int], fps: int, *, hdmi: bool | None = None,
+                 encoder: str = "auto", edid: str | None = "hdmi"):
+    if hdmi is None:
+        hdmi = is_hdmi_input(device_name(device))
+    if hdmi:
+        return open_video_source(device, size=size, fps=fps, hdmi=True, encoder=encoder, edid=edid)
+    return V4L2Capture(device, size[0], size[1], fps, fourcc)
+
+
+def probe(device: str, fourcc: str, size: tuple[int, int], fps: int, seconds: float, **source) -> dict:
+    cap = open_capture(device, fourcc, size, fps, **source)
     try:
         f = cap.latest(timeout=5)
         t_end = time.monotonic() + seconds
@@ -89,8 +116,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--seconds", type=float, default=10)
     ap.add_argument("--out", help="snapshot file (default docs/test-logs/snap-<time>.jpg)")
     ap.add_argument("--log", help="JSON-lines log path")
+    ap.add_argument("--hdmi", action="store_true", default=None, help="read the device as a board HDMI input")
+    ap.add_argument("--encoder", default="auto", choices=["auto", "mpp", "gst", "ffmpeg"], help="HDMI input JPEG encoder")
+    ap.add_argument("--keep-edid", action="store_true", help="HDMI input: do not advertise a 1080p60 EDID")
     args = ap.parse_args(argv)
     size = tuple(int(v) for v in args.size.lower().split("x"))
+    source = {"hdmi": args.hdmi, "encoder": args.encoder, "edid": None if args.keep_edid else "hdmi"}
 
     if args.command == "list":
         devs = list_video_devices()
@@ -101,13 +132,15 @@ def main(argv: list[str] | None = None) -> int:
             for link in d["links"]:
                 print(f"    -> {link}")
             print("    " + formats(d["device"]).replace("\n", "\n    "))
+            if is_hdmi_input(d["name"]):
+                print("    HDMI input; the source sends:\n    " + dv_timings(d["device"]).replace("\n", "\n    "))
         return 0
     if not args.device:
         ap.error("--device is required")
     log = EventLog(args.log or LOG_DIR / f"capture-{time.strftime('%Y%m%d-%H%M%S')}.jsonl")
     try:
         if args.command == "probe":
-            r = probe(args.device[0], args.fourcc, size, args.fps, args.seconds)
+            r = probe(args.device[0], args.fourcc, size, args.fps, args.seconds, **source)
             show(r)
             log("capture_probe", **r)
         elif args.command == "multi":
@@ -115,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
 
             def run(dev: str) -> None:
                 try:
-                    results[dev] = probe(dev, args.fourcc, size, args.fps, args.seconds)
+                    results[dev] = probe(dev, args.fourcc, size, args.fps, args.seconds, **source)
                 except Exception as e:  # report every card, whatever happens to one
                     results[dev] = {"device": dev, "error": str(e)}
 
@@ -129,7 +162,7 @@ def main(argv: list[str] | None = None) -> int:
                 show(r) if "error" not in r else print(f"{dev}: ERROR {r['error']}")
                 log("capture_multi", **r)
         else:
-            cap = V4L2Capture(args.device[0], size[0], size[1], args.fps, args.fourcc)
+            cap = open_capture(args.device[0], args.fourcc, size, args.fps, **source)
             try:
                 f = cap.latest(timeout=5)
             finally:

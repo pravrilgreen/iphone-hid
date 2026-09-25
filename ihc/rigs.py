@@ -1,11 +1,13 @@
-"""Zero-config discovery of the rigs attached to this host (one rig = HID chip + capture card).
+"""Zero-config discovery of the rigs attached to this host (one rig = HID device + video input).
 
-Plug-and-play is what a hardware box needs: at start-up every USB serial port is probed for a
-device speaking the CH9329 protocol (CH9329 cable or ESP32 bridge; the baud rate is found
-automatically), every V4L2 capture node is listed, and the two are paired by the USB hub they hang
-off (sysfs topology). A lone chip and a lone capture card are paired with each other. Rig ids come
-from the chip's physical USB port, so a phone keeps its id and calibration across reboots as long as
-its cables stay in the same ports.
+Plug-and-play is what a hardware box needs. The all-in-one box (Orange Pi 5 Plus) is its own HID
+device: when the USB gadget set up by `ihc gadget up` exists, it becomes the rig "iphone", paired
+with the board's HDMI input (or else with the only capture card left). Every USB serial port is also
+probed for a device speaking the CH9329 protocol (the baud rate is found automatically), every V4L2
+capture node is listed, and chips and cards are paired by the USB hub they hang off (sysfs
+topology); a lone chip and a lone capture card are paired with each other. CH9329 rig ids come from
+the chip's physical USB port, so a phone keeps its id and calibration across reboots as long as its
+cables stay in the same ports.
 """
 
 from __future__ import annotations
@@ -17,7 +19,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+from .hid import gadget as hidg
 from .hid.scan import SCAN_BAUDS, candidate_ports, scan_port
+from .video.pipe import is_hdmi_input
 
 _USB_PORT_DIR = re.compile(r"^\d+-[\d.]+$")  # sysfs name of a USB device: bus-port.port...
 
@@ -39,11 +43,26 @@ class VideoFound:
 
 
 @dataclass
+class GadgetFound:
+    name: str
+    udc: str
+    nodes: dict[str, str]
+
+    @property
+    def port(self) -> str:
+        return f"gadget:{self.name}"
+
+
+GADGET_RIG_ID = "iphone"
+
+
+@dataclass
 class RigSpec:
     id: str
-    chip: ChipFound
+    chip: ChipFound | None
     video: VideoFound | None
     notes: list[str] = field(default_factory=list)
+    gadget: GadgetFound | None = None
 
 
 def usb_port_of(node: str, sysfs: str = "/sys") -> str | None:
@@ -135,6 +154,26 @@ def find_videos(sysfs: str = "/sys") -> list[VideoFound]:
     return out
 
 
+def find_gadget(name: str = hidg.DEFAULT_NAME, *, configfs: str = hidg.CONFIGFS, sysfs: str = "/sys",
+                dev: str = "/dev") -> GadgetFound | None:
+    """This board as the phone's keyboard and mouse: the configfs gadget, once it has device nodes."""
+    nodes = hidg.gadget_nodes(name, configfs, sysfs, dev)
+    if not nodes:
+        return None
+    return GadgetFound(name, hidg.bound_udc(name, configfs), nodes)
+
+
+def pair_gadget(gadget: GadgetFound, videos: list[VideoFound]) -> RigSpec:
+    """The gadget takes the board's HDMI input, else the only capture card there is."""
+    hdmi = [v for v in videos if is_hdmi_input(v.name)]
+    if hdmi:
+        return RigSpec(GADGET_RIG_ID, None, hdmi[0], ["this board's HDMI input"], gadget)
+    if len(videos) == 1:
+        return RigSpec(GADGET_RIG_ID, None, videos[0], ["paired as the only capture card"], gadget)
+    note = "several capture cards: pair one in a config file" if videos else "no video input found (HID only)"
+    return RigSpec(GADGET_RIG_ID, None, None, [note], gadget)
+
+
 def pair(chips: list[ChipFound], videos: list[VideoFound]) -> list[RigSpec]:
     rigs, used = [], set()
     by_hub = {}
@@ -167,9 +206,20 @@ def pair(chips: list[ChipFound], videos: list[VideoFound]) -> list[RigSpec]:
 def find_rigs(ports: list[str] | None = None, *, sysfs: str = "/sys", timeout: float = 0.25,
               log=None, videos: Callable[[], list[VideoFound]] | None = None,
               skip: set[str] = frozenset(), skip_videos: set[str] = frozenset(),
-              quiet: dict | None = None) -> list[RigSpec]:
-    """Rigs made of chips and capture cards not in use yet (`skip`, `skip_videos`: real paths;
-    `quiet`: see find_chips)."""
-    chips = find_chips(ports, sysfs=sysfs, timeout=timeout, log=log, skip=skip, quiet=quiet)
+              quiet: dict | None = None, gadget: Callable[[], GadgetFound | None] | None = None) -> list[RigSpec]:
+    """Rigs made of HID devices and video inputs not in use yet (`skip`, `skip_videos`: real paths,
+    a gadget as os.path.realpath("gadget:<name>"); `quiet`: see find_chips). The gadget rig, if any,
+    comes first and takes the HDMI input."""
     free = [v for v in (videos() if videos else find_videos(sysfs)) if os.path.realpath(v.device) not in skip_videos]
-    return pair(chips, free)
+    rigs = []
+    found = gadget() if gadget else find_gadget(sysfs=sysfs)
+    if found is not None:
+        if os.path.realpath(found.port) not in skip:
+            spec = pair_gadget(found, free)
+            rigs.append(spec)
+            if spec.video is not None:
+                free = [v for v in free if v.device != spec.video.device]
+        free = [v for v in free if not is_hdmi_input(v.name)]  # the board's HDMI input belongs to the gadget rig
+    # (without a gadget, a CH9329 cable on this board pairs with its HDMI input as the only video input)
+    chips = find_chips(ports, sysfs=sysfs, timeout=timeout, log=log, skip=skip, quiet=quiet)
+    return rigs + pair(chips, free)

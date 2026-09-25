@@ -7,7 +7,6 @@ node class over a FIFO for the os-level code."""
 import errno
 import os
 import shutil
-import threading
 from pathlib import Path
 
 import pytest
@@ -343,9 +342,11 @@ def test_hidg_node_over_a_fifo(tmp_path):
         except BlockingIOError:
             pass
         assert not node.writable(0.02)
-        drain = threading.Thread(target=lambda: [os.read(reader, 65536) for _ in range(20)])
-        drain.start()
-        drain.join()
+        try:
+            while os.read(reader, 65536):  # the host takes everything
+                pass
+        except BlockingIOError:
+            pass
         assert node.writable(0.5)
         node.close()
     finally:
