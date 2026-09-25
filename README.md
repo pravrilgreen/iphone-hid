@@ -77,7 +77,7 @@ ways to do that. Calibration picks the right one for each phone automatically.
 ![Absolute and relative pointer modes](docs/images/pointer-modes.png)
 
 - **Absolute pointer (preferred).** One report puts the pointer straight on the target, like a finger.
-  About 0.2 s per tap with sub-point error. Several independent projects in 2026 drive iPhones this way
+  About a quarter of a second per tap, with sub-point error. Several independent projects in 2026 drive iPhones this way
   over USB on iOS 26, with AssistiveTouch on. The board presents the same kind of absolute pointer they
   use. iOS glides the cursor to the new spot, so calibration measures how long to wait before clicking.
 - **Relative pointer (fallback).** iOS accelerates mouse movement, so the same report does not always
@@ -145,10 +145,10 @@ Measured by the simulator (random targets across the whole screen, four configur
 
 | Mode | Worst tap error | Time per tap (median) | Calibration time |
 |---|---|---|---|
-| Absolute pointer | 0.17 pt | 0.18 s | about 8 s |
+| Absolute pointer | 0.17 pt | 0.24 s | about 9 s |
 | Relative, slow Tracking Speed (0.4) | 0.5 pt | 1.49 s | about 52 s |
 | Relative, default Tracking Speed (1.0) | 0.83 pt | 1.28 s | about 48 s |
-| Relative, fast Tracking Speed (2.5) | 0.72 pt | 1.22 s | about 48 s |
+| Relative, fast Tracking Speed (2.5) | 0.72 pt | 1.32 s | about 48 s |
 
 The target is 95% of taps within 4 pt (about 5 pixels on a 1080p picture). On a real phone, relative
 mode is the one to watch: its accuracy depends on how repeatable iOS pointer acceleration is, which
@@ -246,7 +246,7 @@ Home, App Switcher, Spotlight, typing and calibration are one click away.
 | Metric | Target | On the simulator |
 |---|---|---|
 | Tap accuracy | 95% within 4 pt | absolute ≤ 0.2 pt; relative ≤ 1 pt |
-| Time per tap | < 1.5 s | absolute ≈ 0.2 s; relative 1.2–1.5 s |
+| Time per tap | < 1.5 s | absolute ≈ 0.25 s; relative 1.3–1.5 s |
 | Video latency to the browser (LAN) | < 0.25 s | to be measured on the board |
 | Commands lost without notice | 0 | every report confirmed; failures are redone or reported |
 
