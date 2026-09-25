@@ -4,7 +4,8 @@ For boards whose USB controller can work as a device: the Orange Pi 5 Plus Type-
 port of a Raspberry Pi 4/5, the data port of a Pi Zero 2 W, and so on. The kernel's HID function
 (f_hid) is set up through configfs (`gadget_up`, or `sudo ihc gadget up`): one USB interface per
 report type, without report IDs, in the order keyboard, consumer control, system control, relative
-mouse, absolute pointer (the order the ESP32 bridge uses). Each interface is a /dev/hidgN node.
+mouse, absolute pointer (another project found iOS brings its soft keyboard back reliably only when a
+pointer interface does not directly follow the keyboard). Each interface is a /dev/hidgN node.
 
 Delivery: f_hid keeps one report in flight per interface. write() queues it, and poll() reports the
 node writable again only once the host has taken the report (its IN transfer completed). So a
@@ -37,8 +38,8 @@ DEFAULT_NAME = "ihc"
 LINUX_FOUNDATION_VID = 0x1D6B
 COMPOSITE_GADGET_PID = 0x0104
 
-# -- report descriptors (HID 1.11 and the HID Usage Tables; the same collections as the ESP32
-#    bridge firmware, each on its own interface, so without report IDs) --------------------------
+# -- report descriptors (HID 1.11 and the HID Usage Tables; the report layouts of the CH9329 API,
+#    each collection on its own interface, so without report IDs) ------------------------------
 
 DESC_KEYBOARD = bytes([
     0x05, 0x01, 0x09, 0x06, 0xA1, 0x01,  # Generic Desktop / Keyboard / Collection (Application)
@@ -115,8 +116,8 @@ FUNCTIONS = {
 }
 ORDER = ("keyboard", "consumer", "system", "mouse", "absolute")
 
-# Profiles, tagged like the bridge firmware's USB identities. iOS may keep the descriptor it saw for
-# a known device, so each profile also gets its own serial number.
+# Profiles: RA = relative + absolute pointer, A = absolute only, R = relative only, K = keyboard only.
+# iOS may keep the descriptor it saw for a known device, so each profile has its own serial number.
 PROFILES = {
     "RA": ORDER,  # keyboard + extras + relative mouse + absolute pointer
     "A": ("keyboard", "consumer", "system", "absolute"),
@@ -585,7 +586,7 @@ class GadgetBackend:
 
 
 def scale_abs(grid: int) -> int:
-    """CH9329 grid 0..4095 -> HID 0..32767, rounded to nearest (as the bridge firmware does)."""
+    """CH9329 grid 0..4095 -> HID 0..32767, rounded to nearest: 0 -> 0, 4095 -> 32767, monotonic."""
     return (grid * ABS_MAX + 2047) // 4095
 
 

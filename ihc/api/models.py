@@ -99,7 +99,7 @@ class DeviceStatus(_Open):
     screen: Screen | None = None
     pointer: Pointer | None = None
     calibration: Calibration | None = None
-    hid: dict[str, Any] | None = Field(None, description="Serial port, baud rate and frame counters")
+    hid: dict[str, Any] | None = Field(None, description="HID device (serial port and baud rate, or gadget:<name> with baud 0) and report counters")
     video: dict[str, Any] | None = Field(None, description="Capture statistics")
     counters: dict[str, Any] | None = None
     last_result: dict[str, Any] | None = Field(None, description="Result of the last action")
