@@ -127,7 +127,7 @@ sudo lsusb -v -d 1d6b:0104 | grep -E "iProduct|iSerial|bInterfaceProtocol|bInter
 
 Mong đợi:
 - `lsusb -v` có `iProduct ... ihc keyboard + mouse`, `iSerial ... ihc-RA` và 5 interface;
-- `info` báo `USB connected`, `interfaces keyboard, consumer, system, mouse, absolute`;
+- `info` báo `USB connected`, `interfaces keyboard, consumer, mouse, absolute`;
 - `hello` được gõ vào ô đang chọn; con trỏ laptop đi sang phải rồi xuống;
 - `abstest`: con trỏ laptop nhảy tới 4 góc rồi vào giữa (trả lời `y`);
 - `bench`: dòng `mouse report with ack` là thời gian tới khi laptop poll báo cáo.
@@ -136,7 +136,7 @@ Mong đợi:
 
 ```bash
 sudo python3 tools/gadget.py up --replace --profile A
-python3 tools/gadget.py status                       # interface: keyboard, consumer, system, absolute
+python3 tools/gadget.py status                       # interface: keyboard, consumer, absolute
 sudo python3 tools/gadget.py up --replace            # về RA
 ```
 

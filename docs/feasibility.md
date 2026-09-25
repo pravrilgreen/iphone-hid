@@ -31,7 +31,8 @@ Mã bài test (B1–B8, D1–D3, X1–X2) là các bài trong [phase0-checklist.
   không dùng Bluetooth.
 - **Sản phẩm chính: mỗi iPhone một Orange Pi 5 Plus** ([gadget.md](gadget.md)):
   - cổng Type-C USB 3.0/DP của board chạy **Linux USB gadget**: board chính là bàn phím và chuột của iPhone
-    (bàn phím, phím media, phím hệ thống, chuột tương đối, chuột tuyệt đối; mỗi loại một interface HID);
+    (bàn phím, phím media, chuột tương đối, chuột tuyệt đối; mỗi loại một interface HID; kernel chỉ cho tối đa 4
+    chức năng HID gadget, nên không có interface riêng cho phím nguồn/ngủ/đánh thức);
   - **HDMI IN** của board đọc màn hình iPhone và nén JPEG (bộ mã hoá phần cứng qua GStreamer nếu image có, nếu không
     thì bộ đọc riêng của hộp, không cần cài gì), nên phần còn lại của hệ thống thấy đúng các khung JPEG như từ một
     capture card MJPEG;
@@ -237,7 +238,7 @@ Việc đã làm theo đó:
   - Thứ tự interface bắt buộc: keyboard → Consumer Control → pointer → ECM. Đặt pointer ngay sau keyboard thì bàn phím ảo chỉ hiện lại khoảng 80% số lần; thứ tự mới đạt 10/10.
   - Không được unbind/rebind cùng danh tính khi cáp vẫn cắm, vì iOS giữ trạng thái lệch.
   Nguồn: [usb-hid.md](https://github.com/AidenAI-IO/aiden-firmware/blob/main/docs/03-services/usb-hid.md), commit `c001083`.
-- Gadget của hộp đã theo thứ tự đó (bàn phím → phím media → phím hệ thống → chuột tương đối → chuột tuyệt đối) và có profile chỉ bàn phím (`K`). Khác Aiden ở một điểm: các profile giữ nguyên PID, chỉ đổi serial (`ihc-RA`, `ihc-A`…). **[Unknown]** iOS có coi đó là thiết bị mới không (B4 bước 6); nếu không, `ihc gadget up --pid` đổi được PID. Việc tự chuyển profile quanh mỗi phím tắt chưa làm.
+- Gadget của hộp đã theo thứ tự đó (bàn phím → phím media → chuột tương đối → chuột tuyệt đối) và có profile chỉ bàn phím (`K`). Khác Aiden ở một điểm: các profile giữ nguyên PID, chỉ đổi serial (`ihc-RA`, `ihc-A`…). **[Unknown]** iOS có coi đó là thiết bị mới không (B4 bước 6); nếu không, `ihc gadget up --pid` đổi được PID. Việc tự chuyển profile quanh mỗi phím tắt chưa làm.
 - **[Likely]** iOS chốt layout bàn phím phần cứng tại thời điểm enumerate, theo bàn phím ảo đang chọn lúc đó ([usb-hid.md](https://github.com/AidenAI-IO/aiden-firmware/blob/main/docs/03-services/usb-hid.md)). Mỗi lần re-enumerate là một lần chốt lại.
 - **[Contradicted]** CH9329 không làm được việc re-enumerate này lúc đang chạy, vì cấu hình chỉ có hiệu lực ở lần cấp nguồn sau.
   **[Unknown]** Còn một phương án chưa ai thử: **hai CH9329 riêng**, một chiếc chỉ bàn phím (mode 0x01), một chiếc chỉ chuột (mode 0x02). Aiden mô tả bug là khi bàn phím và pointer "advertised by the same USB composite". Nếu bug theo từng composite thì hai chip riêng sẽ né được; nếu theo toàn hệ thống thì không (D3).

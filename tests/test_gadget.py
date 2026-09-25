@@ -93,7 +93,7 @@ def test_up_writes_functions_in_interface_order(fs):
     kb = gd / "functions" / "hid.keyboard"
     assert (kb / "report_desc").read_bytes() == g.DESC_KEYBOARD
     assert (kb / "protocol").read_text() == "1" and (kb / "report_length").read_text() == "8"
-    assert g.gadget_functions("ihc", str(configfs)) == ["keyboard", "consumer", "system", "mouse", "absolute"]
+    assert g.gadget_functions("ihc", str(configfs)) == ["keyboard", "consumer", "mouse", "absolute"]
     link = gd / "configs" / "c.1" / "hid.absolute"
     assert link.is_symlink() and os.readlink(link) == str(gd / "functions" / "hid.absolute")
 
@@ -101,7 +101,7 @@ def test_up_writes_functions_in_interface_order(fs):
 def test_profile_without_relative_mouse(fs):
     configfs, sysfs = fs
     g.gadget_up("ihc", "A", configfs=str(configfs), sysfs=str(sysfs))
-    assert g.gadget_functions("ihc", str(configfs)) == ["keyboard", "consumer", "system", "absolute"]
+    assert g.gadget_functions("ihc", str(configfs)) == ["keyboard", "consumer", "absolute"]
     assert (configfs / "ihc" / "strings" / "0x409" / "serialnumber").read_text() == "ihc-A"  # a new identity
 
 
@@ -360,3 +360,22 @@ def test_gadget_tool_status_without_root(capsys, tmp_path):
 
     assert tool.main(["--configfs", str(tmp_path), "status"]) == 0
     assert "not set up" in capsys.readouterr().out
+
+
+def test_every_profile_fits_the_kernels_hid_limit():
+    assert all(len(fns) <= g.MAX_HID_FUNCTIONS for fns in g.PROFILES.values())
+
+
+def test_hid_minors_used_up_is_explained_and_cleaned_up(fs, monkeypatch):
+    configfs, sysfs = fs
+    real = g._mkdir
+
+    def mkdir(path):
+        if path.name == "hid.absolute":  # what the kernel answers once its 4 HID minors are taken
+            raise OSError(errno.ENODEV, "No such device", str(path))
+        real(path)
+
+    monkeypatch.setattr(g, "_mkdir", mkdir)
+    with pytest.raises(g.GadgetError, match="allows 4 HID gadget functions"):
+        g.gadget_up("ihc", "RA", configfs=str(configfs), sysfs=str(sysfs))
+    assert not (configfs / "ihc").exists()  # nothing half set up is left behind

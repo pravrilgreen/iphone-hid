@@ -110,8 +110,9 @@ python3 tools/capture_check.py snapshot --device /dev/video0
 ## How it works
 
 **Keyboard and mouse.** `ihc gadget up` sets up the kernel's HID function through configfs. It
-creates one USB interface per report type: keyboard, media keys, system keys, relative mouse and
-absolute pointer. Each interface is a `/dev/hidgN` node. A report counts as delivered only once
+creates one USB interface per report type: keyboard, media keys, relative mouse and absolute
+pointer. The kernel allows at most four HID gadget functions in all, which is why there is no
+separate interface for the power/sleep/wake keys. Each interface is a `/dev/hidgN` node. A report counts as delivered only once
 the iPhone has polled it. That is a stronger confirmation than a CH9329 gives: the CH9329 only says
 it received the command. If the iPhone stops polling (locked, unplugged, accessory not allowed),
 the report times out, and the server reports the phone as disconnected.

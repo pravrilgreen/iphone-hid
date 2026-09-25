@@ -3,8 +3,9 @@
 For boards whose USB controller can work as a device: the Orange Pi 5 Plus Type-C port, the USB-C
 port of a Raspberry Pi 4/5, the data port of a Pi Zero 2 W, and so on. The kernel's HID function
 (f_hid) is set up through configfs (`gadget_up`, or `sudo ihc gadget up`): one USB interface per
-report type, without report IDs, in the order keyboard, consumer control, system control, relative
-mouse, absolute pointer (another project found iOS brings its soft keyboard back reliably only when a
+report type, without report IDs, in the order keyboard, consumer control, relative mouse, absolute
+pointer. The kernel allows at most four HID gadget functions in all (HIDG_MINORS in f_hid), so the
+system-control keys (power, sleep, wake) are not in any profile (another project found iOS brings its soft keyboard back reliably only when a
 pointer interface does not directly follow the keyboard). Each interface is a /dev/hidgN node.
 
 Delivery: f_hid keeps one report in flight per interface. write() queues it, and poll() reports the
@@ -119,11 +120,12 @@ ORDER = ("keyboard", "consumer", "system", "mouse", "absolute")
 # Profiles: RA = relative + absolute pointer, A = absolute only, R = relative only, K = keyboard only.
 # iOS may keep the descriptor it saw for a known device, so each profile has its own serial number.
 PROFILES = {
-    "RA": ORDER,  # keyboard + extras + relative mouse + absolute pointer
-    "A": ("keyboard", "consumer", "system", "absolute"),
-    "R": ("keyboard", "consumer", "system", "mouse"),
+    "RA": ("keyboard", "consumer", "mouse", "absolute"),  # keyboard + media keys + both pointers
+    "A": ("keyboard", "consumer", "absolute"),
+    "R": ("keyboard", "consumer", "mouse"),
     "K": ("keyboard",),
 }
+MAX_HID_FUNCTIONS = 4  # f_hid's HIDG_MINORS: HID gadget functions the kernel allows, over all gadgets
 
 
 class GadgetError(HidError):
@@ -200,6 +202,10 @@ def _rmdir(path: Path) -> None:
     os.rmdir(path)
 
 
+def _mkdir(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+
+
 def gadget_up(name: str = DEFAULT_NAME, profile: str = "RA", *, udc: str | None = None, configfs: str = CONFIGFS,
               sysfs: str = "/sys", vendor: int = LINUX_FOUNDATION_VID, product: int = COMPOSITE_GADGET_PID,
               serial: str | None = None) -> str:
@@ -247,7 +253,14 @@ def gadget_up(name: str = DEFAULT_NAME, profile: str = "RA", *, udc: str | None 
         for fn in PROFILES[profile]:
             spec = FUNCTIONS[fn]
             f = g / "functions" / f"hid.{fn}"
-            f.mkdir(parents=True, exist_ok=True)
+            try:
+                _mkdir(f)
+            except OSError as e:
+                if e.errno == errno.ENODEV:  # the kernel's HID gadget minors are used up
+                    raise OSError(e.errno, f"the kernel allows {MAX_HID_FUNCTIONS} HID gadget functions in all and "
+                                           f"none is left for {fn!r}: another gadget may hold some (see `ihc gadget "
+                                           f"status`), or pick a smaller profile") from e
+                raise
             _write(f / "protocol", str(spec.protocol))
             _write(f / "subclass", str(spec.subclass))
             _write(f / "report_length", str(spec.report_length))

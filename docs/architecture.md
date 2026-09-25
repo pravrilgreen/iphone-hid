@@ -66,7 +66,8 @@ sim: iPhone mô phỏng (UI, con trỏ, Safari, HDMI + MJPEG) cắm vào đúng 
 
 **Interface ranh giới:**
 - **HID:** `GadgetBackend` (gadget của hộp) và `CH9329Backend` (cáp CH9329, và chip giả của mô phỏng) có **cùng
-  API**: lưới tuyệt đối 4096×4096 của CH9329, bitmask phím media và phím hệ thống. Gadget tự đổi toạ độ sang
+  API**: lưới tuyệt đối 4096×4096 của CH9329, bitmask phím media và phím hệ thống (gadget không có phím hệ thống:
+  kernel chỉ cho 4 chức năng HID). Gadget tự đổi toạ độ sang
   0..32767 khi gửi. Nhờ vậy con trỏ, bàn phím, hiệu chỉnh và API dùng chung một đường code.
 - **Video:** `FrameSource.latest(newer_than, timeout) -> Frame`. `Frame` giữ nguyên byte JPEG (của capture card,
   hoặc của bộ mã hoá JPEG đọc HDMI IN) và chỉ giải mã khi thật sự cần (chụp ảnh cắt vùng, thumbnail).
