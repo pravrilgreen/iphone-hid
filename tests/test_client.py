@@ -9,6 +9,7 @@ import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
 import httpx
 import pytest
@@ -230,6 +231,8 @@ def serve(*args: str, env: dict | None = None) -> tuple[subprocess.Popen, str]:
     """`ihc serve --sim 1 ...` on a free port, once it answers; (process, base URL)."""
     port = free_port()
     env = {**{k: v for k, v in os.environ.items() if k != "IHC_TOKEN"}, "PYTHONUNBUFFERED": "1", **(env or {})}
+    # the package these tests import, installed or not (the release job tests a checkout: src/ is not installed)
+    env["PYTHONPATH"] = os.pathsep.join(filter(None, [str(Path(cli.__file__).parents[1]), env.get("PYTHONPATH")]))
     proc = subprocess.Popen([sys.executable, "-m", "ihc.cli", "serve", "--sim", "1", "--port", str(port),
                              "--host", "127.0.0.1", "--no-monitor", "--log-level", "warning", *args],
                             stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env)
