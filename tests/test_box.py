@@ -101,14 +101,21 @@ video = {{ device = "/dev/video0", command = "{command}" }}
         reg.close()
 
 
-def test_hdmi_input_without_an_encoder_reports_why(tmp_path, monkeypatch):
+def test_hdmi_input_without_any_encoder_uses_the_builtin_reader(tmp_path, monkeypatch):
+    """A board with nothing installed (no GStreamer, no ffmpeg, no internet) still reads its HDMI
+    input: this package reads the driver itself."""
+    from ihc.video.pipe import choose_encoder, set_edid
+
     monkeypatch.setattr("ihc.video.pipe._gst_has", lambda element: False)
     monkeypatch.setattr("ihc.video.pipe.shutil.which", lambda name: None)
-    src = reg_mod.open_video_source("/dev/video0", hdmi=True, edid="hdmi")
+    assert choose_encoder() == "builtin"
+    missing = str(tmp_path / "video0")
+    assert "No such file" in set_edid(missing)  # best effort: an error text, never an exception
+    src = reg_mod.open_video_source(missing, hdmi=True, edid="hdmi")
     try:
         with pytest.raises(TimeoutError):
             src.latest(timeout=0.5)
-        assert "no JPEG encoder" in src.stats()["status"]
+        assert "No such file" in src.stats()["status"]  # the builtin reader tried the node
     finally:
         src.close()
 

@@ -190,8 +190,9 @@ Details, with sources: [absolute pointer research](docs/research/absolute-pointe
 
 1. Install the software on the board once: copy the single file from the
    [latest release](https://github.com/pravrilgreen/iphone-hid/releases/latest) to the board and run
-   it. It carries its own Python and libraries. From then on, at every boot, the board makes itself
-   the phone's keyboard and mouse and starts the service.
+   it. It carries its own Python and libraries and reads the HDMI input by itself, so the board needs
+   no internet. From then on, at every boot, the board makes itself the phone's keyboard and mouse and
+   starts the service.
 2. Cable the phone as above. The service finds the USB port and the HDMI input by itself. The phone
    gets a farm-wide unique name from the board's serial number, such as `iphone-b40d9e`, or a name
    you choose.

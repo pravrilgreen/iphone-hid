@@ -29,6 +29,14 @@ import ihc.api, ihc.cli, ihc.hid.gadget, ihc.video.pipe
 print(platform.machine(), platform.python_version(), "opencv", cv2.__version__, "numpy", numpy.__version__)
 ok, jpg = cv2.imencode(".jpg", numpy.zeros((8, 8, 3), numpy.uint8))
 assert ok and cv2.imdecode(jpg, cv2.IMREAD_COLOR).shape == (8, 8, 3)
+import ihc.video.v4l2 as v  # the offline HDMI reader: its structures, laid out by this ARM64 Python
+assert (v.VIDIOC_QUERYCAP, v.VIDIOC_S_FMT, v.VIDIOC_QBUF, v.VIDIOC_S_EDID, v.VIDIOC_QUERY_DV_TIMINGS) == \
+    (0x80685600, 0xC0D05605, 0xC058560F, 0xC0285629, 0x80845663)
+e = v.edid_1080p60()
+assert len(e) == 256 and sum(e[:128]) % 256 == 0 and sum(e[128:]) % 256 == 0
+nv12 = numpy.full((48, 64), 128, numpy.uint8)
+assert v.to_bgr("NV12", 64, 32, [(nv12.tobytes(), 64)]).shape == (32, 64, 3)
+print("v4l2 layouts and EDID OK")
 '
 
 echo "== launchers"

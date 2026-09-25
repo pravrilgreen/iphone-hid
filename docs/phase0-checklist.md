@@ -53,7 +53,10 @@ Ví dụ: **UGREEN Revodok 105 (15495)**: HDMI 4K30 qua DP Alt Mode, 1 cổng US
 Thử nhanh ngay khi mua, chưa cần board: cắm hub vào iPhone, HDMI vào TV, một bàn phím USB vào cổng USB-A, sạc vào
 cổng PD; thấy hình trên TV, gõ được vào Notes và iPhone báo đang sạc, cả ba cùng lúc, là dùng được.
 
-**Phần mềm trên board** (image Ubuntu hoặc Debian của Orange Pi; image này có driver HDMI IN):
+**Phần mềm trên board** (image Ubuntu hoặc Debian của Orange Pi; image này có driver HDMI IN). Board không có
+internet thì dùng file release (mục B5): file đó có sẵn Python, thư viện, bộ đọc HDMI IN và EDID riêng, không cần
+cài gì thêm; các lệnh bên dưới đổi `python3 tools/capture_check.py` thành `ihc-capture-check`,
+`python3 tools/hidtest.py` thành `ihc-hidtest`. Có internet và muốn chạy từ mã nguồn thì:
 
 ```bash
 sudo apt install -y git python3-venv v4l-utils usbutils \
@@ -171,12 +174,14 @@ So sánh bộ mã hoá và EDID:
 python3 tools/capture_check.py probe --device $VID --encoder mpp      # JPEG phần cứng (mppjpegenc), nếu image có
 python3 tools/capture_check.py probe --device $VID --encoder gst      # jpegenc, phần mềm
 python3 tools/capture_check.py probe --device $VID --encoder ffmpeg   # nếu đã cài ffmpeg
+python3 tools/capture_check.py probe --device $VID --encoder builtin  # bộ đọc riêng của hộp: không cần cài gì
 python3 tools/capture_check.py probe --device $VID --fps 60
 v4l2-ctl -d $VID --query-dv-timings                                   # nguồn đang gửi độ phân giải nào
 ```
 
-`list` cho biết nguồn gửi gì trước khi đặt EDID; `--query-dv-timings` cho biết sau. Muốn thử EDID khác thì tự đặt
-bằng `v4l2-ctl -d $VID --set-edid=...` rồi chạy `probe --keep-edid` (không ghi đè EDID). Chạy `top` ở cửa sổ khác
+`list` cho biết nguồn gửi gì trước khi đặt EDID; `--query-dv-timings` cho biết sau (cần v4l-utils). Hộp tự ghi EDID
+1080p60 thẳng vào driver, không cần v4l-utils. Muốn thử EDID khác thì tự đặt bằng `v4l2-ctl -d $VID --set-edid=...`
+rồi chạy `probe --keep-edid` (không ghi đè EDID). Chạy `top` ở cửa sổ khác
 trong lúc `probe` để xem CPU.
 
 Mong đợi:
@@ -184,8 +189,8 @@ Mong đợi:
 - sau khi đặt EDID, `--query-dv-timings` báo 1920x1080;
 - `fps` gần 30, `passthrough True`, `reopens` là 0.
 
-Nếu hình ở 4K hoặc log báo lỗi EDID: `v4l2-ctl -d $VID --set-edid=type=hdmi`, rồi rút/cắm cáp HDMI.
-Nếu báo "no JPEG encoder": cài GStreamer (dòng `apt install` ở mục 0).
+Nếu hình ở 4K hoặc log báo lỗi EDID (`hdmi_input_edid`): rút/cắm cáp HDMI rồi chạy lại; vẫn lỗi thì gửi dòng log đó.
+Không có GStreamer hay ffmpeg thì hộp tự dùng bộ đọc riêng (`builtin`).
 
 **Ghi lại** (cho từng bộ mã hoá):
 - tên driver, `--query-dv-timings` trước và sau khi đặt EDID;
@@ -558,7 +563,7 @@ Chỉ một tiến trình được mở cổng serial tại một thời điểm
 | `info` báo NOT connected trên iPhone | iPhone đang khoá, hoặc đang hỏi cho phép phụ kiện: mở khoá và chọn Allow |
 | `hidtest --gadget` báo permission | chạy `gadget.py up` bằng `sudo` từ chính user đó (nó giao node cho user đã gọi sudo); sau khi cài service thì vào nhóm `ihc` |
 | không có thiết bị video `rk_hdmirx` | kernel này thiếu driver HDMI IN: dùng image của Orange Pi |
-| trạng thái video "no JPEG encoder" | cài GStreamer: `sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-good` |
+| trạng thái video "no usable HDMI signal" | iPhone đang khoá hoặc hub không ra hình: mở khoá, cắm lại hub |
 | hình 4K, hoặc log báo lỗi EDID | `v4l2-ctl -d /dev/videoN --set-edid=type=hdmi`, rồi rút/cắm cáp HDMI |
 | Hiệu chỉnh báo "page did not load" | iPhone chưa mở được trang: kiểm tra cùng mạng, gõ tay địa chỉ trong Safari |
 | (CH9329) `permission denied` khi mở cổng serial / input | vào nhóm `dialout`, `video`, `input`, rồi đăng xuất và đăng nhập lại |

@@ -17,16 +17,12 @@ done
 SRC="$(cd "$(dirname "$0")" && pwd)"
 PREFIX=/opt/ihc
 
-# System packages the bundle cannot carry: GStreamer reads the HDMI input, v4l-utils sets its EDID.
-# (Board images usually have them; the Rockchip GStreamer plugin adds the hardware JPEG encoder.)
-missing=""
-command -v gst-launch-1.0 >/dev/null 2>&1 || missing="$missing gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good"
-command -v v4l2-ctl >/dev/null 2>&1 || missing="$missing v4l-utils"
-if [ -n "$missing" ]; then
-    echo "installing:$missing"
-    if ! (apt-get install -y $missing || { apt-get update && apt-get install -y $missing; }); then
-        echo "warning: could not install$missing (no network?): the HDMI input will not work until they are installed"
-    fi
+# Nothing is downloaded: the bundle reads the HDMI input and sets its EDID by itself. When the board
+# image has GStreamer with the Rockchip plugin (mppjpegenc), the hardware JPEG encoder is used instead.
+if command -v gst-inspect-1.0 >/dev/null 2>&1 && gst-inspect-1.0 mppjpegenc >/dev/null 2>&1; then
+    echo "HDMI input: the board's hardware JPEG encoder (GStreamer mppjpegenc)"
+else
+    echo "HDMI input: software JPEG (GStreamer if the image has it, else the bundle's own reader; works offline)"
 fi
 
 id ihc >/dev/null 2>&1 || useradd --system --home-dir /var/lib/ihc --shell /usr/sbin/nologin ihc

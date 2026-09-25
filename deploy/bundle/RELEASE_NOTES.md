@@ -1,6 +1,7 @@
 **The all-in-one box for the Orange Pi 5 Plus, in one file.** It carries its own Python and every
-library, so nothing is installed with pip on the board. For ARM64 Linux: the board's Ubuntu 22.04 or
-Debian 11 image, or newer.
+library, and reads the HDMI input and sets its EDID by itself, so **the board needs no internet and
+nothing installed**. For ARM64 Linux: the board's Ubuntu 22.04 or Debian 11 image, or newer. When the
+board image has GStreamer with the Rockchip plugin, its hardware JPEG encoder is used.
 
 **Install or update** (copy the `.run` file to the board, then):
 
@@ -15,8 +16,7 @@ This installs everything and starts it:
 - two services: `ihc-gadget` makes the board the iPhone's USB keyboard and mouse at boot, and `ihc`
   runs the server.
 
-GStreamer and v4l-utils are installed with apt if they are missing. The console is then at
-`http://<board address>:8000`.
+The console is then at `http://<board address>:8000`.
 
 - `sudo ./ihc-box-...run --no-start` installs without starting the services now.
 - `./ihc-box-...run --extract DIR` only unpacks, to try the tools without installing (`DIR/bin/ihc

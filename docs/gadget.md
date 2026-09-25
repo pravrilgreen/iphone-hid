@@ -45,11 +45,11 @@ either role, and the board, which prefers to be the host, may end up as the host
 
    It should print a controller name such as `fc000000.usb`. If it prints nothing, see
    [Troubleshooting](#troubleshooting).
-3. Check the HDMI input, with the iPhone connected and unlocked:
+3. Check the HDMI input, with the iPhone connected and unlocked. `ihc-capture-check` comes with
+   the install (step 4); `v4l2-ctl --list-devices` works too if the image has v4l-utils:
 
    ```
-   v4l2-ctl --list-devices              # look for rk_hdmirx (or snps_hdmirx)
-   v4l2-ctl -d /dev/video0 --query-dv-timings
+   ihc-capture-check list               # look for rk_hdmirx (or snps_hdmirx)
    ```
 
 4. Install the software. Download `ihc-box-<version>-linux-aarch64.run` from the
@@ -125,11 +125,18 @@ Profiles:
 Switch with `sudo ihc gadget up --replace --profile A`. Each profile has its own USB serial
 number, so iOS does not reuse a descriptor it saw before.
 
-**Video.** The HDMI input delivers raw frames. A GStreamer pipeline turns them into JPEG images,
-the same frames an MJPEG capture card sends. It uses the board's hardware JPEG encoder
-(`mppjpegenc`) when the image provides it, and a software encoder otherwise. At start the server
-advertises a 1080p60 display (EDID) on the HDMI input, so the iPhone mirrors at 1920×1080 rather
-than 4K. The pipeline restarts by itself when the signal goes away or changes.
+**Video.** The HDMI input delivers raw frames, which become JPEG images: the same frames an MJPEG
+capture card sends. Whichever of these is available first does it:
+
+1. the board's hardware JPEG encoder, through GStreamer (`mppjpegenc`), when the image provides it;
+2. GStreamer's or ffmpeg's software encoder;
+3. the box's own reader. It reads the driver directly and encodes with the OpenCV it ships with, so
+   it works on a board with nothing installed and no internet.
+
+At start, the server writes a 1080p60 display description (EDID) to the HDMI input, straight to
+the driver, so the iPhone mirrors at 1920×1080 rather than 4K. Video restarts by itself when the
+signal goes away or changes. `ihc-capture-check probe --device /dev/video0 --encoder builtin`
+(or `mpp`, `gst`) compares them.
 
 ## Troubleshooting
 
@@ -140,8 +147,8 @@ than 4K. The pipeline restarts by itself when the signal goes away or changes.
 | `ihc gadget status` stays at `not attached` | Wrong cable or wrong port. Use USB-A to USB-C, and the Type-C port next to the USB 3 ports |
 | `info` says NOT connected on the iPhone | The iPhone is locked, or it asked to allow the accessory. Unlock it and answer Allow |
 | No `rk_hdmirx` video device | This kernel lacks the HDMI input driver. Use the Orange Pi image |
-| Video status "no JPEG encoder" | Install GStreamer: `sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-good` |
-| Video at 4K, or the EDID error in the log | Set it by hand: `v4l2-ctl -d /dev/video0 --set-edid=type=hdmi`, then replug the HDMI cable |
+| Video at 4K, or `hdmi_input_edid` with an error in the server log | The driver refused the EDID: replug the HDMI cable and restart the service; if it persists, send the log line |
+| Video status "no usable HDMI signal" | The iPhone is locked, or the hub gets no picture out of it: unlock it, replug the hub |
 
 Farm config form, when you do not use `--auto`:
 

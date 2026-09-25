@@ -140,21 +140,33 @@ def _gst_has(element: str) -> bool:
         return False
 
 
-def hdmi_in_command(device: str, *, fps: int = 30, quality: int = 80, encoder: str = "auto") -> list[str]:
-    """A command that turns an HDMI-input capture node into a JPEG stream on stdout.
+ENCODERS = ("mpp", "gst", "ffmpeg", "builtin")
 
-    encoder: "mpp" (the Rockchip hardware JPEG encoder, GStreamer plugin from the board's image),
-    "gst" (GStreamer's software jpegenc), "ffmpeg" (software), or "auto" (the first available)."""
-    if encoder == "auto":
-        if _gst_has("mppjpegenc"):
-            encoder = "mpp"
-        elif _gst_has("jpegenc"):
-            encoder = "gst"
-        elif shutil.which("ffmpeg"):
-            encoder = "ffmpeg"
-        else:
-            raise OSError("no JPEG encoder for the HDMI input: install GStreamer (gstreamer1.0-tools, "
-                          "gstreamer1.0-plugins-good; the board image's gstreamer1.0-rockchip for mppjpegenc) or ffmpeg")
+
+def choose_encoder(encoder: str = "auto") -> str:
+    """How to turn the HDMI input into JPEG: "mpp" (the Rockchip hardware JPEG encoder, a GStreamer
+    plugin of the board's image), "gst" (GStreamer's software jpegenc), "ffmpeg" (software), or
+    "builtin" (ihc.video.v4l2: this package reads the driver itself and encodes with OpenCV, so it
+    needs nothing installed). "auto" picks the first one available, in that order."""
+    if encoder != "auto":
+        if encoder not in ENCODERS:
+            raise ValueError(f"unknown encoder {encoder!r} (auto, {', '.join(ENCODERS)})")
+        return encoder
+    if _gst_has("mppjpegenc"):
+        return "mpp"
+    if _gst_has("jpegenc"):
+        return "gst"
+    if shutil.which("ffmpeg"):
+        return "ffmpeg"
+    return "builtin"
+
+
+def hdmi_in_command(device: str, *, fps: int = 30, quality: int = 80, encoder: str = "auto") -> list[str]:
+    """A command that turns an HDMI-input capture node into a JPEG stream on stdout (for the "mpp",
+    "gst" and "ffmpeg" encoders; see choose_encoder)."""
+    encoder = choose_encoder(encoder)
+    if encoder == "builtin":
+        raise ValueError("the builtin encoder is not a command: use ihc.video.v4l2.open_reader")
     rate = f"video/x-raw,framerate={fps}/1"
     # A one-frame leaky queue: when the encoder falls behind, old frames are dropped, not delayed.
     queue = ["queue", "max-size-buffers=1", "leaky=downstream"]
@@ -175,18 +187,23 @@ def hdmi_in_command(device: str, *, fps: int = 30, quality: int = 80, encoder: s
     raise ValueError(f"unknown encoder {encoder!r} (auto, mpp, gst or ffmpeg)")
 
 
+EDIDS = ("hdmi",)
+
+
 def set_edid(device: str, edid: str = "hdmi") -> str | None:
-    """Advertise one of v4l2-ctl's predefined EDIDs on the HDMI input ("hdmi": 1080p60), so the
-    phone mirrors at 1920x1080 rather than 4K: smaller JPEGs to encode and stream. Best effort: the
-    error text, or None once set. The phone sees the display reconnect."""
-    if not shutil.which("v4l2-ctl"):
-        return "v4l2-ctl not found (install v4l-utils)"
+    """Advertise a 1080p60 HDMI display on the HDMI input ("hdmi", ihc.video.v4l2.edid_1080p60), so
+    the phone mirrors at 1920x1080 rather than 4K: smaller JPEGs to encode and stream. Written
+    straight to the driver (no v4l-utils needed). Best effort: the error text, or None once set. The
+    phone sees the display reconnect."""
+    if edid not in EDIDS:
+        return f"unknown EDID {edid!r} (known: {', '.join(EDIDS)})"
+    from .v4l2 import set_edid as write_edid
+
     try:
-        r = subprocess.run(["v4l2-ctl", "-d", device, f"--set-edid=type={edid}"], capture_output=True, text=True,
-                           timeout=10)
-    except (OSError, subprocess.TimeoutExpired) as e:
-        return str(e)
-    return None if r.returncode == 0 else ((r.stderr or r.stdout).strip()[-300:] or f"exit {r.returncode}")
+        write_edid(device)
+    except OSError as e:
+        return f"{device}: {e.strerror or e}"
+    return None
 
 
 def is_hdmi_input(name: str) -> bool:

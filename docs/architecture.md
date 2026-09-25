@@ -160,9 +160,11 @@ iOS gửi về, nên nó đổi theo phím nghĩa là iOS đã xử lý báo cá
 - **HDMI IN của hộp:**
   - khi khởi động, server khai báo với iPhone một màn hình 1080p60 (EDID), nên iPhone mirror ở 1920×1080 thay vì
     4K;
-  - một pipeline GStreamer đọc khung thô và nén JPEG: bộ mã hoá phần cứng `mppjpegenc` nếu image của board có,
-    nếu không thì `jpegenc` (phần mềm), hoặc ffmpeg. Hàng đợi chỉ giữ một khung, nên khi bộ mã hoá chậm thì khung
-    cũ bị bỏ chứ không bị trễ;
+  - khung thô được nén JPEG theo thứ tự ưu tiên: bộ mã hoá phần cứng `mppjpegenc` qua GStreamer nếu image của board
+    có; `jpegenc` (GStreamer) hoặc ffmpeg, phần mềm; cuối cùng là bộ đọc riêng của hộp (`ihc.video.v4l2`: đọc thẳng
+    driver V4L2, nén bằng OpenCV có sẵn trong gói), nên board không cài gì, không có internet vẫn chạy. Khi bộ mã
+    hoá chậm thì khung cũ bị bỏ chứ không bị trễ;
+  - EDID 1080p60 được ghi thẳng vào driver (không cần v4l-utils);
   - pipeline tự khởi động lại khi mất tín hiệu hoặc đổi độ phân giải.
 - **Điều khiển trực tiếp (kiểu KVM):**
   - chế độ tuyệt đối: vị trí chuột trên khung hình đi thẳng thành báo cáo tuyệt đối;

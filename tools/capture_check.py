@@ -7,7 +7,7 @@
     python tools/capture_check.py snapshot --device /dev/video0 [--out docs/test-logs/snap.jpg]
 
 A board's HDMI input (Orange Pi 5 Plus rk_hdmirx) is recognised by its name and read through a JPEG
-encoder, as `ihc serve` does (`--hdmi` forces it, `--encoder mpp|gst|ffmpeg` picks the encoder,
+encoder, as `ihc serve` does (`--hdmi` forces it, `--encoder mpp|gst|ffmpeg|builtin` picks the encoder,
 `--keep-edid` leaves the input's EDID alone instead of advertising 1080p60).
 
 No image analysis: it measures delivery only. Results go to a JSON-lines log in docs/test-logs/.
@@ -118,7 +118,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", help="snapshot file (default docs/test-logs/snap-<time>.jpg)")
     ap.add_argument("--log", help="JSON-lines log path")
     ap.add_argument("--hdmi", action="store_true", default=None, help="read the device as a board HDMI input")
-    ap.add_argument("--encoder", default="auto", choices=["auto", "mpp", "gst", "ffmpeg"], help="HDMI input JPEG encoder")
+    ap.add_argument("--encoder", default="auto", choices=["auto", "mpp", "gst", "ffmpeg", "builtin"],
+                    help="HDMI input JPEG encoder (builtin: read the driver directly, nothing installed)")
     ap.add_argument("--keep-edid", action="store_true", help="HDMI input: do not advertise a 1080p60 EDID")
     args = ap.parse_args(argv)
     size = tuple(int(v) for v in args.size.lower().split("x"))

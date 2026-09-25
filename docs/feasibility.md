@@ -32,8 +32,9 @@ Mã bài test (B1–B8, D1–D3, X1–X2) là các bài trong [phase0-checklist.
 - **Sản phẩm chính: mỗi iPhone một Orange Pi 5 Plus** ([gadget.md](gadget.md)):
   - cổng Type-C USB 3.0/DP của board chạy **Linux USB gadget**: board chính là bàn phím và chuột của iPhone
     (bàn phím, phím media, phím hệ thống, chuột tương đối, chuột tuyệt đối; mỗi loại một interface HID);
-  - **HDMI IN** của board đọc màn hình iPhone; một pipeline GStreamer nén JPEG, nên phần còn lại của hệ thống thấy
-    đúng các khung JPEG như từ một capture card MJPEG;
+  - **HDMI IN** của board đọc màn hình iPhone và nén JPEG (bộ mã hoá phần cứng qua GStreamer nếu image có, nếu không
+    thì bộ đọc riêng của hộp, không cần cài gì), nên phần còn lại của hệ thống thấy đúng các khung JPEG như từ một
+    capture card MJPEG;
   - board chạy server, web console và API.
 - **Dự phòng:** cáp CH9329 cho bàn phím + chuột (image không có chế độ device, hoặc một host Linux khác), hình từ
   HDMI IN của board hoặc capture card MS2109.
@@ -309,7 +310,7 @@ Việc đã làm theo đó:
 ### 3.8 Luồng hình
 
 **HDMI IN của hộp** (bằng chứng ở mục 3.5)
-- Server khai EDID 1080p60, đọc HDMI IN bằng GStreamer và nén JPEG: `mppjpegenc` (bộ mã hoá JPEG phần cứng, nếu image có), nếu không thì `jpegenc` (phần mềm), hoặc ffmpeg. Hàng đợi một khung, bỏ khung cũ khi bộ mã hoá chậm. Pipeline tự chạy lại khi mất tín hiệu hoặc đổi độ phân giải.
+- Server ghi EDID 1080p60 thẳng vào driver, đọc HDMI IN và nén JPEG: `mppjpegenc` qua GStreamer (bộ mã hoá JPEG phần cứng, nếu image có), nếu không thì `jpegenc` hoặc ffmpeg (phần mềm), cuối cùng là bộ đọc V4L2 riêng của hộp (OpenCV, không cần cài gì, chạy được khi board không có internet). Hàng đợi một khung, bỏ khung cũ khi bộ mã hoá chậm. Pipeline tự chạy lại khi mất tín hiệu hoặc đổi độ phân giải.
 - **[Unknown]** fps thực tế, tải CPU với bộ mã hoá phần mềm, và trễ glass-to-glass (B3, B7).
 
 **Capture card USB (dự phòng)**

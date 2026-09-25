@@ -177,7 +177,7 @@ def open_video_source(device: str, *, size: tuple[int, int] = (1920, 1080), fps:
     (`hdmi`, e.g. the Orange Pi 5 Plus rk_hdmirx) through a JPEG-encoding command: ours, or
     `command` ({device} replaced). An HDMI input first gets the `edid` (1080p60 by default)."""
     from .video.capture import V4L2Capture
-    from .video.pipe import hdmi_in_command, open_pipe, set_edid
+    from .video.pipe import choose_encoder, hdmi_in_command, open_pipe, set_edid
 
     if hdmi and edid:
         error = set_edid(device, edid)
@@ -187,17 +187,16 @@ def open_video_source(device: str, *, size: tuple[int, int] = (1920, 1080), fps:
         return V4L2Capture(device, fps=fps, open_fn=open_pipe(command.replace("{device}", device)), max_failures=3)
     if not hdmi:
         return V4L2Capture(device, width=size[0], height=size[1], fps=fps)
-    try:
-        argv = hdmi_in_command(device, fps=fps, encoder=encoder)
-    except OSError as e:
-        message = str(e)
+    encoder = choose_encoder(encoder)
+    if encoder == "builtin":
+        from .video.v4l2 import open_reader
 
-        def unavailable(*args):
-            raise OSError(message)
-
-        return V4L2Capture(device, fps=fps, open_fn=unavailable)
+        if log:
+            log("hdmi_input", device=device, encoder=encoder)
+        return V4L2Capture(device, fps=fps, open_fn=open_reader(fps=fps), max_failures=3)
+    argv = hdmi_in_command(device, fps=fps, encoder=encoder)
     if log:
-        log("hdmi_input", device=device, command=argv)
+        log("hdmi_input", device=device, encoder=encoder, command=argv)
     return V4L2Capture(device, fps=fps, open_fn=open_pipe(argv), max_failures=3)
 
 
