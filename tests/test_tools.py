@@ -1,5 +1,4 @@
 import os
-import struct
 
 from conftest import load_tool
 

@@ -11,7 +11,7 @@
   (its USB-C port is the phone's keyboard and mouse as a Linux USB gadget, its HDMI input takes the video), with a
   CH9329 cable as the fallback. The project does not use Bluetooth or support Lightning phones. Vendor facts about
   those stay below as market evidence; the recommendations are reworded for the box. Risk IDs (R…) refer to
-  `docs/feasibility.md`, test IDs (B1–B8, D1–D3, X2) to `docs/phase0-checklist.md`.
+  `docs/research/feasibility.md`, test IDs (B1–B8, D1–D3, X2) to `docs/research/phase0-checklist.md`.
 - **Access limits:** the egress proxy blocked most Chinese sites (CSDN, Zhihu, Juejin, ieasyclick, iosautot,
   doc.some3c.com, gamesir.com, doc.xiaoji.com) and several English ones. For those, only the search snippet was
   seen, and they are marked **(snippet)**. Re-open them before relying on exact wording.
@@ -90,7 +90,7 @@
      question only matters for the fallback (D3).
   2. Release everything right after enumeration, mirroring NanoKVM's "Repair iPhone drag" (done in the host
      software). It is cheap insurance against a stuck button on connect.
-  3. Require Orientation Lock (portrait) in `docs/iphone-setup.md` (done).
+  3. Require Orientation Lock (portrait) in `docs/guide/iphone-setup.md` (done).
   4. Keep the 6-parameter affine fit; NanoKVM's 4-point calibration shows a pure linear map is not enough (the
      crop and offset matter).
 - **Sources:**
@@ -264,12 +264,12 @@
 
 ### 2.8 Confirming that a command reached iOS (cheap, no vision)
 - **Caps Lock LED round trip.** Send a Caps Lock tap, then watch the keyboard LED state: the output report the
-  box's gadget reads from its keyboard node (`ihc/hid/gadget.py`), or the LED byte in CH9329 `GET_INFO`
-  (`ihc/hid/ch9329.py`). Then toggle it back. `hidtest capscheck` does this.
+  box's gadget reads from its keyboard node (`src/ihc/hid/gadget.py`), or the LED byte in CH9329 `GET_INFO`
+  (`src/ihc/hid/ch9329.py`). Then toggle it back. `hidtest capscheck` does this.
   - It proves that the iOS HID stack processed a keyboard report end to end, which is stronger than a chip ack.
   - iPad keyboards' Caps Lock LEDs do light, except when "Caps Lock switches language" is on. Turn that off.
   - **[Unknown]** on iPhone; test in B4. Sources: [Apple Community (snippet)](https://discussions.apple.com/thread/251390352),
-    `docs/ch9329-protocol.md`.
+    `docs/dev/ch9329-protocol.md`.
 - **Frame-difference "something changed"** in a region after a tap. This is not recognition. NanoKVM-Go ships frame
   difference detection with about 0.2 s reaction and about 2.5 % CPU. The vendors all verify through video. [Likely]
   ([CNX (snippet)](https://www.cnx-software.com/2026/07/01/sipeed-nanokvm-go-an-4k-usb-c-kvm-with-recall-like-function-ai-integration/)).
@@ -346,7 +346,7 @@
 
 ## 5. Suggested test-plan deltas
 
-All of these are in `docs/phase0-checklist.md`, except where noted.
+All of these are in `docs/research/phase0-checklist.md`, except where noted.
 
 - **B4:** check where the pointer sits right after enumeration (the host already releases everything on connect,
   like NanoKVM's repair). Orientation Lock on. Record whether the absolute grid maps to the full panel or to a

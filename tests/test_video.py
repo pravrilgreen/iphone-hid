@@ -1,4 +1,3 @@
-import threading
 import time
 
 import cv2
@@ -7,7 +6,7 @@ import pytest
 
 from ihc.video.capture import V4L2Capture, device_index, frame_from_buffer, list_video_devices
 from ihc.video.frame import Frame, StaticSource, encode_jpeg, jpeg_size
-from ihc.video.geometry import ScreenRect, fit_screen_rect
+from ihc.video.geometry import fit_screen_rect
 
 
 def jpeg_buffer(w=64, h=48, value=128):

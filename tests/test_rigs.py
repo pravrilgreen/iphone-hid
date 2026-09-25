@@ -145,7 +145,6 @@ def test_ports_that_do_not_answer_are_backed_off(tmp_path, monkeypatch):
     assert len(probes) == 2 and quiet[port][1] == 20.0
     (tmp_path / "ttyUSB9").unlink()  # replugged: a new device node is probed at once
     (tmp_path / "ttyUSB9").write_text("")
-    import os
 
     os.utime(tmp_path / "ttyUSB9", ns=(1, 1))
     rigs.find_chips([port], sysfs=str(tmp_path), quiet=quiet, clock=lambda: now[0])

@@ -247,7 +247,7 @@ Home, App Switcher, Spotlight, typing and calibration are one click away.
 
 - Supported phones: **iPhone 15 and later with USB-C**, except iPhone 16e and 17e (no video output).
 - Each iPhone needs a one-time manual setup: AssistiveTouch on, mouse buttons mapped to Home and App
-  Switcher, auto-lock off, and so on. See the [iPhone setup guide](docs/iphone-setup.md).
+  Switcher, auto-lock off, and so on. See the [iPhone setup guide](docs/guide/iphone-setup.md).
 - One board serves one phone. A farm is many boxes, and the SDK drives them as one.
 
 ## Performance targets
@@ -269,6 +269,7 @@ Home, App Switcher, Spotlight, typing and calibration are one click away.
 | 3. API, SDK, console | live view, precise tap, live control, Python SDK, CLI | 🟢 done on the simulator |
 | 4. Appliance | set-up at boot, auto-discovery, hot-plug, mDNS, health, service files | 🟢 done on the simulator |
 | 5. All-in-one board | HDMI input with hardware JPEG encoding, one board per iPhone | 🟡 software done, hardware test running |
+| 6. Purpose-built box | USB-C straight from the iPhone (LT7911D), keyboard/mouse MCU (CH32V305) with timed actions, RV1106 daemon in Go with H.264 low-delay over WebRTC ([design](docs/research/custom-box.md), [languages](docs/dev/adr/0001-languages.md)) | ⚪ parts ordered next |
 
 🟢 done · 🟡 in progress · ⚪ not started.
 
@@ -279,23 +280,40 @@ Home, App Switcher, Spotlight, typing and calibration are one click away.
 - Copy-protected content (Netflix and similar) shows as black on HDMI.
 - Automating third-party services may break their terms of use.
 
+## Repository layout
+
+| Path | What |
+|---|---|
+| `src/ihc/` | The Python package: box server (API, console in `web/`), pointer model, HID backends, video, simulator, SDK (`ihc.client`), lab tools (`tools/`) |
+| `tests/` | Test suite (simulated phones and hardware stand-ins; no device needed) |
+| `packaging/` | systemd units, udev rules, the source installer and the self-contained bundle (`bundle/`) |
+| `scripts/` | Bundle build and smoke test, diagram generators |
+| `docs/` | Guides, development notes, research and test plans ([index](docs/README.md)) |
+
+## Development
+
+```bash
+make dev        # .venv with the package (editable) and dev tools
+make test       # ruff + the test suite (no hardware needed)
+make sim        # two simulated iPhones on http://localhost:8000
+make bundle     # dist/ihc-box-<version>-linux-aarch64.run
+```
+
+CI runs the lint and the tests on every push. A release (`v*` tag, or the "Release box bundle"
+workflow) also builds the bundle, smoke-tests it under ARM64 emulation and publishes it. Changes are
+listed in [CHANGELOG.md](CHANGELOG.md).
+
 ## Documentation
 
-The detailed documents are in Vietnamese, except the box guide and the two research reports.
+The detailed documents are in Vietnamese, except the box guide, the ADRs and two research reports. The
+full list is in the [docs index](docs/README.md).
 
-- [Quick test: mouse and video on the board](docs/quick-test.md): the first checks, nothing
-  installed: the iPhone takes the board's mouse, then the board captures the iPhone's screen
-- [The all-in-one box: Orange Pi 5 Plus](docs/gadget.md) (English): parts, wiring, checks,
-  troubleshooting
-- [Getting started](docs/getting-started.md): the simulator first, then real hardware
-- [Architecture](docs/architecture.md)
-- [Feasibility study](docs/feasibility.md): independent research with sources and risks
-- [Research: absolute pointer on iPhone](docs/research/absolute-pointer.md) and
-  [market survey of cheap iPhone-control hardware](docs/research/china-market.md) (English)
-- [Custom box design](docs/research/custom-box.md): feasibility, cost and block diagrams of a
-  purpose-built box (USB-C straight from the iPhone, HID MCU, H.264 low-delay SoC), and whether the
-  CH9329 is fast enough
-- [Hardware test checklist](docs/phase0-checklist.md)
-- [iPhone setup](docs/iphone-setup.md)
-- [CH9329 protocol notes](docs/ch9329-protocol.md) (the fallback cable)
-- [Simulator](docs/simulator.md)
+- **Guides:** [quick test](docs/guide/quick-test.md) (first checks, nothing installed),
+  [Orange Pi 5 Plus box](docs/guide/orange-pi-box.md) (parts, wiring, troubleshooting),
+  [iPhone setup](docs/guide/iphone-setup.md), [getting started](docs/guide/getting-started.md)
+- **Development:** [architecture](docs/dev/architecture.md), [simulator](docs/dev/simulator.md),
+  [CH9329 protocol notes](docs/dev/ch9329-protocol.md), [ADR 0001: languages](docs/dev/adr/0001-languages.md)
+- **Research:** [feasibility study](docs/research/feasibility.md),
+  [hardware test checklist](docs/research/phase0-checklist.md),
+  [absolute pointer on iPhone](docs/research/absolute-pointer.md),
+  [market survey](docs/research/china-market.md), [custom box design](docs/research/custom-box.md)

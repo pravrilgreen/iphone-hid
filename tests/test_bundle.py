@@ -1,6 +1,6 @@
 """The self-contained box bundle: the self-extracting .run header, the launcher and the installer
-scripts (the real bundle is built and smoke-tested under ARM64 emulation by tools/build_bundle.sh and
-tools/check_bundle.sh, in the release workflow)."""
+scripts (the real bundle is built and smoke-tested under ARM64 emulation by scripts/build_bundle.sh and
+scripts/check_bundle.sh, in the release workflow)."""
 
 import io
 import lzma
@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE = ROOT / "deploy" / "bundle"
+BUNDLE = ROOT / "packaging" / "bundle"
 
 pytestmark = pytest.mark.skipif(not shutil.which("xz") or not shutil.which("sh"), reason="needs sh and xz")
 
@@ -80,4 +80,4 @@ def test_launcher_picks_the_entry_point_by_name(tmp_path):
     main = subprocess.run([str(box / "bin" / "ihc"), "gadget", "status"], capture_output=True, text=True, env=env)
     assert main.stdout.strip() == f"{box}/app:{box}/lib|{tmp_path}/ihc-test-logs|-m ihc.cli gadget status"
     tool = subprocess.run([str(box / "bin" / "ihc-hidtest"), "--gadget"], capture_output=True, text=True, env=env)
-    assert tool.stdout.strip().endswith(f"|{box}/app/tools/hidtest.py --gadget")
+    assert tool.stdout.strip().endswith("|-m ihc.tools.hidtest --gadget")

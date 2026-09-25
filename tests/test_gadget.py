@@ -314,7 +314,7 @@ def test_missing_interface_is_bad_param_and_release_skips_it(tmp_path):
 
 
 def test_no_gadget_is_a_port_error(tmp_path):
-    with pytest.raises(HidPortError, match="tools/gadget.py up"):
+    with pytest.raises(HidPortError, match="sudo ihc gadget up"):
         g.GadgetBackend(configfs=str(tmp_path), sysfs=str(tmp_path))
 
 
@@ -364,10 +364,7 @@ def test_hidg_node_over_a_fifo(tmp_path):
 
 
 def test_gadget_tool_status_without_root(capsys, tmp_path):
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
-    import gadget as tool
+    from ihc import gadget_cli as tool
 
     assert tool.main(["--configfs", str(tmp_path), "status"]) == 0
     assert "not set up" in capsys.readouterr().out

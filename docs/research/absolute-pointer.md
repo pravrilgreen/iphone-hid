@@ -1,10 +1,10 @@
 # Absolute positioning on iPhone over USB: research notes
 
-- **Date:** 2026-09-24. This builds on `docs/feasibility.md` (A1, section 3.1) and does not repeat it.
+- **Date:** 2026-09-24. This builds on `docs/research/feasibility.md` (A1, section 3.1) and does not repeat it.
 - **Updated 2026-09-25** for the project's current scope: USB-C iPhones only, one Orange Pi 5 Plus box per
   phone whose USB-C port runs as a Linux USB gadget (the phone's keyboard and mouse), with a CH9329 cable as the
   fallback. The project no longer uses Bluetooth. Bluetooth findings stay in §2 only as evidence of how iOS treats
-  absolute pointers. Test IDs (B1–B8, D1–D3) refer to `docs/phase0-checklist.md`.
+  absolute pointers. Test IDs (B1–B8, D1–D3) refer to `docs/research/phase0-checklist.md`.
 - **Method:** read source code and git history directly (Aiden, glassbox, mirrordeck, JetKVM, PiKVM
   kvmd, blacktop/ipsw-diffs, pcairplay), read Apple Developer Forums threads and the Accessory Design
   Guidelines R31 PDF directly, and used web search for the rest. Many sites are blocked from this
@@ -36,7 +36,7 @@
 | V9 | iOS 26 and iOS 27 changes | iOS 26.x: absolute works (V1). **[Unknown]** for iOS 27. Its backboardd pointer and digitizer code was refactored and iPhone gained new "Pointers" settings strings. Re-run B4 and B5 on 27.0. | blacktop/ipsw-diffs 26.5 vs 27.0 (iPhone18,1) (§6) |
 
 **Consequence for the design:** keep absolute as the primary mode. The box's USB gadget
-(`ihc/hid/gadget.py`) already exposes an absolute pointer in the layout that works (§4): its own
+(`src/ihc/hid/gadget.py`) already exposes an absolute pointer in the layout that works (§4): its own
 interface, no report ID, 0..32767, pointer interface last. Test it first (B4). Do not add a digitizer
 collection to any production descriptor.
 
@@ -69,7 +69,7 @@ reaches the corners. The iOS version was not recorded.
   - release sent 3 times, 15 ms apart.
 - **[Confirmed]** Aiden writes its reports to `/dev/hidg0`, the node of the Linux HID gadget function
   ([usb-hid.md](https://github.com/AidenAI-IO/aiden-firmware/blob/main/docs/03-services/usb-hid.md)).
-  The box works the same way (`ihc/hid/gadget.py`).
+  The box works the same way (`src/ihc/hid/gadget.py`).
 - The iPhone model and iOS version are not stated. A protocol example uses `iPhone16,2` (15 Pro Max).
 
 ### 1.2 glassbox (yoyicue/glassbox): the closest analogue to this project
@@ -342,10 +342,10 @@ logs `pointerdown`/`click` with `clientX/Y` and `pointerType`):
    (`abs X Y buttons=2`)?
 10. Optional: rotate to landscape and test 3 points (informational only).
 
-Pass as in `docs/phase0-checklist.md` (≤ 2 pt after the fit), plus: settle time known, 0 stuck releases
+Pass as in `docs/research/phase0-checklist.md` (≤ 2 pt after the fit), plus: settle time known, 0 stuck releases
 with release ×3, and results the same at both Tracking Speed values.
 
-### 7.3 The gadget descriptor (`ihc/hid/gadget.py`)
+### 7.3 The gadget descriptor (`src/ihc/hid/gadget.py`)
 1. **Keep `DESC_ABS_POINTER` as it is.** Mouse > Pointer > Physical, 3 buttons, X/Y 0..32767 `Abs`,
    relative wheel is structurally what works over USB (Aiden, JetKVM) and over Bluetooth (mirrordeck).
    - Only if B4 shows positions but ignored clicks, add a variant with the buttons at application

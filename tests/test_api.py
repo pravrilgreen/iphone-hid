@@ -21,7 +21,7 @@ import ihc.api
 from ihc.api import create_app
 from ihc.api.control import LiveSession
 from ihc.api.server import ClientGone
-from ihc.api.stream import FrameHub
+from ihc.api.stream import FrameHub, stop_tasks
 from ihc.device import DeviceInfo, IPhoneDevice
 from ihc.hid import protocol as p
 from ihc.hid.fake import FakeBackend
@@ -921,8 +921,43 @@ def test_viewer_and_connection_limits():
             wait_until(lambda: c.app.state.farm.sockets == 0, what="sockets counted out")
             with c.websocket_connect("/api/devices/sim-01/stream") as ws:
                 recv_until(ws, lambda m: m.get("bytes") is not None)
+                # let the server finish with the socket before the test client tears the session down
+                # (it cancels the app right after its close: a handler still running then fails the test)
+                ws.close()
+                wait_until(lambda: c.app.state.farm.sockets == 0, what="the last socket counted out")
     finally:
         reg.close()
+
+
+@pytest.mark.timeout(20, method="thread")  # a stuck asyncio loop ignores the signal method
+@pytest.mark.parametrize("unwind", [0, 5])
+def test_stop_tasks_raises_the_handlers_own_cancellation(unwind):
+    """A handler cancelled while it stops its tasks must raise its own CancelledError, not a task's.
+
+    The test client cancels a handler through an anyio cancel scope, which swallows only its own
+    CancelledError; `asyncio.gather` raised the task's, which escaped (the Python 3.12 CI failure). The
+    scope also repeats its cancel on every turn of the loop, which must not keep the handler waiting."""
+    import anyio
+
+    async def task():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            for _ in range(unwind):  # some tasks take a few turns of the loop to stop
+                await asyncio.sleep(0)
+            raise
+
+    async def main():
+        tasks = [asyncio.ensure_future(task()) for _ in range(2)]
+        await asyncio.sleep(0)
+        with anyio.CancelScope() as scope:
+            asyncio.get_running_loop().call_soon(scope.cancel)
+            await stop_tasks(tasks)
+        return tasks, scope.cancelled_caught
+
+    tasks, caught = asyncio.run(main())  # a CancelledError not the scope's would escape here
+    assert caught
+    assert all(t.done() for t in tasks)  # it still waited for them
 
 
 # -- Python 3.10: asyncio.wait_for raises asyncio.TimeoutError, not the builtin TimeoutError -----------
