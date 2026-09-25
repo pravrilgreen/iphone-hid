@@ -292,6 +292,9 @@ The detailed documents are in Vietnamese, except the box guide and the two resea
 - [Feasibility study](docs/feasibility.md): independent research with sources and risks
 - [Research: absolute pointer on iPhone](docs/research/absolute-pointer.md) and
   [market survey of cheap iPhone-control hardware](docs/research/china-market.md) (English)
+- [Custom box design](docs/research/custom-box.md): feasibility, cost and block diagrams of a
+  purpose-built box (USB-C straight from the iPhone, HID MCU, H.264 low-delay SoC), and whether the
+  CH9329 is fast enough
 - [Hardware test checklist](docs/phase0-checklist.md)
 - [iPhone setup](docs/iphone-setup.md)
 - [CH9329 protocol notes](docs/ch9329-protocol.md) (the fallback cable)
