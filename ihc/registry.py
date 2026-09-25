@@ -150,8 +150,8 @@ def load_config(path: str | Path, log=None) -> Registry:
         w, h = (int(v) for v in str(video.get("size", "1920x1080")).lower().split("x"))
         fps = int(video.get("fps", 30))
         if video.get("input") == "hdmi" or video.get("command"):
-            source = open_video_source(video["device"], size=(w, h), fps=fps, hdmi=True, command=video.get("command"),
-                                       edid=video.get("edid", "hdmi"), log=log)
+            source = open_video_source(video["device"], size=(w, h), fps=fps, hdmi=video.get("input") == "hdmi",
+                                       command=video.get("command"), edid=video.get("edid", "hdmi"), log=log)
         else:
             source = V4L2Capture(video["device"], width=w, height=h, fps=fps, fourcc=video.get("fourcc", "MJPG"))
         calib = entry.get("calibration")
@@ -174,18 +174,19 @@ def load_config(path: str | Path, log=None) -> Registry:
 def open_video_source(device: str, *, size: tuple[int, int] = (1920, 1080), fps: int = 30, hdmi: bool = False,
                       command: str | None = None, edid: str | None = "hdmi", encoder: str = "auto", log=None):
     """A FrameSource for `device`: a USB capture card directly (MJPEG passthrough), or an HDMI input
-    (`hdmi`, e.g. the Orange Pi 5 Plus rk_hdmirx) through a JPEG-encoding command."""
+    (`hdmi`, e.g. the Orange Pi 5 Plus rk_hdmirx) through a JPEG-encoding command: ours, or
+    `command` ({device} replaced). An HDMI input first gets the `edid` (1080p60 by default)."""
     from .video.capture import V4L2Capture
     from .video.pipe import hdmi_in_command, open_pipe, set_edid
 
+    if hdmi and edid:
+        error = set_edid(device, edid)
+        if log:
+            log("hdmi_input_edid", device=device, edid=edid, error=error)
     if command:
         return V4L2Capture(device, fps=fps, open_fn=open_pipe(command.replace("{device}", device)), max_failures=3)
     if not hdmi:
         return V4L2Capture(device, width=size[0], height=size[1], fps=fps)
-    if edid:
-        error = set_edid(device, edid)
-        if log:
-            log("hdmi_input_edid", device=device, edid=edid, error=error)
     try:
         argv = hdmi_in_command(device, fps=fps, encoder=encoder)
     except OSError as e:

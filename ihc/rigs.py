@@ -1,8 +1,9 @@
 """Zero-config discovery of the rigs attached to this host (one rig = HID device + video input).
 
 Plug-and-play is what a hardware box needs. The all-in-one box (Orange Pi 5 Plus) is its own HID
-device: when the USB gadget set up by `ihc gadget up` exists, it becomes the rig "iphone", paired
-with the board's HDMI input (or else with the only capture card left). Every USB serial port is also
+device: when the USB gadget set up by `ihc gadget up` exists, it becomes a rig named after the board
+("iphone-" and six characters of the SoC serial number, or $IHC_PHONE_ID), so every phone of a farm
+has its own id, paired with the board's HDMI input (or else with the only capture card left). Every USB serial port is also
 probed for a device speaking the CH9329 protocol (the baud rate is found automatically), every V4L2
 capture node is listed, and chips and cards are paired by the USB hub they hang off (sysfs
 topology); a lone chip and a lone capture card are paired with each other. CH9329 rig ids come from
@@ -14,6 +15,7 @@ from __future__ import annotations
 
 import os
 import re
+import socket
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -47,13 +49,34 @@ class GadgetFound:
     name: str
     udc: str
     nodes: dict[str, str]
+    rig_id: str = ""  # default: gadget_rig_id()
 
     @property
     def port(self) -> str:
         return f"gadget:{self.name}"
 
 
-GADGET_RIG_ID = "iphone"
+BOARD_ID_SOURCES = ("/proc/device-tree/serial-number", "/sys/firmware/devicetree/base/serial-number", "/etc/machine-id")
+
+
+def board_id(sources=BOARD_ID_SOURCES) -> str:
+    """Six characters that tell this board from the others of a farm and survive reboots: the end of
+    the SoC serial number from the device tree (Rockchip boards have one), else of the OS install's
+    machine id, else the host name."""
+    for path in sources:
+        try:
+            raw = Path(path).read_bytes()
+        except OSError:
+            continue
+        text = "".join(ch for ch in raw.decode(errors="ignore").lower() if ch.isalnum())
+        if text:
+            return text[-6:]
+    return socket.gethostname().lower()
+
+
+def gadget_rig_id() -> str:
+    """Device id of this box's phone: $IHC_PHONE_ID if set, else "iphone-" + board_id()."""
+    return os.environ.get("IHC_PHONE_ID", "").strip() or f"iphone-{board_id()}"
 
 
 @dataclass
@@ -165,13 +188,14 @@ def find_gadget(name: str = hidg.DEFAULT_NAME, *, configfs: str = hidg.CONFIGFS,
 
 def pair_gadget(gadget: GadgetFound, videos: list[VideoFound]) -> RigSpec:
     """The gadget takes the board's HDMI input, else the only capture card there is."""
+    rig_id = gadget.rig_id or gadget_rig_id()
     hdmi = [v for v in videos if is_hdmi_input(v.name)]
     if hdmi:
-        return RigSpec(GADGET_RIG_ID, None, hdmi[0], ["this board's HDMI input"], gadget)
+        return RigSpec(rig_id, None, hdmi[0], ["this board's HDMI input"], gadget)
     if len(videos) == 1:
-        return RigSpec(GADGET_RIG_ID, None, videos[0], ["paired as the only capture card"], gadget)
+        return RigSpec(rig_id, None, videos[0], ["paired as the only capture card"], gadget)
     note = "several capture cards: pair one in a config file" if videos else "no video input found (HID only)"
-    return RigSpec(GADGET_RIG_ID, None, None, [note], gadget)
+    return RigSpec(rig_id, None, None, [note], gadget)
 
 
 def pair(chips: list[ChipFound], videos: list[VideoFound]) -> list[RigSpec]:

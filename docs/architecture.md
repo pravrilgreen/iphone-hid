@@ -188,7 +188,8 @@ iOS gửi về, nên nó đổi theo phím nghĩa là iOS đã xử lý báo cá
 - **Khởi động cùng hộp:** `ihc-gadget.service` dựng gadget lúc boot (khi `/sys/class/udc` có controller), rồi
   `ihc.service` chạy `ihc serve --auto`. Cả hai do `sudo sh deploy/install.sh` cài.
 - **Định danh ổn định:**
-  - hộp: thiết bị tên `iphone` (gadget + HDMI IN của chính board);
+  - hộp: thiết bị tên `iphone-` cộng 6 ký tự cuối số serial của board (ví dụ `iphone-b40d9e`), nên mỗi hộp
+    trong farm có tên riêng; muốn tự đặt thì ghi `IHC_PHONE_ID=...` vào `/etc/default/ihc`;
   - cáp CH9329: cấu hình dùng `/dev/serial/by-path` và `/dev/v4l/by-path`, gắn với cổng USB vật lý.
 - **Log:** JSON lines có timestamp cho mọi thao tác, lỗi và (khi bật) từng báo cáo HID.
 

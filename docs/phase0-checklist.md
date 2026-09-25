@@ -303,7 +303,8 @@ systemctl status ihc-gadget ihc
 
 iPhone và board phải cùng mạng LAN (iPhone sẽ mở một trang trên board).
 
-1. Mở `http://<ip-board>:8000`, nhập token. Máy tên `iphone`.
+1. Mở `http://<ip-board>:8000`, nhập token. Máy tên `iphone-xxxxxx` (6 ký tự cuối số serial của board); ghi lại
+   tên này, các lệnh dưới dùng nó thay cho `<id>`.
 2. Bấm **Calibrate**. Công cụ tự mở Safari qua Spotlight. Nếu không mở được: gõ vào Safari trên iPhone link trang
    hiệu chỉnh mà web console hiện (có khoá `k`), rồi bấm **calibrate the open page**.
 3. Chờ kết quả: khoảng 10 s nếu iPhone theo chuột tuyệt đối, khoảng 1 phút nếu không.
@@ -324,7 +325,7 @@ Sau đó, trong web console (chế độ **Precise tap**):
 3 lần với chế độ tương đối ép buộc, rồi so `validation` giữa các lần.
 
 ```bash
-curl -X POST http://<ip-board>:8000/api/devices/iphone/calibrate \
+curl -X POST http://<ip-board>:8000/api/devices/<id>/calibrate \
      -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
      -d '{"options": {"try_absolute": false}}'
 ```
@@ -337,7 +338,7 @@ về mức đã chọn và hiệu chỉnh lại (không ép tương đối).
 **Ghi lại:**
 - `mode`, `validation` của từng lần;
 - `abs_settle` (thời gian iOS trượt con trỏ, trong file hiệu chỉnh);
-- file `/var/lib/ihc/iphone.json`, log `/var/log/ihc/ihc.jsonl`;
+- file `/var/lib/ihc/<id>.json`, log `/var/log/ihc/ihc.jsonl`;
 - số lần kẹt kéo / 20, số lần tap trượt / 50, kết quả ở hai mức Tracking Speed.
 
 ---
@@ -353,7 +354,7 @@ Theo dõi trạng thái của máy trên web console (`ready`, `hid_disconnected
 4. rút/cắm cáp HDMI (pipeline phải tự chạy lại);
 5. rút/cắm sạc ở cổng PD của hub (hub có reset không; hình, HID, sạc cái nào rớt);
 6. rút/cắm hub khỏi iPhone;
-7. khởi động lại board (`sudo reboot`): `ihc-gadget` và `ihc` phải tự lên, máy `iphone` về `ready` mà không cần làm
+7. khởi động lại board (`sudo reboot`): `ihc-gadget` và `ihc` phải tự lên, máy vẫn giữ tên cũ và về `ready` mà không cần làm
    gì, hiệu chỉnh cũ vẫn còn;
 8. khởi động lại iPhone: HID có gõ được passcode không (chế độ **Live control** trên console).
 
@@ -411,7 +412,7 @@ Log của server có sự kiện `hdmi_input` ghi lại lệnh pipeline đang d�
 import random, time
 from ihc.client import Farm
 
-phone = Farm("http://<ip-board>:8000", token="...").device("iphone")
+phone = Farm("http://<ip-board>:8000", token="...").devices()[0]
 while True:
     phone.home()
     phone.tap(random.uniform(0.1, 0.9), random.uniform(0.2, 0.8))
@@ -524,7 +525,7 @@ Chỉ một tiến trình được mở cổng serial tại một thời điểm
 
 ## 9. Gửi lại những gì
 
-1. Toàn bộ `docs/test-logs/`, cộng `/var/lib/ihc/iphone.json` và `/var/log/ihc/ihc.jsonl` của hộp (commit lên
+1. Toàn bộ `docs/test-logs/`, cộng `/var/lib/ihc/<id>.json` và `/var/log/ihc/ihc.jsonl` của hộp (commit lên
    nhánh hoặc nén gửi).
 2. `docs/test-logs/environment.md`:
 

@@ -190,8 +190,9 @@ Details, with sources: [absolute pointer research](docs/research/absolute-pointe
 
 1. Install the software on the board once. From then on, at every boot, the board makes itself the
    phone's keyboard and mouse and starts the service.
-2. Cable the phone as above. The service finds the USB port and the HDMI input by itself; the phone
-   appears as `iphone`.
+2. Cable the phone as above. The service finds the USB port and the HDMI input by itself. The phone
+   gets a farm-wide unique name from the board's serial number, such as `iphone-b40d9e`, or a name
+   you choose.
 3. The board announces itself on the local network (mDNS / DNS-SD). Test runners discover every box
    without configuration.
 4. Calibrate the phone once, from the console or through the API.

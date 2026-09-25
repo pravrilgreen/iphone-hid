@@ -58,7 +58,10 @@ either role, and the board, which prefers to be the host, may end up as the host
    sudo sh deploy/install.sh
    ```
 
-The console is at `http://<board address>:8000`. The phone appears as the device `iphone`.
+The console is at `http://<board address>:8000`. The phone appears as `iphone-` followed by the last
+six characters of the board's serial number (for example `iphone-b40d9e`), so every box of a farm
+has its own id. To choose the name, put `IHC_PHONE_ID=iphone15-a01` in `/etc/default/ihc` and restart
+the service (`sudo systemctl restart ihc`).
 
 ## Check each part by hand
 

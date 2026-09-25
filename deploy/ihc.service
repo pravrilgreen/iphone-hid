@@ -10,6 +10,8 @@ User=ihc
 Group=ihc
 SupplementaryGroups=dialout video input
 Environment=IHC_STATE_DIR=/var/lib/ihc
+# optional settings, e.g. IHC_PHONE_ID=iphone15-a01 to name this box's phone (default: iphone-<board serial>)
+EnvironmentFile=-/etc/default/ihc
 StateDirectory=ihc
 LogsDirectory=ihc
 # the API token (made once by install.sh): clients send it as "Authorization: Bearer <token>"

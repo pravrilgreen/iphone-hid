@@ -43,9 +43,9 @@ python tools/hidtest.py --fake        # gõ `help`
 from ihc.client import Farm
 
 farm = Farm.discover(token="...")            # mọi hộp trong mạng LAN (mDNS); hoặc Farm("http://box-01:8000", token="...")
-for d in farm.devices():                     # mỗi hộp một iPhone, tên "iphone"
+for d in farm.devices():                     # mỗi hộp một iPhone, tên riêng theo serial board: "iphone-b40d9e"
     print(d.host, d.id)
-phone = farm.devices()[0]                    # một hộp cụ thể: Farm("http://box-01:8000", token="...").device("iphone")
+phone = farm.device("iphone-b40d9e")         # hoặc farm.devices()[0]
 
 phone.home()
 phone.tap(0.5, 0.93)                         # toạ độ 0..1 trên màn hình iPhone
@@ -110,7 +110,8 @@ USB 3.0/DP), đọc màn hình qua cổng HDMI IN của chính nó, và chạy s
    sudo systemctl start ihc
    ```
 
-6. Mở web console ở `http://<địa chỉ board>:8000`. Máy tên `iphone`. Bấm **Calibrate** (iPhone phải cùng mạng với
+6. Mở web console ở `http://<địa chỉ board>:8000`. Máy tên `iphone-` cộng 6 ký tự cuối số serial của board (đặt
+   tên khác: `IHC_PHONE_ID=...` trong `/etc/default/ihc`). Bấm **Calibrate** (iPhone phải cùng mạng với
    board).
 
 Cài hộp xong, lần đầu tiên script tạo một token ngẫu nhiên ở `/var/lib/ihc/token` (chỉ user `ihc` đọc được) và in
