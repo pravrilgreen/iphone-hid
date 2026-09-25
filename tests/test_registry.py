@@ -1,4 +1,4 @@
-from ihc.registry import config_from_discovery, discover, load_config
+from ihc.registry import config_from_discovery, discover, load_config, simulated
 
 
 def test_discover_pairs_devices_on_the_same_hub(tmp_path):
@@ -72,3 +72,23 @@ def test_model_names_and_keys():
     assert get_model("iphone-air").name == "iPhone Air"
     assert find_model("iPhone 13") is None  # no USB-C port
     assert find_model("Galaxy S24") is None
+
+
+def test_serve_pointer_default(tmp_path):
+    """serve --pointer: the mode of a phone not calibrated yet; a saved choice or a calibration wins."""
+    from ihc.cli import default_pointer_mode
+
+    reg = simulated(3, simulate_timing=False, calibrated=False)
+    calibrated = simulated(1, simulate_timing=False)
+    try:
+        fresh, chosen, untouched = reg.devices()
+        chosen.calibration_path = tmp_path / "chosen.json"
+        chosen.set_pointer_mode("relative")  # e.g. picked in the console, kept in its file
+        for dev in (fresh, chosen, calibrated.devices()[0]):
+            default_pointer_mode(dev, "absolute")
+        default_pointer_mode(untouched, None)
+        modes = [d.status()["pointer"]["mode"] for d in (fresh, chosen, untouched, calibrated.devices()[0])]
+        assert modes == ["absolute", "relative", "relative", "relative"]
+    finally:
+        reg.close()
+        calibrated.close()

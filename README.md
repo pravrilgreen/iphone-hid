@@ -107,6 +107,11 @@ missed from one whose report is merely late.
 
 Redo it only if the phone's Tracking Speed setting changes.
 
+**Without Safari.** When `ihc-hidtest --gadget abstest` puts the pointer in the four corners, the phone
+follows the absolute pointer: pick **Absolute** under Pointer in the console (or start the server with
+`--pointer absolute`, or `IHC_POINTER=absolute` in `/etc/default/ihc`). Taps land at once, with the
+whole report range spread over the whole screen, and no calibration page is needed.
+
 ## No lost commands
 
 ![Every report is confirmed once the iPhone has taken it; a report not taken is reported at once, state reports are resent, movement is redone from a corner](docs/images/diagram-reliability.png)

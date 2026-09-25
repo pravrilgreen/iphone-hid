@@ -1071,6 +1071,16 @@ def test_calibration_page_and_events(farm):
     assert got == {"type": "click", "x": 5, "y": 6, "button": 0, "pid": "a1b2", "seq": 3, "t": 12.5, "ua": "S" * 512}
 
 
+def test_pointer_mode(farm):
+    reg, c = farm
+    r = c.post("/api/devices/sim-01/pointer", json={"mode": "absolute"})
+    assert r.status_code == 200 and r.json()["mode"] == "absolute"
+    assert c.get("/api/devices/sim-01").json()["pointer"]["mode"] == "absolute"
+    assert c.post("/api/devices/sim-01/pointer", json={"mode": "diagonal"}).status_code == 422
+    assert c.post("/api/devices/nope/pointer", json={"mode": "relative"}).status_code == 404
+    assert c.post("/api/devices/sim-01/pointer", json={"mode": "relative"}).json()["mode"] == "relative"
+
+
 def test_calibration_key(farm):
     """The phone's page cannot carry the API token: its events need the page's key instead."""
     reg, c = farm

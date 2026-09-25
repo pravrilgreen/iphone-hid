@@ -40,6 +40,10 @@
 interface, no report ID, 0..32767, pointer interface last. Test it first (B4). Do not add a digitizer
 collection to any production descriptor.
 
+**Field result (2026-09-25):** on this project's box, an iPhone 15 follows the absolute pointer of the
+default gadget profile `RA` (relative mouse, then absolute pointer, as separate interfaces): `abstest`
+reaches the corners. The iOS version was not recorded.
+
 ---
 
 ## 1. Absolute mouse over USB: field evidence

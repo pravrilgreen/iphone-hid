@@ -148,6 +148,29 @@ def test_calibration_through_the_simulated_safari():
         reg.close()
 
 
+def test_absolute_pointer_without_calibration(tmp_path):
+    """A phone seen to follow absolute reports (abstest) is driven in absolute mode straight away:
+    the whole report range over the whole screen, kept in the calibration file."""
+    reg = simulated(1, simulate_timing=False, calibrated=False, absolute=True)
+    try:
+        dev, rig = rig_of(reg)
+        dev.calibration_path = tmp_path / "cal.json"
+        assert dev.set_pointer_mode("absolute") == {"mode": "absolute"}
+        assert not dev.pointer.cal.calibrated and dev.status()["pointer"]["mode"] == "absolute"
+        assert '"mode": "absolute"' in dev.calibration_path.read_text()
+        open_targets(rig)
+        for index in (0, 12, 26):
+            dev.tap(*rig.phone.target_center_norm(index))
+            tap = rig.phone.tap_log[-1]
+            assert tap["hit"] and tap["target"] == index, tap
+        with pytest.raises(ValueError):
+            dev.set_pointer_mode("diagonal")
+        dev.set_pointer_mode("relative")
+        assert dev.status()["pointer"]["mode"] == "relative"
+    finally:
+        reg.close()
+
+
 def test_failed_actions_leave_nothing_held(farm):
     from ihc.hid.base import HidStatusError
     from ihc.hid import protocol as p

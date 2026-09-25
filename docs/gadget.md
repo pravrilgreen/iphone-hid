@@ -111,6 +111,10 @@ python3 tools/hidtest.py --gadget "info; abstest"
 centre, then asks what you saw. Set up the iPhone first as in [iphone-setup.md](iphone-setup.md)
 (AssistiveTouch on).
 
+If the pointer reached the corners, drive it in absolute mode: pick **Absolute** under Pointer in
+the console, or put `IHC_POINTER=absolute` in `/etc/default/ihc` and restart the service. Clicks on
+the live view then land where you click, with no calibration.
+
 **Video**, with the hub's HDMI in the board's HDMI IN and the iPhone unlocked:
 
 ```

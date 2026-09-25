@@ -129,6 +129,13 @@ def test_actions(hosts, farm):
     assert d.release_all() == {"released": True}
 
 
+def test_pointer_mode(farm):
+    d = farm.device("sim-02")
+    assert d.set_pointer_mode("absolute")["mode"] == "absolute"
+    assert d.calibration()["mode"] == "absolute"
+    assert d.set_pointer_mode("relative")["mode"] == "relative"
+
+
 def test_errors(hosts, farm):
     a, _ = hosts
     d = farm.device("sim-02")

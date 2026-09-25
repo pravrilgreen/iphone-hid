@@ -10,7 +10,8 @@ User=ihc
 Group=ihc
 SupplementaryGroups=dialout video input
 Environment=IHC_STATE_DIR=/var/lib/ihc
-# optional settings, e.g. IHC_PHONE_ID=iphone15-a01 to name this box's phone (default: iphone-<board serial>)
+# optional settings, e.g. IHC_PHONE_ID=iphone15-a01 to name this box's phone (default: iphone-<board serial>),
+# IHC_POINTER=absolute for a phone that follows the absolute pointer (ihc-hidtest abstest)
 EnvironmentFile=-/etc/default/ihc
 StateDirectory=ihc
 LogsDirectory=ihc

@@ -238,6 +238,11 @@ class RemoteDevice:
         return self._host.post(self._path("/calibrate"), body, timeout=timeout,
                                idempotency_key=idempotency_key).get("result")
 
+    def set_pointer_mode(self, mode: str) -> dict:
+        """"absolute" or "relative", without a calibration: absolute for a phone seen to follow
+        absolute reports (the whole report range over the whole screen). Returns calibration()."""
+        return self._host.post(self._path("/pointer"), {"mode": mode})
+
     def calibration(self) -> dict:
         """Current calibration summary (method, measured_at, validation error, pointer mode) and
         `page_url`: the calibration page with its current key, to open it by hand."""

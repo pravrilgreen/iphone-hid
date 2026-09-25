@@ -293,6 +293,7 @@ const view = {
       (age !== null ? ` · frame age ${Math.round(age + this.decodeMs)} ms` : "") +
       (s.passthrough ? " · passthrough" : "") + (s.error ? ` · ${s.error}` : "");
     const mode = p.mode || "relative";
+    for (const b of document.querySelectorAll("#ptr-seg button")) b.classList.toggle("on", b.dataset.ptr === mode);
     if (mode !== this.pointerMode) { this.pointerMode = mode; this.render(); }
   },
 
@@ -628,6 +629,17 @@ function wire() {
       if (view.id === id) view.showCalLink();  // each link works for one calibration
     }
   };
+  for (const b of document.querySelectorAll("#ptr-seg button")) {
+    b.onclick = async () => {
+      const id = view.id, out = $("ptr-status");
+      out.textContent = "";
+      try {
+        await api("POST", `/api/devices/${encodeURIComponent(id)}/pointer`, { mode: b.dataset.ptr });
+      } catch (e) {
+        out.textContent = "failed: " + e.message;
+      }
+    };
+  }
   $("cal-start").onclick = () => calibrate(true);
   $("cal-open").onclick = () => calibrate(false);
 }

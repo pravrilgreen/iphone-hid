@@ -58,6 +58,7 @@ main { height: calc(100% - 48px); }
 .seg button:first-child { border-radius: 6px 0 0 6px; }
 .seg button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
 .seg button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.panel .seg { margin-left: 0; }
 .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 12px 0; }
 .screen { position: relative; background: #000; border-radius: 18px; overflow: hidden; outline: none;
           box-shadow: 0 0 0 6px #1b1f26, 0 0 0 7px var(--border); touch-action: none; user-select: none; }

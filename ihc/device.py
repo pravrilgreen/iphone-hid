@@ -399,6 +399,21 @@ class IPhoneDevice:
 
         return self._run("calibrate", do)
 
+    def set_pointer_mode(self, mode: str) -> dict:
+        """Drive the pointer in `mode` without a calibration: "absolute" (each move is one report
+        placing the pointer; the whole 0..32767 range spans the whole screen until a calibration
+        measures the map) for a phone seen to follow absolute reports (`ihc-hidtest abstest`), or
+        "relative". Kept in the calibration file; a calibration picks the mode by itself."""
+        if mode not in ("absolute", "relative"):
+            raise ValueError(f"pointer mode must be absolute or relative, not {mode!r}")
+        with self._action:
+            self.pointer.cal = replace(self.pointer.cal, mode=mode)
+            self.pointer.position = None  # a relative move anchors first; an absolute one needs none
+            if self.calibration_path:
+                self.pointer.cal.save(self.calibration_path)
+        self._log("pointer_mode", device=self.id, mode=mode)
+        return {"mode": mode}
+
     # -- live remote control ---------------------------------------------------------------------
 
     def live_mouse(self, dx: int, dy: int, buttons: int, wheel: int = 0) -> None:

@@ -58,6 +58,18 @@
         <button type="submit">Send keys</button>
       </form>
 
+      <h3>Pointer</h3>
+      <div class="row">
+        <span class="seg" id="ptr-seg">
+          <button data-ptr="absolute">Absolute</button>
+          <button data-ptr="relative">Relative</button>
+        </span>
+        <span class="small" id="ptr-status"></span>
+      </div>
+      <p class="muted small">Absolute: each move is one report straight to the spot, for an iPhone that follows the
+        absolute pointer (it does if <span class="mono">ihc-hidtest abstest</span> reaches the corners). Relative:
+        the pointer is steered there step by step; calibrate it for accuracy.</p>
+
       <h3>Pointer calibration</h3>
       <p class="muted small">The iPhone must be on the same network as this host: Safari opens the calibration
         page through Spotlight, then the pointer is measured for about a minute. Do not touch the phone meanwhile.</p>

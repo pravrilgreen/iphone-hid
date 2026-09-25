@@ -175,6 +175,14 @@ class CalibrateOptions(BaseModel):
 CALIBRATE_OPTIONS = {f.alias or name for name, f in CalibrateOptions.model_fields.items()}
 
 
+class PointerMode(Body):
+    """How the pointer is driven until (or instead of) a calibration."""
+
+    mode: Literal["absolute", "relative"] = Field(..., description="absolute: one report places the pointer (the "
+                                                                  "whole 0..32767 range over the whole screen); "
+                                                                  "relative: planned runs of relative reports")
+
+
 class Calibrate(Body):
     """Calibrate the pointer with the Safari calibration page."""
 

@@ -110,13 +110,21 @@ iPhone 15 ─ dây USB-C liền của hub ─ HUB ─ cổng USB-A của hub ─
 **Xem trực tiếp và điều khiển trên trình duyệt:**
 
 ```bash
-~/ihc/bin/ihc serve --auto --token test
+~/ihc/bin/ihc serve --auto --token test --pointer absolute
 ```
 
 Mở `http://<địa chỉ IP của Pi>:8000` (trên máy cùng mạng, hoặc trình duyệt ngay trên Pi: `http://localhost:8000`),
-nhập token `test`. Phải thấy màn hình iPhone chạy trực tiếp; bấm vào hình là tap lên iPhone. Tap còn lệch là bình
-thường: hiệu chỉnh là bài thử sau. Trước khi chạy, tắt `ihc-hidtest` và `ihc-capture-check` nếu còn đang chạy, để
-chỉ một chương trình điều khiển iPhone. `Ctrl+C` để dừng.
+nhập token `test`, rồi chọn iPhone. Phải thấy màn hình iPhone chạy trực tiếp. Trước khi chạy, tắt `ihc-hidtest` và
+`ihc-capture-check` nếu còn đang chạy, để chỉ một chương trình điều khiển iPhone. `Ctrl+C` để dừng.
+
+`--pointer absolute` dành cho iPhone đã qua bài `abstest` (con trỏ tới đúng 4 góc): mỗi cú bấm là một lệnh đặt con
+trỏ thẳng vào chỗ đó, không cần hiệu chỉnh. Đổi lại được bất cứ lúc nào ở mục **Pointer** (Absolute / Relative) bên
+phải; lựa chọn được lưu lại. Hai cách điều khiển, chọn ở thanh trên cùng:
+
+- **Precise tap:** bấm = tap, kéo = vuốt, giữ quá 0,6 giây = nhấn giữ, lăn chuột = cuộn, chuột phải = Home, chuột
+  giữa = App Switcher.
+- **Live control:** bấm vào hình một lần để "cầm" iPhone: con trỏ trên iPhone chạy theo chuột, bàn phím gõ thẳng
+  vào iPhone. `Esc` hoặc bấm ra ngoài hình để thả.
 
 ### Nếu hình không được
 

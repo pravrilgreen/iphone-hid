@@ -702,6 +702,17 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
 
         return _ok(await farm.run(request, device, "calibrate", job))
 
+    @app.post("/api/devices/{device_id}/pointer", tags=["calibration"], summary="Choose the pointer mode",
+              response_model=models.CalibrationSummary, responses=models.ERRORS)
+    async def pointer_mode(request: Request, body: actions.PointerMode, device_id: str = DeviceId):
+        """Drive the pointer in `mode` without a calibration. "absolute" suits a phone seen to follow absolute
+        reports (`ihc-hidtest abstest` puts the pointer in the corners): every move is one report, the whole
+        0..32767 range over the whole screen until a calibration measures the map. "relative": planned runs of
+        relative reports. Kept in the device's calibration file; a calibration picks the mode by itself."""
+        device = farm.device(device_id)
+        await farm.run(request, device, "pointer_mode", device.set_pointer_mode, body.mode)
+        return await calibration(request, device_id)
+
     def calibration_key(device_id: str = DeviceId,
                         k: str = Query("", max_length=100, description="The page's calibration key (from its URL)")):
         """The device, once the calibration page's key is checked (before the body is)."""

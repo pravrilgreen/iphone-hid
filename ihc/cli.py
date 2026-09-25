@@ -66,6 +66,14 @@ def lan_ip() -> str:
         s.close()
 
 
+def default_pointer_mode(device, mode: str | None) -> None:
+    """--pointer: the mode of a phone that has no calibration file yet (a calibration, or a choice
+    made in the console, is kept in that file and wins)."""
+    path = getattr(device, "calibration_path", None)
+    if mode and not device.pointer.cal.calibrated and not (path and path.exists()):
+        device.set_pointer_mode(mode)
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     import uvicorn
 
@@ -85,12 +93,20 @@ def cmd_serve(args: argparse.Namespace) -> int:
         registry = simulated(args.sim, model=args.model, calibrated=not args.uncalibrated, log=log,
                              absolute=args.sim_absolute)
     public_url = (args.public_url or f"http://{lan_ip()}:{args.port}").rstrip("/")
+    for device in registry.devices():
+        default_pointer_mode(device, args.pointer)
+
+    def on_added(device) -> None:
+        default_pointer_mode(device, args.pointer)
+        if not args.no_monitor:
+            device.start_monitor()
+
     announcement = None
     try:
         if not args.no_monitor:
             registry.start_monitors()
         if hasattr(registry, "start_rescan"):  # zero-config: pick up rigs plugged in later
-            registry.start_rescan(on_added=None if args.no_monitor else lambda d: d.start_monitor())
+            registry.start_rescan(on_added=on_added)
         app = create_app(registry, public_url=public_url, log=log, token=token, allowed_hosts=args.allowed_host or (),
                          allow_origins=args.allow_origin or ())
         ids = ", ".join(d.id for d in registry.devices()) or "none yet"
@@ -203,6 +219,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--sim-absolute", action="store_true", help="simulated phones follow absolute pointer reports")
     s.add_argument("--state-dir", metavar="PATH", default=None,
                    help="with --auto: where calibration files live (default $IHC_STATE_DIR or ~/.local/share/ihc)")
+    s.add_argument("--pointer", choices=["absolute", "relative"], default=os.environ.get("IHC_POINTER") or None,
+                   help="pointer mode of a phone not calibrated yet (default $IHC_POINTER, else relative): absolute "
+                        "for a phone that follows absolute reports (ihc-hidtest abstest puts the pointer in the "
+                        "corners); the console can switch it too")
     s.add_argument("--host", default="0.0.0.0")
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--public-url", help="URL phones use to reach this server (default http://<LAN IP>:<port>)")
