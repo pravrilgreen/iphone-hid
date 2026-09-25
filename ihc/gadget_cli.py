@@ -5,7 +5,8 @@
     ihc gadget status               # is a USB device controller there, did the phone enumerate?
     sudo ihc gadget down
 
-Then check it with the same commands as a CH9329: `python3 tools/hidtest.py --gadget`.
+Then check it with the same commands as a CH9329: `ihc-hidtest --gadget "info; move 100 0"`
+(from a source checkout: `python3 tools/hidtest.py --gadget ...`).
 
 Needs a USB port that can act as a device (on the Orange Pi 5 Plus: the Type-C port next to the
 USB 3 ports, not the power port). Cable it to a USB-A port of the phone's hub with a USB-A to
@@ -117,7 +118,7 @@ def run(args: argparse.Namespace) -> int:
     print(f"gadget {args.name!r} ({args.profile}) bound to {udc}")
     _print_status(g.gadget_status(args.name, args.configfs))
     print("next: plug the USB-C port into a USB-A port of the phone's hub, unlock the phone, then "
-          "`python3 tools/hidtest.py --gadget`")
+          "`ihc-hidtest --gadget \"info; move 100 0; click\"` (from a checkout: python3 tools/hidtest.py --gadget ...)")
     return 0
 
 

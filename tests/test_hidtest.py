@@ -85,3 +85,36 @@ def test_caps_lock_round_trip(capsys):
     assert run(["--fake", "--no-log", "capscheck n=2 wait=0.05"]) == 0
     out = capsys.readouterr().out
     assert "capscheck: 2/2 round trips" in out
+
+
+def test_gadget_flag_does_not_swallow_the_commands(monkeypatch, capsys):
+    """`hidtest --gadget "info; move 10 0"` runs the commands on the gadget named ihc."""
+    tool = hidtest
+
+    opened = []
+
+    class Stub:
+        port, baud, wait_ack, stats, async_errors = "gadget:ihc", 0, True, {}, []
+
+        def __init__(self, name, **kw):
+            opened.append(name)
+
+        def info(self):
+            return {"version": "Linux USB gadget on udc0", "version_raw": 0, "usb_connected": True, "usb_status": 1,
+                    "usb_state": "configured", "num_lock": False, "caps_lock": False, "scroll_lock": False,
+                    "gadget": {"functions": ["keyboard", "mouse"]}}
+
+        def mouse_rel(self, *a):
+            opened.append(("rel", a))
+
+        def release_all(self):
+            pass
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(tool, "GadgetBackend", Stub)
+    monkeypatch.setattr(tool, "gadget_status", lambda name: {})
+    assert tool.main(["--gadget", "--no-log", "info; move 10 0"]) == 0
+    assert opened[0] == "ihc" and ("rel", (10, 0, 0, 0)) in opened
+    assert "USB connected" in capsys.readouterr().out

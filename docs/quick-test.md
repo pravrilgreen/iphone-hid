@@ -54,7 +54,7 @@ Dừng ở bước hỏng và gửi lại nguyên văn kết quả của bước
 |---|---|---|
 | 1 | không in gì | image khoá cổng Type-C ở vai host |
 | 2 | báo "already used by the gadget ..." | image đang chạy gadget riêng (thường là ADB) chiếm cổng; `ihc gadget status` cho biết tên |
-| 3 | đứng ở `not attached` | sai dây (phải là USB-A sang C, có truyền dữ liệu) hoặc sai cổng Type-C |
+| 3 | đứng ở `not attached` | nối ngược chiều (dây liền của hub phải cắm vào iPhone), dây không có dữ liệu, hoặc sai cổng Type-C. Gửi kết quả của `lsusb`, `cat /sys/class/typec/port*/data_role /sys/class/usb_role/*/role` và `sudo dmesg \| tail -40` (chạy ngay sau khi cắm dây) |
 | 4 | báo `NOT connected` | iPhone đang khoá, hoặc chưa bấm Allow |
 | 4 | báo connected nhưng con trỏ không nhúc nhích | gửi nguyên văn output |
 

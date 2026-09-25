@@ -23,7 +23,10 @@ command -v xz >/dev/null 2>&1 || { echo "xz is needed to unpack: sudo apt instal
 
 payload() {
     line="$(awk '/^__IHC_PAYLOAD_BELOW__$/ { print NR + 1; exit }' "$0")"
-    tail -n "+$line" "$0" | xz -dc | tar -x -C "$1"
+    # a board without network time may run behind the build date: that is harmless, do not warn about it
+    quiet=""
+    tar --version 2>/dev/null | grep -q GNU && quiet="--warning=no-timestamp"
+    tail -n "+$line" "$0" | xz -dc | tar -x $quiet -C "$1"
 }
 
 if [ "${1:-}" = "--extract" ]; then

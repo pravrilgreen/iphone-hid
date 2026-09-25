@@ -685,8 +685,9 @@ def main(argv: list[str] | None = None, *, ask=input) -> int:
     src = ap.add_mutually_exclusive_group()
     src.add_argument("--port", help="serial port, e.g. /dev/serial/by-id/... (default: the only USB serial port)")
     src.add_argument("--fake", action="store_true", help="talk to a simulated chip instead of hardware")
-    src.add_argument("--gadget", nargs="?", const="ihc", metavar="NAME",
-                     help="this board is the keyboard and mouse (Linux USB gadget set up by tools/gadget.py)")
+    src.add_argument("--gadget", action="store_true",
+                     help="this board is the keyboard and mouse (the Linux USB gadget of `ihc gadget up`)")
+    ap.add_argument("--gadget-name", default="ihc", metavar="NAME", help="with --gadget: configfs gadget name (default ihc)")
     ap.add_argument("--baud", type=int, default=9600, help="default 9600 (factory setting)")
     ap.add_argument("--addr", type=_int, default=0, help="chip address, default 0")
     ap.add_argument("--timeout", type=float, default=p.REPLY_TIMEOUT_S, help="reply timeout in seconds")
@@ -707,12 +708,12 @@ def main(argv: list[str] | None = None, *, ask=input) -> int:
         port_info = {"fake": True}
     elif args.gadget:
         try:
-            hid = GadgetBackend(args.gadget, timeout=args.timeout, wait_ack=not args.no_ack, trace=log)
+            hid = GadgetBackend(args.gadget_name, timeout=args.timeout, wait_ack=not args.no_ack, trace=log)
         except HidError as e:
             log("error", kind=type(e).__name__, error=str(e))
             print(f"error: {e}", file=sys.stderr)
             return 2
-        port_info = {"gadget": gadget_status(args.gadget)}
+        port_info = {"gadget": gadget_status(args.gadget_name)}
     else:
         port = args.port or _auto_port()
         try:
