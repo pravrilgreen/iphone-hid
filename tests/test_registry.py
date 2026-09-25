@@ -68,6 +68,7 @@ def test_model_names_and_keys():
     from ihc.models import find_model, get_model
 
     assert find_model("iPhone 15").key == "iphone-15"
-    assert find_model("iphone se (3rd generation)").key == "iphone-se-3"
-    assert get_model("iphone-13").name == "iPhone 13"
+    assert find_model("iphone  16 PRO max").key == "iphone-16-pro-max"
+    assert get_model("iphone-air").name == "iPhone Air"
+    assert find_model("iPhone 13") is None  # no USB-C port
     assert find_model("Galaxy S24") is None

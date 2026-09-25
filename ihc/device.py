@@ -26,11 +26,11 @@ from .hid import protocol as p
 from .hid.base import HidError, HidPortError
 from .hid.ch9329 import CH9329Backend
 from .input.keyboard import Keyboard
-from .input.pointer import PointerCalibration, PointerError, PointerModel, pace_interval
+from .input.pointer import PointerCalibration, PointerError, PointerModel
 from .video.frame import Frame, FrameSource, encode_jpeg
 from .video.geometry import ScreenRect, fit_screen_rect
 
-STATES = ("ready", "busy", "hid_disconnected", "hid_offline", "no_signal", "needs_calibration")
+STATES = ("ready", "busy", "hid_disconnected", "hid_offline", "no_signal")
 MAX_FRAME_AGE_S = 2.0  # a capture that delivered nothing newer is frozen or unplugged
 
 
@@ -72,7 +72,7 @@ class IPhoneDevice:
         self._log = log or (lambda event, **fields: None)
         self._action = threading.RLock()
         self._busy_with: str | None = None
-        self._health = {"hid": None, "usb_connected": None, "signal": None, "error": None, "recalibrate": None}
+        self._health = {"hid": None, "usb_connected": None, "signal": None, "error": None}
         self._monitor: threading.Thread | None = None
         self._stop = threading.Event()
         self.counters = {"actions": 0, "errors": 0, "taps": 0, "live_reports": 0}
@@ -89,8 +89,7 @@ class IPhoneDevice:
         """Refresh health: chip reachable and its USB side enumerated, video frames fresh and not
         black. The chip is asked only when no action runs (its previous answer is kept otherwise);
         the video is checked without holding up actions."""
-        h = {"hid": self._health["hid"], "usb_connected": self._health["usb_connected"], "signal": None, "error": None,
-             "recalibrate": self._health.get("recalibrate")}
+        h = {"hid": self._health["hid"], "usb_connected": self._health["usb_connected"], "signal": None, "error": None}
         if self._action.acquire(blocking=False):
             try:
                 h["hid"] = h["usb_connected"] = None
@@ -98,8 +97,6 @@ class IPhoneDevice:
                     info = self.hid.info()
                     h["usb_connected"] = info["usb_connected"]
                     h["hid"] = True
-                    h["recalibrate"] = self._link_changed(info)
-                    h["error"] = h["recalibrate"]
                     # The phone just started taking input (monitor start, reconnect, reopened port,
                     # unlock): whatever state it kept from before may include a held key or button.
                     if info["usb_connected"] and self._health["usb_connected"] is not True:
@@ -139,8 +136,6 @@ class IPhoneDevice:
             return "hid_disconnected"  # phone locked, accessory prompt, cable
         if h["signal"] is False:
             return "no_signal"
-        if h.get("recalibrate"):
-            return "needs_calibration"  # taps would land off: the link's timing changed
         return "ready"
 
     def status(self) -> dict:
@@ -182,35 +177,6 @@ class IPhoneDevice:
         self._monitor = threading.Thread(target=run, name=f"monitor-{self.id}", daemon=True)
         self._monitor.start()
 
-    def _link_period(self) -> float | None:
-        """The bridge's report period (s) to pace runs by; None for a CH9329. A Bluetooth bridge
-        without a link cannot be calibrated: the pace would be chosen blind."""
-        try:
-            info = self.hid.info()
-        except HidError as e:
-            raise PointerError(f"cannot calibrate: the HID device does not answer ({e})") from e
-        bridge = info.get("bridge")
-        if not bridge:
-            return None
-        period = bridge.get("report_period_ms")
-        if period is None and bridge.get("output") == "ble":
-            raise PointerError("cannot calibrate: the bridge has no Bluetooth link to the phone (no link period)")
-        return period / 1000 if period else None
-
-    def _link_changed(self, info: dict) -> str | None:
-        """Relative-mode distances were measured at a pace matched to the link's report period
-        (ESP32 bridge); once the pace is no longer a multiple of a renegotiated period they no longer
-        hold, and the device is not ready until it is calibrated again."""
-        period = info.get("bridge", {}).get("report_period_ms")
-        measured = self.pointer.cal.extra.get("report_period_ms")
-        if self.pointer.cal.mode != "relative" or not period or not measured:
-            return None
-        slots = self.pointer.cal.interval * 1000 / period
-        if abs(slots - round(slots)) > 0.02:
-            return (f"link report period changed from {measured} ms to {period} ms since calibration: the pace "
-                    f"({self.pointer.cal.interval * 1000:g} ms) is no longer a multiple of it; recalibrate")
-        return None
-
     def _try_reopen(self) -> None:
         if self._reopen_hid is None:
             return
@@ -224,7 +190,6 @@ class IPhoneDevice:
             pass
         self.hid = self.pointer.hid = self.keyboard.hid = new
         self.pointer.position = None
-        self.pointer.onchip_runs = None  # ask the new device
         self._log("hid_reopened", device=self.id, port=new.port)
 
     def close(self) -> None:
@@ -420,18 +385,13 @@ class IPhoneDevice:
             self.clicks = ClickCollector()  # under the action lock: one calibration at a time
             if page_url:
                 self.open_url(page_url)
-            period = self._link_period()
             old = self.pointer.cal
-            quarter = getattr(self.hid, "bridge_feature", lambda name: False)("rel_run_quarter_ms")
-            self.pointer.cal = replace(old, interval=pace_interval(period, PointerCalibration.interval,
-                                                                   whole_ms=not quarter))
+            self.pointer.cal = replace(old, interval=PointerCalibration.interval)  # measure at the default pace
             try:
                 cal = calibrate(self.pointer, self.clicks, log=self._log, fresh_page=bool(page_url), **options)
             except BaseException:
                 self.pointer.cal = old  # untouched, pace included
                 raise
-            if period:
-                cal.extra["report_period_ms"] = round(period * 1000, 3)
             if self.calibration_path:
                 cal.save(self.calibration_path)
             return {"calibration": {"method": cal.method, "reset_reports": cal.reset_reports,

@@ -475,15 +475,6 @@ class GadgetBackend:
         report = bytes([buttons & 0x07, *ax.to_bytes(2, "little"), *ay.to_bytes(2, "little"), _i8(wheel)])
         self._send("absolute", report, p.Cmd.SEND_MS_ABS_DATA)
 
-    def supports_rel_run(self) -> bool:
-        return False  # runs are timed by the host (the report is sent at once, the phone polls every 1 ms)
-
-    def bridge_feature(self, name: str) -> bool:
-        return False
-
-    def report_period(self) -> float | None:
-        return None
-
     def release_all(self, attempts: int = 3, retry_wait: float = 0.03) -> None:
         """Release every key, media/power key and relative mouse button (absolute buttons: see
         PointerModel.release_all). Every release is tried; the first failure is raised after."""

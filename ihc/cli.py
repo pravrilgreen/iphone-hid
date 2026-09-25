@@ -83,7 +83,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
         registry = auto(log=log, state_dir=args.state_dir)
     else:
         registry = simulated(args.sim, model=args.model, calibrated=not args.uncalibrated, log=log,
-                             absolute=args.sim_absolute, bridge=args.sim_bridge)
+                             absolute=args.sim_absolute)
     public_url = (args.public_url or f"http://{lan_ip()}:{args.port}").rstrip("/")
     announcement = None
     try:
@@ -201,7 +201,6 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--model", default="iphone-15", help="simulated model (default iphone-15)")
     s.add_argument("--uncalibrated", action="store_true", help="simulated phones start uncalibrated")
     s.add_argument("--sim-absolute", action="store_true", help="simulated phones follow absolute pointer reports")
-    s.add_argument("--sim-bridge", action="store_true", help="simulate the ESP32 bridge instead of a CH9329")
     s.add_argument("--state-dir", metavar="PATH", default=None,
                    help="with --auto: where calibration files live (default $IHC_STATE_DIR or ~/.local/share/ihc)")
     s.add_argument("--host", default="0.0.0.0")

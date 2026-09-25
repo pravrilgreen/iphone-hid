@@ -21,9 +21,8 @@ not, since it may have been applied: the whole move is redone from a fresh ancho
 button report fails, every button is released (on both pointer reports) before the next anchor,
 since anchoring with a button still held would drag.
 
-Pacing: with a CH9329 the host times every report on one schedule per run and checks afterwards
-that none strayed from its slot (`timing_tolerance`); a stray one makes the move be redone. The ESP32 bridge times runs itself
-(vendor command SEND_MS_REL_RUN), so host and USB-serial jitter do not reach the phone at all.
+Pacing: the host times every report on one schedule per run and checks afterwards that none strayed
+from its slot (`timing_tolerance`); a stray one makes the move be redone.
 """
 
 from __future__ import annotations
@@ -89,24 +88,6 @@ class DirectionModel:
         best = min(pl[0] for pl in plans)
         pick = min((pl for pl in plans if pl[0] <= best + slack), key=lambda pl: (pl[1], pl[0]))
         return pick[2], pick[3], pick[4]
-
-
-def pace_interval(report_period: float | None, base: float = 0.02, whole_ms: bool = False) -> float:
-    """The run pace to use over a link that delivers reports every `report_period` seconds: the
-    smallest multiple of it that is at least `base`. Every report of a run then reaches the phone
-    at the same phase of the link's schedule, so the spacing iOS sees is uniform (at 20 ms over a
-    15 ms Bluetooth link, it would alternate 15 and 30 ms and distances would stop repeating).
-    `whole_ms`: the pace must also be a whole number of ms (bridge firmware without 0.25 ms runs),
-    e.g. 45 ms rather than 22.5 ms on an 11.25 ms link."""
-    if not report_period or report_period <= 0:
-        return base
-    k = math.ceil(base / report_period - 1e-9)
-    if whole_ms:
-        for m in range(k, k + 64):
-            ms = m * report_period * 1000
-            if abs(ms - round(ms)) < 1e-6:
-                return round(ms) / 1000
-    return round(k * report_period, 6)
 
 
 def _guess_direction() -> DirectionModel:
@@ -200,7 +181,6 @@ class PointerModel:
         pipeline: bool = True,
         timing_tolerance: float = 0.0015,
         anchor_interval: float = 0.016,
-        onchip_runs: bool | None = None,
         attempts: int = 5,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
@@ -215,7 +195,6 @@ class PointerModel:
         # Corner slams need no exact pace, but frames sent back to back could be merged by a chip
         # that splits packets on line gaps (CH9329: 3 ms): 16 ms leaves >= 4 ms at 9600 baud.
         self.anchor_interval = anchor_interval
-        self.onchip_runs = onchip_runs  # None: ask the device (ESP32 bridge) on first use
         self.abs_release_repeats = 3
         self.attempts = attempts
         self.timing_retries = 0
@@ -252,8 +231,8 @@ class PointerModel:
                 self.hid.mouse_rel(dx, dy, self.buttons, wheel)
                 break
             except HidStatusError as e:
-                # a release that could not be delivered (E6, e.g. full Bluetooth buffers) is retried
-                # too: a button left down keeps dragging
+                # a release the device could not deliver (E6) is retried too: a button left down
+                # keeps dragging
                 release = idempotent and not self.buttons and e.status == p.Status.EXEC_ERROR
                 if (e.status in NOT_EXECUTED or release) and attempt < self.retries:
                     self.resends += 1
@@ -286,37 +265,6 @@ class PointerModel:
         now = self._clock()
         if now < t:
             self._sleep(t - now)
-
-    def _onchip(self) -> bool:
-        if self.onchip_runs is None:
-            probe = getattr(self.hid, "supports_rel_run", None)
-            answer = probe() if probe else False
-            if answer is None:  # the device could not be asked now: host timing this time, ask again later
-                return False
-            self.onchip_runs = bool(answer)
-        return self.onchip_runs
-
-    def _chip_run(self, dx: int, dy: int, count: int, interval: float) -> None:
-        """`count` reports of (dx, dy) timed by the bridge, `interval` apart; returns after the last
-        one's slot (the bridge replies then)."""
-        try:
-            self.hid.mouse_rel_runs([(dx, dy, count)], round(interval * 4000) / 4, self.buttons)
-        except HidTimeout as e:
-            self.position = None
-            raise PointerDesync(f"a run timed by the bridge was not acknowledged: {e}") from e
-        except HidStatusError as e:
-            self.position = None
-            if e.status in NOT_EXECUTED:  # damaged on the line; part of a split run may have played
-                raise PointerDesync(f"a run frame was damaged on the line: {e}") from e
-            if e.status == p.Status.RUN_LATE:  # it played, off schedule: the distance is not the planned one
-                self.timing_retries += 1
-                raise PointerDesync(f"the bridge played a run off schedule: {e}") from e
-            raise
-        now = self._clock()
-        self.reports += count
-        self.last_sent = self.last_motion = now
-        self._next_at = now
-        self._abs = None
 
     # -- absolute reports -----------------------------------------------------------------------
 
@@ -396,15 +344,11 @@ class PointerModel:
             self.release_all()
         # No exact pace needed (they only have to reach the corner), and every ack is checked at
         # the end of the burst.
-        if self._onchip():
-            self._wait_until(self._next_at)
-            self._chip_run(127 * sx, 127 * sy, self.cal.reset_reports, self.anchor_interval)
-        else:
-            with self._pipelined():
-                for _ in range(self.cal.reset_reports):
-                    self._wait_until(self._next_at)
-                    self.send(127 * sx, 127 * sy, paced=False)
-                    self._next_at = self.last_sent + self.anchor_interval
+        with self._pipelined():
+            for _ in range(self.cal.reset_reports):
+                self._wait_until(self._next_at)
+                self.send(127 * sx, 127 * sy, paced=False)
+                self._next_at = self.last_sent + self.anchor_interval
         self.rest()
         self.position = self.anchored_at(sx, sy)
 
@@ -416,33 +360,29 @@ class PointerModel:
     def run(self, axis: int, coarse: int, fine: int, *, strict: bool = True) -> None:
         """A coarse run then a fine run along one axis (signed report counts), each from rest.
 
-        The distance a run covers depends on its pace (iOS acceleration is speed-based). The bridge
-        times runs itself; otherwise the send times are checked (when each report started, and
-        when it had left): a report off its slot (host stalled) makes the position unknown, and the
-        caller redoes the move. With `strict` off (a drag, which cannot be redone while the button
-        is down) an off-slot report only makes the position unknown."""
+        The distance a run covers depends on its pace (iOS acceleration is speed-based), so the send
+        times are checked (when each report started, and when it had left): a report off its slot
+        (host stalled) makes the position unknown, and the caller redoes the move. With `strict` off
+        (a drag, which cannot be redone while the button is down) an off-slot report only makes the
+        position unknown."""
         for n, units in ((coarse, self.cal.step), (fine, self.cal.fine_step)):
             if not n:
                 continue
             u = units if n > 0 else -units
             dx, dy = (u, 0) if axis == 0 else (0, u)
-            if self._onchip():
-                self._wait_until(max(self._next_at, self._rest_until))
-                self._chip_run(dx, dy, abs(n), self.cal.interval)
-            else:
-                starts, ends = [self.last_motion], []
-                with self._pipelined() as verified:
-                    for k in range(abs(n)):
-                        if k:  # one schedule per run: a late report does not push the later ones back
-                            self._next_at = starts[1] + k * self.cal.interval
-                        self.send(dx, dy)
-                        starts.append(self.last_sent)
-                        ends.append(self._clock())
-                try:
-                    self._check_pace(starts, ends if verified else [])
-                except PointerDesync:
-                    if strict:
-                        raise
+            starts, ends = [self.last_motion], []
+            with self._pipelined() as verified:
+                for k in range(abs(n)):
+                    if k:  # one schedule per run: a late report does not push the later ones back
+                        self._next_at = starts[1] + k * self.cal.interval
+                    self.send(dx, dy)
+                    starts.append(self.last_sent)
+                    ends.append(self._clock())
+            try:
+                self._check_pace(starts, ends if verified else [])
+            except PointerDesync:
+                if strict:
+                    raise
             self.rest()
 
     def _check_pace(self, starts: list[float], ends: list[float]) -> None:

@@ -308,93 +308,40 @@ def test_pace_check_sees_reports_that_left_late():
         pm.run(0, 5, 0)
 
 
-def _bridge_phone(tracking=1.0):
+def test_host_timed_runs_notice_a_busy_host():
+    """A busy host (every sleep overshoots by up to 15 ms) pushes reports off their slots: the
+    pace check sees it, redoes the move and finally gives up instead of tapping off target."""
+    import random
+
     from ihc.sim.direct import direct_phone
     from ihc.sim.rig import exact_calibration
 
-    phone, chip, hid, clock = direct_phone(bridge=True)
-    chip.pointer.tracking = tracking
-    return chip, hid, clock, exact_calibration(chip.pointer)
-
-
-def test_bridge_times_runs_so_host_jitter_does_not_matter():
-    import random
-
     rnd = random.Random(3)
-    chip, hid, clock, cal = _bridge_phone()
+    phone, chip, hid, clock = direct_phone()
+    cal = exact_calibration(chip.pointer)
 
-    def jittery_sleep(s):  # a busy host: every sleep overshoots by up to 15 ms
+    def jittery_sleep(s):
         clock.sleep(s + rnd.uniform(0, 0.015))
 
     pm = PointerModel(hid, cal, clock=clock, sleep=jittery_sleep)
-    assert pm._onchip()
-    errors = []
-    for _ in range(12):
-        x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
-        pm.move_to(x, y)
-        px, py = chip.pointer.current()
-        errors.append(max(abs(px - x), abs(py - y)))
-    assert max(errors) < 1.0 and pm.timing_retries == 0
-    # the same host driving a plain CH9329 (host-timed runs) notices and gives up
-    chip.bridge = False
-    host = PointerModel(hid, cal, clock=clock, sleep=jittery_sleep, onchip_runs=False)
     with pytest.raises(PointerDesync):
         for _ in range(5):
-            host.move_to(rnd.uniform(10, 380), rnd.uniform(10, 840))
-    assert host.timing_retries >= 3
-
-
-def test_bridge_anchor_is_one_frame():
-    chip, hid, clock, cal = _bridge_phone()
-    pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
-    tx = hid.stats["tx"]
-    pm.anchor(1, 1)
-    assert hid.stats["tx"] == tx + 1
-    assert chip.pointer.current() == (chip.pointer.width - 1, chip.pointer.height - 1)
-
-
-def test_pace_must_be_a_multiple_of_the_link_period():
-    """Over Bluetooth the phone takes reports at connection events (15 ms here). At a 20 ms pace
-    the spacing iOS sees alternates 15/30 ms and run distances stop repeating; at 30 ms it is
-    uniform again. The bridge reports its period and calibration picks the pace from it."""
-    import random
-
-    from ihc.input.pointer import pace_interval
-
-    def worst_error(interval: float) -> float:
-        chip, hid, clock, _ = _bridge_phone()
-        chip.link_period = 0.015
-        from ihc.sim.rig import exact_calibration
-
-        cal = exact_calibration(chip.pointer, PointerCalibration(interval=interval))
-        pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
-        rnd = random.Random(1)
-        worst = 0.0
-        for _ in range(20):
-            clock.sleep(rnd.uniform(0, 0.05))  # any phase against the link's schedule
-            x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
-            pm.move_to(x, y)
-            px, py = chip.pointer.current()
-            worst = max(worst, abs(px - x), abs(py - y))
-        return worst
-
-    assert pace_interval(0.015) == 0.03 and pace_interval(0.001) == 0.02 and pace_interval(None) == 0.02
-    assert worst_error(0.02) > 5.0
-    assert worst_error(pace_interval(0.015)) < 1.0
+            pm.move_to(rnd.uniform(10, 380), rnd.uniform(10, 840))
+    assert pm.timing_retries >= 3
 
 
 def test_undeliverable_releases_are_retried():
     pm, rec, _ = model()
     pm.press()
-    rec.fail = [HidStatusError("buffers full", 5, p.Status.EXEC_ERROR)] * 2
+    rec.fail = [HidStatusError("not delivered", 5, p.Status.EXEC_ERROR)] * 2
     pm.release()
     assert rec.reports[-1] == (0, 0, 0, 0) and pm.resends == 2
-    rec.fail = [HidStatusError("buffers full", 5, p.Status.EXEC_ERROR)]
+    rec.fail = [HidStatusError("not delivered", 5, p.Status.EXEC_ERROR)]
     with pytest.raises(HidStatusError):  # a press refused is not retried (it would act late)
         pm.press()
     kb_rec = Recorder()
     kb = Keyboard(kb_rec, sleep=lambda s: None)
-    refusals = [HidStatusError("buffers full", 2, p.Status.EXEC_ERROR)]
+    refusals = [HidStatusError("not delivered", 2, p.Status.EXEC_ERROR)]
     original = kb_rec.keyboard
 
     def refuse_first_release(mods, keys):
@@ -417,53 +364,3 @@ def test_release_all_after_a_restart_covers_the_absolute_report():
     pm = PointerModel(rec, PointerCalibration(mode="absolute"), clock=clock, sleep=clock.sleep)
     pm.release_all()  # nothing sent through the absolute report yet in this process
     assert rec.reports[-1] == ("abs", 2048, 2048, 0)
-
-
-def test_bridge_probe_failure_is_not_remembered():
-    class Flaky(Recorder):
-        answers = [None, True]
-
-        def supports_rel_run(self):
-            return self.answers.pop(0)
-
-    clock = VirtualClock()
-    pm = PointerModel(Flaky(clock), PointerCalibration(), clock=clock, sleep=clock.sleep)
-    assert pm._onchip() is False and pm.onchip_runs is None  # could not ask: host timing this time
-    assert pm._onchip() is True and pm.onchip_runs is True
-
-
-
-def test_pace_for_links_that_are_not_whole_milliseconds():
-    """Review M2: an 11.25 ms link needs 22.5 ms (0.25 ms units on the bridge) or 45 ms with a
-    firmware that only knows whole ms; rounding to 22 ms broke the phase lock (~13 pt)."""
-    import random
-
-    from ihc.input.pointer import pace_interval
-    from ihc.sim.rig import exact_calibration
-
-    assert pace_interval(0.01125) == 0.0225 and pace_interval(0.01125, whole_ms=True) == 0.045
-    assert pace_interval(0.0075, whole_ms=True) == 0.03 and pace_interval(0.01875, whole_ms=True) == 0.075
-    chip, hid, clock, _ = _bridge_phone()
-    chip.link_period = 0.01125
-    cal = exact_calibration(chip.pointer, PointerCalibration(interval=pace_interval(0.01125)))
-    pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
-    rnd = random.Random(2)
-    worst = 0.0
-    for _ in range(15):
-        clock.sleep(rnd.uniform(0, 0.05))
-        x, y = rnd.uniform(10, 380), rnd.uniform(10, 840)
-        pm.move_to(x, y)
-        px, py = chip.pointer.current()
-        worst = max(worst, abs(px - x), abs(py - y))
-    assert worst < 1.0
-
-
-def test_run_played_off_schedule_is_redone():
-    """Review M3: the bridge says when a run was held up; the move is redone from a corner."""
-    chip, hid, clock, cal = _bridge_phone()
-    chip.run_late_s = 0.002
-    pm = PointerModel(hid, cal, clock=clock, sleep=clock.sleep)
-    chip.run_delays = [0.0, 0.006]  # the second report of the first run waited for the link
-    pm.move_to(200.0, 300.0)
-    px, py = chip.pointer.current()
-    assert pm.timing_retries >= 1 and abs(px - 200) < 1.0 and abs(py - 300) < 1.0

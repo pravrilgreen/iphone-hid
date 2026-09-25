@@ -30,8 +30,8 @@ class Keyboard:
 
     def report(self, mods: int, keys: Sequence[int]) -> None:
         """Send one key-state report, resending it after an ambiguous failure. A release is also
-        resent when the device could not deliver it (E6: e.g. a Bluetooth bridge's buffers were
-        full for a moment): a key left down would auto-repeat into the app."""
+        resent when the device could not deliver it (E6): a key left down would auto-repeat into
+        the app."""
         release = not mods and not keys
         for attempt in range(self.retries + 1):
             try:

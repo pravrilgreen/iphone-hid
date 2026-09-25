@@ -105,7 +105,7 @@ def test_screenshot_status_and_health(farm):
     img = cv2.imdecode(np.frombuffer(dev.screenshot("png"), np.uint8), cv2.IMREAD_COLOR)
     assert img.shape[:2] == (1080, 498)
     assert dev.screenshot("jpeg", crop=False)[:2] == b"\xff\xd8"
-    assert dev.check() == {"hid": True, "usb_connected": True, "signal": True, "error": None, "recalibrate": None}
+    assert dev.check() == {"hid": True, "usb_connected": True, "signal": True, "error": None}
     s = dev.status()
     assert s["state"] == "ready" and s["screen"]["rect"]["w"] == 498
     assert s["calibration"]["calibrated"] and s["hid"]["stats"]["tx"] > 0
@@ -198,31 +198,6 @@ def test_frozen_capture_is_reported(farm):
     assert dev.check()["signal"] is True
 
 
-def test_calibration_pace_follows_the_bridge_link(monkeypatch):
-    import ihc.device as device_mod
-    from ihc.input.pointer import PointerCalibration
-
-    reg = simulated(1, simulate_timing=False, bridge=True)
-    try:
-        dev, rig = rig_of(reg)
-        rig.chip.link_period = 0.015  # a Bluetooth connection interval
-        seen = {}
-
-        def fake_calibrate(pm, clicks, **options):
-            seen["interval"] = pm.cal.interval
-            pm.cal = PointerCalibration(interval=pm.cal.interval, method="safari")  # as calibrate() installs it
-            return pm.cal
-
-        monkeypatch.setattr(device_mod, "calibrate", fake_calibrate)
-        dev.calibrate()
-        assert seen["interval"] == 0.03 and dev.pointer.cal.extra["report_period_ms"] == 15.0
-        assert dev.check()["error"] is None
-        rig.chip.link_period = 0.0225  # the link renegotiated: the calibration no longer holds
-        assert "recalibrate" in dev.check()["error"]
-    finally:
-        reg.close()
-
-
 def test_release_after_the_chip_comes_back():
     from ihc.hid.base import HidTimeout
 
@@ -274,30 +249,24 @@ def test_releases_when_the_phone_starts_taking_input(farm):
     assert not rig.chip.keyboard.pressed and not dev._release_pending
 
 
-def test_failed_calibration_keeps_the_old_pace(monkeypatch):
+def test_failed_calibration_keeps_the_old_model(monkeypatch):
     import ihc.device as device_mod
-    from ihc.input.pointer import PointerCalibration, PointerError
+    from ihc.input.pointer import PointerCalibration
 
-    reg = simulated(1, simulate_timing=False, bridge=True)
+    reg = simulated(1, simulate_timing=False)
     try:
         dev, rig = rig_of(reg)
-        rig.chip.link_period = 0.015
-        dev.pointer.cal = PointerCalibration(interval=0.03, method="safari", extra={"report_period_ms": 15.0})
+        installed = PointerCalibration(interval=0.03, method="safari")
+        dev.pointer.cal = installed
 
         def failing(pm, clicks, **options):
-            assert pm.cal.interval == pytest.approx(0.0225)  # measured at the new link's pace...
+            assert pm.cal.interval == PointerCalibration.interval  # measured at the default pace...
             raise RuntimeError("page lost")
 
         monkeypatch.setattr(device_mod, "calibrate", failing)
-        rig.chip.link_period = 0.0225  # renegotiated: calibration picks 22.5 ms, then fails
         with pytest.raises(RuntimeError):
             dev.calibrate()
-        assert dev.pointer.cal.interval == 0.03  # the installed model is untouched
-        assert dev.check()["recalibrate"] and dev.state == "needs_calibration"
-        rig.chip.bridge_output = 0x01  # a Bluetooth bridge without a link: no calibration at all
-        rig.chip.usb_connected = False
-        rig.chip.link_period = 0.0
-        with pytest.raises(PointerError, match="no Bluetooth link|does not answer|no link"):
-            dev.calibrate()
+        assert dev.pointer.cal is installed  # ...but a failure leaves the installed model untouched
+        assert dev.state == "ready"
     finally:
         reg.close()

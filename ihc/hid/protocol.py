@@ -24,19 +24,6 @@ REPLY_TIMEOUT_S = 0.5
 # Sent by the chip on its own in custom-HID mode (data the USB host wrote); never a reply.
 CHIP_HID_DATA = 0x87
 
-# ESP32 bridge extensions (firmware/esp32_ble_hid), not in the WCH protocol: a real CH9329 answers
-# E3 to the vendor command. The bridge reports GET_INFO version 0x40 and fills the reserved bytes:
-# byte 3 output link, byte 4 HID collections, byte 5 vendor features.
-BRIDGE_VERSION = 0x40
-CMD_MS_REL_RUN = 0x30
-FEATURE_REL_RUN = 0x01
-FEATURE_REL_RUN_QUARTER_MS = 0x02  # the run interval may be given in 0.25 ms units
-FEATURE_REL_RUN_LATE = 0x04  # a run played off schedule answers RUN_LATE (0xE7)
-REL_RUN_QUARTER_FLAG = 0x80  # in the run's flags byte (bits 0-2: buttons)
-REL_RUN_MAX_MS = 2000  # (count - 1) * interval of one run
-BRIDGE_OUTPUTS = {0x01: "ble", 0x02: "usb", 0x7F: "simulator"}
-BRIDGE_COLLECTIONS = {0x01: "keyboard", 0x02: "mouse", 0x04: "consumer", 0x08: "system", 0x10: "absolute"}
-
 
 class Cmd(IntEnum):
     GET_INFO = 0x01
@@ -61,7 +48,6 @@ class Status(IntEnum):
     BAD_CHECKSUM = 0xE4
     BAD_PARAM = 0xE5
     EXEC_ERROR = 0xE6
-    RUN_LATE = 0xE7  # ESP32 bridge only (vendor): a timed run played, but off its schedule
 
 
 STATUS_TEXT = {
@@ -72,7 +58,6 @@ STATUS_TEXT = {
     Status.BAD_CHECKSUM: "checksum mismatch",
     Status.BAD_PARAM: "invalid parameter",
     Status.EXEC_ERROR: "frame OK but execution failed",
-    Status.RUN_LATE: "run delivered, but a report left more than the bridge's threshold after its slot",
 }
 
 MOUSE_LEFT = 0x01
@@ -239,26 +224,6 @@ def mouse_abs(x: int, y: int, buttons: int = 0, wheel: int = 0, addr: int = DEFA
             raise FrameError(f"absolute {name} out of range 0..4095: {v}")
     data = bytes([0x02, buttons & 0x07, *x.to_bytes(2, "little"), *y.to_bytes(2, "little"), _i8(wheel)])
     return encode(Cmd.SEND_MS_ABS_DATA, data, addr)
-
-
-def mouse_rel_run(dx: int, dy: int, count: int, interval_ms: float, buttons: int = 0, addr: int = DEFAULT_ADDR,
-                  quarter: bool = False) -> bytes:
-    """Bridge only: `count` relative reports of (dx, dy), one every `interval_ms`, timed by the
-    bridge. A run owns `count` slots and replies at the end of the last one, so runs queued back to
-    back play as one fixed-rate sequence. With `quarter` the interval goes in 0.25 ms units (a
-    bridge that advertises FEATURE_REL_RUN_QUARTER_MS), up to 63.75 ms; otherwise whole ms."""
-    if not 1 <= count <= 255:
-        raise FrameError(f"run count out of range 1..255: {count}")
-    units = interval_ms * 4 if quarter else interval_ms
-    if abs(units - round(units)) > 1e-6:
-        raise FrameError(f"run interval {interval_ms} ms is not a whole number of {'0.25 ms' if quarter else 'ms'}")
-    units = round(units)
-    if not 0 <= units <= 255:
-        raise FrameError(f"run interval out of range: {interval_ms} ms")
-    if (count - 1) * interval_ms > REL_RUN_MAX_MS:
-        raise FrameError(f"run too long: {count} reports every {interval_ms} ms")
-    flags = (buttons & 0x07) | (REL_RUN_QUARTER_FLAG if quarter else 0)
-    return encode(CMD_MS_REL_RUN, bytes([_i8(dx), _i8(dy), count, units, flags]), addr)
 
 
 def get_info(addr: int = DEFAULT_ADDR) -> bytes:

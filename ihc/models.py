@@ -1,4 +1,4 @@
-"""iPhone models the simulator can play: logical size in points, pixel scale, connector."""
+"""iPhone models the simulator can play (all with a USB-C port): logical size in points, pixel scale."""
 
 from __future__ import annotations
 
@@ -12,8 +12,6 @@ class PhoneModel:
     width_pt: int  # portrait
     height_pt: int
     scale: int  # device pixels per point
-    port: str  # "usb-c" or "lightning"
-    home_button: bool = False
 
     @property
     def pixels(self) -> tuple[int, int]:
@@ -27,13 +25,18 @@ class PhoneModel:
 MODELS = {
     m.key: m
     for m in (
-        PhoneModel("iphone-17", "iPhone 17", 402, 874, 3, "usb-c"),
-        PhoneModel("iphone-16", "iPhone 16", 393, 852, 3, "usb-c"),
-        PhoneModel("iphone-15", "iPhone 15", 393, 852, 3, "usb-c"),
-        PhoneModel("iphone-15-pro-max", "iPhone 15 Pro Max", 430, 932, 3, "usb-c"),
-        PhoneModel("iphone-13", "iPhone 13", 390, 844, 3, "lightning"),
-        PhoneModel("iphone-11", "iPhone 11", 414, 896, 2, "lightning"),
-        PhoneModel("iphone-se-3", "iPhone SE (3rd generation)", 375, 667, 2, "lightning", home_button=True),
+        PhoneModel("iphone-17", "iPhone 17", 402, 874, 3),
+        PhoneModel("iphone-17-pro", "iPhone 17 Pro", 402, 874, 3),
+        PhoneModel("iphone-17-pro-max", "iPhone 17 Pro Max", 440, 956, 3),
+        PhoneModel("iphone-air", "iPhone Air", 420, 912, 3),
+        PhoneModel("iphone-16", "iPhone 16", 393, 852, 3),
+        PhoneModel("iphone-16-plus", "iPhone 16 Plus", 430, 932, 3),
+        PhoneModel("iphone-16-pro", "iPhone 16 Pro", 402, 874, 3),
+        PhoneModel("iphone-16-pro-max", "iPhone 16 Pro Max", 440, 956, 3),
+        PhoneModel("iphone-15", "iPhone 15", 393, 852, 3),
+        PhoneModel("iphone-15-plus", "iPhone 15 Plus", 430, 932, 3),
+        PhoneModel("iphone-15-pro", "iPhone 15 Pro", 393, 852, 3),
+        PhoneModel("iphone-15-pro-max", "iPhone 15 Pro Max", 430, 932, 3),
     )
 }
 

@@ -157,11 +157,11 @@ class SimPhone:
 
     @property
     def top(self) -> float:
-        return 20.0 if self.model.home_button else 54.0
+        return 54.0  # status bar
 
     @property
     def bottom_inset(self) -> float:
-        return 0.0 if self.model.home_button else 34.0
+        return 34.0  # home indicator
 
     def _changed(self, delay: float = 0.0) -> None:
         self.version += 1
@@ -402,7 +402,7 @@ class SimPhone:
             return
         if self.screen == "Targets" and self.overlay is None:
             self.tap_log.append({"kind": "swipe", "x1": e["x1"], "y1": e["y1"], "x2": e["x2"], "y2": e["y2"]})
-        if e["y1"] > self.model.height_pt - 40 and dy < -60 and not self.model.home_button:
+        if e["y1"] > self.model.height_pt - 40 and dy < -60:
             self._home()  # swipe up from the home indicator
             return
         if self.overlay == "switcher":
@@ -610,8 +610,7 @@ class SimPhone:
         else:
             els.append(Element("title", 16, self.top + 6, W - 32, 44, self.screen))
             els.append(Element("paragraph", 20, H / 2 - 30, W - 40, 60, f"{self.screen} (simulated)"))
-        if not self.model.home_button:
-            els.append(Element("indicator", W / 2 - 67, H - 13, 134, 5))
+        els.append(Element("indicator", W / 2 - 67, H - 13, 134, 5))
         return Layout(bg, els)
 
     def _nav(self, back: str, title: str) -> list[Element]:

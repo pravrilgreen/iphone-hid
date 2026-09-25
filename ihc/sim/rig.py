@@ -41,13 +41,11 @@ def make_rig(
     latency: float = 0.08,
     pointer_visible: bool = True,
     absolute: bool = False,
-    bridge: bool = False,
     trace=None,
 ) -> SimRig:
     """One simulated iPhone behind the real driver stack: HID frames go through the CH9329 driver
-    over a pty (at 9600 baud timing when `simulate_timing`), video comes out as MJPEG frames.
-    `bridge` simulates the ESP32 bridge firmware instead (it times pointer runs itself)."""
-    chip = FakeChip(bridge=bridge)
+    over a pty (at 9600 baud timing when `simulate_timing`), video comes out as MJPEG frames."""
+    chip = FakeChip()
     chip.pointer.tracking = tracking
     chip.pointer.absolute = absolute
     phone = SimPhone(get_model(model), dark=dark, open_delay=open_delay)

@@ -77,20 +77,6 @@ class DirectHid:
     def mouse_abs(self, x: int, y: int, buttons: int = 0, wheel: int = 0) -> None:
         self._cmd(p.mouse_abs(x, y, buttons, wheel))
 
-    def supports_rel_run(self) -> bool:
-        return self.chip.bridge
-
-    def report_period(self) -> float | None:
-        return self.chip.link_period if self.chip.bridge and self.chip.link_period > 0 else None
-
-    def bridge_feature(self, name: str) -> bool:
-        return self.chip.bridge and name in ("rel_run", "rel_run_quarter_ms", "rel_run_late")
-
-    def mouse_rel_runs(self, runs, interval_ms: float, buttons: int = 0) -> None:
-        quarter = abs(interval_ms - round(interval_ms)) > 1e-9
-        for dx, dy, count in runs:
-            self._cmd(p.mouse_rel_run(dx, dy, count, interval_ms, buttons, quarter=quarter))
-
     def release_all(self) -> None:
         self.keyboard(0, [])
         self.mouse_rel(0, 0)
@@ -102,10 +88,9 @@ class DirectHid:
         pass
 
 
-def direct_phone(model: str = "iphone-15", *, bridge: bool = False, **phone_options) -> tuple[SimPhone, FakeChip, DirectHid, VirtualClock]:
+def direct_phone(model: str = "iphone-15", **phone_options) -> tuple[SimPhone, FakeChip, DirectHid, VirtualClock]:
     clock = VirtualClock()
-    chip = FakeChip(bridge=bridge)
-    chip.clock, chip.sleep = clock, clock.sleep
+    chip = FakeChip()
     chip.pointer.clock = clock
     chip.pointer.history.clear()
     phone = SimPhone(get_model(model), clock=clock, **phone_options)

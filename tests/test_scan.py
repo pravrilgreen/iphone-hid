@@ -57,7 +57,7 @@ def test_usb_side_not_connected_advice(device):
     assert "not enumerated" in scan.advice(results)[1]
 
 
-def test_candidate_ports_prefers_known_bridges():
+def test_candidate_ports_prefers_known_chips():
     ports = [
         scan.PortInfo("/dev/ttyS0", "n/a", None, None, None),
         scan.PortInfo("/dev/ttyUSB1", "FT232", 0x0403, 0x6001, None),

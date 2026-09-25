@@ -13,7 +13,6 @@ hardware: no reply (or, with `noise_on_mismatch`, a few garbage bytes).
 
 from __future__ import annotations
 
-import math
 import os
 import select
 from collections import deque
@@ -202,26 +201,11 @@ class FakeChip:
         usb_connected: bool = True,
         version: int | None = None,
         pointer: SimPointer | None = None,
-        bridge: bool = False,
     ):
         self.stored = config or ChipConfig.factory_default()  # flash contents
         self.active = self.stored  # what the chip booted with
         self.usb_connected = usb_connected
-        # bridge: the ESP32 firmware (GET_INFO 0x40 + output/collections/features, on-chip runs)
-        self.bridge = bridge
-        self.version = version if version is not None else (p.BRIDGE_VERSION if bridge else 0x30)
-        self.clock: Callable[[], float] = time.monotonic  # timing of on-chip runs
-        self.sleep: Callable[[float], None] = time.sleep
-        # Bridge only: the phone takes reports at link events this far apart (BLE connection
-        # interval, USB polling); a report waits for the next event. 0 = delivered at once.
-        self.link_period = 0.0
-        self.bridge_output = 0x7F  # GET_INFO byte 3: 0x01 Bluetooth, 0x02 USB, 0x7F simulator
-        # A run report accepted this late after its slot makes the run answer RUN_LATE. The firmware
-        # uses 2 ms; this process's threads oversleep more than that, so 10 ms by default (like the
-        # firmware's own host simulator). `run_delays`: extra seconds before the next run reports
-        # are accepted (a link that makes the bridge wait, e.g. full Bluetooth buffers).
-        self.run_late_s = 0.010
-        self.run_delays: list[float] = []
+        self.version = version if version is not None else 0x30
         self.usb_strings = {0: "", 1: "", 2: ""}
         self.events: list[dict] = []  # most recent events; `seq` numbers them across trims
         self.event_seq = 0
@@ -276,8 +260,7 @@ class FakeChip:
         """`at`: when these bytes finished arriving (defaults to now). Reports in them reach the
         simulated phone at that time, whatever the delay before this thread ran."""
         with self._lock:
-            if not self.bridge:  # (the bridge times its own reports)
-                self.pointer.at = at
+            self.pointer.at = at
             try:
                 return self._receive(data)
             finally:
@@ -338,16 +321,8 @@ class FakeChip:
         """Returns (status, data): data is the reply payload for commands that return data."""
         C, S = p.Cmd, p.Status
         if cmd == C.GET_INFO:
-            if self.bridge:
-                collections = {0: 0x1F, 1: 0x0D, 2: 0x12}.get(self.work_mode, 0)
-                period = round(self.link_period * 4000) if self.usb_connected else 0
-                features = p.FEATURE_REL_RUN | p.FEATURE_REL_RUN_QUARTER_MS | p.FEATURE_REL_RUN_LATE
-                extra = (self.bridge_output, collections, features, period & 0xFF, period >> 8)
-            else:
-                extra = (0, 0, 0, 0, 0)
-            return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, *extra])
-        if cmd == p.CMD_MS_REL_RUN and self.bridge:
-            return self._rel_run(d), None
+            # version, USB status, LEDs, then 5 reserved bytes
+            return S.OK, bytes([self.version, int(self.usb_connected), self.keyboard.leds, 0, 0, 0, 0, 0])
         if cmd == C.GET_PARA_CFG:
             return S.OK, self.stored.to_bytes()
         if cmd == C.SET_PARA_CFG:
@@ -382,41 +357,8 @@ class FakeChip:
             return self._hid(cmd, d), None
         return S.BAD_CMD, None
 
-    def _link_event(self) -> None:
-        """Bridge: hold a report until the phone's next link event takes it."""
-        if self.bridge and self.link_period > 0:
-            now = self.clock()
-            events = math.ceil(now / self.link_period - 1e-9)
-            self.sleep(max(0.0, events * self.link_period - now))
-
     def take_reply_delay(self) -> float:
         return self.reply_delays.pop(0) if self.reply_delays else 0.0
-
-    def _rel_run(self, d: bytes) -> int:
-        """Bridge vendor command: `count` relative reports `interval` ms apart on the chip's clock;
-        the run owns `count` slots, so a run queued behind it keeps the same schedule."""
-        S = p.Status
-        if len(d) != 5:
-            return S.BAD_PARAM
-        dx, dy = (int.from_bytes(d[i : i + 1], "little", signed=True) for i in (0, 1))
-        count, flags = d[2], d[4]
-        interval = d[3] / 4 if flags & p.REL_RUN_QUARTER_FLAG else float(d[3])  # ms
-        buttons = flags & 0x07
-        if count == 0 or flags & 0x78 or (count - 1) * interval > p.REL_RUN_MAX_MS:
-            return S.BAD_PARAM
-        if self.work_mode not in (0, 2) or not self.usb_connected:
-            return S.EXEC_ERROR
-        t0, late = self.clock(), False
-        for i in range(count):
-            slot = t0 + i * interval / 1000
-            self.sleep(max(0.0, slot - self.clock()))
-            if self.run_delays:
-                self.sleep(self.run_delays.pop(0))
-            late |= self.clock() - slot > self.run_late_s  # accepted by the link this late
-            self._link_event()  # (waiting for the link's event is not lateness: its phase is fixed)
-            self.pointer.relative(max(dx, -127), max(dy, -127), buttons, 0)
-        self.sleep(max(0.0, t0 + count * interval / 1000 - self.clock()))
-        return S.RUN_LATE if late else S.OK
 
     def _hid(self, cmd: int, d: bytes) -> int:
         C, S = p.Cmd, p.Status
@@ -448,7 +390,6 @@ class FakeChip:
                 self._emit("media", keys=[n for n, b in names.items() if bits & b])
         elif cmd == C.SEND_MS_REL_DATA:
             dx, dy, wheel = (int.from_bytes(d[i : i + 1], "little", signed=True) for i in (2, 3, 4))
-            self._link_event()
             self.pointer.relative(dx, dy, d[1], wheel)
         else:
             x, y = int.from_bytes(d[2:4], "little"), int.from_bytes(d[4:6], "little")

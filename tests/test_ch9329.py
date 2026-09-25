@@ -184,8 +184,8 @@ def test_addressing(chip_backend):
 
 def test_usb_strings_and_reset(hid):
     assert hid.get_usb_string(1) == ""
-    hid.chip.usb_strings[1] = "HID bridge"
-    assert hid.get_usb_string(1) == "HID bridge"
+    hid.chip.usb_strings[1] = "iphone-hid"
+    assert hid.get_usb_string(1) == "iphone-hid"
     hid.reset()
     assert hid.chip.events_of("reset")
 
@@ -352,62 +352,8 @@ def test_release_all_includes_media_and_power_keys(hid):
     assert hid.stats["tx"] >= 4
 
 
-def test_bridge_info_and_capabilities(chip_backend):
-    plain = chip_backend(FakeChip())
-    assert plain.supports_rel_run() is False and "bridge" not in plain.info()
-    bridge = chip_backend(FakeChip(bridge=True))
-    info = bridge.info()
-    assert info["version"] == "ihc bridge v1.0"
-    assert info["bridge"] == {"output": "simulator", "rel_run": True, "rel_run_quarter_ms": True, "rel_run_late": True,
-                              "report_period_ms": None,
-                              "collections": ["keyboard", "mouse", "consumer", "system", "absolute"]}
-    assert bridge.supports_rel_run() is True
-
-
-def test_bridge_runs_are_timed_on_the_chip(chip_backend):
-    chip = FakeChip(bridge=True)
-    hid = chip_backend(chip, timeout=0.3)
-    t0 = time.monotonic()
-    hid.mouse_rel_runs([(5, 0, 4), (1, 0, 3)], 20)
-    took = time.monotonic() - t0
-    assert took >= 0.14  # 7 slots of 20 ms before the last reply
-    times = [t for t, _, _ in list(chip.pointer.history)[-7:]]
-    gaps = [b - a for a, b in zip(times, times[1:])]
-    assert all(abs(g - 0.02) < 0.006 for g in gaps), gaps  # one schedule across both runs
-    # fire-and-forget: the acks come after the run, and are still all accounted for
-    hid.wait_ack = False
-    hid.mouse_rel_runs([(0, 3, 10)], 20)
-    hid.sync()
-    assert hid.stats["lost_acks"] == 0 and not hid.async_errors
-
-
-def test_bridge_run_refused_in_keyboard_only_mode(chip_backend):
-    chip = FakeChip(ChipConfig.factory_default().replace(work_mode=0x01), bridge=True)
-    hid = chip_backend(chip)
-    with pytest.raises(HidStatusError) as e:
-        hid.mouse_rel_runs([(1, 0, 3)], 10)
-    assert e.value.status == p.Status.EXEC_ERROR
-    assert "mouse" not in hid.info()["bridge"]["collections"]
-
-
-def test_plain_ch9329_rejects_runs(hid):
-    with pytest.raises(HidStatusError) as e:
-        hid.mouse_rel_runs([(1, 0, 3)], 10)
-    assert e.value.status == p.Status.BAD_CMD
-
-
-def test_bridge_reports_its_link_period(chip_backend):
-    chip = FakeChip(bridge=True)
-    chip.link_period = 0.015
-    hid = chip_backend(chip)
-    assert hid.info()["bridge"]["report_period_ms"] == 15.0
-    assert hid.report_period() == 0.015
-    chip.usb_connected = False  # not connected: unknown
-    assert hid.report_period() is None
-
-
 def test_port_opens_without_asserting_dtr_rts(monkeypatch):
-    """ESP32 dev boards reset on DTR/RTS: the driver opens the port with both low."""
+    """The driver opens the port with DTR/RTS low (pyserial would assert both)."""
     import ihc.hid.ch9329 as ch
 
     seen = {}
@@ -426,7 +372,7 @@ def test_release_all_retries_and_reports_what_stayed_held(chip_backend):
     chip = FakeChip()
     hid = chip_backend(chip)
     hid.keyboard(0, [0x04])
-    chip.fail_next = [p.Status.EXEC_ERROR] * 2  # buffers full for a moment
+    chip.fail_next = [p.Status.EXEC_ERROR] * 2  # refused for a moment
     hid.release_all()
     assert not chip.keyboard.pressed
     hid.keyboard(0, [0x04])
@@ -434,18 +380,3 @@ def test_release_all_retries_and_reports_what_stayed_held(chip_backend):
     with pytest.raises(HidStatusError):
         hid.release_all()
     assert chip.keyboard.pressed == {0x04}
-
-
-def test_bridge_quarter_ms_run_and_late_status(chip_backend):
-    chip = FakeChip(bridge=True)
-    hid = chip_backend(chip, timeout=0.3)
-    hid.mouse_rel_runs([(2, 0, 3)], 22.5)  # a 0.25 ms pace (for an 11.25 ms Bluetooth link)
-    assert len(chip.pointer.history) >= 3
-    chip.run_delays = [0.05]  # the link made the bridge wait: the run is played, but off schedule
-    with pytest.raises(HidStatusError) as e:
-        hid.mouse_rel_runs([(2, 0, 3)], 20)
-    assert e.value.status == p.Status.RUN_LATE
-    chip.bridge = False  # an old firmware without 0.25 ms runs cannot play 22.5 ms: it says so
-    hid._info = None
-    with pytest.raises(HidError, match="whole ms"):
-        hid.mouse_rel_runs([(2, 0, 3)], 22.5)

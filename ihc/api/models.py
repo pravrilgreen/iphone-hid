@@ -56,8 +56,6 @@ class DeviceHealth(_Open):
     usb_connected: bool | None = Field(None, description="The phone enumerated the chip (false: locked phone, "
                                                          "accessory prompt, cable)")
     signal: bool | None = Field(None, description="Video frames present and not black")
-    recalibrate: str | None = Field(None, description="Why the pointer calibration no longer holds (e.g. a "
-                                                      "Bluetooth link renegotiated its report period); null: it holds")
     error: str | None = None
 
 
@@ -95,8 +93,7 @@ class DeviceStatus(_Open):
     id: str
     model: str | None = None
     kind: str | None = Field(None, description='"hardware" or "sim"')
-    state: str = Field(description="ready | busy | hid_disconnected | hid_offline | no_signal | needs_calibration "
-                                   "(taps would land off: see health.recalibrate)")
+    state: str = Field(description="ready | busy | hid_disconnected | hid_offline | no_signal")
     busy_with: str | None = Field(None, description="Action running now")
     health: DeviceHealth | None = None
     screen: Screen | None = None

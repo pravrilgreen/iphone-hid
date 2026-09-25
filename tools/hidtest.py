@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""hidtest: interactive checker for a CH9329 (or the ESP32 bridge) during the phase 0 hardware tests.
+"""hidtest: interactive checker for a CH9329 (or a Linux USB gadget) during the phase 0 hardware tests.
 
     python tools/hidtest.py --port /dev/ttyUSB0             # shell; type `help`
     python tools/hidtest.py --port /dev/ttyUSB0 info        # run one command and exit
@@ -166,7 +166,7 @@ class HidShell(cmd.Cmd):
 
     def _chip_only(self, command: str) -> None:
         if not isinstance(self.hid, CH9329Backend):
-            raise ValueError(f"{command} talks to a CH9329 or the ESP32 bridge over serial; this is a USB gadget")
+            raise ValueError(f"{command} talks to a CH9329 over serial; this is a USB gadget")
 
     def run_script(self, text: str) -> None:
         for part in text.split(";"):
@@ -186,24 +186,7 @@ class HidShell(cmd.Cmd):
                   f"interfaces {', '.join(i['gadget']['functions'])}")
         else:
             print(f"chip {i['version']} ({i['version_raw']:#04x}) | USB {usb} (status {i['usb_status']:#04x}) | {leds}")
-        if "bridge" in i:
-            b = i["bridge"]
-            period = f"{b['report_period_ms']} ms" if b["report_period_ms"] else "unknown"
-            print(f"bridge: output {b['output']} | reports {', '.join(b['collections'])} | "
-                  f"chip-timed runs {'yes' if b['rel_run'] else 'no'} | link period {period}")
         self.log("info", **i)
-
-    def do_run(self, arg: str) -> None:
-        """run DX DY COUNT [interval=20]: ESP32 bridge only: COUNT relative reports of (DX, DY), one
-        every `interval` ms, timed by the bridge itself (vendor command 0x30)."""
-        a = parse_args(arg, [("dx", _int, REQUIRED), ("dy", _int, REQUIRED), ("count", _int, REQUIRED),
-                             ("interval", _int, 20)])
-        if not self.hid.supports_rel_run():
-            raise ValueError("this device does not time runs itself (a CH9329 answers E3): use `move`")
-        t0 = time.monotonic()
-        self.hid.mouse_rel_runs([(a["dx"], a["dy"], a["count"])], a["interval"], self.buttons)
-        print(f"ran {a['count']} x ({a['dx']}, {a['dy']}) every {a['interval']} ms, acked after "
-              f"{(time.monotonic() - t0) * 1000:.0f} ms")
 
     def do_watch(self, arg: str) -> None:
         """watch [interval=0.5] [duration=0]: poll GET_INFO and print every change, until Ctrl+C
@@ -703,7 +686,6 @@ def main(argv: list[str] | None = None, *, ask=input) -> int:
     src.add_argument("--fake", action="store_true", help="talk to a simulated chip instead of hardware")
     src.add_argument("--gadget", nargs="?", const="ihc", metavar="NAME",
                      help="this board is the keyboard and mouse (Linux USB gadget set up by tools/gadget.py)")
-    ap.add_argument("--fake-bridge", action="store_true", help="with --fake: simulate the ESP32 bridge")
     ap.add_argument("--baud", type=int, default=9600, help="default 9600 (factory setting)")
     ap.add_argument("--addr", type=_int, default=0, help="chip address, default 0")
     ap.add_argument("--timeout", type=float, default=p.REPLY_TIMEOUT_S, help="reply timeout in seconds")
@@ -718,9 +700,9 @@ def main(argv: list[str] | None = None, *, ask=input) -> int:
     log = EventLog(log_path)
     opts = dict(addr=args.addr, timeout=args.timeout, wait_ack=not args.no_ack, trace=log)
     if args.fake:
-        from ihc.hid.fake import FakeBackend, FakeChip
+        from ihc.hid.fake import FakeBackend
 
-        hid = FakeBackend(FakeChip(bridge=args.fake_bridge), baud=args.baud, simulate_timing=True, **opts)
+        hid = FakeBackend(baud=args.baud, simulate_timing=True, **opts)
         port_info = {"fake": True}
     elif args.gadget:
         try:

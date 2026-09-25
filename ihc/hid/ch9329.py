@@ -1,7 +1,5 @@
 """CH9329 driver over a serial port (pyserial).
 
-Also drives the ESP32 BLE bridge, whose firmware speaks the same frame protocol.
-
 Two send modes:
 - wait_ack=True: every command waits for its reply and raises on error or timeout.
 - wait_ack=False: HID reports are fire-and-forget. Their replies are read opportunistically and
@@ -47,20 +45,13 @@ _STATUS_HINTS = {
     p.Status.BAD_HEADER: "bytes were corrupted on the serial line (noise, loose wire, baud off)",
     p.Status.TIMEOUT: "the chip got a partial frame (bytes lost, or a gap longer than its packet interval)",
     p.Status.BAD_PARAM: "the chip rejected a value (or this report type is disabled in the current work mode)",
-    p.Status.RUN_LATE: "the bridge was held up (e.g. waiting for Bluetooth buffers): the distance is not the planned one",
 }
 
 
 def version_string(raw: int) -> str:
     if 0x30 <= raw <= 0x39:
         return f"V1.{raw - 0x30}"
-    if p.BRIDGE_VERSION <= raw <= p.BRIDGE_VERSION + 0x0F:
-        return f"ihc bridge v1.{raw - p.BRIDGE_VERSION}"
     return f"unknown ({raw:#04x})"
-
-
-def is_bridge(version_raw: int) -> bool:
-    return p.BRIDGE_VERSION <= version_raw <= p.BRIDGE_VERSION + 0x0F
 
 
 def _cmd_name(cmd: int) -> str:
@@ -134,17 +125,15 @@ class CH9329Backend:
         self._inflight: Counter[int] = Counter()  # fire-and-forget commands whose reply is unread
         self._last_send = 0.0
         self._last_rx = 0.0
-        self._busy_until = 0.0  # end of the last on-chip run queued (its reply comes after it)
         self._resync = False  # a reply may still be on its way: resync before the next exchange
-        self._info: dict | None = None  # last GET_INFO, for capabilities
         self._rx_since_send = bytearray()  # raw bytes seen since the last request, for diagnostics
         self.async_errors: list[tuple[int, int | None]] = []
         self.stats: Counter[str] = Counter()
         try:
             ser = serial.Serial(timeout=_POLL_S, write_timeout=2.0, exclusive=exclusive)
             ser.port, ser.baudrate = port, baud
-            # Keep DTR/RTS low: ESP32 dev boards wire them to reset/boot, and asserting them on open
-            # (pyserial's default) can reset the bridge into its bootloader.
+            # Keep DTR/RTS low (pyserial asserts both on open): the CH9329 link is TX/RX only, and a
+            # USB-serial board that wires them to a reset line would reset on every open.
             ser.dtr = ser.rts = False
             ser.open()
             self._ser = ser
@@ -167,12 +156,11 @@ class CH9329Backend:
     # -- HidBackend ----------------------------------------------------------------------------
 
     def info(self) -> dict:
-        """GET_INFO: chip version, USB enumeration state and keyboard LEDs (plus, from the ESP32
-        bridge, its output link, HID collections and vendor features)."""
+        """GET_INFO: chip version, USB enumeration state and keyboard LEDs."""
         d = self._request(p.Cmd.GET_INFO).data
         if len(d) < 3:
             raise HidProtocolError(f"GET_INFO reply too short: {d.hex(' ')}")
-        info = {
+        return {
             "version": version_string(d[0]),
             "version_raw": d[0],
             "usb_connected": d[1] == 0x01,
@@ -182,49 +170,6 @@ class CH9329Backend:
             "scroll_lock": bool(d[2] & 0x04),
             "raw": d.hex(" "),
         }
-        if is_bridge(d[0]) and len(d) >= 6:
-            period = int.from_bytes(d[6:8], "little") if len(d) >= 8 else 0
-            info["bridge"] = {
-                "output": p.BRIDGE_OUTPUTS.get(d[3], f"unknown ({d[3]:#04x})"),
-                "collections": [name for bit, name in p.BRIDGE_COLLECTIONS.items() if d[4] & bit],
-                "rel_run": bool(d[5] & p.FEATURE_REL_RUN),
-                "rel_run_quarter_ms": bool(d[5] & p.FEATURE_REL_RUN_QUARTER_MS),
-                "rel_run_late": bool(d[5] & p.FEATURE_REL_RUN_LATE),
-                # how often the phone takes a report (BLE connection interval, USB polling), in
-                # units of 0.25 ms; None while unknown or not connected
-                "report_period_ms": period / 4 if period else None,
-            }
-        self._info = info
-        return info
-
-    def supports_rel_run(self) -> bool | None:
-        """Whether the device times relative runs itself (ESP32 bridge). Asked once, then cached;
-        None when the device cannot be asked right now (ask again later)."""
-        if self._info is None:
-            try:
-                self.info()
-            except HidError:
-                return None
-        return bool(self._info.get("bridge", {}).get("rel_run"))
-
-    def bridge_feature(self, name: str) -> bool:
-        """A feature flag of the bridge's GET_INFO (cached), e.g. "rel_run_quarter_ms"."""
-        if self._info is None:
-            try:
-                self.info()
-            except HidError:
-                return False
-        return bool(self._info.get("bridge", {}).get(name))
-
-    def report_period(self) -> float | None:
-        """Seconds between the moments the phone takes a report, when the device knows it (ESP32
-        bridge: BLE connection interval or USB polling interval). Asks the device each time: a
-        Bluetooth link can renegotiate."""
-        try:
-            period = self.info().get("bridge", {}).get("report_period_ms")
-        except HidError:
-            return None
-        return period / 1000 if period else None
 
     def keyboard(self, modifiers: int, keys: Sequence[int]) -> None:
         self._hid(p.kb_general(modifiers, keys, self.addr))
@@ -247,55 +192,11 @@ class CH9329Backend:
         with its own buttons). Whether iOS follows it is checked per phone by the calibration."""
         self._hid(p.mouse_abs(x, y, buttons, wheel, self.addr))
 
-    @_serialized
-    def mouse_rel_runs(self, runs: Sequence[tuple[int, int, int]], interval_ms: float, buttons: int = 0) -> None:
-        """ESP32 bridge only: relative runs played on the bridge's clock, one report every
-        `interval_ms` (a multiple of 0.25 ms if the bridge supports it, else whole ms), each run
-        (dx, dy, count) right after the previous one. All frames go out in one write, so a host
-        stall cannot stretch the pace. With wait_ack, returns once every run was delivered (and
-        raises on the first failure: E6 undelivered, E7 played off schedule); otherwise the
-        replies stay in flight."""
-        quarter = abs(interval_ms - round(interval_ms)) > 1e-9
-        if quarter and not self.bridge_feature("rel_run_quarter_ms"):
-            raise HidError(f"this bridge firmware times runs in whole ms only; {interval_ms} ms cannot be played "
-                           "(update the firmware, or pace at a whole number of ms)")
-        per_frame = int(p.REL_RUN_MAX_MS // interval_ms) + 1 if interval_ms else 255
-        frames, total = [], 0
-        for dx, dy, count in runs:
-            total += count
-            while count > 0:
-                n = min(count, per_frame, 255)
-                frames.append(p.mouse_rel_run(dx, dy, n, interval_ms, buttons, self.addr, quarter=quarter))
-                count -= n
-        if not frames:
-            return
-        broadcast = self.addr == p.BROADCAST_ADDR
-        if (self.wait_ack or self._resync) and not broadcast:
-            self.sync()
-        err0, lost0 = len(self.async_errors), self.stats["lost_acks"]
-        self._write(b"".join(frames))
-        self._busy_until = max(self._busy_until, self._last_send) + total * interval_ms / 1000
-        if broadcast:
-            return
-        self._inflight[p.CMD_MS_REL_RUN] += len(frames)
-        if not self.wait_ack:
-            self._pump(block=False)
-            return
-        self.sync()
-        failed = self.async_errors[err0:]
-        del self.async_errors[err0:]
-        if failed:
-            raise status_error(*failed[0])
-        if self.stats["lost_acks"] != lost0:
-            self.stats["timeouts"] += 1
-            raise HidTimeout(f"no reply to {_cmd_name(p.CMD_MS_REL_RUN)} within {self.timeout * 1000:.0f} ms after the run")
-
     def release_all(self, attempts: int = 3, retry_wait: float = 0.03) -> None:
         """Release every key, media/power key and relative mouse button. Each release is a state, so
-        it is simply sent again after a failure (a Bluetooth bridge answers E6 while its buffers are
-        full). Every release is tried; afterwards the first failure is raised, so the caller knows
-        something may still be held. (An absolute pointer button is released by a report at its
-        position: see PointerModel.release_all.)"""
+        it is simply sent again after a failure. Every release is tried; afterwards the first failure
+        is raised, so the caller knows something may still be held. (An absolute pointer button is
+        released by a report at its position: see PointerModel.release_all.)"""
         frames = (
             p.kb_general(0, [], self.addr),
             p.kb_media(0, self.addr),
@@ -342,7 +243,6 @@ class CH9329Backend:
         """Software reset. The chip drops off USB and re-enumerates."""
         self._request_status(p.Cmd.RESET)
         self._parser.reset()
-        self._info = None
 
     def get_usb_string(self, kind: int) -> str:
         """kind: 0 vendor, 1 product, 2 serial number."""
@@ -370,7 +270,7 @@ class CH9329Backend:
         After a reply was given up on, first make sure it cannot arrive later (see _resync_now)."""
         if self._inflight:
             # replies trail their commands; keep waiting while they are still arriving
-            while self._inflight and time.monotonic() < max(self._last_send, self._last_rx, self._busy_until) + self.timeout:
+            while self._inflight and time.monotonic() < max(self._last_send, self._last_rx) + self.timeout:
                 self._pump(block=True)
             self._pump(block=False)
             if self._inflight:

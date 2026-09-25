@@ -4,7 +4,7 @@
 const $ = (id) => document.getElementById(id);
 const STATE_TEXT = {
   ready: "ready", busy: "busy", hid_disconnected: "HID not connected",
-  hid_offline: "HID offline", no_signal: "no signal", needs_calibration: "needs calibration",
+  hid_offline: "HID offline", no_signal: "no signal",
 };
 
 /* The API token, asked for once when the server answers 401 (or closes a socket with 4401) and kept
@@ -132,8 +132,7 @@ const grid = {
       setBadge(t.badge, st.state);
       const cal = st.calibration || {};
       t.meta.textContent = `${st.model} · ${st.kind} · ${(st.pointer || {}).mode || "relative"} pointer · ` +
-        ((st.health || {}).recalibrate ? "calibration no longer holds" :
-          cal.calibrated ? `calibrated (${cal.method})` : "not calibrated");
+        (cal.calibrated ? `calibrated (${cal.method})` : "not calibrated");
     }
   },
   addTile(id) {
@@ -281,9 +280,9 @@ const view = {
       ` · ${st.model} · ${st.kind}`;
     $("st-pointer").textContent = `${p.mode || "relative"} · ` +
       (p.pt ? `${p.pt[0]}, ${p.pt[1]} pt (${p.norm[0].toFixed(3)}, ${p.norm[1].toFixed(3)})` : "position unknown");
-    const v = cal.validation, why = (st.health || {}).recalibrate;
-    $("st-cal").textContent = (why ? `calibrate again: ${why} · ` : "") + (cal.calibrated
-      ? `${cal.method}` + (v ? ` · error mean ${v.mean} pt, max ${v.max} pt` : "") : "not calibrated");
+    const v = cal.validation;
+    $("st-cal").textContent = cal.calibrated
+      ? `${cal.method}` + (v ? ` · error mean ${v.mean} pt, max ${v.max} pt` : "") : "not calibrated";
     $("st-hid").textContent = `${p.reports || 0} reports · ${p.resends || 0} resent` +
       (this.live ? ` · live ${this.live.reports}/s` + (this.live.report_ms ? ` (${this.live.report_ms} ms)` : "") : "");
     const lr = st.last_result;

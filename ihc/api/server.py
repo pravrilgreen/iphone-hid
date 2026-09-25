@@ -61,7 +61,7 @@ DeviceId = PathParam(description="Device id, as listed by GET /api/devices", exa
 
 DESCRIPTION = """
 Control iPhones through external hardware only: the screen comes from an HDMI capture card, input goes
-through a HID chip (CH9329, or an ESP32 BLE bridge with the same protocol) acting as mouse and keyboard
+through a USB HID device (a CH9329 chip, or this host as a Linux USB gadget) acting as mouse and keyboard
 for the iOS AssistiveTouch pointer.
 
 **Coordinates** are normalized by default: (0, 0) is the top-left and (1, 1) the bottom-right corner of the
@@ -445,7 +445,7 @@ def create_app(registry, *, public_url: str | None = None, log=None, web_dir: st
     @app.get("/api/devices/{device_id}", tags=["devices"], summary="Device status", response_model=models.DeviceStatus,
              responses={404: models.ERRORS[404]})
     async def device_status(device_id: str = DeviceId):
-        """State (ready, busy, hid_disconnected, hid_offline, no_signal, needs_calibration), health, pointer,
+        """State (ready, busy, hid_disconnected, hid_offline, no_signal), health, pointer,
         calibration, HID counters and the last action's result."""
         return farm.device(device_id).status()
 

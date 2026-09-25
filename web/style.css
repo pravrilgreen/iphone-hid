@@ -92,4 +92,3 @@ dialog { background: var(--panel); color: var(--text); border: 1px solid var(--b
          padding: 16px 20px; width: min(440px, 92vw); }
 dialog::backdrop { background: rgba(0, 0, 0, .6); }
 dialog code { font-size: 12px; }
-.badge.needs_calibration::before { background: var(--warn); }

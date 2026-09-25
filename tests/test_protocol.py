@@ -111,14 +111,3 @@ def test_status_of_one_byte_replies():
     assert p.decode(p.encode(0x85, b"\x00")).status == 0
     assert p.decode(p.encode(0x81, bytes(8))).status is None
 
-
-def test_run_interval_units():
-    frame = p.mouse_rel_run(1, 0, 3, 22.5, buttons=1, quarter=True)
-    assert frame[5:10] == bytes([1, 0, 3, 90, 0x81])
-    assert p.mouse_rel_run(1, 0, 3, 20)[8:10] == bytes([20, 0])
-    import pytest
-
-    with pytest.raises(p.FrameError):
-        p.mouse_rel_run(1, 0, 3, 22.5)  # whole ms only without the flag
-    with pytest.raises(p.FrameError):
-        p.mouse_rel_run(1, 0, 3, 64.0, quarter=True)  # 256 quarter-ms units

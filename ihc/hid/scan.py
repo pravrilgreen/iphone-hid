@@ -32,7 +32,6 @@ USB_SERIAL_CHIPS = {
     (0x10C4, 0xEA60): "CP210x",
     (0x0403, 0x6001): "FT232R",
     (0x0403, 0x6015): "FT231X",
-    (0x303A, 0x1001): "ESP32-S3 USB-CDC",
 }
 
 
@@ -83,7 +82,7 @@ def list_serial_ports() -> list[PortInfo]:
 
 
 def candidate_ports(ports: Iterable[PortInfo] | None = None) -> list[PortInfo]:
-    """USB serial ports (known bridge chips first); built-in UARTs like /dev/ttyS* are left out."""
+    """USB serial ports (known USB-serial chips first); built-in UARTs like /dev/ttyS* are left out."""
     usb = [pi for pi in (ports if ports is not None else list_serial_ports()) if pi.vid is not None]
     return sorted(usb, key=lambda pi: pi.chip is None)
 

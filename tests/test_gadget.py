@@ -64,7 +64,7 @@ def test_consumer_usages_in_ch9329_bit_order():
     assert p.MEDIA_KEYS["volume_up"] == 1 and p.MEDIA_KEYS["mute"] == 4
 
 
-def test_abs_scaling_matches_bridge():
+def test_abs_scaling_rounds_to_nearest():
     assert [g.scale_abs(v) for v in (0, 1, 2048, 4095)] == [0, 8, 16388, 32767]
 
 
@@ -237,7 +237,6 @@ def test_info_reports_enumeration_and_leds(gadget):
     assert gadget.info()["caps_lock"]
     gadget.state_file.write_text("suspended\n")
     assert gadget.info()["usb_connected"] is False
-    assert gadget.supports_rel_run() is False and gadget.report_period() is None
 
 
 def test_phone_not_polling_is_a_timeout_counted_once(gadget):

@@ -114,7 +114,7 @@ def tap_errors(phone, pm, clock, n=80, seed=0):
     return [e["error_pt"] for e in taps], sum(e["hit"] for e in taps)
 
 
-@pytest.mark.parametrize("model,tracking", [("iphone-15", 1.0), ("iphone-se-3", 0.4), ("iphone-15-pro-max", 2.5)])
+@pytest.mark.parametrize("model,tracking", [("iphone-15", 1.0), ("iphone-air", 0.4), ("iphone-15-pro-max", 2.5)])
 def test_calibration_gives_accurate_taps(model, tracking):
     phone, chip, pm, clicks, clock = setup(model, tracking)
     watch = Watch(phone, chip)
