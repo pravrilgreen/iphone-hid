@@ -159,8 +159,11 @@ def hdmi_in_command(device: str, *, fps: int = 30, quality: int = 80, encoder: s
     # A one-frame leaky queue: when the encoder falls behind, old frames are dropped, not delayed.
     queue = ["queue", "max-size-buffers=1", "leaky=downstream"]
     if encoder == "mpp":
+        # videoconvert passes frames through untouched when the encoder takes the input's format as is,
+        # and converts only when it does not (the receiver's format follows the HDMI source)
         return ["gst-launch-1.0", "-q", "v4l2src", f"device={device}", "!", "videorate", "drop-only=true", "!", rate,
-                "!", *queue, "!", "mppjpegenc", f"quality={quality}", "!", "fdsink", "fd=1", "sync=false"]
+                "!", *queue, "!", "videoconvert", "!", "mppjpegenc", f"quality={quality}", "!", "fdsink", "fd=1",
+                "sync=false"]
     if encoder == "gst":
         return ["gst-launch-1.0", "-q", "v4l2src", f"device={device}", "!", "videorate", "drop-only=true", "!", rate,
                 "!", *queue, "!", "videoconvert", "!", "jpegenc", f"quality={quality}", "!", "fdsink", "fd=1",
