@@ -8,6 +8,9 @@ One Orange Pi 5 Plus per iPhone does the whole job:
 
 No HID chip, no capture card. The only other parts are a USB-C hub and cables.
 
+First time with a board? Start with the 10-minute [quick test](quick-test.md) (Vietnamese): does the
+iPhone take the board's mouse, with nothing installed.
+
 ## What you need
 
 | Part | Notes |

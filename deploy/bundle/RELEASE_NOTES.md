@@ -22,6 +22,8 @@ The console is then at `http://<board address>:8000`.
 - `./ihc-box-...run --extract DIR` only unpacks, to try the tools without installing (`DIR/bin/ihc
   gadget status`).
 
+First check, 10 minutes, nothing installed (does the iPhone take the board's mouse?):
+[docs/quick-test.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/quick-test.md).
 Wiring, checks and troubleshooting: [docs/gadget.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/gadget.md).
 
 This version has not yet been checked on a real board: it passed the test suite and a smoke test of
