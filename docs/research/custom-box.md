@@ -387,6 +387,47 @@ Rủi ro đã biết và chấp nhận được: app có DRM hiện màn đen tr
 
 ---
 
+## 13. Danh sách mua (đã chốt)
+
+Mỗi hạng mục chỉ chọn một thứ. Đồ đã có dùng lại: Orange Pi 5 Plus, hub UGREEN Revodok 105, iPhone 15.
+
+**Đợt 1: mua ngay (giai đoạn 1–2, thí nghiệm T1–T7)**
+
+| # | Món | SL | Giá (USD) | Mua ở | Để làm gì, vì sao chọn |
+|---|---|---|---|---|---|
+| 1 | WCH **CH32V307V-EVT-R1** | 2 | ~8,7/cái | LCSC C2943980 | Board MCU HID. Có cả cổng USB High-Speed (480 Mbit/s, PHY sẵn) lẫn Full-Speed, đều là Type-C, và mạch nạp WCH-LinkE ngay trên board. Cùng khối USB với CH32V305 nên firmware chuyển sang 1:1. Một cái để phát triển, một cái cho máy thứ hai hoặc dự phòng. |
+| 2 | Great Scott Gadgets **Cynthion** (có vỏ nhôm) | 1 | ~200–210 | Crowd Supply, Adafruit, Hak5 | Máy phân tích USB 2.0 High-Speed. Thấy chính xác khi nào iPhone poll (T1), descriptor, và thời điểm của từng báo cáo. Loại HS tốt nhất trong tầm giá, phần mềm Packetry mở. |
+| 3 | **JetKVM** (bản gốc, RV1106G3, bản 2026 có HDMI cỡ lớn) | 1 | 103 | jetkvm.com | Nền RV1106 + TC358743 dựng sẵn, đã chạy 1080p60. Có chế độ developer (SSH) và bộ build mở `rv1106-system`. Dùng để dựng và đo đường H.264 low-delay cùng dịch vụ điều khiển của mình (T4) mà không phải đi dây CSI. Không mua JetKVM Mini vì dùng ESP32. |
+| 4 | Board đánh giá **LT7911D** nạp sẵn firmware CSI + 5 chip LT7911D | 1 + 5 | chip ~4,9; board chưa rõ | đại lý Lontium chính thức (龙迅代理) | Thí nghiệm T2: DP Alt Mode + PD với iPhone. Yêu cầu: Type-C DP Alt Mode sink, sạc pass-through (CC kép), MIPI CSI-2 4 lane, 1080p60 và 4K30, kèm firmware, tài liệu thanh ghi, sơ đồ tham chiếu. Không có hàng bán lẻ: driver `lt7911d` không nạp firmware, còn module bán cho kính VR/màn hình là firmware DSI. Kernel Armbian của Orange Pi đã có sẵn driver `lt7911d`, nên đọc thanh ghi qua I2C trên header 40 chân là thử được. |
+| 5 | ChargerLAB **POWER-Z KM003C** | 1 | ~110 | power-z.com, Amazon | Ghi lại bản tin PD hai chiều (gồm cả bước vào DP Alt Mode) và dòng sạc. Dùng cho T2 và T5. |
+| 6 | DreamSourceLab **DSLogic Plus** | 1 | ~149 | dreamsourcelab.com, Amazon | Logic analyzer 16 kênh, 400 MHz. Soi I2C của LT7911D, link SPI/UART giữa MCU và SoC, và độ chính xác timer của MCU (bật chân GPIO ở mỗi IN-complete). |
+| 7 | Cáp **Apple Thunderbolt 4 (USB-C) Pro**, 1 m | 1 | 69 | Apple | Nối iPhone với board LT7911D. Cáp tặng kèm iPhone chỉ là USB 2.0, không có lane DP. Cáp này chắc chắn chạy DP Alt Mode với iPhone. |
+| 8 | Cáp USB-A → USB-C có dữ liệu, 0,3 m | 2 | ~5 | bất kỳ | Nối cổng USB-A của hub với board MCU (iPhone là host). |
+
+Cộng đợt 1: khoảng $700–800 (chưa tính board đánh giá LT7911D).
+
+**Dụng cụ hàn (nếu chưa có), dùng cho giai đoạn 3**
+
+| Món | Giá (USD) | Vì sao |
+|---|---|---|
+| Trạm hàn **Hakko FX-951** | ~250–300 | Chuẩn chuyên nghiệp, mũi đa dạng; kéo chì LQFP64 0,5 mm dễ |
+| Máy khò **Quick 861DW** | ~300 | Hàn QFN-64 có pad nhiệt (LT7911D) đều nhiệt |
+| Flux **Amtech NC-559-V2-TF** (hàng chính hãng) | ~25 | Flux chuẩn cho QFN/LQFP |
+| Kem hàn **Chip Quik SMD291AX10** | ~20 | Dùng với stencil cho pad QFN |
+| Kính hiển vi soi nổi **AmScope SE400-Z** | ~250 | Kiểm tra cầu chì chân 0,5 mm và pad QFN |
+
+**Đợt 2: chỉ mua khi T1–T3 đạt (PCB v1, phương án B)**
+
+| Món | SL | Giá (USD) | Mua ở |
+|---|---|---|---|
+| Luckfox **Core1106** (RV1106G3, 256 MB) | 3 | 16–27/cái | Waveshare, Luckfox |
+| **CH32V305RBT6** | 10 | ~1,33/cái | LCSC |
+| LT7911D (nạp firmware CSI) | 5 | ~4,9/cái | đại lý Lontium (lấy luôn ở đợt 1) |
+| PCB 4 lớp có kiểm soát trở kháng + stencil, 5–10 bo | 1 lô | ước tính 50–150 | JLCPCB |
+| Linh kiện còn lại (USB-C, CH224K, nguồn, RJ45, Wi-Fi SDIO) | theo BOM | ~10–15/bo | LCSC, chốt khi vẽ mạch |
+
+---
+
 ## Nguồn
 
 **HID và MCU**
@@ -424,3 +465,13 @@ Rủi ro đã biết và chấp nhận được: app có DRM hiện màn đen tr
 - Luckfox Core1106: https://www.waveshare.com/core1106.htm
 - Luckfox Pico Zero: https://www.waveshare.com/luckfox-pico-zero.htm
 - Bài thử các IP-KVM của Jeff Geerling: https://www.jeffgeerling.com/blog/2026/i-tested-every-ip-kvm/
+
+**Danh sách mua**
+- CH32V307V-EVT-R1 trên LCSC: https://www.lcsc.com/product-detail/C2943980.html
+- CH32V307V-EVT-R1 (tài liệu Zephyr, cổng USB và WCH-LinkE): https://docs.zephyrproject.org/latest/boards/wch/ch32v307v_evt_r1/doc/index.html
+- Cynthion: https://greatscottgadgets.com/cynthion/
+- JetKVM, chế độ developer: https://jetkvm.com/docs/advanced-usage/developing
+- JetKVM, phần cứng và giá 2026: https://jetkvm.com/blog/new-internals-new-ports-price-update
+- POWER-Z KM003C: https://www.power-z.com/products/chargerlab-power-z-km003c
+- DSLogic Plus: https://www.dreamsourcelab.com/shop/logic-analyzer/dslogic-plus/
+- Driver `lt7911d` trong Rockchip BSP: https://github.com/rockchip-linux/kernel/tree/develop-5.10/drivers/media/i2c
