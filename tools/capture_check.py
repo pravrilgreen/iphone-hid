@@ -16,6 +16,7 @@ No image analysis: it measures delivery only. Results go to a JSON-lines log in 
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import statistics
 import subprocess
@@ -33,7 +34,7 @@ from ihc.registry import open_video_source  # noqa: E402
 from ihc.video.capture import V4L2Capture, list_video_devices  # noqa: E402
 from ihc.video.pipe import is_hdmi_input  # noqa: E402
 
-LOG_DIR = ROOT / "docs" / "test-logs"
+LOG_DIR = Path(os.environ.get("IHC_TEST_LOG_DIR") or ROOT / "docs" / "test-logs")
 
 
 def formats(device: str) -> str:

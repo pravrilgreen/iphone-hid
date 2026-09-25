@@ -176,10 +176,11 @@ def test_mjpeg_viewer_disconnect_is_cleaned_up(hosts):
                     if got.count(b"Content-Length") >= 2:
                         break
                 assert hub.watchers == 1
-    deadline = time.monotonic() + 5
-    while hub.watchers:
-        assert time.monotonic() < deadline, "the stream kept its viewer after the client left"
-        time.sleep(0.01)
+            # the server notices the disconnect on its next frame, a moment after the client left
+            deadline = time.monotonic() + 5
+            while hub.watchers:
+                assert time.monotonic() < deadline, "the stream kept its viewer after the client left"
+                time.sleep(0.01)
 
 
 def test_cli_devices(hosts, capsys, tmp_path, monkeypatch):

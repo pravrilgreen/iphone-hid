@@ -16,6 +16,7 @@ Moves are in HID units (the -127..127 steps a mouse reports), not pixels: nothin
 from __future__ import annotations
 
 import argparse
+import os
 import cmd
 import json
 import platform
@@ -38,7 +39,7 @@ from ihc.hid.scan import candidate_ports, list_serial_ports  # noqa: E402
 from ihc.input import keymap  # noqa: E402
 from ihc.jsonlog import EventLog  # noqa: E402
 
-LOG_DIR = ROOT / "docs" / "test-logs"
+LOG_DIR = Path(os.environ.get("IHC_TEST_LOG_DIR") or ROOT / "docs" / "test-logs")
 BUTTONS = {"left": p.MOUSE_LEFT, "right": p.MOUSE_RIGHT, "middle": p.MOUSE_MIDDLE}
 REQUIRED = object()
 # Frames `raw` refuses to send: they write chip flash. Use the `cfg` commands instead.

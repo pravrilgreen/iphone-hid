@@ -1,0 +1,63 @@
+# Build the self-contained ARM64 box bundle, check it under emulation, and publish it as a release.
+# Runs when a version tag (v0.1.0, ...) is pushed, or by hand for an existing tag.
+name: Release box bundle
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and release, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Tag matches the package version
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)"
+          [ "$TAG" = "v$version" ] || { echo "tag $TAG does not match pyproject version $version"; exit 1; }
+
+      - name: Test suite
+        run: |
+          pip install -r deploy/bundle/requirements.txt pytest pytest-timeout
+          python -m pytest -q -m "not slow"
+
+      - name: Build the bundle
+        run: tools/build_bundle.sh
+
+      - name: ARM64 emulator with an Ubuntu 22.04 user space
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qemu-user
+          curl -fsSL -o /tmp/base.tgz \
+            https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.5-base-arm64.tar.gz
+          mkdir -p /tmp/jammy-arm64
+          tar -xzf /tmp/base.tgz -C /tmp/jammy-arm64 --exclude='dev/*'
+
+      - name: Smoke test the bundle on ARM64
+        run: QEMU_LD_PREFIX=/tmp/jammy-arm64 tools/check_bundle.sh dist/*.run
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          (cd dist && sha256sum *.run > SHA256SUMS)
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "iphone-hid $TAG" --notes-file deploy/bundle/RELEASE_NOTES.md
+          gh release upload "$TAG" dist/*.run dist/SHA256SUMS --clobber

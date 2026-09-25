@@ -43,7 +43,7 @@ EVENT = struct.Struct("llHHi")  # struct input_event: timeval (2 x long), type, 
 EVIOCGRAB = 0x40044590
 EVIOCSCLOCKID = 0x400445A0
 CLOCK_MONOTONIC = 1
-LOG_DIR = ROOT / "docs" / "test-logs"
+LOG_DIR = Path(os.environ.get("IHC_TEST_LOG_DIR") or ROOT / "docs" / "test-logs")
 
 
 @dataclass
