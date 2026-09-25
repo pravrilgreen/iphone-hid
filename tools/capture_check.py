@@ -32,6 +32,7 @@ if str(ROOT) not in sys.path:
 from ihc.jsonlog import EventLog  # noqa: E402
 from ihc.registry import open_video_source  # noqa: E402
 from ihc.video.capture import V4L2Capture, list_video_devices  # noqa: E402
+from ihc.video.diagnose import diagnose  # noqa: E402
 from ihc.video.pipe import is_hdmi_input  # noqa: E402
 from ihc.video.v4l2 import describe_signal  # noqa: E402
 
@@ -140,6 +141,10 @@ def main(argv: list[str] | None = None) -> int:
             print("    " + formats(d["device"]).replace("\n", "\n    "))
             if is_hdmi_input(d["name"]):
                 print("    HDMI input; the source sends:\n    " + dv_timings(d["device"]).replace("\n", "\n    "))
+        if not any(is_hdmi_input(d["name"]) for d in devs):
+            print("\nno HDMI input (hdmirx) among them. What this board says:")
+            for line in diagnose():
+                print("  " + line)
         return 0
     if not args.device:
         ap.error("--device is required")

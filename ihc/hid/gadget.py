@@ -117,11 +117,13 @@ FUNCTIONS = {
 }
 ORDER = ("keyboard", "consumer", "system", "mouse", "absolute")
 
-# Profiles: RA = relative + absolute pointer, A = absolute only, R = relative only, K = keyboard only.
-# iOS may keep the descriptor it saw for a known device, so each profile has its own serial number.
+# Profiles: RA = relative + absolute pointer, AR = the same with the absolute pointer first, A = absolute
+# only, R = relative only, K = keyboard only. Functions become interfaces in the order listed. iOS may
+# keep the descriptor it saw for a known device, so each profile has its own serial number.
 PROFILES = {
     "RA": ("keyboard", "consumer", "mouse", "absolute"),  # keyboard + media keys + both pointers
-    "A": ("keyboard", "consumer", "absolute"),
+    "AR": ("keyboard", "consumer", "absolute", "mouse"),  # JetKVM's order: absolute before relative
+    "A": ("keyboard", "consumer", "absolute"),  # Aiden's layout: the absolute pointer is the only one
     "R": ("keyboard", "consumer", "mouse"),
     "K": ("keyboard",),
 }
@@ -173,7 +175,18 @@ def gadget_functions(name: str = DEFAULT_NAME, configfs: str = CONFIGFS) -> list
     """Our HID functions linked into the gadget's configuration, in interface order."""
     conf = Path(configfs) / name / "configs" / "c.1"
     present = {e.name[4:] for e in conf.iterdir() if e.name.startswith("hid.")} if conf.is_dir() else set()
-    return [f for f in ORDER if f in present]
+    order = PROFILES.get(gadget_profile(name, configfs) or "", ())
+    return [f for f in order if f in present] + [f for f in ORDER if f in present and f not in order]
+
+
+def gadget_profile(name: str = DEFAULT_NAME, configfs: str = CONFIGFS) -> str | None:
+    """The profile the gadget was set up with (from its serial number ihc-<profile>), if known."""
+    try:
+        serial = (Path(configfs) / name / "strings" / "0x409" / "serialnumber").read_text().strip()
+    except OSError:
+        return None
+    profile = serial[4:] if serial.startswith("ihc-") else ""
+    return profile if profile in PROFILES else None
 
 
 def gadget_nodes(name: str = DEFAULT_NAME, configfs: str = CONFIGFS, sysfs: str = "/sys", dev: str = "/dev") -> dict[str, str]:

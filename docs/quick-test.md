@@ -46,6 +46,21 @@ sudo ~/ihc/bin/ihc gadget up --owner $USER               # 2. board thành bàn 
 Lệnh này đưa con trỏ tới 4 góc rồi ra giữa màn hình, sau đó hỏi bạn thấy gì. Con trỏ nhảy đúng tới góc nghĩa là
 iPhone theo được chuột tuyệt đối: mỗi tap nhanh và chính xác nhất.
 
+Con trỏ không nhúc nhích thì thử lại với hai cách xếp khác. `A` chỉ có chuột tuyệt đối, không có chuột tương đối.
+`AR` có cả hai, chuột tuyệt đối đứng trước. Mỗi cách iPhone thấy là một thiết bị mới, nên sau mỗi lệnh `up` chờ
+`ihc gadget status` báo `configured` rồi mới thử:
+
+```bash
+sudo ~/ihc/bin/ihc gadget up --replace --profile A --owner $USER
+~/ihc/bin/ihc-hidtest --gadget "info; abstest"
+sudo ~/ihc/bin/ihc gadget up --replace --profile AR --owner $USER
+~/ihc/bin/ihc-hidtest --gadget "info; abstest"
+sudo ~/ihc/bin/ihc gadget up --replace --owner $USER        # trả về mặc định (RA)
+```
+
+Không cách nào chạy cũng không sao: server mặc định dùng chuột tương đối, như bài thử trên. Ghi lại phiên bản iOS
+(**Settings > General > About**) cùng kết quả.
+
 Thử xong thì gỡ: `sudo ~/ihc/bin/ihc gadget down`. Log của `ihc-hidtest` nằm trong `~/ihc-test-logs/`.
 
 ### Nếu chuột không được
@@ -107,7 +122,7 @@ chỉ một chương trình điều khiển iPhone. `Ctrl+C` để dừng.
 
 | Hiện tượng | Nguyên nhân thường gặp |
 |---|---|
-| `list` không có dòng nào chứa `hdmirx` | kernel của image không có driver HDMI IN. Gửi kết quả của `ls /dev/video*`, `cat /sys/class/video4linux/*/name` và `sudo dmesg \| grep -i hdmi` |
+| `list` không có dòng nào chứa `hdmirx` (hoặc báo `no /dev/video* devices`) | image của board chưa bật HDMI IN. Từ bản 0.1.5, `list` tự in lý do: device tree tắt cổng, kernel thiếu driver, hay driver chưa nạp (dòng bắt đầu bằng `=>`). Gửi lại toàn bộ kết quả đó cùng `sudo dmesg \| grep -i hdmirx` |
 | `no signal` | mở khoá iPhone; kiểm tra dây HDMI cắm vào cổng **HDMI IN**; thử cắm lại hub vào iPhone. Cắm thử cổng HDMI của hub vào một màn hình bất kỳ: màn hình cũng không có hình thì lỗi ở hub hoặc dây |
 | `Permission denied` | thêm nhóm `video` như trên, hoặc chạy lệnh với `sudo` |
 | `snapshot` báo `delivers XXXX, which this reader cannot convert` | gửi nguyên văn dòng đó |

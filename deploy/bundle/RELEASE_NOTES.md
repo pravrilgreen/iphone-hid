@@ -26,6 +26,9 @@ First checks, nothing installed (does the iPhone take the board's mouse, does th
 iPhone's screen?): [docs/quick-test.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/quick-test.md).
 Wiring, checks and troubleshooting: [docs/gadget.md](https://github.com/pravrilgreen/iphone-hid/blob/main/docs/gadget.md).
 
-Checked on a real board: an Orange Pi 5 Plus on Armbian (vendor kernel 6.1) with an iPhone 15 takes
-the board's keyboard and mouse. The HDMI input has not been checked on a real board yet: it passed
-the test suite and a smoke test of the bundle under ARM64 emulation with an Ubuntu 22.04 user space.
+Checked on a real board: an iPhone 15 on an Orange Pi 5 Plus with Armbian (vendor kernel 6.1)
+follows the board's relative mouse. It ignored the absolute pointer in the default layout; this
+version adds the `AR` layout to try next to `A`. That Armbian image shows no HDMI input device:
+`ihc-capture-check list` now says why. The HDMI input has not been checked on a real board yet: it
+passed the test suite and a smoke test of the bundle under ARM64 emulation with an Ubuntu 22.04 user
+space.

@@ -2,6 +2,7 @@
 
     sudo ihc gadget up              # keyboard + media keys + relative and absolute mouse
     sudo ihc gadget up --profile A  # absolute pointer only (no relative mouse)
+    sudo ihc gadget up --profile AR # both pointers, the absolute one first
     ihc gadget status               # is a USB device controller there, did the phone enumerate?
     sudo ihc gadget down
 
@@ -73,7 +74,8 @@ def add_arguments(ap: argparse.ArgumentParser) -> None:
     up = sub.add_parser("up", help="create the gadget and bind it to the USB device controller")
     up.add_argument("--profile", default="RA", choices=list(g.PROFILES),
                     help="RA: keyboard, media keys, relative mouse and absolute pointer (default); "
-                         "A: absolute only; R: relative only; K: keyboard only")
+                         "AR: the same with the absolute pointer first; A: absolute only; R: relative only; "
+                         "K: keyboard only")
     up.add_argument("--udc", help="USB device controller (default: the only one)")
     up.add_argument("--owner", default=os.environ.get("SUDO_USER"),
                     help="user who gets the /dev/hidg* nodes (default: the one who ran sudo)")

@@ -105,6 +105,17 @@ def test_profile_without_relative_mouse(fs):
     assert (configfs / "ihc" / "strings" / "0x409" / "serialnumber").read_text() == "ihc-A"  # a new identity
 
 
+def test_profile_with_the_absolute_pointer_first(fs, monkeypatch):
+    configfs, sysfs = fs
+    linked = []
+    real_symlink = os.symlink
+    monkeypatch.setattr(os, "symlink", lambda src, dst: (linked.append(Path(dst).name), real_symlink(src, dst)))
+    g.gadget_up("ihc", "AR", configfs=str(configfs), sysfs=str(sysfs))
+    assert linked == ["hid.keyboard", "hid.consumer", "hid.absolute", "hid.mouse"]  # = interface order
+    assert g.gadget_profile("ihc", str(configfs)) == "AR"
+    assert g.gadget_functions("ihc", str(configfs)) == ["keyboard", "consumer", "absolute", "mouse"]
+
+
 def test_up_refuses_what_it_cannot_do(fs):
     configfs, sysfs = fs
     with pytest.raises(g.GadgetError, match="unknown profile"):

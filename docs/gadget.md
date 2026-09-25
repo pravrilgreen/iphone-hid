@@ -124,7 +124,8 @@ Profiles:
 | Profile | Contents |
 |---|---|
 | `RA` (default) | Keyboard, media keys, relative mouse and absolute pointer |
-| `A` | Absolute pointer only |
+| `AR` | The same, with the absolute pointer before the relative mouse (JetKVM's order) |
+| `A` | Absolute pointer only (Aiden's layout) |
 | `R` | Relative mouse only |
 | `K` | Keyboard only |
 
@@ -152,7 +153,8 @@ signal goes away or changes. `ihc-capture-check probe --device /dev/video0 --enc
 | `ihc gadget up` says the controller is used by another gadget | The image runs its own gadget, usually ADB. `ihc gadget status` names it. Stop it, then run `up` again |
 | `ihc gadget status` stays at `not attached` | Wrong cable or wrong port. Use USB-A to USB-C, and the Type-C port next to the USB 3 ports |
 | `info` says NOT connected on the iPhone | The iPhone is locked, or it asked to allow the accessory. Unlock it and answer Allow |
-| No `rk_hdmirx` video device | This kernel lacks the HDMI input driver. Use the Orange Pi image |
+| No `rk_hdmirx` video device | The board image does not turn the HDMI input on. `ihc-capture-check list` says why: the device tree leaves it off, the kernel has no driver, or the driver module is not loaded. Orange Pi's own image enables it |
+| `abstest`: the pointer does not move | Try the other layouts, `--profile A` then `--profile AR` (see Profiles). If none moves it, the box works with the relative mouse, which the server uses by default; note the iOS version |
 | Video at 4K, or `hdmi_input_edid` with an error in the server log | The driver refused the EDID: replug the HDMI cable and restart the service; if it persists, send the log line |
 | Video status "no usable HDMI signal" | The iPhone is locked, or the hub gets no picture out of it: unlock it, replug the hub |
 
