@@ -41,4 +41,7 @@ curl -sf -H "$AUTH" "$URL/api/devices/iphone-sim/sim" | grep -q '"app":"Notes"' 
 curl -sf -H "$AUTH" -o "$WORK/shot.jpg" "$URL/api/devices/iphone-sim/screenshot?format=jpeg&wait=true"
 [ "$(head -c 2 "$WORK/shot.jpg" | od -An -tx1 | tr -d ' ')" = ffd8 ] || { echo "the screenshot is not a JPEG"; exit 1; }
 curl -sf "$URL/" | grep -q "<canvas id=\"screen\"" || { echo "no console"; exit 1; }
+# doctor runs anywhere; off the board it reports problems (exit 1) but must still answer in JSON
+$BIN doctor --json > "$WORK/doctor.json" || true
+grep -q '"id": "usb-port"' "$WORK/doctor.json" || { echo "doctor gave no report:"; cat "$WORK/doctor.json"; exit 1; }
 echo "bundle OK"
