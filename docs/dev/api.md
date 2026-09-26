@@ -128,7 +128,9 @@ with Farm("http://box-a.local:8000", "http://box-b.local:8000", token="...") as 
     png = phone.screenshot("screen.png")
 ```
 
-`Farm.discover()` finds the boxes on the local network (`pip install "iphone-hid[discovery]"`).
+`Farm.discover()` finds the boxes on the local network (the `discovery` extra:
+`pip install "iphone-hid[discovery] @ git+https://github.com/pravrilgreen/iphone-hid"`), with the scheme
+each box announces (`http` or `https`).
 The token defaults to `$IHC_TOKEN`. Failed calls raise `IhcError` with `status_code` and `code`.
 
 The `ihc` command does the same from a shell: `ihc devices`, `ihc tap 0.5 0.5`,

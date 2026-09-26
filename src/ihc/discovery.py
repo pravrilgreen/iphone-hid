@@ -24,8 +24,9 @@ def discover(timeout: float = 2.0) -> list[str]:
             info = zc.get_service_info(type_, name, timeout=int(timeout * 1000))
             if info and info.addresses and info.port:
                 ip = socket.inet_ntoa(info.addresses[0])
+                scheme = (info.properties or {}).get(b"scheme") or b"http"
                 with lock:
-                    found[name] = f"http://{ip}:{info.port}"
+                    found[name] = f"{scheme.decode()}://{ip}:{info.port}"
 
         def update_service(self, zc, type_, name):
             self.add_service(zc, type_, name)

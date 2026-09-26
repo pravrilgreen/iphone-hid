@@ -65,22 +65,57 @@ It installs `/opt/ihc/bin/ihcd` (also on the path as `ihcd`), the udev rules, an
 - `ihcd-gadget` makes the board's USB-C port the iPhone's touch pointer and keyboard at boot;
 - `ihcd` serves the console and the API on port 8000.
 
-Updating is the same command with the newer file; the token stays. An earlier box version (the
-services `ihc` and `ihc-gadget`) is replaced.
+Updating is the same command with the newer file; the token stays. Going back to an older version
+is the same command with the older file. An earlier box version (the services `ihc` and
+`ihc-gadget`) is replaced.
+
+For a farm, give every box the same token at install, so one token opens every console and the SDK
+needs one setting: `sudo IHC_TOKEN=<token> sh ihc-box-*-linux-arm64.run` (at least 20 random
+characters, e.g. from `head -c 18 /dev/urandom | base64`).
 
 The console is at `http://<board address>:8000` and asks for the token once
 (`sudo cat /var/lib/ihc/token`). The phone is named `iphone-` followed by six characters derived from
 the board's serial number, so every box of a farm has its own name.
 
-Settings go in `/etc/default/ihc`, then `sudo systemctl restart ihcd`:
+Settings go in `/etc/default/ihc` as one `IHCD_ARGS` line, then `sudo systemctl restart ihcd`:
 
 ```sh
-IHCD_ARGS="--id iphone-a01"            # the phone's name on the network
-IHCD_ARGS="--landscape"                 # the phone mirrors in landscape
-IHCD_ARGS="--settle 120ms"              # wait longer before a press that follows a jump
+IHCD_ARGS="--id iphone-a01 --landscape"
 ```
 
+| Flag | Effect |
+|---|---|
+| `--id iphone-a01` | The phone's name on the network; name boxes after the phone they hold |
+| `--landscape` | The phone mirrors in landscape |
+| `--settle 120ms` | Wait longer before a press that follows a jump |
+| `--home button` | Home through the secondary pointer button instead of Cmd+H |
+| `--addr 10.0.0.5:8000` | Listen on one interface only |
+| `--allow-host box-a.lab.example.com` | Answer to this DNS name (repeatable) |
+| `--tls-cert FILE --tls-key FILE` | Serve HTTPS |
+
 `ihcd serve -h` lists every flag.
+
+## Network and security
+
+- The box serves plain HTTP on port 8000 of every interface. Put the boxes on a network of their
+  own (a VLAN for the lab), or serve HTTPS and bind the lab interface:
+
+  ```sh
+  sudo install -d -m 750 -o root -g ihc /etc/ihc
+  sudo install -m 640 -o root -g ihc cert.pem key.pem /etc/ihc/
+  # /etc/default/ihc
+  IHCD_ARGS="--addr 10.0.0.5:8000 --tls-cert /etc/ihc/cert.pem --tls-key /etc/ihc/key.pem"
+  ```
+
+  The console and the SDK then use `https://`; `Farm.discover()` picks the scheme up from the box's
+  announcement.
+- The box answers to its IP addresses, `localhost`, `*.local` names and its host name. A DNS name
+  of your own needs `--allow-host`, or the box answers 403.
+- The token: `/var/lib/ihc/token`, readable by the service only. To change it, write a new one there
+  (`sudo sh -c 'head -c 18 /dev/urandom | base64 > /var/lib/ihc/token'`) and restart `ihcd`;
+  consoles then ask for it again.
+- Whoever has the token drives the phone like a person holding it. On a phone with the passcode off,
+  keep the token and the network as safe as the phone itself.
 
 ## Check it
 

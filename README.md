@@ -15,7 +15,7 @@ Recorded against the simulated iPhone with `make demo`.
 - **Live screen** in the browser, cut to the phone, at the phone's frame rate.
 - **Touch as it happens.** Click to tap, drag to swipe or move things, scroll with the wheel, hold for
   a long press. The box drives the iPhone's absolute pointer, so every touch lands where it was made.
-- **Keyboard.** Type straight onto the phone, or paste text.
+- **Keyboard.** Type straight onto the phone, or paste text (printable ASCII).
 - **Phone buttons.** Home, App Switcher, Search, volume, mute, play/pause, and wake.
 - **Automation.** A REST API with an OpenAPI description, a WebSocket for live control, a Python SDK
   and the `ihc` command. Boxes announce themselves on the local network.
@@ -38,14 +38,50 @@ Recorded against the simulated iPhone with `make demo`.
 
 ## Performance
 
-| Path | Measured |
-|---|---|
-| Touch on the box: from the input arriving to its report queued on the USB port | under 0.1 ms typical, 0.3 ms at worst |
-| JPEG encoding of the phone screen (498 × 1080) | 3.0 ms per frame |
-| Frame rate | the iPhone's mirror rate, up to 60 fps |
+| Path | Measured | Where |
+|---|---|---|
+| Touch on the box: from the input arriving to its report queued on the USB port | under 0.1 ms typical, 0.3 ms at worst | `ihcd`, simulated iPhone, development machine |
+| The iPhone collecting a queued report | 2.6 ms | Orange Pi 5 Plus and iPhone 15, earlier box software |
+| JPEG encoding of the phone screen (498 × 1080) | 3.0 ms per frame | development machine (x86-64); not yet measured on the board |
 
-Measured with the simulated iPhone on a development machine. On each box, the console's top bar
-shows the touch latency, the picture rate and age, and the network round trip, live.
+A scripted tap takes about 260 ms by design: the pointer settles for 80 ms after a jump, the press
+lasts 80 ms, then the releases. The picture runs at the iPhone's mirror rate, up to 60 fps with the
+box's 1080p60 EDID; the glass-to-glass video latency on the board is not measured yet. On each box,
+the console's top bar shows the touch latency, the picture rate and age, and the network round trip,
+live.
+
+## Status
+
+- **On a real iPhone:** the box's USB gadget and its absolute pointer were confirmed on an iPhone 15
+  with the earlier box software (iOS version not recorded). `ihcd` sets up the same gadget; its run
+  through the [hardware check](docs/guide/hardware-check.md) on a board is pending, and its results
+  will be published in `docs/test-logs/`.
+- **Everything else** (the console, the API, the SDK, the touch engine, the fault states) is tested
+  against the simulated iPhone, in CI and in the demo videos.
+- **Early software:** the API may still change before 1.0; changes are listed in the
+  [changelog](CHANGELOG.md).
+
+## Limits
+
+- One pointer: taps, drags, swipes, long presses and the wheel. No pinch or other multi-touch.
+- Typing takes printable ASCII on the U.S. hardware keyboard layout; other text is refused, not
+  mistyped.
+- The AssistiveTouch pointer shows on the screen, and so in screenshots.
+- Apps that protect their content (DRM video) show black over HDMI.
+- The box works as a person with a mouse and keyboard would: it does not install apps, read logs or
+  inspect the UI tree.
+
+## Security
+
+- Every call except `/api/health` needs the box's token, a random string in `/var/lib/ihc/token`
+  that only the service can read. WebSockets and image URLs pass it as `?token=`.
+- The box serves plain HTTP on port 8000 of every interface. Keep boxes on a network of their own,
+  or serve HTTPS (`--tls-cert`, `--tls-key`) and bind one interface (`--addr`): see
+  [install](docs/guide/install.md#network-and-security).
+- Pages of other origins are refused, and so are host names the box does not know (DNS names need
+  `--allow-host`).
+- Whoever has the token drives the phone like a person holding it; with the phone's passcode off,
+  guard the token like the phone. Report vulnerabilities as [SECURITY.md](SECURITY.md) says.
 
 ## What each box needs
 
@@ -58,7 +94,8 @@ shows the touch latency, the picture rate and age, and the network round trip, l
 | USB-A to USB-C cable (data) | Hub's USB-A to the board's Type-C USB 3 port |
 | Ethernet | API and console |
 
-Phones: iPhone 15 and later with USB-C, except iPhone 16e and 17e, which have no video output.
+Phones: iPhone 15 and later with USB-C, except iPhone 16e, iPhone 17e and iPhone Air, which have no
+video output. Each box drives one phone; a lab runs one box per phone.
 
 ![Wiring: the iPhone connects to the hub with one cable; the hub's HDMI goes to the board's HDMI IN, its USB-A port to the board's Type-C USB 3 port](docs/images/diagram-wiring-box.png)
 
@@ -107,14 +144,15 @@ curl -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
      -d '{"x": 0.5, "y": 0.93}' http://box.local:8000/api/devices/iphone-b40d9e/tap
 ```
 
-`pip install "iphone-hid[discovery]"` installs the SDK and the `ihc` command. The API is described
+`pip install "iphone-hid[discovery] @ git+https://github.com/pravrilgreen/iphone-hid"` installs the
+SDK and the `ihc` command (it is not on PyPI). The API is described
 at `/api/openapi.json` on every box and in the [API reference](docs/dev/api.md).
 
 ## Roadmap
 
 | Stage | Status |
 |---|---|
-| Orange Pi 5 Plus box: touch, keyboard, buttons, screen, API, console | Software done; confirmed on an iPhone 15: the absolute pointer |
+| Orange Pi 5 Plus box: touch, keyboard, buttons, screen, API, console | Software done and tested against the simulated iPhone; the absolute pointer confirmed on an iPhone 15; the hardware check of `ihcd` pending |
 | Purpose-built box: the iPhone's USB-C straight into an LT7911D bridge, a CH32V305 USB controller, an RV1106 SoC running `ihcd` | Schematic designed to pin level: [hardware/box-v1](hardware/box-v1/README.md) (KiCad 8, sheets, BOM, checks); the LT7911D pinout awaits the vendor datasheet. Study: [custom box](docs/research/custom-box.md) |
 
 ## Repository

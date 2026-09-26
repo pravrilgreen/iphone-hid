@@ -106,11 +106,17 @@ func serve(args []string) error {
 	home := fl.String("home", "keys", "how Home is pressed: keys (Cmd+H) or button (secondary pointer button mapped to Home)")
 	noMDNS := fl.Bool("no-mdns", false, "do not announce the box on the network")
 	webDir := fl.String("web", "", "serve the console from this directory (development)")
+	tlsCert := fl.String("tls-cert", "", "serve HTTPS with this certificate (PEM; with --tls-key)")
+	tlsKey := fl.String("tls-key", "", "the certificate's private key (PEM)")
 	var allow multiFlag
 	fl.Var(&allow, "allow-host", "another host name the box answers to (repeatable)")
 	_ = fl.Parse(args)
 
 	logger := log.New(os.Stderr, "", log.LstdFlags)
+	if (*tlsCert == "") != (*tlsKey == "") {
+		return errors.New("--tls-cert and --tls-key go together")
+	}
+	useTLS := *tlsCert != ""
 	if err := input.SetHomeMethod(*home); err != nil {
 		return err
 	}
@@ -177,7 +183,7 @@ func serve(args []string) error {
 	}
 	port := ln.Addr().(*net.TCPAddr).Port
 	if !*noMDNS {
-		if m, err := server.Advertise(deviceID, port, version, tok != ""); err != nil {
+		if m, err := server.Advertise(deviceID, port, version, tok != "", useTLS); err != nil {
 			logger.Printf("mDNS announcement failed: %v", err)
 		} else {
 			defer m.Shutdown()
@@ -194,8 +200,17 @@ func serve(args []string) error {
 	if *simulate {
 		what = "a simulated iPhone"
 	}
-	logger.Printf("ihcd %s: %s on http://%s/ (%s, JPEG by %s)", version, deviceID, displayAddr(ln.Addr()), what, video.EncoderName)
-	if err := httpSrv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	scheme := "http"
+	if useTLS {
+		scheme = "https"
+	}
+	logger.Printf("ihcd %s: %s on %s://%s/ (%s, JPEG by %s)", version, deviceID, scheme, displayAddr(ln.Addr()), what, video.EncoderName)
+	if useTLS {
+		err = httpSrv.ServeTLS(ln, *tlsCert, *tlsKey)
+	} else {
+		err = httpSrv.Serve(ln)
+	}
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil

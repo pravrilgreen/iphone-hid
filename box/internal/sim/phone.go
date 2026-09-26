@@ -66,6 +66,9 @@ const appsPerPage = 20
 
 func pages() int { return (len(Apps) + appsPerPage - 1) / appsPerPage }
 
+// stillAfter is how long without a report counts as a finger resting (drag's rest_ms is 200 ms).
+const stillAfter = 0.1
+
 // Phone is a simulated iPhone. It is a hid.Sink and a video.Source.
 type Phone struct {
 	mu sync.Mutex
@@ -167,12 +170,12 @@ func (p *Phone) Pointer(r hid.Pointer) error {
 	was := p.ptr.Buttons
 	if p.ptrKnown && now.After(p.lastMove) {
 		dt := now.Sub(p.lastMove).Seconds()
-		if dt > 0 && dt < 0.2 {
+		if dt > 0 && dt < stillAfter {
 			vx, vy := (x-p.lastPt[0])/dt, (y-p.lastPt[1])/dt
 			p.velocity[0] = 0.6*vx + 0.4*p.velocity[0]
 			p.velocity[1] = 0.6*vy + 0.4*p.velocity[1]
-		} else if dt >= 0.2 {
-			p.velocity = [2]float64{}
+		} else if dt >= stillAfter {
+			p.velocity = [2]float64{} // the finger rested: lifting it now flings nothing, as on iOS
 		}
 	}
 	p.lastPt, p.lastMove = [2]float64{x, y}, now

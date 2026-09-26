@@ -10,7 +10,7 @@ import (
 
 // Advertise announces the box on the local network as _ihc._tcp, so test runners find it without
 // configuration. Stop the returned server to withdraw it.
-func Advertise(id string, port int, version string, auth bool) (*mdns.Server, error) {
+func Advertise(id string, port int, version string, auth, tls bool) (*mdns.Server, error) {
 	host, _ := os.Hostname()
 	authTxt := "none"
 	if auth {
@@ -24,7 +24,11 @@ func Advertise(id string, port int, version string, auth bool) (*mdns.Server, er
 			}
 		}
 	}
-	txt := []string{"api=/api", "devices=1", "version=" + version, "auth=" + authTxt, "id=" + id}
+	scheme := "http"
+	if tls {
+		scheme = "https"
+	}
+	txt := []string{"api=/api", "devices=1", "version=" + version, "auth=" + authTxt, "id=" + id, "scheme=" + scheme}
 	svc, err := mdns.NewMDNSService(id, "_ihc._tcp", "", host+".", port, ips, txt)
 	if err != nil {
 		return nil, fmt.Errorf("mDNS: %w", err)

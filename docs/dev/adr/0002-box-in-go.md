@@ -30,4 +30,5 @@ pointer, so the relative-pointer model and its calibration no longer carry their
   gone. The API keeps its shape (`/api/devices/{id}/tap` and so on), without the calibration
   endpoints and the `space` parameter.
 - The bundle shrinks from 72 MB to 3.4 MB and starts in milliseconds.
-- The purpose-built box (RV1106) runs the same binary; its MCU firmware (C) comes next.
+- The purpose-built box (RV1106, 32-bit ARM) can run the same software once it is built for
+  linux/arm (GOARM=7); that build and the box's MCU firmware (C) are not done yet.
