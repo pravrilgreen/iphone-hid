@@ -31,6 +31,7 @@ type Config struct {
 	AllowHosts []string // extra host names the box answers to (besides IPs, localhost, *.local, its hostname)
 	Web        fs.FS    // the console's static files
 	Log        *log.Logger
+	SimState   func() any // with a simulated phone: what it shows, served at /api/devices/{id}/sim
 }
 
 // Server is the box's API.
@@ -72,6 +73,11 @@ func (s *Server) routes() {
 	m.Handle("GET /api/devices/{id}/stream", s.auth(s.device(s.stream)))
 	m.Handle("GET /api/devices/{id}/control", s.auth(s.device(s.control)))
 	m.Handle("POST /api/devices/{id}/orientation", s.auth(s.device(s.orientation)))
+	if s.cfg.SimState != nil {
+		m.Handle("GET /api/devices/{id}/sim", s.auth(s.device(func(w http.ResponseWriter, _ *http.Request) {
+			writeJSON(w, http.StatusOK, s.cfg.SimState())
+		})))
+	}
 	m.Handle("POST /api/devices/{id}/{action}", s.auth(s.device(s.action)))
 	if s.cfg.Web != nil {
 		files := http.FileServer(http.FS(s.cfg.Web))

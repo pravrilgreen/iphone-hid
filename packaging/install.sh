@@ -1,36 +1,50 @@
 #!/bin/sh
-# Install iphone-hid as a plug-and-play box on a Debian/Ubuntu host: the Orange Pi 5 Plus all-in-one
-# box (its USB-C port is the iPhone's keyboard and mouse, its HDMI input the video), or any Linux
-# host with CH9329 cables and USB capture cards.
-# Run from the repository root: sudo sh packaging/install.sh
-# The API token is made once, in /var/lib/ihc/token; to give several boxes the same one:
-#   sudo IHC_TOKEN=<token> sh packaging/install.sh   (replaces the box's token)
+# Install or update the iphone-hid box from an unpacked bundle: /opt/ihc/bin/ihcd, the udev rules,
+# the API token and the services. Run as root from the bundle directory (the .run file does it).
+#   --no-start   install everything, start at the next boot
 set -eu
 
+START=1
+for arg in "$@"; do
+    case "$arg" in
+        --no-start) START=0 ;;
+        *) echo "unknown option: $arg" >&2; exit 2 ;;
+    esac
+done
+[ "$(id -u)" = 0 ] || { echo "run this as root (sudo)" >&2; exit 1; }
+SRC="$(cd "$(dirname "$0")" && pwd)"
 PREFIX=/opt/ihc
-SRC="$(cd "$(dirname "$0")/.." && pwd)"
-
-apt-get install -y python3-venv v4l-utils usbutils
-# the HDMI input is read through GStreamer (the board image's Rockchip plugin adds the hardware
-# JPEG encoder; without it the software one is used)
-apt-get install -y gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
-    || echo "warning: GStreamer not installed: the HDMI input will not work (USB capture cards will)"
 
 id ihc >/dev/null 2>&1 || useradd --system --home-dir /var/lib/ihc --shell /usr/sbin/nologin ihc
-usermod -aG dialout,video,input ihc
+usermod -aG video ihc
 
-mkdir -p "$PREFIX"
-rm -rf "$PREFIX/src"
-cp -r "$SRC" "$PREFIX/src"
-python3 -m venv "$PREFIX/.venv"
-"$PREFIX/.venv/bin/pip" install --upgrade pip
-"$PREFIX/.venv/bin/pip" install "$PREFIX/src[server]"
+# an earlier box version ran as the services ihc and ihc-gadget, with its own Python in /opt/ihc
+for old in ihc ihc-gadget; do
+    if [ -f "/etc/systemd/system/$old.service" ]; then
+        systemctl disable --now "$old" >/dev/null 2>&1 || true
+        rm -f "/etc/systemd/system/$old.service"
+    fi
+done
+for cmd in ihc ihc-hidtest ihc-capture-check; do
+    [ -L "/usr/local/bin/$cmd" ] && case "$(readlink "/usr/local/bin/$cmd")" in /opt/ihc/*) rm -f "/usr/local/bin/$cmd" ;; esac
+done
 
-install -m 644 "$SRC/packaging/99-ihc.rules" /etc/udev/rules.d/99-ihc.rules
-udevadm control --reload
-udevadm trigger
+systemctl stop ihcd 2>/dev/null || true
+rm -rf "$PREFIX.new"
+mkdir -p "$PREFIX.new/bin"
+install -m 755 "$SRC/bin/ihcd" "$PREFIX.new/bin/ihcd"
+cp "$SRC/VERSION" "$SRC/THIRD_PARTY.md" "$PREFIX.new/"
+rm -rf "$PREFIX.old"
+[ -e "$PREFIX" ] && mv "$PREFIX" "$PREFIX.old"
+mv "$PREFIX.new" "$PREFIX"
+rm -rf "$PREFIX.old"
+ln -sf "$PREFIX/bin/ihcd" /usr/local/bin/ihcd
 
-# API token: readable by the service only; kept across reinstalls unless IHC_TOKEN is given
+install -m 644 "$SRC/99-ihc.rules" /etc/udev/rules.d/99-ihc.rules
+udevadm control --reload 2>/dev/null || true
+udevadm trigger 2>/dev/null || true
+
+# the API token: readable by the service only; kept across updates unless IHC_TOKEN is given
 TOKEN=/var/lib/ihc/token
 install -d -m 750 -o ihc -g ihc /var/lib/ihc
 if [ -n "${IHC_TOKEN:-}" ] || [ ! -s "$TOKEN" ]; then
@@ -39,26 +53,30 @@ if [ -n "${IHC_TOKEN:-}" ] || [ ! -s "$TOKEN" ]; then
         if [ -n "${IHC_TOKEN:-}" ]; then
             printf '%s\n' "$IHC_TOKEN" > "$TOKEN"
         else
-            python3 -c 'import secrets; print(secrets.token_urlsafe(24))' > "$TOKEN"
+            head -c 18 /dev/urandom | base64 | tr '+/' '-_' > "$TOKEN"
         fi
     )
 fi
 chown ihc:ihc "$TOKEN"
 chmod 600 "$TOKEN"
 
-install -m 644 "$SRC/packaging/ihc.service" /etc/systemd/system/ihc.service
-install -m 644 "$SRC/packaging/ihc-gadget.service" /etc/systemd/system/ihc-gadget.service
+for unit in ihcd.service ihcd-gadget.service; do
+    install -m 644 "$SRC/$unit" "/etc/systemd/system/$unit"
+done
 systemctl daemon-reload
-if [ -n "$(ls /sys/class/udc 2>/dev/null)" ]; then
-    # this board has a device-capable USB port: it is the iPhone's keyboard and mouse itself
-    systemctl enable ihc-gadget
-    systemctl restart ihc-gadget || echo "warning: the USB gadget did not start: sudo journalctl -u ihc-gadget"
-else
-    echo "note: no USB device controller on this board: use CH9329 cables for keyboard and mouse (docs/guide/orange-pi-box.md)"
+systemctl enable ihcd ihcd-gadget >/dev/null
+if [ "$START" = 1 ]; then
+    if [ -n "$(ls /sys/class/udc 2>/dev/null)" ]; then
+        systemctl restart ihcd-gadget || echo "warning: the USB gadget did not start: journalctl -u ihcd-gadget"
+    else
+        echo "note: no USB device controller (ls /sys/class/udc is empty): the board's USB-C port is in host mode"
+    fi
+    systemctl restart ihcd
 fi
-systemctl enable ihc
-systemctl restart ihc
 
-echo "iphone-hid is running: http://$(hostname -I | awk '{print $1}'):8000  (logs: journalctl -u ihc -f)"
-echo "API token (the console asks for it once; SDK: Farm(..., token=...) or IHC_TOKEN):"
-echo "  sudo cat $TOKEN"
+ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+echo
+echo "iphone-hid box $(cat "$PREFIX/VERSION") installed"
+[ "$START" = 1 ] && echo "console: http://${ip:-<board address>}:8000     logs: journalctl -u ihcd -f"
+echo "API token (the console asks for it once): sudo cat $TOKEN"
+echo "check the board: ihcd check"

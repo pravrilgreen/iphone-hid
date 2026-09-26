@@ -1,6 +1,6 @@
-# Build the self-contained ARM64 box bundle, check it under emulation, and publish it as a release.
-# Runs when a version tag (v0.1.0, ...) is pushed, or by hand ("Run workflow"): then the release and its
-# tag are created at the head of the branch it runs on.
+# Build the box bundle (static ARM64 ihcd with libjpeg-turbo), smoke-test it under emulation, and
+# publish it as a release. Runs when a version tag (v0.3.0, ...) is pushed, or by hand ("Run
+# workflow"): then the release and its tag are created at the head of the branch it runs on.
 name: Release box bundle
 
 on:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, e.g. v0.1.0 (created at this branch's head if it does not exist)"
+        description: "Release tag, e.g. v0.3.0 (created at this branch's head if it does not exist)"
         required: true
 
 permissions:
@@ -23,34 +23,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: The tag matches VERSION
+        run: '[ "$TAG" = "v$(cat VERSION)" ] || { echo "tag $TAG does not match VERSION $(cat VERSION)"; exit 1; }'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: box/go.mod
+          cache-dependency-path: box/go.sum
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
-      - name: Tag matches the package version
-        run: |
-          version="$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)"
-          [ "$TAG" = "v$version" ] || { echo "tag $TAG does not match pyproject version $version"; exit 1; }
-
-      - name: Test suite
-        run: |
-          pip install -r packaging/bundle/requirements.txt pytest pytest-timeout
-          python -m pytest -q -m "not slow"
-
-      - name: Build the bundle
-        run: scripts/build_bundle.sh
-
-      - name: ARM64 emulator with an Ubuntu 22.04 user space
+      - name: Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-user
-          curl -fsSL -o /tmp/base.tgz \
-            https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.5-base-arm64.tar.gz
-          mkdir -p /tmp/jammy-arm64
-          tar -xzf /tmp/base.tgz -C /tmp/jammy-arm64 --exclude='dev/*'
+          sudo apt-get install -y --no-install-recommends libturbojpeg0-dev qemu-user cmake
+          pip install "ziglang==0.13.0" -e ".[dev]"
 
-      - name: Smoke test the bundle on ARM64
-        run: QEMU_LD_PREFIX=/tmp/jammy-arm64 scripts/check_bundle.sh dist/*.run
+      - name: Tests
+        run: |
+          (cd box && go vet ./... && go test -race -tags turbojpeg ./...)
+          (cd box && go build -o "$RUNNER_TEMP/ihcd" ./cmd/ihcd)
+          IHCD="$RUNNER_TEMP/ihcd" python -m pytest -q
+
+      - name: Build the ARM64 bundle
+        run: ARCH=arm64 scripts/build_box.sh
+
+      - name: Smoke-test it under ARM64 emulation
+        run: scripts/check_box.sh "dist/ihc-box-$(cat VERSION)-linux-arm64.run"
 
       - name: Publish the release
         env:
@@ -58,6 +58,5 @@ jobs:
         run: |
           (cd dist && sha256sum *.run > SHA256SUMS)
           gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" --target "$GITHUB_SHA" --title "iphone-hid $TAG" \
-              --notes-file packaging/bundle/RELEASE_NOTES.md
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "iphone-hid $TAG" --notes-file RELEASE_NOTES.md
           gh release upload "$TAG" dist/*.run dist/SHA256SUMS --clobber

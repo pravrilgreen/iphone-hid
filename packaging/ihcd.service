@@ -1,0 +1,22 @@
+# iphone-hid box: the API, the web console and the phone's touch and keyboard.
+[Unit]
+Description=iphone-hid box
+Wants=network-online.target ihcd-gadget.service
+After=network-online.target ihcd-gadget.service
+
+[Service]
+Type=simple
+User=ihc
+Group=ihc
+SupplementaryGroups=video
+StateDirectory=ihc
+# extra flags, e.g. IHCD_ARGS="--id iphone-a01 --landscape" (ihcd serve -h lists them)
+EnvironmentFile=-/etc/default/ihc
+ExecStart=/opt/ihc/bin/ihcd serve --token-file /var/lib/ihc/token $IHCD_ARGS
+Restart=always
+RestartSec=1
+# touch reports ahead of ordinary background work
+Nice=-10
+
+[Install]
+WantedBy=multi-user.target

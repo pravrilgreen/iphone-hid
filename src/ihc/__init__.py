@@ -1,23 +1,14 @@
-"""iphone-hid: control iPhones through external hardware only (HDMI or USB-C video in, USB HID out)."""
+"""iphone-hid SDK: drive the iPhone of each box (touch, keys, buttons, screenshots) from Python."""
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 
 def _version() -> str:
-    """The version, from one source: the bundle's VERSION file, a source checkout's pyproject.toml, or
-    the installed distribution's metadata."""
-    root = Path(__file__).resolve().parents[2]  # the bundle's /opt/ihc, or a checkout's top directory
+    """The repository's VERSION file in a checkout, else the installed distribution's version."""
     try:
-        return (root / "VERSION").read_text().strip()
-    except OSError:
-        pass
-    try:
-        m = re.search(r'^version = "([^"]+)"', (root / "pyproject.toml").read_text(), re.M)
-        if m:
-            return m.group(1)
+        return (Path(__file__).resolve().parents[2] / "VERSION").read_text().strip()
     except OSError:
         pass
     try:
@@ -29,3 +20,7 @@ def _version() -> str:
 
 
 __version__ = _version()
+
+from .client import Farm, IhcError, Phone  # noqa: E402
+
+__all__ = ["Farm", "IhcError", "Phone", "__version__"]

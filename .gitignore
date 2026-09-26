@@ -6,3 +6,4 @@ docs/test-logs/*.jpg
 .claude/worktrees/
 .cache/
 dist/
+build/

@@ -1,37 +1,33 @@
 [project]
 name = "iphone-hid"
-version = "0.2.0"
-description = "Control iPhones through external hardware only: video in over HDMI or USB-C, keyboard and mouse out over USB HID"
+dynamic = ["version"]
+description = "Python SDK for iphone-hid boxes: touch, keys, buttons and screenshots of real iPhones"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["pyserial>=3.5", "httpx", "tomli>=2; python_version < '3.11'"]
+dependencies = ["httpx"]
 
 [project.optional-dependencies]
-# the box server (API, web console, video); the SDK needs none of these
-server = ["fastapi", "uvicorn[standard]", "zeroconf", "opencv-python-headless", "numpy", "Pillow>=10.1"]
-dev = ["iphone-hid[server]", "pytest", "pytest-timeout", "ruff"]
+discovery = ["zeroconf"]  # Farm.discover(): find boxes on the local network
+dev = ["iphone-hid[discovery]", "pytest", "pytest-timeout", "ruff"]
 
 [project.scripts]
 ihc = "ihc.cli:main"
-ihc-hidtest = "ihc.tools.hidtest:main"
-ihc-capture-check = "ihc.tools.capture_check:main"
-ihc-hid-loopback = "ihc.tools.hid_loopback:main"
 
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["ihc*"]
 
-[tool.setuptools.package-data]
-ihc = ["web/*"]
-
 [tool.pytest.ini_options]
 pythonpath = ["src", "tests"]
 testpaths = ["tests"]
-markers = ["slow: long end-to-end runs (e.g. a full Safari calibration); deselect with -m 'not slow'"]
+timeout = 120
 
 [tool.ruff]
 line-length = 120
@@ -39,5 +35,4 @@ target-version = "py310"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-# real errors only: syntax, undefined and unused names (the code base keeps its own formatting)
 select = ["E9", "F"]

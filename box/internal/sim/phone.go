@@ -416,16 +416,16 @@ func (p *Phone) step(dt float64) {
 
 // State is what the simulated phone shows, for tests.
 type State struct {
-	Screen  string
-	App     string
-	Page    int
-	Scroll  float64
-	Notes   string
-	Search  string
-	Volume  float64
-	Pointer [2]float64
-	Pressed bool
-	Reports int
+	Screen  string     `json:"screen"` // home, app, switcher, search
+	App     string     `json:"app,omitempty"`
+	Page    int        `json:"page"`
+	Scroll  float64    `json:"scroll"`
+	Notes   string     `json:"notes"`
+	Search  string     `json:"search"`
+	Volume  float64    `json:"volume"`
+	Pointer [2]float64 `json:"pointer"`
+	Pressed bool       `json:"pressed"`
+	Reports int        `json:"reports"`
 }
 
 // State returns what the phone shows now.
