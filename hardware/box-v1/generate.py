@@ -7,7 +7,8 @@ Outputs (relative to this directory):
   bom.csv                grouped bill of materials
   netlist.json           components, pins and nets
   kicad/box-v1.net       KiCad (s-expression, version E) netlist
-  README.md              tables between <!-- BEGIN GENERATED: x --> markers are refreshed
+  svg/mechanical.svg     enclosure outline and connector openings (mechanical.py)
+  README.md, ORDERING.md sections between <!-- BEGIN GENERATED: x --> markers are refreshed
 
 Usage:
   python3 generate.py                   # write everything
@@ -28,8 +29,9 @@ import uuid
 from collections import OrderedDict, defaultdict
 
 import layout as LY
+import mechanical as MECH
 import netlist as NL
-from netlist import NC, GND, RAILS, BLOCKS, CHAC, COTHE, CHUABIET
+from netlist import NC, GND, RAILS, BLOCKS, CONFIRMED, LIKELY, UNKNOWN
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT = "box-v1"
@@ -39,14 +41,14 @@ REV = "v1"
 NS = uuid.UUID("6f1c2d3e-4b5a-4c6d-8e9f-0a1b2c3d4e5f")
 
 SHEET_TITLES = {
-    "power": "1. Nguồn: USB-C PD vào (CH224K), buck 5V2/5V/3V3/1V2, công tắc VBUS iPhone",
-    "iphone": "2. Cổng USB-C iPhone + LT7911D (DP Alt Mode -> MIPI CSI-2)",
-    "mcu": "3. CH32V305RBT6: USB HS HID tới iPhone, link SPI/UART tới RV1106",
-    "soc": "4. Luckfox Core1106 (RV1106G3) + RJ45 100M + USB-C tới PC",
-    "debug": "5. Debug header, LED trạng thái, nút, test point",
+    "power": "1. Power: USB-C PD input (CH224K), 5V2/5V/3V3/1V2 bucks, iPhone VBUS switch",
+    "iphone": "2. iPhone USB-C port + LT7911D (DP Alt Mode -> MIPI CSI-2)",
+    "mcu": "3. CH32V305RBT6: USB HS HID to the iPhone, SPI/UART link to the RV1106",
+    "soc": "4. Luckfox Core1106 (RV1106G3) + 100M RJ45 + USB-C to the PC",
+    "debug": "5. Debug headers, status LEDs, buttons, test points",
 }
-SHORT_TITLES = {"power": "box-v1: nguồn", "iphone": "box-v1: USB-C iPhone + LT7911D", "mcu": "box-v1: CH32V305",
-                "soc": "box-v1: Core1106 + Ethernet + USB PC", "debug": "box-v1: debug, LED, nút"}
+SHORT_TITLES = {"power": "box-v1: power", "iphone": "box-v1: iPhone USB-C + LT7911D", "mcu": "box-v1: CH32V305",
+                "soc": "box-v1: Core1106 + Ethernet + PC USB", "debug": "box-v1: debug, LEDs, buttons"}
 
 
 def uid(*parts) -> str:
@@ -342,9 +344,9 @@ class PwrCounter:
 def title_block(title, sheet_no, total):
     return [Sym("title_block"), [Sym("title"), title], [Sym("date"), DATE], [Sym("rev"), REV],
             [Sym("company"), "iphone-hid / hardware/box-v1"],
-            [Sym("comment"), 1, "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này"],
-            [Sym("comment"), 2, "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout"],
-            [Sym("comment"), 3, f"Trang {sheet_no}/{total}"]]
+            [Sym("comment"), 1, "Generated from netlist.py by generate.py; edit netlist.py, not this file"],
+            [Sym("comment"), 2, "Pin numbers '?..' = [Unknown], must be confirmed before layout"],
+            [Sym("comment"), 3, f"Sheet {sheet_no}/{total}"]]
 
 
 def symbol_instance(lib_id, ref, value, x, y, angle, path, pins, footprint="", desc="", fields=(),
@@ -418,8 +420,8 @@ def build_kicad(design):
         used_libs = set()
         ox, oy = 10.16, 20.32
         items.append(text_item(SHEET_TITLES[block], ox, oy - 7.62, 2.54, key=block + "title", bold=True))
-        items.append(text_item("Nhãn net đặt ngay đầu chân (không vẽ dây). Chân số '?..' = chưa có datasheet, "
-                               "phải xác nhận trước khi làm footprint/layout.", ox, oy - 3.81, 1.27,
+        items.append(text_item("Net labels sit on the pin ends (no wires). Pin numbers '?..' = no datasheet yet, "
+                               "must be confirmed before footprint/layout work.", ox, oy - 3.81, 1.27,
                                key=block + "note"))
         for pl in sl.items:
             part = pl.part
@@ -442,7 +444,8 @@ def build_kicad(design):
                 ref_at, val_at = (x0 + 1.27, y0 - 1.27), (x0 + 1.27, y0 + 2.54)
                 rj = vj = "left"
             used_libs.add(lib_id)
-            fields = [("MPN", part.mpn), ("LCSC", part.lcsc), ("Confidence", part.conf)]
+            fields = [("MPN", part.mpn), ("Manufacturer", part.manufacturer), ("LCSC", part.lcsc),
+                      ("Confidence", part.conf)]
             if part.note:
                 fields.append(("Note", part.note))
             items.append(symbol_instance(lib_id, part.ref, part.value, x0, y0, 0, path,
@@ -474,7 +477,7 @@ def build_kicad(design):
         # PWR_FLAGs for rails whose power pins are not driven by a power output (ERC)
         if block == "power":
             fx, fy = ox + 5.08, ph - 45.72
-            items.append(text_item("PWR_FLAG (ERC): rail được cấp qua cuộn cảm/điện trở/đầu nối", fx - 2.54,
+            items.append(text_item("PWR_FLAG (ERC): rails fed through an inductor/resistor/connector", fx - 2.54,
                                    fy - 7.62, 1.27, key="flags"))
             for net in RAILS:
                 if not need_flag(net):
@@ -505,10 +508,10 @@ def build_kicad(design):
 
     # root sheet
     ritems = []
-    ritems.append(text_item("Box điều khiển iPhone v1 (phương án B): LT7911D + CH32V305RBT6 + Luckfox Core1106",
+    ritems.append(text_item("iPhone control box v1 (Option B): LT7911D + CH32V305RBT6 + Luckfox Core1106",
                             20.32, 25.4, 3.0, key="rt", bold=True))
-    ritems.append(text_item("Các trang con nối với nhau bằng global label và power symbol cùng tên. "
-                            "Xem hardware/box-v1/README.md.", 20.32, 33.02, 1.5, key="rt2"))
+    ritems.append(text_item("Sub-sheets connect through global labels and power symbols of the same name. "
+                            "See hardware/box-v1/README.md and ORDERING.md.", 20.32, 33.02, 1.5, key="rt2"))
     for bi, block in enumerate(blocks):
         x, y = 20.32 + (bi % 3) * 90, 50.8 + (bi // 3) * 50.8
         su = uid("sheet", block)
@@ -523,7 +526,7 @@ def build_kicad(design):
         ritems.append(text_item(SHEET_TITLES[block], x + 1.27, y + 15.24, 1.27, key="rs" + block))
     root = [Sym("kicad_sch"), [Sym("version"), 20231120], [Sym("generator"), "eeschema"],
             [Sym("generator_version"), "8.0"], [Sym("uuid"), root_uuid], [Sym("paper"), "A4"],
-            title_block("box-v1: sơ đồ tổng", 1, total), [Sym("lib_symbols")]] + ritems + [
+            title_block("box-v1: top sheet", 1, total), [Sym("lib_symbols")]] + ritems + [
         [Sym("sheet_instances"), [Sym("path"), "/", [Sym("page"), "1"]]]]
     files[f"{PROJECT}.kicad_sch"] = root
     return files, root_uuid
@@ -665,14 +668,14 @@ def svg_two_pin(x, y, part):
         if s == "LED":
             out.append(f'<path d="M{x+17},{y-8} l6,-6 M{x+23},{y-8} l6,-6" stroke="{C_PIN}" stroke-width="1.4"/>')
     ref = part.ref + (" (DNP)" if part.dnp else "")
-    col = C_UNK if part.conf == CHUABIET else C_TEXT
+    col = C_UNK if part.conf == UNKNOWN else C_TEXT
     out.append(svg_text(x, y - 15, ref, 12, "middle", col, "bold"))
     out.append(svg_text(x, y + 25, part.value, 11.5, "middle", col))
     return out
 
 
 def conf_color(conf):
-    return {CHUABIET: C_UNK, COTHE: C_MAYBE}.get(conf, C_TEXT)
+    return {UNKNOWN: C_UNK, LIKELY: C_MAYBE}.get(conf, C_TEXT)
 
 
 def render_svg(design, block):
@@ -686,11 +689,11 @@ def render_svg(design, block):
            f'viewBox="0 0 {W:.0f} {H:.0f}" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">',
            f'<rect x="0" y="0" width="{W:.0f}" height="{H:.0f}" fill="white"/>']
     out.append(svg_text(20, 34, SHEET_TITLES[block], 22, weight="bold"))
-    out.append(svg_text(20, 58, f"iPhone control box {REV} · sinh từ netlist.py bởi generate.py · {DATE}", 13,
+    out.append(svg_text(20, 58, f"iPhone control box {REV} · generated from netlist.py by generate.py · {DATE}", 13,
                         color="#4b5563"))
     lx = 20
-    for col, txt in ((C_RAIL, "rail"), (C_GND, "GND"), (C_DIFF, "cặp vi sai"), (C_NET, "tín hiệu"),
-                     (C_NC, "× = không nối"), (C_MAYBE, "chân [Có thể]"), (C_UNK, "chân/giá trị [Chưa biết] (số '?..')")):
+    for col, txt in ((C_RAIL, "rail"), (C_GND, "GND"), (C_DIFF, "differential pair"), (C_NET, "signal"),
+                     (C_NC, "× = no connect"), (C_MAYBE, "pin [Likely]"), (C_UNK, "pin/value [Unknown] (number '?..')")):
         out.append(f'<rect x="{lx}" y="72" width="12" height="12" fill="{col}"/>')
         out.append(svg_text(lx + 17, 83, txt, 12.5))
         lx += 34 + len(txt) * 7.6
@@ -704,7 +707,7 @@ def render_svg(design, block):
             out.append(f'<rect x="{x0-w/2:.1f}" y="{y0-h/2:.1f}" width="{w:.1f}" height="{h:.1f}" fill="{C_BOXF}" '
                        f'stroke="{C_BOX}" stroke-width="2"{dash}/>')
             out.append(svg_text(x0 - w / 2, y0 - h / 2 - 20, f"{part.ref}  {part.value}", 14.5, weight="bold",
-                                color=conf_color(part.conf) if part.conf == CHUABIET else C_TEXT))
+                                color=conf_color(part.conf) if part.conf == UNKNOWN else C_TEXT))
             sub = part.mpn if part.mpn and part.mpn != part.value else ""
             sub = (sub + "  " if sub else "") + (f"LCSC {part.lcsc}" if part.lcsc else "")
             out.append(svg_text(x0 - w / 2, y0 - h / 2 - 5, sub[:70], 11, color="#6b7280"))
@@ -748,37 +751,102 @@ def render_svg(design, block):
 # ---------------------------------------------------------------------------
 # BOM, JSON, KiCad netlist
 # ---------------------------------------------------------------------------
+BOM_COLUMNS = ["reference", "qty", "value", "manufacturer", "mpn", "lcsc", "lcsc_confidence", "lcsc_evidence",
+               "jlc_type", "assembly", "dnp", "unit_price_usd_est", "price_basis", "footprint", "confidence",
+               "notes"]
+EVIDENCE_SHORT = {"SNAP": "JLCPCB parts list snapshot 2026-04-02", "WEB": "search excerpt 2026-09-26",
+                  "ALLOW": "allowance (no price found)", "NONE": ""}
+ASSEMBLY_TEXT = {NL.SMT: "SMT", NL.THT: "THT (hand or selective solder)",
+                 NL.MODULE: "module (castellated, consigned)", NL.PCB: "none (PCB copper)"}
+CONF_RANK = {CONFIRMED: 0, LIKELY: 1, UNKNOWN: 2}
+EXTENDED_FEE_USD = 3.0     # JLCPCB per extended-part line (help-article excerpt, Likely)
+CHOOSE_AT_ORDER = "LCSC code: choose at order"
+
+
 def ref_key(ref):
     m = re.match(r"([A-Z#]+)(\d+)", ref)
     return (m.group(1), int(m.group(2))) if m else (ref, 0)
 
 
-def write_bom(design, path):
+def jlc_text(o):
+    if o.assembly == NL.PCB or o.jlc == "n/a":
+        return "n/a"
+    return o.jlc or "Extended (assumed)"
+
+
+def bom_rows(design):
+    """Group parts that share the orderable part (MPN), footprint and fitting option."""
     groups = OrderedDict()
     for p in sorted(design.parts, key=lambda p: ref_key(p.ref)):
-        k = (p.dnp, p.value, p.mpn, p.lcsc, p.footprint, p.conf)
+        o = p.order
+        k = (p.dnp, o.mpn if o else p.mpn, p.footprint)
         groups.setdefault(k, []).append(p)
     rows = []
-    for (dnp, value, mpn, lcsc, fp, _conf), ps in groups.items():
+    for (dnp, mpn, fp), ps in groups.items():
+        o = ps[0].order
+        values = list(OrderedDict.fromkeys(x.value for x in ps))
+        value = " / ".join(values) if len(values) <= 3 else "test pads" if ps[0].symbol == "TP" else values[0]
         notes = "; ".join(OrderedDict.fromkeys(x.desc for x in ps))
         if len(notes) > 160:
             notes = notes[:157].rsplit(";", 1)[0] + "; …"
-        conf = {x.conf for x in ps}
+        worst = max((x.conf for x in ps), key=lambda c: CONF_RANK[c])
         flags = []
         if dnp:
-            flags.append("DNP (không lắp)")
-        if CHUABIET in conf:
-            flags.append("[Chưa biết]")
-        elif COTHE in conf:
-            flags.append("[Có thể]")
-        rows.append([" ".join(x.ref for x in ps), len(ps), value, mpn, lcsc, fp,
-                     (" ".join(flags) + " " if flags else "") + notes])
-    rows.sort(key=lambda r: (r[6].startswith("DNP"), ref_key(r[0].split()[0])))
+            flags.append("DNP (not fitted)")
+        if worst != CONFIRMED:
+            flags.append(f"[{worst}]")
+        extra = []
+        if o.note:
+            extra.append(o.note)
+        if not o.lcsc and o.assembly not in (NL.PCB,):
+            extra.append(CHOOSE_AT_ORDER)
+        text = (" ".join(flags) + " " if flags else "") + notes + ("; " + "; ".join(extra) if extra else "")
+        price = "" if o.price is None else f"{o.price:.4f}"
+        rows.append([" ".join(x.ref for x in ps), len(ps), value, o.manufacturer, o.mpn, o.lcsc, o.lcsc_conf,
+                     EVIDENCE_SHORT[o.ev] if o.lcsc else "", jlc_text(o), ASSEMBLY_TEXT[o.assembly],
+                     "yes" if dnp else "no", price, EVIDENCE_SHORT.get(o.price_basis, "") if price else "",
+                     fp, worst, text])
+    rows.sort(key=lambda r: (r[10] == "yes", r[9].startswith("none"), ref_key(r[0].split()[0])))
+    return rows
+
+
+def write_bom(design, path):
+    rows = bom_rows(design)
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["reference", "qty", "value", "part_number", "lcsc", "footprint", "notes"])
+        w.writerow(BOM_COLUMNS)
         w.writerows(rows)
     return rows
+
+
+def bom_stats(design):
+    rows = bom_rows(design)
+    orderable = [r for r in rows if not r[9].startswith("none")]
+    st = {
+        "lines": len(rows), "orderable": len(orderable),
+        "pcb_lines": len(rows) - len(orderable),
+        "with_mpn": sum(1 for r in orderable if r[4]),
+        "lcsc_confirmed": sum(1 for r in orderable if r[5] and r[6] == CONFIRMED),
+        "lcsc_likely": sum(1 for r in orderable if r[5] and r[6] == LIKELY),
+        "lcsc_empty": sum(1 for r in orderable if not r[5]),
+        "basic_pref": sum(1 for r in orderable if r[8] in ("Basic", "Preferred")),
+        "extended": sum(1 for r in orderable if r[8].startswith("Extended")),
+        "dnp_lines": sum(1 for r in orderable if r[10] == "yes"),
+        "empty_refs": [r[0] for r in orderable if not r[5]],
+    }
+    return st
+
+
+def cost_estimate(design):
+    fitted = [p for p in design.parts if not p.dnp and p.order and p.order.assembly != NL.PCB]
+    listed = sum(p.order.price for p in fitted if p.order.price_basis != "ALLOW")
+    allowed = sum(p.order.price for p in fitted if p.order.price_basis == "ALLOW")
+    core = sum(p.order.price for p in fitted if p.buy == "CORE1106")
+    lt = sum(p.order.price for p in fitted if p.buy == "LT7911D")
+    ext_lines = {p.order.mpn for p in fitted if p.order.jlc not in ("Basic", "Preferred", "n/a")
+                 and p.order.assembly in (NL.SMT, NL.THT)}
+    return {"listed": listed, "allowed": allowed, "parts": listed + allowed, "core": core, "lt": lt,
+            "ext_lines": len(ext_lines), "n_fitted": len(fitted)}
 
 
 def write_json(design, path):
@@ -788,8 +856,13 @@ def write_json(design, path):
         "generated_by": "generate.py from netlist.py",
         "date": DATE,
         "components": [{
-            "ref": p.ref, "value": p.value, "mpn": p.mpn, "lcsc": p.lcsc, "footprint": p.footprint,
-            "block": p.block, "dnp": p.dnp, "confidence": p.conf, "description": p.desc,
+            "ref": p.ref, "value": p.value, "manufacturer": p.manufacturer, "mpn": p.mpn, "lcsc": p.lcsc,
+            "footprint": p.footprint, "block": p.block, "dnp": p.dnp, "confidence": p.conf,
+            "description": p.desc,
+            "order": None if p.order is None else {
+                "lcsc_confidence": p.order.lcsc_conf, "lcsc_evidence": p.order.ev if p.order.lcsc else "",
+                "jlc_type": jlc_text(p.order), "assembly": p.order.assembly,
+                "unit_price_usd_est": p.order.price, "price_basis": p.order.price_basis, "note": p.order.note},
             "pins": [{"num": x.num, "name": x.name, "type": KTYPE[x.kind],
                       "net": None if x.net == NC else x.net, "no_connect": x.net == NC,
                       "confidence": x.conf} for x in p.pins]} for p in design.parts],
@@ -807,6 +880,7 @@ def write_kicad_net(design, path):
     for p in sorted(design.parts, key=lambda p: ref_key(p.ref)):
         comps.append([Sym("comp"), [Sym("ref"), p.ref], [Sym("value"), p.value], [Sym("footprint"), p.footprint],
                       [Sym("fields"), [Sym("field"), [Sym("name"), "MPN"], p.mpn],
+                       [Sym("field"), [Sym("name"), "Manufacturer"], p.manufacturer],
                        [Sym("field"), [Sym("name"), "LCSC"], p.lcsc],
                        [Sym("field"), [Sym("name"), "DNP"], "yes" if p.dnp else "no"]],
                       [Sym("libsource"), [Sym("lib"), LIB], [Sym("part"), p.symbol if p.symbol != "box" else
@@ -829,9 +903,9 @@ def write_kicad_net(design, path):
 
 
 # ---------------------------------------------------------------------------
-# README generated tables
+# README / ORDERING generated sections
 # ---------------------------------------------------------------------------
-CONF_TAG = {CHAC: "[Chắc]", COTHE: "[Có thể]", CHUABIET: "[Chưa biết]"}
+CONF_TAG = {CONFIRMED: "[Confirmed]", LIKELY: "[Likely]", UNKNOWN: "[Unknown]"}
 
 
 def md_cell(s):
@@ -841,8 +915,11 @@ def md_cell(s):
 def pin_table(design, part):
     net_pins = design.net_pins()
     src = f"[{part.src}]({NL.SOURCES[part.src][0]})" if part.src else "-"
-    lines = [f"**{part.ref} {part.value}** ({part.mpn or '-'}; footprint `{part.footprint}`; nguồn: {src})", "",
-             "| Chân | Tên | Net | Nối tới | Ghi chú | Độ tin cậy |", "|---|---|---|---|---|---|"]
+    order = part.order
+    buy = f"{order.manufacturer} {order.mpn}" if order and order.assembly != NL.PCB else "-"
+    lines = [f"**{part.ref} {part.value}** ({md_cell(buy)}; footprint `{part.footprint}`; source: {src})", "",
+             "| Pin | Name | Net | Connects to | Note | Confidence |", "|---|---|---|---|---|---|"]
+
     def natkey(x):
         return (x.num.startswith("?"), [(0, int(t), "") if t.isdigit() else (1, 0, t)
                                         for t in re.findall(r"\d+|\D+", x.num)])
@@ -853,7 +930,7 @@ def pin_table(design, part):
             net = p.net
             others = [f"{o.ref}.{op.num}" for o, op in net_pins[p.net] if o is not part]
             if p.net in RAILS and len(others) > 6:
-                peers = f"rail ({len(others)} chân)"
+                peers = f"rail ({len(others)} pins)"
             else:
                 peers = ", ".join(others[:8]) + (" …" if len(others) > 8 else "")
         lines.append(f"| {md_cell(p.num)} | {md_cell(p.name)} | {md_cell(net)} | {md_cell(peers)} | "
@@ -862,17 +939,58 @@ def pin_table(design, part):
 
 
 def passive_table(design, block):
-    lines = ["| Ref | Giá trị | Chân 1 | Chân 2 | Footprint | Vai trò |", "|---|---|---|---|---|---|"]
+    lines = ["| Ref | Value | Pin 1 | Pin 2 | Footprint | Role |", "|---|---|---|---|---|---|"]
     for p in sorted(design.parts, key=lambda p: ref_key(p.ref)):
         if p.block != block or not (LY.is_two_pin(p) or p.symbol == "TP"):
             continue
         n1 = p.pins[0].net
         n2 = p.pins[1].net if len(p.pins) > 1 else "-"
         tag = " **DNP**" if p.dnp else ""
-        conf = f" {CONF_TAG[p.conf]}" if p.conf != CHAC else ""
+        conf = f" {CONF_TAG[p.conf]}" if p.conf != CONFIRMED else ""
         lines.append(f"| {p.ref}{tag} | {md_cell(p.value)} | {n1} | {n2} | "
                      f"`{p.footprint.split(':')[-1]}` | {md_cell(p.desc)}{conf} |")
     return "\n".join(lines)
+
+
+def coverage_table(design):
+    st = bom_stats(design)
+    return "\n".join([
+        "| BOM figure | Count |", "|---|---|",
+        f"| Lines in `bom.csv` | {st['lines']} |",
+        f"| Lines that are PCB copper only (test pads, solder jumpers: nothing to buy) | {st['pcb_lines']} |",
+        f"| Orderable lines | {st['orderable']} (of which DNP: {st['dnp_lines']}) |",
+        f"| Orderable lines with a manufacturer part number | {st['with_mpn']} |",
+        f"| LCSC code [Confirmed] (read on the LCSC/JLCPCB page itself) | {st['lcsc_confirmed']} |",
+        f"| LCSC code [Likely] (JLCPCB parts-list snapshot or search excerpt) | {st['lcsc_likely']} |",
+        f"| No LCSC code (choose at order) | {st['lcsc_empty']}: {', '.join(st['empty_refs'])} |",
+        f"| Lines in JLCPCB's Basic/Preferred list (no feeder fee) | {st['basic_pref']} |",
+        f"| Lines assumed Extended (feeder fee per line) | {st['extended']} |",
+    ])
+
+
+def cost_table(design):
+    c = cost_estimate(design)
+    fee10 = c["ext_lines"] * EXTENDED_FEE_USD / 10
+    fee50 = c["ext_lines"] * EXTENDED_FEE_USD / 50
+    pcb = (2.0, 5.0)
+    case = (3.0, 8.0)
+    lo10 = c["parts"] + fee10 + pcb[0] + case[0]
+    hi10 = c["parts"] + fee10 + pcb[1] + case[1]
+    lo50 = c["parts"] + fee50 + pcb[0] + case[0]
+    hi50 = c["parts"] + fee50 + pcb[1] + case[1]
+    return "\n".join([
+        "| Item (USD per board, estimate) | 10 boards | 50 boards | Basis |", "|---|---|---|---|",
+        f"| Components on `bom.csv`, fitted parts ({c['n_fitted']} pieces) | {c['parts']:.2f} | {c['parts']:.2f} | "
+        f"unit prices in `bom.csv`: ${c['listed']:.2f} from listings, ${c['allowed']:.2f} allowances |",
+        f"| of which Luckfox Core1106 | {c['core']:.2f} | {c['core']:.2f} | top of the $16.34-26.99 range in search excerpts |",
+        f"| of which LT7911D | {c['lt']:.2f} | {c['lt']:.2f} | Global Sources excerpt, chip only |",
+        f"| JLCPCB extended-part feeder fee, ${EXTENDED_FEE_USD:.0f} x {c['ext_lines']} lines, spread over the batch | "
+        f"{fee10:.2f} | {fee50:.2f} | upper bound: every line outside the Basic/Preferred snapshot counted |",
+        f"| 4-layer impedance-controlled PCB | {pcb[0]:.0f}-{pcb[1]:.0f} | {pcb[0]:.0f}-{pcb[1]:.0f} | allowance "
+        "from docs/research/custom-box.md §9, not a quote |",
+        f"| Enclosure | {case[0]:.0f}-{case[1]:.0f} | {case[0]:.0f}-{case[1]:.0f} | allowance from custom-box.md §9 |",
+        f"| **Total without assembly labour** | **{lo10:.0f}-{hi10:.0f}** | **{lo50:.0f}-{hi50:.0f}** | estimate |",
+    ])
 
 
 def readme_sections(design):
@@ -882,12 +1000,14 @@ def readme_sections(design):
         for p in sorted(design.parts, key=lambda p: ref_key(p.ref)):
             if p.block == block and not LY.is_two_pin(p) and p.symbol != "TP":
                 chunks.append(pin_table(design, p))
-        chunks.append("Linh kiện thụ động và test point của khối:\n\n" + passive_table(design, block))
+        chunks.append("Passives and test points of this block:\n\n" + passive_table(design, block))
         sec[f"pins-{block}"] = "\n\n".join(chunks)
+    sec["bom-coverage"] = coverage_table(design)
+    sec["cost"] = cost_table(design)
     return sec
 
 
-def update_readme(design, path):
+def update_markdown(design, path):
     if not os.path.exists(path):
         return False
     text = open(path, encoding="utf-8").read()
@@ -927,12 +1047,13 @@ def main():
     for block in BLOCKS:
         with open(os.path.join(sdir, f"{block}.svg"), "w", encoding="utf-8") as f:
             f.write(render_svg(design, block))
+    MECH.write(os.path.join(sdir, "mechanical.svg"))
     rows = write_bom(design, os.path.join(HERE, "bom.csv"))
     write_json(design, os.path.join(HERE, "netlist.json"))
     write_kicad_net(design, os.path.join(kdir, f"{PROJECT}.net"))
-    upd = update_readme(design, os.path.join(HERE, "README.md"))
-    print(f"generated: {len(files)} .kicad_sch, {len(BLOCKS)} svg, bom.csv ({len(rows)} lines), netlist.json, "
-          f"{PROJECT}.net" + (", README tables" if upd else ""))
+    upd = [name for name in ("README.md", "ORDERING.md") if update_markdown(design, os.path.join(HERE, name))]
+    print(f"generated: {len(files)} .kicad_sch, {len(BLOCKS)} svg + mechanical.svg, bom.csv ({len(rows)} lines), "
+          f"netlist.json, {PROJECT}.net" + (f", tables in {' and '.join(upd)}" if upd else ""))
 
 
 if __name__ == "__main__":
