@@ -1,0 +1,794 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1337" height="2044" viewBox="0 0 1337 2044" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">
+<rect x="0" y="0" width="1337" height="2044" fill="white"/>
+<text x="20.0" y="34.0" font-size="22" text-anchor="start" fill="#1f2937" font-weight="bold">2. Cổng USB-C iPhone + LT7911D (DP Alt Mode -&gt; MIPI CSI-2)</text>
+<text x="20.0" y="58.0" font-size="13" text-anchor="start" fill="#4b5563" font-weight="normal">iPhone control box v1 · sinh từ netlist.py bởi generate.py · 2026-09-26</text>
+<rect x="20" y="72" width="12" height="12" fill="#b91c1c"/>
+<text x="37.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">rail</text>
+<rect x="84.4" y="72" width="12" height="12" fill="#15803d"/>
+<text x="101.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<rect x="141.2" y="72" width="12" height="12" fill="#7e22ce"/>
+<text x="158.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">cặp vi sai</text>
+<rect x="251.2" y="72" width="12" height="12" fill="#1d4ed8"/>
+<text x="268.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">tín hiệu</text>
+<rect x="346.0" y="72" width="12" height="12" fill="#9ca3af"/>
+<text x="363.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">× = không nối</text>
+<rect x="478.8" y="72" width="12" height="12" fill="#0e7490"/>
+<text x="495.8" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân [Có thể]</text>
+<rect x="611.6" y="72" width="12" height="12" fill="#d97706"/>
+<text x="628.6" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân/giá trị [Chưa biết] (số '?..')</text>
+<g transform="translate(0,92)">
+<rect x="216.6" y="104.0" width="264.0" height="550.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="216.6" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U201  LT7911D</text>
+<text x="216.6" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">LCSC C5310990</text>
+<line x1="128.6" y1="126.0" x2="216.6" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="130.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">VCC12D_RX</text>
+<text x="213.6" y="123.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">1</text>
+<path d="M128.60000000000002,126.0 L122.60000000000002,118.0 L87.73600000000002,118.0 L87.73600000000002,134.0 L122.60000000000002,134.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="130.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<line x1="128.6" y1="148.0" x2="216.6" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="152.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D0P</text>
+<text x="213.6" y="145.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">2</text>
+<path d="M128.60000000000002,148.0 L122.60000000000002,140.0 L53.40000000000002,140.0 L53.40000000000002,156.0 L122.60000000000002,156.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="152.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX2_P</text>
+<line x1="128.6" y1="170.0" x2="216.6" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="174.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D0N</text>
+<text x="213.6" y="167.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">3</text>
+<path d="M128.60000000000002,170.0 L122.60000000000002,162.0 L53.40000000000002,162.0 L53.40000000000002,178.0 L122.60000000000002,178.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="174.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX2_N</text>
+<line x1="128.6" y1="192.0" x2="216.6" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="196.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">VCC12A_RX</text>
+<text x="213.6" y="189.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">4</text>
+<path d="M128.60000000000002,192.0 L122.60000000000002,184.0 L46.29600000000001,184.0 L46.29600000000001,200.0 L122.60000000000002,200.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="196.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<line x1="128.6" y1="214.0" x2="216.6" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="218.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D1P</text>
+<text x="213.6" y="211.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">5</text>
+<path d="M128.60000000000002,214.0 L122.60000000000002,206.0 L53.40000000000002,206.0 L53.40000000000002,222.0 L122.60000000000002,222.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="218.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX2_P</text>
+<line x1="128.6" y1="236.0" x2="216.6" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="240.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D1N</text>
+<text x="213.6" y="233.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">6</text>
+<path d="M128.60000000000002,236.0 L122.60000000000002,228.0 L53.40000000000002,228.0 L53.40000000000002,244.0 L122.60000000000002,244.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="240.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX2_N</text>
+<line x1="128.6" y1="258.0" x2="216.6" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="262.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">VCC33_RX</text>
+<text x="213.6" y="255.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">7</text>
+<path d="M128.60000000000002,258.0 L122.60000000000002,250.0 L62.872000000000014,250.0 L62.872000000000014,266.0 L122.60000000000002,266.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="262.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<line x1="128.6" y1="280.0" x2="216.6" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="284.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D2P</text>
+<text x="213.6" y="277.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">8</text>
+<path d="M128.60000000000002,280.0 L122.60000000000002,272.0 L53.40000000000002,272.0 L53.40000000000002,288.0 L122.60000000000002,288.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="284.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX1_P</text>
+<line x1="128.6" y1="302.0" x2="216.6" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="306.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D2N</text>
+<text x="213.6" y="299.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">9</text>
+<path d="M128.60000000000002,302.0 L122.60000000000002,294.0 L53.40000000000002,294.0 L53.40000000000002,310.0 L122.60000000000002,310.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="306.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX1_N</text>
+<line x1="128.6" y1="324.0" x2="216.6" y2="324.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="328.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">VCC12_PI</text>
+<text x="213.6" y="321.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">10</text>
+<path d="M128.60000000000002,324.0 L122.60000000000002,316.0 L46.29600000000001,316.0 L46.29600000000001,332.0 L122.60000000000002,332.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="328.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<line x1="128.6" y1="346.0" x2="216.6" y2="346.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="350.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D3P</text>
+<text x="213.6" y="343.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">11</text>
+<path d="M128.60000000000002,346.0 L122.60000000000002,338.0 L53.40000000000002,338.0 L53.40000000000002,354.0 L122.60000000000002,354.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="350.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX1_P</text>
+<line x1="128.6" y1="368.0" x2="216.6" y2="368.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="372.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">D3N</text>
+<text x="213.6" y="365.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">12</text>
+<path d="M128.60000000000002,368.0 L122.60000000000002,360.0 L53.40000000000002,360.0 L53.40000000000002,376.0 L122.60000000000002,376.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="372.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX1_N</text>
+<line x1="128.6" y1="390.0" x2="216.6" y2="390.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="394.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">VCC12_RXPLL</text>
+<text x="213.6" y="387.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">13</text>
+<path d="M128.60000000000002,390.0 L122.60000000000002,382.0 L46.29600000000001,382.0 L46.29600000000001,398.0 L122.60000000000002,398.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="394.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<line x1="128.6" y1="412.0" x2="216.6" y2="412.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="416.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">UCC1</text>
+<text x="213.6" y="409.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">14</text>
+<path d="M128.60000000000002,412.0 L122.60000000000002,404.0 L46.000000000000014,404.0 L46.000000000000014,420.0 L122.60000000000002,420.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="120.6" y="416.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC1</text>
+<line x1="128.6" y1="434.0" x2="216.6" y2="434.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="438.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">UCC2</text>
+<text x="213.6" y="431.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">15</text>
+<path d="M128.60000000000002,434.0 L122.60000000000002,426.0 L46.000000000000014,426.0 L46.000000000000014,442.0 L122.60000000000002,442.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="120.6" y="438.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC2</text>
+<line x1="128.6" y1="456.0" x2="216.6" y2="456.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="460.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">VCC33_IO</text>
+<text x="213.6" y="453.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">16</text>
+<path d="M128.60000000000002,456.0 L122.60000000000002,448.0 L62.872000000000014,448.0 L62.872000000000014,464.0 L122.60000000000002,464.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="460.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<line x1="128.6" y1="478.0" x2="216.6" y2="478.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="482.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">AUXP</text>
+<text x="213.6" y="475.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">17</text>
+<path d="M128.60000000000002,478.0 L122.60000000000002,470.0 L53.40000000000002,470.0 L53.40000000000002,486.0 L122.60000000000002,486.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="482.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">LT_AUX_P</text>
+<line x1="128.6" y1="500.0" x2="216.6" y2="500.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="504.5" font-size="12" text-anchor="start" fill="#0e7490" font-weight="normal">AUXN</text>
+<text x="213.6" y="497.0" font-size="10.5" text-anchor="end" fill="#0e7490" font-weight="normal">18</text>
+<path d="M128.60000000000002,500.0 L122.60000000000002,492.0 L53.40000000000002,492.0 L53.40000000000002,508.0 L122.60000000000002,508.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="504.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">LT_AUX_N</text>
+<line x1="480.6" y1="126.0" x2="568.6" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="130.5" font-size="12" text-anchor="end" fill="#0e7490" font-weight="normal">SLEEP_33</text>
+<text x="483.6" y="123.0" font-size="10.5" text-anchor="start" fill="#0e7490" font-weight="normal">19</text>
+<path d="M568.6,126.0 L574.6,118.0 L643.8000000000001,118.0 L643.8000000000001,134.0 L574.6,134.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="130.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_SLEEP</text>
+<line x1="480.6" y1="148.0" x2="568.6" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="152.5" font-size="12" text-anchor="end" fill="#0e7490" font-weight="normal">RST_N</text>
+<text x="483.6" y="145.0" font-size="10.5" text-anchor="start" fill="#0e7490" font-weight="normal">20</text>
+<path d="M568.6,148.0 L574.6,140.0 L643.8000000000001,140.0 L643.8000000000001,156.0 L574.6,156.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="152.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_RST_N</text>
+<line x1="480.6" y1="170.0" x2="568.6" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="174.5" font-size="12" text-anchor="end" fill="#0e7490" font-weight="normal">CSCL</text>
+<text x="483.6" y="167.0" font-size="10.5" text-anchor="start" fill="#0e7490" font-weight="normal">21</text>
+<path d="M568.6,170.0 L574.6,162.0 L629.0,162.0 L629.0,178.0 L574.6,178.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="174.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_SCL</text>
+<line x1="480.6" y1="192.0" x2="568.6" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="196.5" font-size="12" text-anchor="end" fill="#0e7490" font-weight="normal">CSDA</text>
+<text x="483.6" y="189.0" font-size="10.5" text-anchor="start" fill="#0e7490" font-weight="normal">22</text>
+<path d="M568.6,192.0 L574.6,184.0 L629.0,184.0 L629.0,200.0 L574.6,200.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="196.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_SDA</text>
+<line x1="480.6" y1="214.0" x2="568.6" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="218.5" font-size="12" text-anchor="end" fill="#0e7490" font-weight="normal">RX_HPD</text>
+<text x="483.6" y="211.0" font-size="10.5" text-anchor="start" fill="#0e7490" font-weight="normal">23</text>
+<path d="M568.6,214.0 L574.6,206.0 L651.2,206.0 L651.2,222.0 L574.6,222.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="218.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_RX_HPD</text>
+<line x1="128.6" y1="522.0" x2="216.6" y2="522.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="526.5" font-size="12" text-anchor="start" fill="#d97706" font-weight="normal">VDD</text>
+<text x="213.6" y="519.0" font-size="10.5" text-anchor="end" fill="#d97706" font-weight="normal">?VDD</text>
+<path d="M128.60000000000002,522.0 L122.60000000000002,514.0 L87.73600000000002,514.0 L87.73600000000002,530.0 L122.60000000000002,530.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="526.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<line x1="128.6" y1="544.0" x2="216.6" y2="544.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="548.5" font-size="12" text-anchor="start" fill="#d97706" font-weight="normal">VCC33_TX</text>
+<text x="213.6" y="541.0" font-size="10.5" text-anchor="end" fill="#d97706" font-weight="normal">?VCC33_TX</text>
+<path d="M128.60000000000002,544.0 L122.60000000000002,536.0 L62.872000000000014,536.0 L62.872000000000014,552.0 L122.60000000000002,552.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="548.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<line x1="128.6" y1="566.0" x2="216.6" y2="566.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="570.5" font-size="12" text-anchor="start" fill="#d97706" font-weight="normal">VCC12_TX</text>
+<text x="213.6" y="563.0" font-size="10.5" text-anchor="end" fill="#d97706" font-weight="normal">?VCC12_TX</text>
+<path d="M128.60000000000002,566.0 L122.60000000000002,558.0 L87.73600000000002,558.0 L87.73600000000002,574.0 L122.60000000000002,574.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="120.6" y="570.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<line x1="480.6" y1="236.0" x2="568.6" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="240.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">XTALI</text>
+<text x="483.6" y="233.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?XTALI</text>
+<path d="M568.6,236.0 L574.6,228.0 L621.6,228.0 L621.6,244.0 L574.6,244.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="240.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_XI</text>
+<line x1="480.6" y1="258.0" x2="568.6" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="262.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">XTALO</text>
+<text x="483.6" y="255.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?XTALO</text>
+<path d="M568.6,258.0 L574.6,250.0 L621.6,250.0 L621.6,266.0 L574.6,266.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="262.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_XO</text>
+<line x1="480.6" y1="280.0" x2="568.6" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="284.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_CLKP</text>
+<text x="483.6" y="277.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TXCP</text>
+<path d="M568.6,280.0 L574.6,272.0 L651.2,272.0 L651.2,288.0 L574.6,288.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="284.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_CLK_P</text>
+<line x1="480.6" y1="302.0" x2="568.6" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="306.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_CLKN</text>
+<text x="483.6" y="299.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TXCN</text>
+<path d="M568.6,302.0 L574.6,294.0 L651.2,294.0 L651.2,310.0 L574.6,310.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="306.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_CLK_N</text>
+<line x1="480.6" y1="324.0" x2="568.6" y2="324.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="328.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D0P</text>
+<text x="483.6" y="321.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX0P</text>
+<path d="M568.6,324.0 L574.6,316.0 L643.8000000000001,316.0 L643.8000000000001,332.0 L574.6,332.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="328.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D0_P</text>
+<line x1="480.6" y1="346.0" x2="568.6" y2="346.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="350.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D0N</text>
+<text x="483.6" y="343.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX0N</text>
+<path d="M568.6,346.0 L574.6,338.0 L643.8000000000001,338.0 L643.8000000000001,354.0 L574.6,354.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="350.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D0_N</text>
+<line x1="480.6" y1="368.0" x2="568.6" y2="368.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="372.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D1P</text>
+<text x="483.6" y="365.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX1P</text>
+<path d="M568.6,368.0 L574.6,360.0 L643.8000000000001,360.0 L643.8000000000001,376.0 L574.6,376.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="372.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D1_P</text>
+<line x1="480.6" y1="390.0" x2="568.6" y2="390.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="394.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D1N</text>
+<text x="483.6" y="387.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX1N</text>
+<path d="M568.6,390.0 L574.6,382.0 L643.8000000000001,382.0 L643.8000000000001,398.0 L574.6,398.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="394.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D1_N</text>
+<line x1="480.6" y1="412.0" x2="568.6" y2="412.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="416.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D2P</text>
+<text x="483.6" y="409.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX2P</text>
+<path d="M568.6,412.0 L574.6,404.0 L643.8000000000001,404.0 L643.8000000000001,420.0 L574.6,420.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="416.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D2_P</text>
+<line x1="480.6" y1="434.0" x2="568.6" y2="434.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="438.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D2N</text>
+<text x="483.6" y="431.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX2N</text>
+<path d="M568.6,434.0 L574.6,426.0 L643.8000000000001,426.0 L643.8000000000001,442.0 L574.6,442.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="438.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D2_N</text>
+<line x1="480.6" y1="456.0" x2="568.6" y2="456.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="460.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D3P</text>
+<text x="483.6" y="453.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX3P</text>
+<path d="M568.6,456.0 L574.6,448.0 L643.8000000000001,448.0 L643.8000000000001,464.0 L574.6,464.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="460.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D3_P</text>
+<line x1="480.6" y1="478.0" x2="568.6" y2="478.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="482.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">TXA_D3N</text>
+<text x="483.6" y="475.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?TX3N</text>
+<path d="M568.6,478.0 L574.6,470.0 L643.8000000000001,470.0 L643.8000000000001,486.0 L574.6,486.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="576.6" y="482.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">CSI_D3_N</text>
+<line x1="480.6" y1="500.0" x2="568.6" y2="500.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="504.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">GPIO_INT</text>
+<text x="483.6" y="497.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?INT</text>
+<path d="M568.6,500.0 L574.6,492.0 L629.0,492.0 L629.0,508.0 L574.6,508.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="504.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_INT</text>
+<line x1="480.6" y1="522.0" x2="568.6" y2="522.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="526.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">GPIO_VBUS_EN</text>
+<text x="483.6" y="519.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?VBUSEN</text>
+<path d="M568.6,522.0 L574.6,514.0 L658.6,514.0 L658.6,530.0 L574.6,530.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="576.6" y="526.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_VBUS_EN</text>
+<line x1="128.6" y1="588.0" x2="216.6" y2="588.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="592.5" font-size="12" text-anchor="start" fill="#d97706" font-weight="normal">PD_CC1</text>
+<text x="213.6" y="585.0" font-size="10.5" text-anchor="end" fill="#d97706" font-weight="normal">?PDCC1</text>
+<path d="M128.60000000000002,588.0 L122.60000000000002,580.0 L53.40000000000002,580.0 L53.40000000000002,596.0 L122.60000000000002,596.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="120.6" y="592.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_PDCC1</text>
+<line x1="128.6" y1="610.0" x2="216.6" y2="610.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="614.5" font-size="12" text-anchor="start" fill="#d97706" font-weight="normal">PD_CC2</text>
+<text x="213.6" y="607.0" font-size="10.5" text-anchor="end" fill="#d97706" font-weight="normal">?PDCC2</text>
+<path d="M128.60000000000002,610.0 L122.60000000000002,602.0 L53.40000000000002,602.0 L53.40000000000002,618.0 L122.60000000000002,618.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="120.6" y="614.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_PDCC2</text>
+<line x1="480.6" y1="544.0" x2="568.6" y2="544.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="548.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">IIS_WS</text>
+<text x="483.6" y="541.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?IIS_WS</text>
+<path d="M563.6,539.0 L573.6,549.0 M563.6,549.0 L573.6,539.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="480.6" y1="566.0" x2="568.6" y2="566.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="570.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">IIS_SCLK</text>
+<text x="483.6" y="563.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?IIS_SCLK</text>
+<path d="M563.6,561.0 L573.6,571.0 M563.6,571.0 L573.6,561.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="480.6" y1="588.0" x2="568.6" y2="588.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="592.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">IIS_MCLK</text>
+<text x="483.6" y="585.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?IIS_MCLK</text>
+<path d="M563.6,583.0 L573.6,593.0 M563.6,593.0 L573.6,583.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="480.6" y1="610.0" x2="568.6" y2="610.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="614.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">IIS_D0</text>
+<text x="483.6" y="607.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?IIS_D0</text>
+<path d="M563.6,605.0 L573.6,615.0 M563.6,615.0 L573.6,605.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="480.6" y1="632.0" x2="568.6" y2="632.0" stroke="#374151" stroke-width="1.4"/>
+<text x="475.6" y="636.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">VSYNC_OUT/SPDIF</text>
+<text x="483.6" y="629.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">?SPDIF</text>
+<path d="M563.6,627.0 L573.6,637.0 M563.6,637.0 L573.6,627.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="128.6" y1="632.0" x2="216.6" y2="632.0" stroke="#374151" stroke-width="1.4"/>
+<text x="221.6" y="636.5" font-size="12" text-anchor="start" fill="#d97706" font-weight="normal">EPAD</text>
+<text x="213.6" y="629.0" font-size="10.5" text-anchor="end" fill="#d97706" font-weight="normal">?EPAD</text>
+<path d="M128.60000000000002,632.0 L122.60000000000002,624.0 L87.73600000000002,624.0 L87.73600000000002,640.0 L122.60000000000002,640.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="120.6" y="636.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<rect x="863.4" y="104.0" width="176.0" height="308.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="863.4" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">J201  USB-C iPhone</text>
+<text x="863.4" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">Molex 105450-0101  </text>
+<line x1="819.4" y1="126.0" x2="863.4" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="130.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="860.4" y="123.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A1</text>
+<path d="M819.4000000000001,126.0 L813.4000000000001,118.0 L778.5360000000001,118.0 L778.5360000000001,134.0 L813.4000000000001,134.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="811.4" y="130.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="819.4" y1="148.0" x2="863.4" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="152.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">TX1+</text>
+<text x="860.4" y="145.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A2</text>
+<path d="M819.4000000000001,148.0 L813.4000000000001,140.0 L744.2,140.0 L744.2,156.0 L813.4000000000001,156.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="152.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX1_P</text>
+<line x1="819.4" y1="170.0" x2="863.4" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="174.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">TX1-</text>
+<text x="860.4" y="167.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A3</text>
+<path d="M819.4000000000001,170.0 L813.4000000000001,162.0 L744.2,162.0 L744.2,178.0 L813.4000000000001,178.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="174.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX1_N</text>
+<line x1="819.4" y1="192.0" x2="863.4" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="196.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="860.4" y="189.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A4</text>
+<path d="M819.4000000000001,192.0 L813.4000000000001,184.0 L720.5200000000001,184.0 L720.5200000000001,200.0 L813.4000000000001,200.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="811.4" y="196.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<line x1="819.4" y1="214.0" x2="863.4" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="218.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CC1</text>
+<text x="860.4" y="211.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A5</text>
+<path d="M819.4000000000001,214.0 L813.4000000000001,206.0 L736.8000000000001,206.0 L736.8000000000001,222.0 L813.4000000000001,222.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="811.4" y="218.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC1</text>
+<line x1="819.4" y1="236.0" x2="863.4" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="240.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D+</text>
+<text x="860.4" y="233.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A6</text>
+<path d="M819.4000000000001,236.0 L813.4000000000001,228.0 L714.6000000000001,228.0 L714.6000000000001,244.0 L813.4000000000001,244.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="240.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_USB_DP</text>
+<line x1="819.4" y1="258.0" x2="863.4" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="262.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D-</text>
+<text x="860.4" y="255.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A7</text>
+<path d="M819.4000000000001,258.0 L813.4000000000001,250.0 L714.6000000000001,250.0 L714.6000000000001,266.0 L813.4000000000001,266.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="262.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_USB_DN</text>
+<line x1="819.4" y1="280.0" x2="863.4" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="284.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SBU1</text>
+<text x="860.4" y="277.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A8</text>
+<path d="M819.4000000000001,280.0 L813.4000000000001,272.0 L729.4000000000001,272.0 L729.4000000000001,288.0 L813.4000000000001,288.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="284.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_SBU1</text>
+<line x1="819.4" y1="302.0" x2="863.4" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="306.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="860.4" y="299.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A9</text>
+<path d="M819.4000000000001,302.0 L813.4000000000001,294.0 L720.5200000000001,294.0 L720.5200000000001,310.0 L813.4000000000001,310.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="811.4" y="306.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<line x1="819.4" y1="324.0" x2="863.4" y2="324.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="328.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">RX2-</text>
+<text x="860.4" y="321.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A10</text>
+<path d="M819.4000000000001,324.0 L813.4000000000001,316.0 L744.2,316.0 L744.2,332.0 L813.4000000000001,332.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="328.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX2_N</text>
+<line x1="819.4" y1="346.0" x2="863.4" y2="346.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="350.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">RX2+</text>
+<text x="860.4" y="343.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A11</text>
+<path d="M819.4000000000001,346.0 L813.4000000000001,338.0 L744.2,338.0 L744.2,354.0 L813.4000000000001,354.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="811.4" y="350.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX2_P</text>
+<line x1="819.4" y1="368.0" x2="863.4" y2="368.0" stroke="#374151" stroke-width="1.4"/>
+<text x="868.4" y="372.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="860.4" y="365.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A12</text>
+<path d="M819.4000000000001,368.0 L813.4000000000001,360.0 L778.5360000000001,360.0 L778.5360000000001,376.0 L813.4000000000001,376.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="811.4" y="372.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1039.4" y1="126.0" x2="1083.4" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="130.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1042.4" y="123.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B1</text>
+<path d="M1083.4,126.0 L1089.4,118.0 L1124.2640000000001,118.0 L1124.2640000000001,134.0 L1089.4,134.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1091.4" y="130.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1039.4" y1="148.0" x2="1083.4" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="152.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">TX2+</text>
+<text x="1042.4" y="145.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B2</text>
+<path d="M1083.4,148.0 L1089.4,140.0 L1158.6000000000001,140.0 L1158.6000000000001,156.0 L1089.4,156.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="152.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">SS_TX2_P</text>
+<line x1="1039.4" y1="170.0" x2="1083.4" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="174.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">TX2-</text>
+<text x="1042.4" y="167.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B3</text>
+<path d="M1083.4,170.0 L1089.4,162.0 L1158.6000000000001,162.0 L1158.6000000000001,178.0 L1089.4,178.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="174.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">SS_TX2_N</text>
+<line x1="1039.4" y1="192.0" x2="1083.4" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="196.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="1042.4" y="189.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B4</text>
+<path d="M1083.4,192.0 L1089.4,184.0 L1182.2800000000002,184.0 L1182.2800000000002,200.0 L1089.4,200.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1091.4" y="196.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<line x1="1039.4" y1="214.0" x2="1083.4" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="218.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">CC2</text>
+<text x="1042.4" y="211.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B5</text>
+<path d="M1083.4,214.0 L1089.4,206.0 L1166.0,206.0 L1166.0,222.0 L1089.4,222.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1091.4" y="218.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">PHONE_CC2</text>
+<line x1="1039.4" y1="236.0" x2="1083.4" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="240.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">D+</text>
+<text x="1042.4" y="233.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B6</text>
+<path d="M1083.4,236.0 L1089.4,228.0 L1188.2,228.0 L1188.2,244.0 L1089.4,244.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="240.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PHONE_USB_DP</text>
+<line x1="1039.4" y1="258.0" x2="1083.4" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="262.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">D-</text>
+<text x="1042.4" y="255.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B7</text>
+<path d="M1083.4,258.0 L1089.4,250.0 L1188.2,250.0 L1188.2,266.0 L1089.4,266.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="262.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PHONE_USB_DN</text>
+<line x1="1039.4" y1="280.0" x2="1083.4" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="284.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SBU2</text>
+<text x="1042.4" y="277.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B8</text>
+<path d="M1083.4,280.0 L1089.4,272.0 L1173.4,272.0 L1173.4,288.0 L1089.4,288.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="284.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PHONE_SBU2</text>
+<line x1="1039.4" y1="302.0" x2="1083.4" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="306.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="1042.4" y="299.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B9</text>
+<path d="M1083.4,302.0 L1089.4,294.0 L1182.2800000000002,294.0 L1182.2800000000002,310.0 L1089.4,310.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1091.4" y="306.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<line x1="1039.4" y1="324.0" x2="1083.4" y2="324.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="328.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">RX1-</text>
+<text x="1042.4" y="321.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B10</text>
+<path d="M1083.4,324.0 L1089.4,316.0 L1158.6000000000001,316.0 L1158.6000000000001,332.0 L1089.4,332.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="328.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">SS_RX1_N</text>
+<line x1="1039.4" y1="346.0" x2="1083.4" y2="346.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="350.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">RX1+</text>
+<text x="1042.4" y="343.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B11</text>
+<path d="M1083.4,346.0 L1089.4,338.0 L1158.6000000000001,338.0 L1158.6000000000001,354.0 L1089.4,354.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1091.4" y="350.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">SS_RX1_P</text>
+<line x1="1039.4" y1="368.0" x2="1083.4" y2="368.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="372.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1042.4" y="365.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B12</text>
+<path d="M1083.4,368.0 L1089.4,360.0 L1124.2640000000001,360.0 L1124.2640000000001,376.0 L1089.4,376.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1091.4" y="372.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1039.4" y1="390.0" x2="1083.4" y2="390.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1034.4" y="394.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SHIELD</text>
+<text x="1042.4" y="387.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">S1</text>
+<path d="M1083.4,390.0 L1089.4,382.0 L1124.2640000000001,382.0 L1124.2640000000001,398.0 L1089.4,398.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1091.4" y="394.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<rect x="165.2" y="812.0" width="132.0" height="132.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="165.2" y="792.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U202  TPD4E05U06DQA</text>
+<text x="165.2" y="807.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">TPD4E05U06DQAR  LCSC C138714</text>
+<line x1="121.2" y1="834.0" x2="165.2" y2="834.0" stroke="#374151" stroke-width="1.4"/>
+<text x="170.2" y="838.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D1+</text>
+<text x="162.2" y="831.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M121.19999999999999,834.0 L115.19999999999999,826.0 L45.999999999999986,826.0 L45.999999999999986,842.0 L115.19999999999999,842.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="113.2" y="838.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX1_P</text>
+<line x1="121.2" y1="856.0" x2="165.2" y2="856.0" stroke="#374151" stroke-width="1.4"/>
+<text x="170.2" y="860.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D1-</text>
+<text x="162.2" y="853.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M121.19999999999999,856.0 L115.19999999999999,848.0 L45.999999999999986,848.0 L45.999999999999986,864.0 L115.19999999999999,864.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="113.2" y="860.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX1_N</text>
+<line x1="121.2" y1="878.0" x2="165.2" y2="878.0" stroke="#374151" stroke-width="1.4"/>
+<text x="170.2" y="882.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="162.2" y="875.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M121.19999999999999,878.0 L115.19999999999999,870.0 L80.33599999999998,870.0 L80.33599999999998,886.0 L115.19999999999999,886.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="113.2" y="882.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="121.2" y1="900.0" x2="165.2" y2="900.0" stroke="#374151" stroke-width="1.4"/>
+<text x="170.2" y="904.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D2+</text>
+<text x="162.2" y="897.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">4</text>
+<path d="M121.19999999999999,900.0 L115.19999999999999,892.0 L45.999999999999986,892.0 L45.999999999999986,908.0 L115.19999999999999,908.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="113.2" y="904.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX1_P</text>
+<line x1="121.2" y1="922.0" x2="165.2" y2="922.0" stroke="#374151" stroke-width="1.4"/>
+<text x="170.2" y="926.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D2-</text>
+<text x="162.2" y="919.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">5</text>
+<path d="M121.19999999999999,922.0 L115.19999999999999,914.0 L45.999999999999986,914.0 L45.999999999999986,930.0 L115.19999999999999,930.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="113.2" y="926.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX1_N</text>
+<line x1="297.2" y1="834.0" x2="341.2" y2="834.0" stroke="#374151" stroke-width="1.4"/>
+<text x="292.2" y="838.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="300.2" y="831.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">6</text>
+<path d="M336.2,829.0 L346.2,839.0 M336.2,839.0 L346.2,829.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="297.2" y1="856.0" x2="341.2" y2="856.0" stroke="#374151" stroke-width="1.4"/>
+<text x="292.2" y="860.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="300.2" y="853.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">7</text>
+<path d="M336.2,851.0 L346.2,861.0 M336.2,861.0 L346.2,851.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="297.2" y1="878.0" x2="341.2" y2="878.0" stroke="#374151" stroke-width="1.4"/>
+<text x="292.2" y="882.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="300.2" y="875.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">8</text>
+<path d="M341.2,878.0 L347.2,870.0 L382.06399999999996,870.0 L382.06399999999996,886.0 L347.2,886.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="349.2" y="882.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="297.2" y1="900.0" x2="341.2" y2="900.0" stroke="#374151" stroke-width="1.4"/>
+<text x="292.2" y="904.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="300.2" y="897.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">9</text>
+<path d="M336.2,895.0 L346.2,905.0 M336.2,905.0 L346.2,895.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="297.2" y1="922.0" x2="341.2" y2="922.0" stroke="#374151" stroke-width="1.4"/>
+<text x="292.2" y="926.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="300.2" y="919.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">10</text>
+<path d="M336.2,917.0 L346.2,927.0 M336.2,927.0 L346.2,917.0" stroke="#9ca3af" stroke-width="2"/>
+<rect x="557.3" y="812.0" width="132.0" height="132.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="557.3" y="792.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U203  TPD4E05U06DQA</text>
+<text x="557.3" y="807.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">TPD4E05U06DQAR  LCSC C138714</text>
+<line x1="513.3" y1="834.0" x2="557.3" y2="834.0" stroke="#374151" stroke-width="1.4"/>
+<text x="562.3" y="838.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D1+</text>
+<text x="554.3" y="831.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M513.2639999999999,834.0 L507.2639999999999,826.0 L438.0639999999999,826.0 L438.0639999999999,842.0 L507.2639999999999,842.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="505.3" y="838.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX2_P</text>
+<line x1="513.3" y1="856.0" x2="557.3" y2="856.0" stroke="#374151" stroke-width="1.4"/>
+<text x="562.3" y="860.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D1-</text>
+<text x="554.3" y="853.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M513.2639999999999,856.0 L507.2639999999999,848.0 L438.0639999999999,848.0 L438.0639999999999,864.0 L507.2639999999999,864.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="505.3" y="860.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_TX2_N</text>
+<line x1="513.3" y1="878.0" x2="557.3" y2="878.0" stroke="#374151" stroke-width="1.4"/>
+<text x="562.3" y="882.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="554.3" y="875.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M513.2639999999999,878.0 L507.2639999999999,870.0 L472.39999999999986,870.0 L472.39999999999986,886.0 L507.2639999999999,886.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="505.3" y="882.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="513.3" y1="900.0" x2="557.3" y2="900.0" stroke="#374151" stroke-width="1.4"/>
+<text x="562.3" y="904.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D2+</text>
+<text x="554.3" y="897.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">4</text>
+<path d="M513.2639999999999,900.0 L507.2639999999999,892.0 L438.0639999999999,892.0 L438.0639999999999,908.0 L507.2639999999999,908.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="505.3" y="904.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX2_P</text>
+<line x1="513.3" y1="922.0" x2="557.3" y2="922.0" stroke="#374151" stroke-width="1.4"/>
+<text x="562.3" y="926.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D2-</text>
+<text x="554.3" y="919.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">5</text>
+<path d="M513.2639999999999,922.0 L507.2639999999999,914.0 L438.0639999999999,914.0 L438.0639999999999,930.0 L507.2639999999999,930.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="505.3" y="926.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">SS_RX2_N</text>
+<line x1="689.3" y1="834.0" x2="733.3" y2="834.0" stroke="#374151" stroke-width="1.4"/>
+<text x="684.3" y="838.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="692.3" y="831.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">6</text>
+<path d="M728.2639999999999,829.0 L738.2639999999999,839.0 M728.2639999999999,839.0 L738.2639999999999,829.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="689.3" y1="856.0" x2="733.3" y2="856.0" stroke="#374151" stroke-width="1.4"/>
+<text x="684.3" y="860.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="692.3" y="853.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">7</text>
+<path d="M728.2639999999999,851.0 L738.2639999999999,861.0 M728.2639999999999,861.0 L738.2639999999999,851.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="689.3" y1="878.0" x2="733.3" y2="878.0" stroke="#374151" stroke-width="1.4"/>
+<text x="684.3" y="882.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="692.3" y="875.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">8</text>
+<path d="M733.2639999999999,878.0 L739.2639999999999,870.0 L774.1279999999999,870.0 L774.1279999999999,886.0 L739.2639999999999,886.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="741.3" y="882.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="689.3" y1="900.0" x2="733.3" y2="900.0" stroke="#374151" stroke-width="1.4"/>
+<text x="684.3" y="904.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="692.3" y="897.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">9</text>
+<path d="M728.2639999999999,895.0 L738.2639999999999,905.0 M728.2639999999999,905.0 L738.2639999999999,895.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="689.3" y1="922.0" x2="733.3" y2="922.0" stroke="#374151" stroke-width="1.4"/>
+<text x="684.3" y="926.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="692.3" y="919.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">10</text>
+<path d="M728.2639999999999,917.0 L738.2639999999999,927.0 M728.2639999999999,927.0 L738.2639999999999,917.0" stroke="#9ca3af" stroke-width="2"/>
+<rect x="964.1" y="812.0" width="132.0" height="132.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="964.1" y="792.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U204  TPD4E05U06DQA</text>
+<text x="964.1" y="807.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">TPD4E05U06DQAR  LCSC C138714</text>
+<line x1="920.1" y1="834.0" x2="964.1" y2="834.0" stroke="#374151" stroke-width="1.4"/>
+<text x="969.1" y="838.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D1+</text>
+<text x="961.1" y="831.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M920.1279999999999,834.0 L914.1279999999999,826.0 L837.5279999999999,826.0 L837.5279999999999,842.0 L914.1279999999999,842.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="912.1" y="838.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC1</text>
+<line x1="920.1" y1="856.0" x2="964.1" y2="856.0" stroke="#374151" stroke-width="1.4"/>
+<text x="969.1" y="860.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D1-</text>
+<text x="961.1" y="853.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M920.1279999999999,856.0 L914.1279999999999,848.0 L837.5279999999999,848.0 L837.5279999999999,864.0 L914.1279999999999,864.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="912.1" y="860.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC2</text>
+<line x1="920.1" y1="878.0" x2="964.1" y2="878.0" stroke="#374151" stroke-width="1.4"/>
+<text x="969.1" y="882.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="961.1" y="875.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M920.1279999999999,878.0 L914.1279999999999,870.0 L879.2639999999999,870.0 L879.2639999999999,886.0 L914.1279999999999,886.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="912.1" y="882.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="920.1" y1="900.0" x2="964.1" y2="900.0" stroke="#374151" stroke-width="1.4"/>
+<text x="969.1" y="904.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D2+</text>
+<text x="961.1" y="897.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">4</text>
+<path d="M920.1279999999999,900.0 L914.1279999999999,892.0 L830.1279999999999,892.0 L830.1279999999999,908.0 L914.1279999999999,908.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="912.1" y="904.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_SBU1</text>
+<line x1="920.1" y1="922.0" x2="964.1" y2="922.0" stroke="#374151" stroke-width="1.4"/>
+<text x="969.1" y="926.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D2-</text>
+<text x="961.1" y="919.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">5</text>
+<path d="M920.1279999999999,922.0 L914.1279999999999,914.0 L830.1279999999999,914.0 L830.1279999999999,930.0 L914.1279999999999,930.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="912.1" y="926.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_SBU2</text>
+<line x1="1096.1" y1="834.0" x2="1140.1" y2="834.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1091.1" y="838.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="1099.1" y="831.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">6</text>
+<path d="M1135.128,829.0 L1145.128,839.0 M1135.128,839.0 L1145.128,829.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="1096.1" y1="856.0" x2="1140.1" y2="856.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1091.1" y="860.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="1099.1" y="853.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">7</text>
+<path d="M1135.128,851.0 L1145.128,861.0 M1135.128,861.0 L1145.128,851.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="1096.1" y1="878.0" x2="1140.1" y2="878.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1091.1" y="882.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1099.1" y="875.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">8</text>
+<path d="M1140.128,878.0 L1146.128,870.0 L1180.992,870.0 L1180.992,886.0 L1146.128,886.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1148.1" y="882.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1096.1" y1="900.0" x2="1140.1" y2="900.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1091.1" y="904.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="1099.1" y="897.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">9</text>
+<path d="M1135.128,895.0 L1145.128,905.0 M1135.128,905.0 L1145.128,895.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="1096.1" y1="922.0" x2="1140.1" y2="922.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1091.1" y="926.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="1099.1" y="919.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">10</text>
+<path d="M1135.128,917.0 L1145.128,927.0 M1135.128,927.0 L1145.128,917.0" stroke="#9ca3af" stroke-width="2"/>
+<rect x="172.8" y="1058.0" width="132.0" height="88.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="172.8" y="1038.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U205  USBLC6-2SC6</text>
+<text x="172.8" y="1053.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">LCSC C7519</text>
+<line x1="150.8" y1="1080.0" x2="172.8" y2="1080.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.8" y="1084.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I/O1</text>
+<text x="169.8" y="1077.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M150.8,1080.0 L144.8,1072.0 L46.0,1072.0 L46.0,1088.0 L144.8,1088.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="1084.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_USB_DP</text>
+<line x1="150.8" y1="1102.0" x2="172.8" y2="1102.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.8" y="1106.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="169.8" y="1099.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M150.8,1102.0 L144.8,1094.0 L109.936,1094.0 L109.936,1110.0 L144.8,1110.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="1106.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="1124.0" x2="172.8" y2="1124.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.8" y="1128.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I/O2</text>
+<text x="169.8" y="1121.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M150.8,1124.0 L144.8,1116.0 L46.0,1116.0 L46.0,1132.0 L144.8,1132.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="1128.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_USB_DN</text>
+<line x1="304.8" y1="1080.0" x2="326.8" y2="1080.0" stroke="#374151" stroke-width="1.4"/>
+<text x="299.8" y="1084.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I/O2</text>
+<text x="307.8" y="1077.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">4</text>
+<path d="M326.8,1080.0 L332.8,1072.0 L431.6,1072.0 L431.6,1088.0 L332.8,1088.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="334.8" y="1084.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PHONE_USB_DN</text>
+<line x1="304.8" y1="1102.0" x2="326.8" y2="1102.0" stroke="#374151" stroke-width="1.4"/>
+<text x="299.8" y="1106.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="307.8" y="1099.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">5</text>
+<path d="M326.8,1102.0 L332.8,1094.0 L367.664,1094.0 L367.664,1110.0 L332.8,1110.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="334.8" y="1106.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3</text>
+<line x1="304.8" y1="1124.0" x2="326.8" y2="1124.0" stroke="#374151" stroke-width="1.4"/>
+<text x="299.8" y="1128.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I/O1</text>
+<text x="307.8" y="1121.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">6</text>
+<path d="M326.8,1124.0 L332.8,1116.0 L431.6,1116.0 L431.6,1132.0 L332.8,1132.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="334.8" y="1128.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PHONE_USB_DP</text>
+<rect x="562.6" y="1058.0" width="88.0" height="44.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="562.6" y="1038.0" font-size="14.5" text-anchor="start" fill="#d97706" font-weight="bold">X201  25MHz</text>
+<text x="562.6" y="1053.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal"></text>
+<line x1="540.6" y1="1080.0" x2="562.6" y2="1080.0" stroke="#374151" stroke-width="1.4"/>
+<text x="559.6" y="1077.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M540.6,1080.0 L534.6,1072.0 L487.6,1072.0 L487.6,1088.0 L534.6,1088.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="532.6" y="1084.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_XI</text>
+<line x1="584.6" y1="1102.0" x2="584.6" y2="1124.0" stroke="#374151" stroke-width="1.4"/>
+<text x="587.6" y="1114.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">2</text>
+<path d="M584.6,1124.0 L567.168,1130.0 L567.168,1146.0 L602.032,1146.0 L602.032,1130.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="584.6" y="1142.0" font-size="11.5" text-anchor="middle" fill="#15803d" font-weight="normal">GND</text>
+<line x1="650.6" y1="1080.0" x2="672.6" y2="1080.0" stroke="#374151" stroke-width="1.4"/>
+<text x="653.6" y="1077.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">3</text>
+<path d="M672.6,1080.0 L678.6,1072.0 L725.6,1072.0 L725.6,1088.0 L678.6,1088.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="680.6" y="1084.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_XO</text>
+<line x1="628.6" y1="1102.0" x2="628.6" y2="1124.0" stroke="#374151" stroke-width="1.4"/>
+<text x="631.6" y="1114.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">4</text>
+<path d="M628.6,1124.0 L611.168,1130.0 L611.168,1146.0 L646.032,1146.0 L646.032,1130.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="628.6" y="1142.0" font-size="11.5" text-anchor="middle" fill="#15803d" font-weight="normal">GND</text>
+<line x1="144.88" y1="1297.2" x2="172.88" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1297.2" x2="232.88" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1297.2" x2="184.88" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1297.2" x2="204.88" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1287.2" x2="184.88" y2="1307.2" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1287.2" x2="192.88" y2="1307.2" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1282.2" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">C201</text>
+<text x="188.9" y="1322.2" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">18pF C0G</text>
+<path d="M144.88,1297.2 L138.88,1289.2 L91.88,1289.2 L91.88,1305.2 L138.88,1305.2 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="136.9" y="1301.4" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_XI</text>
+<path d="M232.88,1297.2 L238.88,1289.2 L273.744,1289.2 L273.744,1305.2 L238.88,1305.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1301.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1367.6000000000001" x2="172.88" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1367.6000000000001" x2="232.88" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1367.6000000000001" x2="184.88" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1367.6000000000001" x2="204.88" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1357.6000000000001" x2="184.88" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1357.6000000000001" x2="192.88" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1352.6" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">C202</text>
+<text x="188.9" y="1392.6" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">18pF C0G</text>
+<path d="M144.88,1367.6000000000001 L138.88,1359.6000000000001 L91.88,1359.6000000000001 L91.88,1375.6000000000001 L138.88,1375.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="136.9" y="1371.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_XO</text>
+<path d="M232.88,1367.6000000000001 L238.88,1359.6000000000001 L273.744,1359.6000000000001 L273.744,1375.6000000000001 L238.88,1375.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1371.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1438.0" x2="172.88" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1438.0" x2="232.88" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1438.0" x2="184.88" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1438.0" x2="204.88" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1428.0" x2="184.88" y2="1448.0" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1428.0" x2="192.88" y2="1448.0" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1423.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C203</text>
+<text x="188.9" y="1463.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1438.0 L138.88,1430.0 L104.01599999999999,1430.0 L104.01599999999999,1446.0 L138.88,1446.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1442.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<path d="M232.88,1438.0 L238.88,1430.0 L273.744,1430.0 L273.744,1446.0 L238.88,1446.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1442.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1508.4" x2="172.88" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1508.4" x2="232.88" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1508.4" x2="184.88" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1508.4" x2="204.88" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1498.4" x2="184.88" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1498.4" x2="192.88" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1493.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C204</text>
+<text x="188.9" y="1533.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1508.4 L138.88,1500.4 L62.57599999999998,1500.4 L62.57599999999998,1516.4 L138.88,1516.4 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1512.6" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<path d="M232.88,1508.4 L238.88,1500.4 L273.744,1500.4 L273.744,1516.4 L238.88,1516.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1512.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1578.8" x2="172.88" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1578.8" x2="232.88" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1578.8" x2="184.88" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1578.8" x2="204.88" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1568.8" x2="184.88" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1568.8" x2="192.88" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1563.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C205</text>
+<text x="188.9" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1578.8 L138.88,1570.8 L79.15199999999999,1570.8 L79.15199999999999,1586.8 L138.88,1586.8 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1583.0" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<path d="M232.88,1578.8 L238.88,1570.8 L273.744,1570.8 L273.744,1586.8 L238.88,1586.8 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1583.0" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1649.2" x2="172.88" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1649.2" x2="232.88" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1649.2" x2="184.88" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1649.2" x2="204.88" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1639.2" x2="184.88" y2="1659.2" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1639.2" x2="192.88" y2="1659.2" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1634.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C206</text>
+<text x="188.9" y="1674.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1649.2 L138.88,1641.2 L62.57599999999998,1641.2 L62.57599999999998,1657.2 L138.88,1657.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1653.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<path d="M232.88,1649.2 L238.88,1641.2 L273.744,1641.2 L273.744,1657.2 L238.88,1657.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1653.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1719.6000000000001" x2="172.88" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1719.6000000000001" x2="232.88" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1719.6000000000001" x2="184.88" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1719.6000000000001" x2="204.88" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1709.6000000000001" x2="184.88" y2="1729.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1709.6000000000001" x2="192.88" y2="1729.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1704.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C207</text>
+<text x="188.9" y="1744.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1719.6000000000001 L138.88,1711.6000000000001 L62.57599999999998,1711.6000000000001 L62.57599999999998,1727.6000000000001 L138.88,1727.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1723.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<path d="M232.88,1719.6000000000001 L238.88,1711.6000000000001 L273.744,1711.6000000000001 L273.744,1727.6000000000001 L238.88,1727.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1723.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1790.0000000000002" x2="172.88" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1790.0000000000002" x2="232.88" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1790.0000000000002" x2="184.88" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1790.0000000000002" x2="204.88" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1780.0000000000002" x2="184.88" y2="1800.0000000000002" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1780.0000000000002" x2="192.88" y2="1800.0000000000002" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1775.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C208</text>
+<text x="188.9" y="1815.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1790.0000000000002 L138.88,1782.0000000000002 L79.15199999999999,1782.0000000000002 L79.15199999999999,1798.0000000000002 L138.88,1798.0000000000002 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1794.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<path d="M232.88,1790.0000000000002 L238.88,1782.0000000000002 L273.744,1782.0000000000002 L273.744,1798.0000000000002 L238.88,1798.0000000000002 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1794.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="144.88" y1="1860.4" x2="172.88" y2="1860.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="204.88" y1="1860.4" x2="232.88" y2="1860.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="172.88" y1="1860.4" x2="184.88" y2="1860.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="192.88" y1="1860.4" x2="204.88" y2="1860.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="184.88" y1="1850.4" x2="184.88" y2="1870.4" stroke="#374151" stroke-width="2.4"/>
+<line x1="192.88" y1="1850.4" x2="192.88" y2="1870.4" stroke="#374151" stroke-width="2.4"/>
+<text x="188.9" y="1845.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C209</text>
+<text x="188.9" y="1885.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M144.88,1860.4 L138.88,1852.4 L104.01599999999999,1852.4 L104.01599999999999,1868.4 L138.88,1868.4 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="136.9" y="1864.6" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<path d="M232.88,1860.4 L238.88,1852.4 L273.744,1852.4 L273.744,1868.4 L238.88,1868.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="240.9" y="1864.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="470.0640000000001" y1="1297.2" x2="498.0640000000001" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1297.2" x2="558.0640000000001" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="498.0640000000001" y1="1297.2" x2="510.0640000000001" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="518.0640000000001" y1="1297.2" x2="530.0640000000001" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="510.0640000000001" y1="1287.2" x2="510.0640000000001" y2="1307.2" stroke="#374151" stroke-width="2.4"/>
+<line x1="518.0640000000001" y1="1287.2" x2="518.0640000000001" y2="1307.2" stroke="#374151" stroke-width="2.4"/>
+<text x="514.1" y="1282.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C210</text>
+<text x="514.1" y="1322.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M470.0640000000001,1297.2 L464.0640000000001,1289.2 L404.33600000000007,1289.2 L404.33600000000007,1305.2 L464.0640000000001,1305.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1301.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<path d="M558.0640000000001,1297.2 L564.0640000000001,1289.2 L598.9280000000001,1289.2 L598.9280000000001,1305.2 L564.0640000000001,1305.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1301.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="470.0640000000001" y1="1367.6000000000001" x2="498.0640000000001" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1367.6000000000001" x2="558.0640000000001" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="498.0640000000001" y1="1367.6000000000001" x2="510.0640000000001" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="518.0640000000001" y1="1367.6000000000001" x2="530.0640000000001" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="510.0640000000001" y1="1357.6000000000001" x2="510.0640000000001" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="518.0640000000001" y1="1357.6000000000001" x2="518.0640000000001" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="514.1" y="1352.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C211</text>
+<text x="514.1" y="1392.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M470.0640000000001,1367.6000000000001 L464.0640000000001,1359.6000000000001 L429.20000000000005,1359.6000000000001 L429.20000000000005,1375.6000000000001 L464.0640000000001,1375.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1371.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<path d="M558.0640000000001,1367.6000000000001 L564.0640000000001,1359.6000000000001 L598.9280000000001,1359.6000000000001 L598.9280000000001,1375.6000000000001 L564.0640000000001,1375.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1371.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="470.0640000000001" y1="1438.0" x2="498.0640000000001" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1438.0" x2="558.0640000000001" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="498.0640000000001" y1="1438.0" x2="510.0640000000001" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="518.0640000000001" y1="1438.0" x2="530.0640000000001" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="510.0640000000001" y1="1428.0" x2="510.0640000000001" y2="1448.0" stroke="#374151" stroke-width="2.4"/>
+<line x1="518.0640000000001" y1="1428.0" x2="518.0640000000001" y2="1448.0" stroke="#374151" stroke-width="2.4"/>
+<text x="514.1" y="1423.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C212</text>
+<text x="514.1" y="1463.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 6.3V</text>
+<path d="M470.0640000000001,1438.0 L464.0640000000001,1430.0 L429.20000000000005,1430.0 L429.20000000000005,1446.0 L464.0640000000001,1446.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1442.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<path d="M558.0640000000001,1438.0 L564.0640000000001,1430.0 L598.9280000000001,1430.0 L598.9280000000001,1446.0 L564.0640000000001,1446.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1442.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="470.0640000000001" y1="1508.4" x2="498.0640000000001" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1508.4" x2="558.0640000000001" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="498.0640000000001" y1="1508.4" x2="510.0640000000001" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="518.0640000000001" y1="1508.4" x2="530.0640000000001" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="510.0640000000001" y1="1498.4" x2="510.0640000000001" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
+<line x1="518.0640000000001" y1="1498.4" x2="518.0640000000001" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
+<text x="514.1" y="1493.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C213</text>
+<text x="514.1" y="1533.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 6.3V</text>
+<path d="M470.0640000000001,1508.4 L464.0640000000001,1500.4 L387.76000000000005,1500.4 L387.76000000000005,1516.4 L464.0640000000001,1516.4 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1512.6" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<path d="M558.0640000000001,1508.4 L564.0640000000001,1500.4 L598.9280000000001,1500.4 L598.9280000000001,1516.4 L564.0640000000001,1516.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1512.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="470.0640000000001" y1="1578.8" x2="498.0640000000001" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1578.8" x2="558.0640000000001" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="498.0640000000001" y1="1578.8" x2="510.0640000000001" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="518.0640000000001" y1="1578.8" x2="530.0640000000001" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="510.0640000000001" y1="1568.8" x2="510.0640000000001" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<line x1="518.0640000000001" y1="1568.8" x2="518.0640000000001" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<text x="514.1" y="1563.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C214</text>
+<text x="514.1" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 6.3V</text>
+<path d="M470.0640000000001,1578.8 L464.0640000000001,1570.8 L404.33600000000007,1570.8 L404.33600000000007,1586.8 L464.0640000000001,1586.8 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1583.0" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<path d="M558.0640000000001,1578.8 L564.0640000000001,1570.8 L598.9280000000001,1570.8 L598.9280000000001,1586.8 L564.0640000000001,1586.8 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1583.0" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="470.0640000000001" y1="1649.2" x2="498.0640000000001" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1649.2" x2="558.0640000000001" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="502.0640000000001" y="1643.2" width="24" height="12" fill="#374151" stroke="#374151"/>
+<line x1="498.0640000000001" y1="1649.2" x2="502.0640000000001" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="526.0640000000001" y1="1649.2" x2="530.0640000000001" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="514.1" y="1634.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">FB201</text>
+<text x="514.1" y="1674.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">600R@100MHz</text>
+<path d="M470.0640000000001,1649.2 L464.0640000000001,1641.2 L429.20000000000005,1641.2 L429.20000000000005,1657.2 L464.0640000000001,1657.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1653.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3</text>
+<path d="M558.0640000000001,1649.2 L564.0640000000001,1641.2 L623.7920000000001,1641.2 L623.7920000000001,1657.2 L564.0640000000001,1657.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="566.1" y="1653.4" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<line x1="470.0640000000001" y1="1719.6000000000001" x2="498.0640000000001" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1719.6000000000001" x2="558.0640000000001" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="502.0640000000001" y="1713.6000000000001" width="24" height="12" fill="#374151" stroke="#374151"/>
+<line x1="498.0640000000001" y1="1719.6000000000001" x2="502.0640000000001" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="526.0640000000001" y1="1719.6000000000001" x2="530.0640000000001" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="514.1" y="1704.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">FB202</text>
+<text x="514.1" y="1744.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">600R@100MHz</text>
+<path d="M470.0640000000001,1719.6000000000001 L464.0640000000001,1711.6000000000001 L429.20000000000005,1711.6000000000001 L429.20000000000005,1727.6000000000001 L464.0640000000001,1727.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1723.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
+<path d="M558.0640000000001,1719.6000000000001 L564.0640000000001,1711.6000000000001 L640.368,1711.6000000000001 L640.368,1727.6000000000001 L564.0640000000001,1727.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="566.1" y="1723.8" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
+<line x1="470.0640000000001" y1="1790.0000000000002" x2="498.0640000000001" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1790.0000000000002" x2="558.0640000000001" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="498.0640000000001" y="1784.0000000000002" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="514.1" y="1775.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R201</text>
+<text x="514.1" y="1815.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">2.2k</text>
+<path d="M470.0640000000001,1790.0000000000002 L464.0640000000001,1782.0000000000002 L409.6640000000001,1782.0000000000002 L409.6640000000001,1798.0000000000002 L464.0640000000001,1798.0000000000002 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="462.1" y="1794.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_SCL</text>
+<path d="M558.0640000000001,1790.0000000000002 L564.0640000000001,1782.0000000000002 L598.9280000000001,1782.0000000000002 L598.9280000000001,1798.0000000000002 L564.0640000000001,1798.0000000000002 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="566.1" y="1794.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3</text>
+<line x1="470.0640000000001" y1="1860.4" x2="498.0640000000001" y2="1860.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="530.0640000000001" y1="1860.4" x2="558.0640000000001" y2="1860.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="498.0640000000001" y="1854.4" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="514.1" y="1845.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R202</text>
+<text x="514.1" y="1885.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">2.2k</text>
+<path d="M470.0640000000001,1860.4 L464.0640000000001,1852.4 L409.6640000000001,1852.4 L409.6640000000001,1868.4 L464.0640000000001,1868.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="462.1" y="1864.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_SDA</text>
+<path d="M558.0640000000001,1860.4 L564.0640000000001,1852.4 L598.9280000000001,1852.4 L598.9280000000001,1868.4 L564.0640000000001,1868.4 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="566.1" y="1864.6" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3</text>
+<line x1="795.248" y1="1297.2" x2="823.248" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1297.2" x2="883.248" y2="1297.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="823.248" y="1291.2" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="839.2" y="1282.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R203</text>
+<text x="839.2" y="1322.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10k</text>
+<path d="M795.248,1297.2 L789.248,1289.2 L720.048,1289.2 L720.048,1305.2 L789.248,1305.2 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="787.2" y="1301.4" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_RST_N</text>
+<path d="M883.248,1297.2 L889.248,1289.2 L924.1120000000001,1289.2 L924.1120000000001,1305.2 L889.248,1305.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="891.2" y="1301.4" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3</text>
+<line x1="795.248" y1="1367.6000000000001" x2="823.248" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1367.6000000000001" x2="883.248" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="823.248" y1="1367.6000000000001" x2="835.248" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="843.248" y1="1367.6000000000001" x2="855.248" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="835.248" y1="1357.6000000000001" x2="835.248" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="843.248" y1="1357.6000000000001" x2="843.248" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="839.2" y="1352.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C215</text>
+<text x="839.2" y="1392.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1uF</text>
+<path d="M795.248,1367.6000000000001 L789.248,1359.6000000000001 L720.048,1359.6000000000001 L720.048,1375.6000000000001 L789.248,1375.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="787.2" y="1371.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_RST_N</text>
+<path d="M883.248,1367.6000000000001 L889.248,1359.6000000000001 L924.1120000000001,1359.6000000000001 L924.1120000000001,1375.6000000000001 L889.248,1375.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="891.2" y="1371.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="795.248" y1="1438.0" x2="823.248" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1438.0" x2="883.248" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="823.248" y="1432.0" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none" stroke-dasharray="4,3"/>
+<text x="839.2" y="1423.0" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">R204 (DNP)</text>
+<text x="839.2" y="1463.0" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">10k</text>
+<path d="M795.248,1438.0 L789.248,1430.0 L720.048,1430.0 L720.048,1446.0 L789.248,1446.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="787.2" y="1442.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_SLEEP</text>
+<path d="M883.248,1438.0 L889.248,1430.0 L924.1120000000001,1430.0 L924.1120000000001,1446.0 L889.248,1446.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="891.2" y="1442.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="795.248" y1="1508.4" x2="823.248" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1508.4" x2="883.248" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="823.248" y="1502.4" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="839.2" y="1493.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R205</text>
+<text x="839.2" y="1533.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100k</text>
+<path d="M795.248,1508.4 L789.248,1500.4 L734.8480000000001,1500.4 L734.8480000000001,1516.4 L789.248,1516.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="787.2" y="1512.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_INT</text>
+<path d="M883.248,1508.4 L889.248,1500.4 L924.1120000000001,1500.4 L924.1120000000001,1516.4 L889.248,1516.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="891.2" y="1512.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="795.248" y1="1578.8" x2="823.248" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1578.8" x2="883.248" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="823.248" y1="1578.8" x2="835.248" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="843.248" y1="1578.8" x2="855.248" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="835.248" y1="1568.8" x2="835.248" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<line x1="843.248" y1="1568.8" x2="843.248" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<text x="839.2" y="1563.8" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">C216</text>
+<text x="839.2" y="1603.8" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">100nF</text>
+<path d="M795.248,1578.8 L789.248,1570.8 L705.248,1570.8 L705.248,1586.8 L789.248,1586.8 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="787.2" y="1583.0" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_SBU1</text>
+<path d="M883.248,1578.8 L889.248,1570.8 L958.4480000000001,1570.8 L958.4480000000001,1586.8 L889.248,1586.8 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="891.2" y="1583.0" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">LT_AUX_P</text>
+<line x1="795.248" y1="1649.2" x2="823.248" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1649.2" x2="883.248" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="823.248" y1="1649.2" x2="835.248" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="843.248" y1="1649.2" x2="855.248" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="835.248" y1="1639.2" x2="835.248" y2="1659.2" stroke="#374151" stroke-width="2.4"/>
+<line x1="843.248" y1="1639.2" x2="843.248" y2="1659.2" stroke="#374151" stroke-width="2.4"/>
+<text x="839.2" y="1634.2" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">C217</text>
+<text x="839.2" y="1674.2" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">100nF</text>
+<path d="M795.248,1649.2 L789.248,1641.2 L705.248,1641.2 L705.248,1657.2 L789.248,1657.2 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="787.2" y="1653.4" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PHONE_SBU2</text>
+<path d="M883.248,1649.2 L889.248,1641.2 L958.4480000000001,1641.2 L958.4480000000001,1657.2 L889.248,1657.2 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="891.2" y="1653.4" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">LT_AUX_N</text>
+<line x1="795.248" y1="1719.6000000000001" x2="823.248" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1719.6000000000001" x2="883.248" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="823.248" y="1713.6000000000001" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none" stroke-dasharray="4,3"/>
+<text x="839.2" y="1704.6" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">R206 (DNP)</text>
+<text x="839.2" y="1744.6" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">1M</text>
+<path d="M795.248,1719.6000000000001 L789.248,1711.6000000000001 L720.048,1711.6000000000001 L720.048,1727.6000000000001 L789.248,1727.6000000000001 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="787.2" y="1723.8" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">LT_AUX_P</text>
+<path d="M883.248,1719.6000000000001 L889.248,1711.6000000000001 L924.1120000000001,1711.6000000000001 L924.1120000000001,1727.6000000000001 L889.248,1727.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="891.2" y="1723.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="795.248" y1="1790.0000000000002" x2="823.248" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="855.248" y1="1790.0000000000002" x2="883.248" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="823.248" y="1784.0000000000002" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none" stroke-dasharray="4,3"/>
+<text x="839.2" y="1775.0" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">R207 (DNP)</text>
+<text x="839.2" y="1815.0" font-size="11.5" text-anchor="middle" fill="#d97706" font-weight="normal">1M</text>
+<path d="M795.248,1790.0000000000002 L789.248,1782.0000000000002 L720.048,1782.0000000000002 L720.048,1798.0000000000002 L789.248,1798.0000000000002 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="787.2" y="1794.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">LT_AUX_N</text>
+<path d="M883.248,1790.0000000000002 L889.248,1782.0000000000002 L948.9760000000001,1782.0000000000002 L948.9760000000001,1798.0000000000002 L889.248,1798.0000000000002 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="891.2" y="1794.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3_LT</text>
+<line x1="817.248" y1="1860.4" x2="834.248" y2="1860.4" stroke="#374151" stroke-width="1.6"/>
+<circle cx="839.248" cy="1860.4" r="5" fill="white" stroke="#374151" stroke-width="1.6"/>
+<text x="848.2" y="1864.4" font-size="12" text-anchor="start" fill="#1f2937" font-weight="bold">TP201</text>
+<path d="M817.248,1860.4 L811.248,1852.4 L742.048,1852.4 L742.048,1868.4 L811.248,1868.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="809.2" y="1864.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_SLEEP</text>
+<line x1="1142.4320000000002" y1="1297.2" x2="1159.4320000000002" y2="1297.2" stroke="#374151" stroke-width="1.6"/>
+<circle cx="1164.4320000000002" cy="1297.2" r="5" fill="white" stroke="#374151" stroke-width="1.6"/>
+<text x="1173.4" y="1301.2" font-size="12" text-anchor="start" fill="#1f2937" font-weight="bold">TP202</text>
+<path d="M1142.4320000000002,1297.2 L1136.4320000000002,1289.2 L1059.8320000000003,1289.2 L1059.8320000000003,1305.2 L1136.4320000000002,1305.2 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1134.4" y="1301.4" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_RX_HPD</text>
+<line x1="1120.4320000000002" y1="1367.6000000000001" x2="1148.4320000000002" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1367.6000000000001" x2="1208.4320000000002" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1148.4320000000002" y1="1367.6000000000001" x2="1160.4320000000002" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1168.4320000000002" y1="1367.6000000000001" x2="1180.4320000000002" y2="1367.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1160.4320000000002" y1="1357.6000000000001" x2="1160.4320000000002" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="1168.4320000000002" y1="1357.6000000000001" x2="1168.4320000000002" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="1164.4" y="1352.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C218</text>
+<text x="1164.4" y="1392.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M1120.4320000000002,1367.6000000000001 L1114.4320000000002,1359.6000000000001 L1079.5680000000002,1359.6000000000001 L1079.5680000000002,1375.6000000000001 L1114.4320000000002,1375.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1112.4" y="1371.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3</text>
+<path d="M1208.4320000000002,1367.6000000000001 L1214.4320000000002,1359.6000000000001 L1249.2960000000003,1359.6000000000001 L1249.2960000000003,1375.6000000000001 L1214.4320000000002,1375.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1371.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1120.4320000000002" y1="1438.0" x2="1148.4320000000002" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1438.0" x2="1208.4320000000002" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1148.4320000000002" y1="1438.0" x2="1180.4320000000002" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<path d="M1172.4320000000002,1429.0 L1172.4320000000002,1447.0 L1156.4320000000002,1438.0 Z" fill="white" stroke="#374151" stroke-width="1.6"/>
+<path d="M1152.4320000000002,1426.0 L1156.4320000000002,1429.0 L1156.4320000000002,1447.0 L1160.4320000000002,1450.0" stroke="#374151" stroke-width="2" fill="none"/>
+<text x="1164.4" y="1423.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">D201</text>
+<text x="1164.4" y="1463.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">SMF6.0A</text>
+<path d="M1120.4320000000002,1438.0 L1114.4320000000002,1430.0 L1021.5520000000002,1430.0 L1021.5520000000002,1446.0 L1114.4320000000002,1446.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1112.4" y="1442.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<path d="M1208.4320000000002,1438.0 L1214.4320000000002,1430.0 L1249.2960000000003,1430.0 L1249.2960000000003,1446.0 L1214.4320000000002,1446.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1442.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1120.4320000000002" y1="1508.4" x2="1148.4320000000002" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1508.4" x2="1208.4320000000002" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1148.4320000000002" y1="1508.4" x2="1160.4320000000002" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1168.4320000000002" y1="1508.4" x2="1180.4320000000002" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1160.4320000000002" y1="1498.4" x2="1160.4320000000002" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
+<line x1="1168.4320000000002" y1="1498.4" x2="1168.4320000000002" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
+<text x="1164.4" y="1493.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C219</text>
+<text x="1164.4" y="1533.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 25V</text>
+<path d="M1120.4320000000002,1508.4 L1114.4320000000002,1500.4 L1021.5520000000002,1500.4 L1021.5520000000002,1516.4 L1114.4320000000002,1516.4 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1112.4" y="1512.6" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<path d="M1208.4320000000002,1508.4 L1214.4320000000002,1500.4 L1249.2960000000003,1500.4 L1249.2960000000003,1516.4 L1214.4320000000002,1516.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1512.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1120.4320000000002" y1="1578.8" x2="1148.4320000000002" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1578.8" x2="1208.4320000000002" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1148.4320000000002" y1="1578.8" x2="1160.4320000000002" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1168.4320000000002" y1="1578.8" x2="1180.4320000000002" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1160.4320000000002" y1="1568.8" x2="1160.4320000000002" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<line x1="1168.4320000000002" y1="1568.8" x2="1168.4320000000002" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
+<text x="1164.4" y="1563.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C220</text>
+<text x="1164.4" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF 25V</text>
+<path d="M1120.4320000000002,1578.8 L1114.4320000000002,1570.8 L1021.5520000000002,1570.8 L1021.5520000000002,1586.8 L1114.4320000000002,1586.8 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1112.4" y="1583.0" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<path d="M1208.4320000000002,1578.8 L1214.4320000000002,1570.8 L1249.2960000000003,1570.8 L1249.2960000000003,1586.8 L1214.4320000000002,1586.8 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1583.0" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1120.4320000000002" y1="1649.2" x2="1148.4320000000002" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1649.2" x2="1208.4320000000002" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="1148.4320000000002" y="1643.2" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="1164.4" y="1634.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R210</text>
+<text x="1164.4" y="1674.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10k</text>
+<path d="M1120.4320000000002,1649.2 L1114.4320000000002,1641.2 L1021.5520000000002,1641.2 L1021.5520000000002,1657.2 L1114.4320000000002,1657.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1112.4" y="1653.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
+<path d="M1208.4320000000002,1649.2 L1214.4320000000002,1641.2 L1249.2960000000003,1641.2 L1249.2960000000003,1657.2 L1214.4320000000002,1657.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1653.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1120.4320000000002" y1="1719.6000000000001" x2="1148.4320000000002" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1719.6000000000001" x2="1208.4320000000002" y2="1719.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="1148.4320000000002" y="1713.6000000000001" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none" stroke-dasharray="4,3"/>
+<text x="1164.4" y="1704.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R211 (DNP)</text>
+<text x="1164.4" y="1744.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">5.1k</text>
+<path d="M1120.4320000000002,1719.6000000000001 L1114.4320000000002,1711.6000000000001 L1037.8320000000003,1711.6000000000001 L1037.8320000000003,1727.6000000000001 L1114.4320000000002,1727.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1112.4" y="1723.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC1</text>
+<path d="M1208.4320000000002,1719.6000000000001 L1214.4320000000002,1711.6000000000001 L1249.2960000000003,1711.6000000000001 L1249.2960000000003,1727.6000000000001 L1214.4320000000002,1727.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1723.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1120.4320000000002" y1="1790.0000000000002" x2="1148.4320000000002" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1180.4320000000002" y1="1790.0000000000002" x2="1208.4320000000002" y2="1790.0000000000002" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="1148.4320000000002" y="1784.0000000000002" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none" stroke-dasharray="4,3"/>
+<text x="1164.4" y="1775.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R212 (DNP)</text>
+<text x="1164.4" y="1815.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">5.1k</text>
+<path d="M1120.4320000000002,1790.0000000000002 L1114.4320000000002,1782.0000000000002 L1037.8320000000003,1782.0000000000002 L1037.8320000000003,1798.0000000000002 L1114.4320000000002,1798.0000000000002 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1112.4" y="1794.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PHONE_CC2</text>
+<path d="M1208.4320000000002,1790.0000000000002 L1214.4320000000002,1782.0000000000002 L1249.2960000000003,1782.0000000000002 L1249.2960000000003,1798.0000000000002 L1214.4320000000002,1798.0000000000002 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1794.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+</g></svg>

@@ -1,0 +1,99 @@
+reference,qty,value,part_number,lcsc,footprint,notes
+C101,1,47uF 35V,nhôm polymer/điện phân 47 µF 35 V 6.3x7.7,,Capacitor_SMD:CP_Elec_6.3x7.7,"Tụ khối VIN, giảm dao động khi cắm nóng cáp dài"
+C102 C404,2,1uF 25V,,,Capacitor_SMD:C_0603_1608Metric,Tụ VDD CH224K; Tụ VBUS phía PC (UFP ≤ 10 µF)
+C103 C104 C111 C112,4,10uF 50V X7R,,,Capacitor_SMD:C_1206_3216Metric,Tụ vào U102; Tụ vào U103
+C105 C113,2,100nF 50V,,,Capacitor_SMD:C_0603_1608Metric,Tụ cao tần sát chân VIN/GND U102; Tụ cao tần sát chân VIN/GND U103
+C106 C114,2,1uF 16V,,,Capacitor_SMD:C_0402_1005Metric,Tụ LDO nội U102; Tụ LDO nội U103
+C107 C115,2,100nF 16V,,,Capacitor_SMD:C_0402_1005Metric,Tụ bootstrap U102; Tụ bootstrap U103
+C108 C109 C110 C116 C117 C118,6,22uF 10V X5R,,,Capacitor_SMD:C_1206_3216Metric,Tụ ra U102; Tụ ra U103
+C119 C123,2,10uF 10V,,,Capacitor_SMD:C_0603_1608Metric,Tụ vào U104; Tụ vào U105
+C120 C124 C125 C129 C203 C204 C205 C206 C207 C208 C209 C210 C211 C218 C303 C304 C305 C306 C307 C308 C311 C402 C403 C405,24,100nF,,,Capacitor_SMD:C_0402_1005Metric,Tụ cao tần vào U104; Tụ cao tần vào U105; Tụ trễ EN U105 (τ = 10 ms); Tụ nguồn U106; Tụ lọc sát LT7911D pin 1; Tụ lọc sát LT7911D pin 4; …
+C121 C122 C126 C127,4,22uF 6.3V X5R,,,Capacitor_SMD:C_0805_2012Metric,Tụ ra U104; Tụ ra U105
+C128,1,47nF 50V,,,Capacitor_SMD:C_0402_1005Metric,"Khởi động mềm (~0.5 ms), giới hạn dòng nạp tụ iPhone"
+C130 C312 C313,3,1nF,,,Capacitor_SMD:C_0402_1005Metric,Lọc đầu ra U106 trước ADC; Lọc ADC CC1; Lọc ADC CC2
+C201 C202,2,18pF C0G,,,Capacitor_SMD:C_0402_1005Metric,"[Chưa biết] Tụ tải thạch anh (chưa rõ, theo sơ đồ Lontium); Tụ tải thạch anh"
+C212 C213 C214 C310,4,10uF 6.3V,,,Capacitor_SMD:C_0603_1608Metric,Tụ khối 1V2 tại LT7911D; Tụ khối 1V2_LT_A; Tụ khối 3V3_LT; Tụ khối 3V3 tại MCU
+C215 C309,2,1uF,,,Capacitor_SMD:C_0402_1005Metric,RC reset khi bật nguồn (τ = 10 ms); Tụ VDDA thêm cho ADC
+C216 C217,2,100nF,,,Capacitor_SMD:C_0402_1005Metric,"[Chưa biết] Tụ AC AUX (chưa rõ chiều/phân cực, theo sơ đồ Lontium); Tụ AC AUX"
+C219,1,10uF 25V,,,Capacitor_SMD:C_0805_2012Metric,Tụ VBUS phía iPhone (nguồn Type-C ≤ 120 µF)
+C220,1,100nF 25V,,,Capacitor_SMD:C_0402_1005Metric,Tụ cao tần VBUS iPhone
+C301 C302,2,18pF C0G,,,Capacitor_SMD:C_0402_1005Metric,Tụ tải HSE: 2 x (12 pF - ~3 pF ký sinh); Tụ tải HSE
+C314 C409,2,10nF,,,Capacitor_SMD:C_0402_1005Metric,Lọc ADC VBUS; Lọc ADC VIN
+C401,1,22uF 10V,,,Capacitor_SMD:C_0805_2012Metric,Tụ khối VCC5V0_SYS sát module
+C406 C407,2,10nF 50V,,,Capacitor_SMD:C_0402_1005Metric,Tụ center tap TX (PHY kiểu voltage-mode); Tụ center tap RX
+C408,1,1nF 100V,,,Capacitor_SMD:C_0603_1608Metric,Tụ nút Bob-Smith
+C410,1,1nF C0G,,,Capacitor_SMD:C_0402_1005Metric,Lọc phím RECOVERY
+D101,1,SMAJ24A,SMAJ24A,,Diode_SMD:D_SMA,TVS 24 V standoff trên VIN
+D102,1,BZT52C10,BZT52C10,,Diode_SMD:D_SOD-123,Zener 10 V kẹp Vgs khi dùng phương án B (VIN tới 20 V)
+D104,1,SS34,SS34,,Diode_SMD:D_SMA,Schottky 3 A 40 V: PC_VBUS -> 5V_SYS (chế độ phát triển)
+D201 D401,2,SMF6.0A,SMF6.0A,,Diode_SMD:D_SOD-123F,"TVS VBUS iPhone (phương án B, VIN tới 20 V: đổi sang SMF22A); TVS VBUS PC"
+D501,1,RED,"LED 0603 red, Vf ≤ 2.2 V",,LED_SMD:LED_0603_1608Metric,"LED trạng thái RED (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)"
+D502,1,YELLOW,"LED 0603 yellow, Vf ≤ 2.2 V",,LED_SMD:LED_0603_1608Metric,"LED trạng thái YELLOW (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)"
+D503,1,GREEN,"LED 0603 green, Vf ≤ 2.2 V",,LED_SMD:LED_0603_1608Metric,"LED trạng thái GREEN (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)"
+F101,1,5A 32V,Littelfuse 0466005.NR,,Fuse:Fuse_1206_3216Metric,[Có thể] Cầu chì nhanh 5 A / 32 V cho đầu vào
+FB201 FB202 FB301,3,600R@100MHz,BLM18KG601SN1D,,Inductor_SMD:L_0603_1608Metric,Hạt ferrite tách 3.3 V của LT7911D; Hạt ferrite tách 1.2 V analog/PLL; Ferrite tách VDDA (VDDA = VIO về DC)
+J101,1,USB-C PD IN,TYPE-C-31-M-12,C165948,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Cổng USB-C nhận nguồn PD từ sạc (chỉ nguồn + CC)
+J201,1,USB-C iPhone,Molex 105450-0101,,Connector_USB:USB_C_Receptacle_Molex_105450-0101,Ổ USB-C 24 chân đủ cặp SS (DP Alt Mode 4 lane) + USB 2.0 + CC + VBUS
+J401,1,USB-C PC,TYPE-C-31-M-12,C165948,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,USB-C tới PC: box là thiết bị USB (UVC + mạng USB + điều khiển)
+J402,1,RJ45 10/100,HR911105A,C12074,Connector_RJ:RJ45_Hanrun_HR911105A_Horizontal,RJ45 có biến áp (magjack) 10/100
+J501,1,MCU SWD+UART,PinHeader 1x07 2.54,,Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical,Header WCH-LinkE cho CH32V305 (SWD 2 dây + UART debug)
+J502,1,MCU USB FS,PinHeader 1x03 2.54,,Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical,"USB Full-Speed thứ hai của CH32V305 (ISP qua USB, thử nghiệm)"
+J503,1,SoC UART,PinHeader 1x03 2.54,,Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical,"Console RV1106 (UART2_M1, 115200 8N1, 3.3 V)"
+JP101,1,PSW_SRC,,,Jumper:SolderJumper-3_P1.3mm_Bridged12_RoundedPad1.0x1.5mm,"Chọn nguồn cho iPhone: 1-2 = 5V2_PHONE (phương án A, mặc định), 2-3 = VIN (phương án B)"
+JP102,1,PC_PWR,,,Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm,Hở mặc định. Hàn để nuôi box từ PC (chỉ khi KHÔNG cắm sạc vào J101)
+L101 L102,2,10uH,Bourns SRP1038C-100M (hoặc tương đương),,Inductor_SMD:L_Bourns_SRP1038C_10.0x10.0mm,"[Có thể] Cuộn cảm buck U102, Isat ≥ 5 A; Cuộn cảm buck U103, Isat ≥ 4 A"
+L103 L104,2,2.2uH,Bourns SRN4018-2R2M (hoặc tương đương),,Inductor_SMD:L_Bourns-SRN4018,"[Có thể] Cuộn cảm U104, Isat ≥ 3 A, 4x4 mm; Cuộn cảm U105, Isat ≥ 3 A, 4x4 mm"
+Q101 Q102,2,AO4407A,AO4407A,,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,"[Có thể] P-MOSFET phía nguồn (back-to-back): -30 V, ~11 mΩ @ -10 V; P-MOSFET phía iPhone (back-to-back): -30 V, ~11 mΩ @ -10 V"
+Q103,1,2N7002,2N7002,,Package_TO_SOT_SMD:SOT-23,N-MOSFET kéo cổng xuống
+R101,1,1k,,,Resistor_SMD:R_1206_3216Metric,Điện trở cấp VDD CH224K (datasheet §6.2)
+R102 R108 R124 R203 R302 R303 R403 R411,8,10k,,,Resistor_SMD:R_0402_1005Metric,Nối tiếp chân VBUS của CH224K (§6.2); Kéo lên cho PG (open-drain) tới MCU PB12; Điện trở cổng: Vgs = -Vin x 100k/110k; …
+R103,1,6.8k 1%,,,Resistor_SMD:R_0402_1005Metric,"Chọn điện áp xin: 6.8k=9V (mặc định), 24k=12V, 56k=15V, bỏ trống=20V"
+R104 R105 R127 R405 R406 R407 R408,7,0R,,,Resistor_SMD:R_0402_1005Metric,Phương án A: CC của sạc vào CH224K; Phương án A: CH32V305 bật VBUS iPhone; 0R như thiết kế Luckfox: chỗ để thêm lọc/ESD
+R109 R113 R118 R121 R122 R409,6,100k 1%,,,Resistor_SMD:R_0402_1005Metric,Hồi tiếp trên U102; Hồi tiếp trên U103; Hồi tiếp trên U104; Hồi tiếp trên U105; Hồi tiếp dưới U105: Vout = 0.6 V x (1 + 100k/Rbot); …
+R110,1,23.7k 1%,,,Resistor_SMD:R_0402_1005Metric,Hồi tiếp dưới U102: Vout = 1.0 V x (1 + 100k/Rfbb)
+R111 R115 R117 R120 R123 R125 R205 R304 R305 R306,10,100k,,,Resistor_SMD:R_0402_1005Metric,Chia áp EN U102 (trên); Chia áp EN U103 (trên); EN U104: bật ngay khi có 5V_SYS; EN U105 lấy từ 3V3 qua RC: 1V2 lên sau 3V3 ~4 ms; …
+R112,1,20k,,,Resistor_SMD:R_0402_1005Metric,Chia áp EN U102 (dưới)
+R114,1,24.9k 1%,,,Resistor_SMD:R_0402_1005Metric,Hồi tiếp dưới U103: Vout = 1.0 V x (1 + 100k/Rfbb)
+R116,1,39k,,,Resistor_SMD:R_0402_1005Metric,Chia áp EN U103 (dưới)
+R119,1,22.1k 1%,,,Resistor_SMD:R_0402_1005Metric,Hồi tiếp dưới U104: Vout = 0.6 V x (1 + 100k/Rbot)
+R126,1,10m 1%,1206 10 mΩ 1% 0.5 W,,Resistor_SMD:R_1206_3216Metric,Shunt đo dòng sạc iPhone (Kelvin)
+R201 R202,2,2.2k,,,Resistor_SMD:R_0402_1005Metric,"Kéo lên I2C (bus I2C2_M0 của RV1106, 3.3 V); Kéo lên I2C"
+R210,1,10k,,,Resistor_SMD:R_0603_1608Metric,Xả VBUS về vSafe0V (< 0.8 V trong ~0.4 s)
+R301,1,4.7k,,,Resistor_SMD:R_0402_1005Metric,"Kéo lên NRST, đủ mạnh để thắng pull-down mặc định của GPIO1_D3 (RV1106) qua R413"
+R307,1,15k,,,Resistor_SMD:R_0402_1005Metric,Chia áp VBUS iPhone
+R401 R402,2,5.1k 1%,,,Resistor_SMD:R_0402_1005Metric,Rd: box là UFP (sink) phía PC; Rd
+R404,1,18k,,,Resistor_SMD:R_0402_1005Metric,Chia áp VBUSDET
+R410,1,8.2k 1%,,,Resistor_SMD:R_0402_1005Metric,Chia áp VIN
+R412,1,100R,,,Resistor_SMD:R_0402_1005Metric,Nối tiếp phím RECOVERY
+R413,1,1k,,,Resistor_SMD:R_0402_1005Metric,Hạn dòng khi RV1106 và WCH-LinkE cùng lái NRST
+R501 R502,2,680R,,,Resistor_SMD:R_0402_1005Metric,Hạn dòng LED RED ~2 mA; Hạn dòng LED YELLOW ~2 mA
+R503,1,560R,,,Resistor_SMD:R_0402_1005Metric,Hạn dòng LED GREEN ~2 mA
+SW501,1,RECOVERY,TL3342,,Button_Switch_SMD:SW_SPST_TL3342,Giữ khi cấp nguồn: RV1106 vào chế độ loader (rockusb) qua USB-C PC
+SW502,1,RESET,TL3342,,Button_Switch_SMD:SW_SPST_TL3342,Reset RV1106 (NPOR)
+TP201,1,LT_SLEEP,,,TestPoint:TestPoint_Pad_D1.5mm,Đo/ép SLEEP_33
+TP202,1,LT_RX_HPD,,,TestPoint:TestPoint_Pad_D1.5mm,Đo RX_HPD
+TP401,1,VCC_3V3_MOD,,,TestPoint:TestPoint_Pad_D1.5mm,Kiểm tra PMIC module đã lên
+TP501,1,VIN,,,TestPoint:TestPoint_Pad_D1.5mm,Test point VIN
+TP502,1,5V2_PHONE,,,TestPoint:TestPoint_Pad_D1.5mm,Test point 5V2_PHONE
+TP503,1,5V_SYS,,,TestPoint:TestPoint_Pad_D1.5mm,Test point 5V_SYS
+TP504,1,3V3,,,TestPoint:TestPoint_Pad_D1.5mm,Test point 3V3
+TP505,1,1V2,,,TestPoint:TestPoint_Pad_D1.5mm,Test point 1V2
+TP506,1,PHONE_VBUS,,,TestPoint:TestPoint_Pad_D1.5mm,Test point PHONE_VBUS
+TP507 TP508,2,GND,,,TestPoint:TestPoint_Pad_D1.5mm,Test point GND
+TP509,1,3V3_LT,,,TestPoint:TestPoint_Pad_D1.5mm,Test point 3V3_LT
+TP510,1,1V2_LT_A,,,TestPoint:TestPoint_Pad_D1.5mm,Test point 1V2_LT_A
+U101,1,CH224K,CH224K,C970725,Package_SO:SSOP-10-1EP_3.9x4.9mm_P1mm_EP2.1x3.3mm,Bộ kích PD (sink) cho nguồn vào
+U102 U103,2,LMR33630ADDA,LMR33630ADDAR,C841384,Package_SO:Texas_HSOP-8-1EP_3.9x4.9mm_P1.27mm_ThermalVias,[Có thể] Buck VIN -> 5V2_PHONE (5.22 V / 3 A) nuôi iPhone; khởi động khi VIN > ~7.2 V; Buck VIN -> 5V_SYS (5.02 V / 3 A) cho Core1106 và các rail; …
+U104 U105,2,TLV62569DBV,TLV62569DBVR,,Package_TO_SOT_SMD:SOT-23-5,"[Có thể] Buck 5V_SYS -> 3V3 (3.315 V / 2 A); Buck 5V_SYS -> 1V2 (1.2 V / 2 A) cho LT7911D, bật sau 3V3"
+U106,1,INA180A2,INA180A2IDBVR,,Package_TO_SOT_SMD:SOT-23-5,"[Có thể] Khuếch đại dòng shunt, gain 50: 3 A -> 1.5 V"
+U201,1,LT7911D,LT7911D,C5310990,box-v1:LT7911D_QFN-64-1EP_7.5x7.5mm_P0.4mm,"[Có thể] Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, MCU + flash nội"
+U202 U203 U204,3,TPD4E05U06DQA,TPD4E05U06DQAR,C138714,Package_SON:USON-10_2.5x1.0mm_P0.5mm,"ESD cặp SS TX1/RX1 (0.5 pF, flow-through); ESD cặp SS TX2/RX2 (0.5 pF, flow-through); ESD CC1/CC2/SBU1/SBU2 (0.5 pF, flow-through)"
+U205 U402,2,USBLC6-2SC6,USBLC6-2SC6,C7519,Package_TO_SOT_SMD:SOT-23-6,ESD cặp USB 2.0 iPhone; ESD USB 2.0 phía PC
+U301,1,CH32V305RBT6,CH32V305RBT6,C5187529,Package_QFP:LQFP-64_10x10mm_P0.5mm,"MCU RISC-V: USB HS (PHY nội) làm HID cho iPhone, link SPI/UART tới RV1106"
+U401,1,Luckfox Core1106,"Luckfox Core1106 (RV1106G3, 256 MB, eMMC 8 GB, Wi-Fi 6/BT 5.2)",,box-v1:Luckfox_Core1106_Castellated_30x30mm_P1.0mm,"[Có thể] Module SoC RV1106G3: CSI-2 4 lane, H.264, PHY Ethernet 100M, USB 2.0 OTG, Wi-Fi trên module"
+X201,1,25MHz,,,Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm,[Chưa biết] Thạch anh LT7911D (tần số và tải chưa rõ)
+X301,1,8MHz,,,Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm,"Thạch anh HSE 8 MHz, CL 12 pF, ±20 ppm"
+R106 R107 R128,3,0R,,,Resistor_SMD:R_0402_1005Metric,DNP (không lắp) [Chưa biết] Phương án B: CC của sạc vào cổng PD thứ hai của LT7911D; Phương án B (như R106); Phương án B: GPIO của LT7911D bật VBUS iPhone
+R204,1,10k,,,Resistor_SMD:R_0402_1005Metric,DNP (không lắp) [Chưa biết] Tuỳ chọn mức cho SLEEP_33 (chưa rõ)
+R206 R207,2,1M,,,Resistor_SMD:R_0402_1005Metric,DNP (không lắp) [Chưa biết] Phân cực AUX phía sink (chưa rõ)
+R211 R212,2,5.1k,,,Resistor_SMD:R_0402_1005Metric,DNP (không lắp) Rd tạm cho bring-up chế độ chỉ HID (chưa hàn LT7911D): iPhone thành nguồn + host; Rd tạm cho bring-up chế độ chỉ HID

@@ -1,0 +1,828 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1460" height="2405" viewBox="0 0 1460 2405" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">
+<rect x="0" y="0" width="1460" height="2405" fill="white"/>
+<text x="20.0" y="34.0" font-size="22" text-anchor="start" fill="#1f2937" font-weight="bold">4. Luckfox Core1106 (RV1106G3) + RJ45 100M + USB-C tới PC</text>
+<text x="20.0" y="58.0" font-size="13" text-anchor="start" fill="#4b5563" font-weight="normal">iPhone control box v1 · sinh từ netlist.py bởi generate.py · 2026-09-26</text>
+<rect x="20" y="72" width="12" height="12" fill="#b91c1c"/>
+<text x="37.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">rail</text>
+<rect x="84.4" y="72" width="12" height="12" fill="#15803d"/>
+<text x="101.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<rect x="141.2" y="72" width="12" height="12" fill="#7e22ce"/>
+<text x="158.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">cặp vi sai</text>
+<rect x="251.2" y="72" width="12" height="12" fill="#1d4ed8"/>
+<text x="268.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">tín hiệu</text>
+<rect x="346.0" y="72" width="12" height="12" fill="#9ca3af"/>
+<text x="363.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">× = không nối</text>
+<rect x="478.8" y="72" width="12" height="12" fill="#0e7490"/>
+<text x="495.8" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân [Có thể]</text>
+<rect x="611.6" y="72" width="12" height="12" fill="#d97706"/>
+<text x="628.6" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân/giá trị [Chưa biết] (số '?..')</text>
+<g transform="translate(0,92)">
+<rect x="194.8" y="104.0" width="528.0" height="1254.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="194.8" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U401  Luckfox Core1106</text>
+<text x="194.8" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">Luckfox Core1106 (RV1106G3, 256 MB, eMMC 8 GB, Wi-Fi 6/BT 5.2)  </text>
+<line x1="150.8" y1="126.0" x2="194.8" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="130.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_CK1N/GPI3_B2</text>
+<text x="191.8" y="123.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M145.8,121.0 L155.8,131.0 M145.8,131.0 L155.8,121.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="148.0" x2="194.8" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="152.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_CK1P/GPI3_B3</text>
+<text x="191.8" y="145.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M145.8,143.0 L155.8,153.0 M145.8,153.0 L155.8,143.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="170.0" x2="194.8" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="174.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D3N/GPI3_B0</text>
+<text x="191.8" y="167.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M150.8,170.0 L144.8,162.0 L75.60000000000001,162.0 L75.60000000000001,178.0 L144.8,178.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="174.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D3_N</text>
+<line x1="150.8" y1="192.0" x2="194.8" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="196.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D3P/GPI3_B1</text>
+<text x="191.8" y="189.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">4</text>
+<path d="M150.8,192.0 L144.8,184.0 L75.60000000000001,184.0 L75.60000000000001,200.0 L144.8,200.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="196.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D3_P</text>
+<line x1="150.8" y1="214.0" x2="194.8" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="218.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D2N/GPI3_B4</text>
+<text x="191.8" y="211.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">5</text>
+<path d="M150.8,214.0 L144.8,206.0 L75.60000000000001,206.0 L75.60000000000001,222.0 L144.8,222.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="218.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D2_N</text>
+<line x1="150.8" y1="236.0" x2="194.8" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="240.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D2P/GPI3_B5</text>
+<text x="191.8" y="233.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">6</text>
+<path d="M150.8,236.0 L144.8,228.0 L75.60000000000001,228.0 L75.60000000000001,244.0 L144.8,244.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="240.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D2_P</text>
+<line x1="150.8" y1="258.0" x2="194.8" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="262.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D1N/GPI3_B6</text>
+<text x="191.8" y="255.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">7</text>
+<path d="M150.8,258.0 L144.8,250.0 L75.60000000000001,250.0 L75.60000000000001,266.0 L144.8,266.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="262.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D1_N</text>
+<line x1="150.8" y1="280.0" x2="194.8" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="284.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D1P/GPI3_B7</text>
+<text x="191.8" y="277.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">8</text>
+<path d="M150.8,280.0 L144.8,272.0 L75.60000000000001,272.0 L75.60000000000001,288.0 L144.8,288.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="284.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D1_P</text>
+<line x1="150.8" y1="302.0" x2="194.8" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="306.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_CK0N/GPI3_C0</text>
+<text x="191.8" y="299.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">9</text>
+<path d="M150.8,302.0 L144.8,294.0 L68.2,294.0 L68.2,310.0 L144.8,310.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="306.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_CLK_N</text>
+<line x1="150.8" y1="324.0" x2="194.8" y2="324.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="328.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_CK0P/GPI3_C1</text>
+<text x="191.8" y="321.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">10</text>
+<path d="M150.8,324.0 L144.8,316.0 L68.2,316.0 L68.2,332.0 L144.8,332.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="328.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_CLK_P</text>
+<line x1="150.8" y1="346.0" x2="194.8" y2="346.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="350.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D0N/GPI3_C2</text>
+<text x="191.8" y="343.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">11</text>
+<path d="M150.8,346.0 L144.8,338.0 L75.60000000000001,338.0 L75.60000000000001,354.0 L144.8,354.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="350.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D0_N</text>
+<line x1="150.8" y1="368.0" x2="194.8" y2="368.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="372.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_D0P/GPI3_C3</text>
+<text x="191.8" y="365.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">12</text>
+<path d="M150.8,368.0 L144.8,360.0 L75.60000000000001,360.0 L75.60000000000001,376.0 L144.8,376.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="372.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">CSI_D0_P</text>
+<line x1="150.8" y1="390.0" x2="194.8" y2="390.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="394.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">PWM1_M2/GPIO3_D3 (1V8)</text>
+<text x="191.8" y="387.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">13</text>
+<path d="M145.8,385.0 L155.8,395.0 M145.8,395.0 L155.8,385.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="412.0" x2="194.8" y2="412.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="416.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I2C3_SDA_M2/GPIO3_D2 (1V8)</text>
+<text x="191.8" y="409.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">14</text>
+<path d="M145.8,407.0 L155.8,417.0 M145.8,417.0 L155.8,407.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="434.0" x2="194.8" y2="434.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="438.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I2C3_SCL_M2/GPIO3_D1 (1V8)</text>
+<text x="191.8" y="431.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">15</text>
+<path d="M145.8,429.0 L155.8,439.0 M145.8,439.0 L155.8,429.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="456.0" x2="194.8" y2="456.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="460.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I2C4_SCL_M2/GPIO3_C7 (1V8)</text>
+<text x="191.8" y="453.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">16</text>
+<path d="M145.8,451.0 L155.8,461.0 M145.8,461.0 L155.8,451.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="478.0" x2="194.8" y2="478.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="482.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I2C4_SDA_M2/GPIO3_D0 (1V8)</text>
+<text x="191.8" y="475.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">17</text>
+<path d="M145.8,473.0 L155.8,483.0 M145.8,483.0 L155.8,473.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="500.0" x2="194.8" y2="500.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="504.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">VI_CIF_VSYNC/GPIO3_C5 (1V8)</text>
+<text x="191.8" y="497.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">18</text>
+<path d="M145.8,495.0 L155.8,505.0 M145.8,505.0 L155.8,495.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="522.0" x2="194.8" y2="522.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="526.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CLK0_OUT/GPIO3_C4 (1V8)</text>
+<text x="191.8" y="519.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">19</text>
+<path d="M145.8,517.0 L155.8,527.0 M145.8,527.0 L155.8,517.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="544.0" x2="194.8" y2="544.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="548.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CLK1_OUT/GPIO3_C6 (1V8)</text>
+<text x="191.8" y="541.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">20</text>
+<path d="M145.8,539.0 L155.8,549.0 M145.8,549.0 L155.8,539.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="566.0" x2="194.8" y2="566.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="570.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="563.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">21</text>
+<path d="M150.8,566.0 L144.8,558.0 L109.936,558.0 L109.936,574.0 L144.8,574.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="570.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="588.0" x2="194.8" y2="588.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="592.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">USB_N</text>
+<text x="191.8" y="585.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">22</text>
+<path d="M150.8,588.0 L144.8,580.0 L68.2,580.0 L68.2,596.0 L144.8,596.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="592.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PC_USB_DN</text>
+<line x1="150.8" y1="610.0" x2="194.8" y2="610.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="614.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">USB_P</text>
+<text x="191.8" y="607.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">23</text>
+<path d="M150.8,610.0 L144.8,602.0 L68.2,602.0 L68.2,618.0 L144.8,618.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="142.8" y="614.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PC_USB_DP</text>
+<line x1="150.8" y1="632.0" x2="194.8" y2="632.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="636.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">USB_VBUSDET</text>
+<text x="191.8" y="629.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">24</text>
+<path d="M150.8,632.0 L144.8,624.0 L53.400000000000006,624.0 L53.400000000000006,640.0 L144.8,640.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="142.8" y="636.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PC_VBUS_DET</text>
+<line x1="150.8" y1="654.0" x2="194.8" y2="654.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="658.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="651.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">25</text>
+<path d="M150.8,654.0 L144.8,646.0 L109.936,646.0 L109.936,662.0 L144.8,662.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="658.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="676.0" x2="194.8" y2="676.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="680.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SARADC_IN0/GPIO4_C0</text>
+<text x="191.8" y="673.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">26</text>
+<path d="M150.8,676.0 L144.8,668.0 L46.0,668.0 L46.0,684.0 L144.8,684.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="142.8" y="680.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">SOC_RECOVERY</text>
+<line x1="150.8" y1="698.0" x2="194.8" y2="698.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="702.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SARADC_IN1/GPIO4_C1</text>
+<text x="191.8" y="695.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">27</text>
+<path d="M150.8,698.0 L144.8,690.0 L68.2,690.0 L68.2,706.0 L144.8,706.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="142.8" y="702.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">VIN_SENSE</text>
+<line x1="150.8" y1="720.0" x2="194.8" y2="720.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="724.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="717.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">28</text>
+<path d="M150.8,720.0 L144.8,712.0 L109.936,712.0 L109.936,728.0 L144.8,728.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="724.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="742.0" x2="194.8" y2="742.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="746.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="739.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">29</text>
+<path d="M150.8,742.0 L144.8,734.0 L109.936,734.0 L109.936,750.0 L144.8,750.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="746.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="764.0" x2="194.8" y2="764.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="768.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CODEC_LINEOUT</text>
+<text x="191.8" y="761.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">30</text>
+<path d="M145.8,759.0 L155.8,769.0 M145.8,769.0 L155.8,759.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="786.0" x2="194.8" y2="786.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="790.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CODEC_MICBIAS</text>
+<text x="191.8" y="783.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">31</text>
+<path d="M145.8,781.0 L155.8,791.0 M145.8,791.0 L155.8,781.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="808.0" x2="194.8" y2="808.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="812.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CODEC_MIC0N</text>
+<text x="191.8" y="805.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">32</text>
+<path d="M145.8,803.0 L155.8,813.0 M145.8,813.0 L155.8,803.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="830.0" x2="194.8" y2="830.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="834.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CODEC_MIC0P</text>
+<text x="191.8" y="827.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">33</text>
+<path d="M145.8,825.0 L155.8,835.0 M145.8,835.0 L155.8,825.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="852.0" x2="194.8" y2="852.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="856.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CODEC_MIC1N</text>
+<text x="191.8" y="849.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">34</text>
+<path d="M145.8,847.0 L155.8,857.0 M145.8,857.0 L155.8,847.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="874.0" x2="194.8" y2="874.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="878.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CODEC_MIC1P</text>
+<text x="191.8" y="871.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">35</text>
+<path d="M145.8,869.0 L155.8,879.0 M145.8,879.0 L155.8,869.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="896.0" x2="194.8" y2="896.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="900.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="893.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">36</text>
+<path d="M150.8,896.0 L144.8,888.0 L109.936,888.0 L109.936,904.0 L144.8,904.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="900.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="918.0" x2="194.8" y2="918.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="922.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D0/GPIO4_A4</text>
+<text x="191.8" y="915.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">37</text>
+<path d="M145.8,913.0 L155.8,923.0 M145.8,923.0 L155.8,913.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="940.0" x2="194.8" y2="940.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="944.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D1/GPIO4_A3</text>
+<text x="191.8" y="937.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">38</text>
+<path d="M145.8,935.0 L155.8,945.0 M145.8,945.0 L155.8,935.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="962.0" x2="194.8" y2="962.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="966.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D2/GPIO4_A2</text>
+<text x="191.8" y="959.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">39</text>
+<path d="M145.8,957.0 L155.8,967.0 M145.8,967.0 L155.8,957.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="984.0" x2="194.8" y2="984.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="988.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D3/GPIO4_A6</text>
+<text x="191.8" y="981.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">40</text>
+<path d="M145.8,979.0 L155.8,989.0 M145.8,989.0 L155.8,979.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1006.0" x2="194.8" y2="1006.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1010.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D4/GPIO4_A5</text>
+<text x="191.8" y="1003.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">41</text>
+<path d="M145.8,1001.0 L155.8,1011.0 M145.8,1011.0 L155.8,1001.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1028.0" x2="194.8" y2="1028.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1032.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D5/GPIO4_A7</text>
+<text x="191.8" y="1025.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">42</text>
+<path d="M145.8,1023.0 L155.8,1033.0 M145.8,1033.0 L155.8,1023.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1050.0" x2="194.8" y2="1050.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1054.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D6/GPIO4_A1</text>
+<text x="191.8" y="1047.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">43</text>
+<path d="M145.8,1045.0 L155.8,1055.0 M145.8,1055.0 L155.8,1045.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1072.0" x2="194.8" y2="1072.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1076.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_D7/GPIO4_A0</text>
+<text x="191.8" y="1069.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">44</text>
+<path d="M145.8,1067.0 L155.8,1077.0 M145.8,1077.0 L155.8,1067.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1094.0" x2="194.8" y2="1094.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1098.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_CMD/GPIO4_B0</text>
+<text x="191.8" y="1091.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">45</text>
+<path d="M145.8,1089.0 L155.8,1099.0 M145.8,1099.0 L155.8,1089.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1116.0" x2="194.8" y2="1116.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1120.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">EMMC_CLK/GPIO4_B1</text>
+<text x="191.8" y="1113.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">46</text>
+<path d="M145.8,1111.0 L155.8,1121.0 M145.8,1121.0 L155.8,1111.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1138.0" x2="194.8" y2="1138.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1142.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="1135.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">47</text>
+<path d="M150.8,1138.0 L144.8,1130.0 L109.936,1130.0 L109.936,1146.0 L144.8,1146.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="1142.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="1160.0" x2="194.8" y2="1160.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1164.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_DET/GPIO3_A1</text>
+<text x="191.8" y="1157.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">48</text>
+<path d="M145.8,1155.0 L155.8,1165.0 M145.8,1165.0 L155.8,1155.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1182.0" x2="194.8" y2="1182.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1186.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_D0/GPIO3_A3</text>
+<text x="191.8" y="1179.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">49</text>
+<path d="M145.8,1177.0 L155.8,1187.0 M145.8,1187.0 L155.8,1177.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1204.0" x2="194.8" y2="1204.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1208.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_D1/GPIO3_A2</text>
+<text x="191.8" y="1201.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">50</text>
+<path d="M145.8,1199.0 L155.8,1209.0 M145.8,1209.0 L155.8,1199.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1226.0" x2="194.8" y2="1226.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1230.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_D2/GPIO3_A7</text>
+<text x="191.8" y="1223.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">51</text>
+<path d="M145.8,1221.0 L155.8,1231.0 M145.8,1231.0 L155.8,1221.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1248.0" x2="194.8" y2="1248.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1252.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_D3/GPIO3_A6</text>
+<text x="191.8" y="1245.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">52</text>
+<path d="M145.8,1243.0 L155.8,1253.0 M145.8,1253.0 L155.8,1243.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1270.0" x2="194.8" y2="1270.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1274.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_CMD/GPIO3_A5</text>
+<text x="191.8" y="1267.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">53</text>
+<path d="M145.8,1265.0 L155.8,1275.0 M145.8,1275.0 L155.8,1265.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1292.0" x2="194.8" y2="1292.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1296.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SDMMC_CLK/GPIO3_A4</text>
+<text x="191.8" y="1289.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">54</text>
+<path d="M145.8,1287.0 L155.8,1297.0 M145.8,1297.0 L155.8,1287.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.8" y1="1314.0" x2="194.8" y2="1314.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1318.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="1311.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">55</text>
+<path d="M150.8,1314.0 L144.8,1306.0 L109.936,1306.0 L109.936,1322.0 L144.8,1322.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="1318.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="1336.0" x2="194.8" y2="1336.0" stroke="#374151" stroke-width="1.4"/>
+<text x="199.8" y="1340.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="191.8" y="1333.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">56</text>
+<path d="M150.8,1336.0 L144.8,1328.0 L109.936,1328.0 L109.936,1344.0 L144.8,1344.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="142.8" y="1340.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="126.0" x2="766.8" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="130.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="123.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">112</text>
+<path d="M766.8,126.0 L772.8,118.0 L807.664,118.0 L807.664,134.0 L772.8,134.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="130.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="148.0" x2="766.8" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="152.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_B1</text>
+<text x="725.8" y="145.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">111</text>
+<path d="M761.8,143.0 L771.8,153.0 M761.8,153.0 L771.8,143.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="170.0" x2="766.8" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="174.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_B0</text>
+<text x="725.8" y="167.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">110</text>
+<path d="M761.8,165.0 L771.8,175.0 M761.8,175.0 L771.8,165.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="192.0" x2="766.8" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="196.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A7</text>
+<text x="725.8" y="189.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">109</text>
+<path d="M761.8,187.0 L771.8,197.0 M761.8,197.0 L771.8,187.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="214.0" x2="766.8" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="218.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A6</text>
+<text x="725.8" y="211.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">108</text>
+<path d="M761.8,209.0 L771.8,219.0 M761.8,219.0 L771.8,209.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="236.0" x2="766.8" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="240.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A5</text>
+<text x="725.8" y="233.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">107</text>
+<path d="M761.8,231.0 L771.8,241.0 M761.8,241.0 L771.8,231.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="258.0" x2="766.8" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="262.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A4</text>
+<text x="725.8" y="255.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">106</text>
+<path d="M761.8,253.0 L771.8,263.0 M761.8,263.0 L771.8,253.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="280.0" x2="766.8" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="284.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A3</text>
+<text x="725.8" y="277.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">105</text>
+<path d="M761.8,275.0 L771.8,285.0 M761.8,285.0 L771.8,275.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="302.0" x2="766.8" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="306.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A2</text>
+<text x="725.8" y="299.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">104</text>
+<path d="M761.8,297.0 L771.8,307.0 M761.8,307.0 L771.8,297.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="324.0" x2="766.8" y2="324.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="328.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A1</text>
+<text x="725.8" y="321.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">103</text>
+<path d="M761.8,319.0 L771.8,329.0 M761.8,329.0 L771.8,319.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="346.0" x2="766.8" y2="346.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="350.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO2_A0</text>
+<text x="725.8" y="343.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">102</text>
+<path d="M761.8,341.0 L771.8,351.0 M761.8,351.0 L771.8,341.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="368.0" x2="766.8" y2="368.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="372.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SPI0_CS0_M0/GPIO1_C0</text>
+<text x="725.8" y="365.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">101</text>
+<path d="M766.8,368.0 L772.8,360.0 L827.1999999999999,360.0 L827.1999999999999,376.0 L772.8,376.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="372.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SPI_CS</text>
+<line x1="722.8" y1="390.0" x2="766.8" y2="390.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="394.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SPI0_CLK_M0/GPIO1_C1</text>
+<text x="725.8" y="387.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">100</text>
+<path d="M766.8,390.0 L772.8,382.0 L834.5999999999999,382.0 L834.5999999999999,398.0 L772.8,398.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="394.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SPI_SCK</text>
+<line x1="722.8" y1="412.0" x2="766.8" y2="412.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="416.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SPI0_MOSI_M0/GPIO1_C2</text>
+<text x="725.8" y="409.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">99</text>
+<path d="M766.8,412.0 L772.8,404.0 L842.0,404.0 L842.0,420.0 L772.8,420.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="416.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SPI_MOSI</text>
+<line x1="722.8" y1="434.0" x2="766.8" y2="434.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="438.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SPI0_MISO_M0/GPIO1_C3</text>
+<text x="725.8" y="431.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">98</text>
+<path d="M766.8,434.0 L772.8,426.0 L842.0,426.0 L842.0,442.0 L772.8,442.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="438.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SPI_MISO</text>
+<line x1="722.8" y1="456.0" x2="766.8" y2="456.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="460.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_C4</text>
+<text x="725.8" y="453.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">97</text>
+<path d="M761.8,451.0 L771.8,461.0 M761.8,461.0 L771.8,451.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="478.0" x2="766.8" y2="478.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="482.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_C5</text>
+<text x="725.8" y="475.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">96</text>
+<path d="M761.8,473.0 L771.8,483.0 M761.8,483.0 L771.8,473.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="500.0" x2="766.8" y2="500.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="504.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_C6</text>
+<text x="725.8" y="497.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">95</text>
+<path d="M761.8,495.0 L771.8,505.0 M761.8,505.0 L771.8,495.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="522.0" x2="766.8" y2="522.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="526.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_C7</text>
+<text x="725.8" y="519.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">94</text>
+<path d="M761.8,517.0 L771.8,527.0 M761.8,527.0 L771.8,517.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="544.0" x2="766.8" y2="544.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="548.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_D0</text>
+<text x="725.8" y="541.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">93</text>
+<path d="M761.8,539.0 L771.8,549.0 M761.8,549.0 L771.8,539.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="566.0" x2="766.8" y2="566.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="570.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_D1</text>
+<text x="725.8" y="563.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">92</text>
+<path d="M766.8,566.0 L772.8,558.0 L834.5999999999999,558.0 L834.5999999999999,574.0 L772.8,574.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="570.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">MCU_IRQ</text>
+<line x1="722.8" y1="588.0" x2="766.8" y2="588.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="592.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_D2</text>
+<text x="725.8" y="585.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">91</text>
+<path d="M766.8,588.0 L772.8,580.0 L849.4,580.0 L849.4,596.0 L772.8,596.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="592.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">MCU_BOOT0</text>
+<line x1="722.8" y1="610.0" x2="766.8" y2="610.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="614.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GPIO1_D3</text>
+<text x="725.8" y="607.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">90</text>
+<path d="M766.8,610.0 L772.8,602.0 L864.1999999999999,602.0 L864.1999999999999,618.0 L772.8,618.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="614.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SOC_MCU_RST</text>
+<line x1="722.8" y1="632.0" x2="766.8" y2="632.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="636.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="629.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">89</text>
+<path d="M766.8,632.0 L772.8,624.0 L807.664,624.0 L807.664,640.0 L772.8,640.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="636.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="654.0" x2="766.8" y2="654.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="658.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">FEPHY_TXP</text>
+<text x="725.8" y="651.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">88</text>
+<path d="M766.8,654.0 L772.8,646.0 L842.0,646.0 L842.0,662.0 L772.8,662.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="774.8" y="658.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_TX_P</text>
+<line x1="722.8" y1="676.0" x2="766.8" y2="676.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="680.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">FEPHY_TXN</text>
+<text x="725.8" y="673.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">87</text>
+<path d="M766.8,676.0 L772.8,668.0 L842.0,668.0 L842.0,684.0 L772.8,684.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="774.8" y="680.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_TX_N</text>
+<line x1="722.8" y1="698.0" x2="766.8" y2="698.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="702.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">FEPHY_RXP</text>
+<text x="725.8" y="695.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">86</text>
+<path d="M766.8,698.0 L772.8,690.0 L842.0,690.0 L842.0,706.0 L772.8,706.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="774.8" y="702.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_RX_P</text>
+<line x1="722.8" y1="720.0" x2="766.8" y2="720.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="724.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">FEPHY_RXN</text>
+<text x="725.8" y="717.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">85</text>
+<path d="M766.8,720.0 L772.8,712.0 L842.0,712.0 L842.0,728.0 L772.8,728.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="774.8" y="724.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_RX_N</text>
+<line x1="722.8" y1="742.0" x2="766.8" y2="742.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="746.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="739.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">84</text>
+<path d="M766.8,742.0 L772.8,734.0 L807.664,734.0 L807.664,750.0 L772.8,750.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="746.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="764.0" x2="766.8" y2="764.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="768.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="761.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">83</text>
+<path d="M766.8,764.0 L772.8,756.0 L807.664,756.0 L807.664,772.0 L772.8,772.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="768.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="786.0" x2="766.8" y2="786.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="790.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="783.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">82</text>
+<path d="M766.8,786.0 L772.8,778.0 L807.664,778.0 L807.664,794.0 L772.8,794.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="790.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="808.0" x2="766.8" y2="808.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="812.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VCC5V0_SYS</text>
+<text x="725.8" y="805.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">81</text>
+<path d="M766.8,808.0 L772.8,800.0 L832.528,800.0 L832.528,816.0 L772.8,816.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="774.8" y="812.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">5V_SYS</text>
+<line x1="722.8" y1="830.0" x2="766.8" y2="830.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="834.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VCC5V0_SYS</text>
+<text x="725.8" y="827.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">80</text>
+<path d="M766.8,830.0 L772.8,822.0 L832.528,822.0 L832.528,838.0 L772.8,838.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="774.8" y="834.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">5V_SYS</text>
+<line x1="722.8" y1="852.0" x2="766.8" y2="852.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="856.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VCC5V0_SYS</text>
+<text x="725.8" y="849.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">79</text>
+<path d="M766.8,852.0 L772.8,844.0 L832.528,844.0 L832.528,860.0 L772.8,860.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="774.8" y="856.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">5V_SYS</text>
+<line x1="722.8" y1="874.0" x2="766.8" y2="874.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="878.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VCC_3V3</text>
+<text x="725.8" y="871.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">78</text>
+<path d="M766.8,874.0 L772.8,866.0 L873.968,866.0 L873.968,882.0 L772.8,882.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="774.8" y="878.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">VCC_3V3_MOD</text>
+<line x1="722.8" y1="896.0" x2="766.8" y2="896.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="900.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VCC_1V8</text>
+<text x="725.8" y="893.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">77</text>
+<path d="M766.8,896.0 L772.8,888.0 L873.968,888.0 L873.968,904.0 L772.8,904.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="774.8" y="900.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">VCC_1V8_MOD</text>
+<line x1="722.8" y1="918.0" x2="766.8" y2="918.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="922.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VCC3V3_RTC</text>
+<text x="725.8" y="915.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">76</text>
+<path d="M761.8,913.0 L771.8,923.0 M761.8,923.0 L771.8,913.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="940.0" x2="766.8" y2="940.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="944.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="937.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">75</text>
+<path d="M766.8,940.0 L772.8,932.0 L807.664,932.0 L807.664,948.0 L772.8,948.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="944.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="722.8" y1="962.0" x2="766.8" y2="962.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="966.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NPOR</text>
+<text x="725.8" y="959.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">74</text>
+<path d="M766.8,962.0 L772.8,954.0 L842.0,954.0 L842.0,970.0 L772.8,970.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="966.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SOC_NPOR</text>
+<line x1="722.8" y1="984.0" x2="766.8" y2="984.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="988.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART2_RX_M1/GPIO1_B3</text>
+<text x="725.8" y="981.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">73</text>
+<path d="M766.8,984.0 L772.8,976.0 L856.8,976.0 L856.8,992.0 L772.8,992.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="988.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SOC_CON_RX</text>
+<line x1="722.8" y1="1006.0" x2="766.8" y2="1006.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1010.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART2_TX_M1/GPIO1_B2</text>
+<text x="725.8" y="1003.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">72</text>
+<path d="M766.8,1006.0 L772.8,998.0 L856.8,998.0 L856.8,1014.0 L772.8,1014.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1010.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">SOC_CON_TX</text>
+<line x1="722.8" y1="1028.0" x2="766.8" y2="1028.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1032.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART4_TX_M0/GPIO1_B1</text>
+<text x="725.8" y="1025.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">71</text>
+<path d="M766.8,1028.0 L772.8,1020.0 L864.1999999999999,1020.0 L864.1999999999999,1036.0 L772.8,1036.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1032.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">MCU_UART_RX</text>
+<line x1="722.8" y1="1050.0" x2="766.8" y2="1050.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1054.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART4_RX_M0/GPIO1_B0</text>
+<text x="725.8" y="1047.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">70</text>
+<path d="M766.8,1050.0 L772.8,1042.0 L864.1999999999999,1042.0 L864.1999999999999,1058.0 L772.8,1058.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1054.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">MCU_UART_TX</text>
+<line x1="722.8" y1="1072.0" x2="766.8" y2="1072.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1076.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART1_RX_M0/GPIO1_A4</text>
+<text x="725.8" y="1069.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">69</text>
+<path d="M761.8,1067.0 L771.8,1077.0 M761.8,1077.0 L771.8,1067.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1094.0" x2="766.8" y2="1094.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1098.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART1_TX_M0/GPIO1_A3</text>
+<text x="725.8" y="1091.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">68</text>
+<path d="M761.8,1089.0 L771.8,1099.0 M761.8,1099.0 L771.8,1089.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1116.0" x2="766.8" y2="1116.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1120.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">PWM0_M0/GPIO1_A2</text>
+<text x="725.8" y="1113.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">67</text>
+<path d="M766.8,1116.0 L772.8,1108.0 L827.1999999999999,1108.0 L827.1999999999999,1124.0 L772.8,1124.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1120.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_INT</text>
+<line x1="722.8" y1="1138.0" x2="766.8" y2="1138.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1142.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I2C2_SDA_M0/UART3_RX_M0/GPIO1_A1</text>
+<text x="725.8" y="1135.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">66</text>
+<path d="M766.8,1138.0 L772.8,1130.0 L827.1999999999999,1130.0 L827.1999999999999,1146.0 L772.8,1146.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1142.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_SDA</text>
+<line x1="722.8" y1="1160.0" x2="766.8" y2="1160.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1164.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I2C2_SCL_M0/UART3_TX_M0/GPIO1_A0</text>
+<text x="725.8" y="1157.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">65</text>
+<path d="M766.8,1160.0 L772.8,1152.0 L827.1999999999999,1152.0 L827.1999999999999,1168.0 L772.8,1168.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1164.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_SCL</text>
+<line x1="722.8" y1="1182.0" x2="766.8" y2="1182.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1186.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I2C1_SDA_M0/GPIO0_A6</text>
+<text x="725.8" y="1179.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">64</text>
+<path d="M761.8,1177.0 L771.8,1187.0 M761.8,1187.0 L771.8,1177.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1204.0" x2="766.8" y2="1204.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1208.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I2C1_SCL_M0/GPIO0_A5</text>
+<text x="725.8" y="1201.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">63</text>
+<path d="M761.8,1199.0 L771.8,1209.0 M761.8,1209.0 L771.8,1199.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1226.0" x2="766.8" y2="1226.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1230.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">PWR_CTRL_M0/GPIO0_A4</text>
+<text x="725.8" y="1223.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">62</text>
+<path d="M761.8,1221.0 L771.8,1231.0 M761.8,1231.0 L771.8,1221.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1248.0" x2="766.8" y2="1248.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1252.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">PWR_CTRL_M1/GPIO0_A3</text>
+<text x="725.8" y="1245.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">61</text>
+<path d="M766.8,1248.0 L772.8,1240.0 L842.0,1240.0 L842.0,1256.0 L772.8,1256.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="774.8" y="1252.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">LT_RST_N</text>
+<line x1="722.8" y1="1270.0" x2="766.8" y2="1270.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1274.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">PWM3_IR_M0/GPIO0_A2</text>
+<text x="725.8" y="1267.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">60</text>
+<path d="M761.8,1265.0 L771.8,1275.0 M761.8,1275.0 L771.8,1265.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1292.0" x2="766.8" y2="1292.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1296.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART0_TX_M0/GPIO0_A1</text>
+<text x="725.8" y="1289.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">59</text>
+<path d="M761.8,1287.0 L771.8,1297.0 M761.8,1297.0 L771.8,1287.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1314.0" x2="766.8" y2="1314.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1318.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">UART0_RX_M0/GPIO0_A0</text>
+<text x="725.8" y="1311.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">58</text>
+<path d="M761.8,1309.0 L771.8,1319.0 M761.8,1319.0 L771.8,1309.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="722.8" y1="1336.0" x2="766.8" y2="1336.0" stroke="#374151" stroke-width="1.4"/>
+<text x="717.8" y="1340.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="725.8" y="1333.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">57</text>
+<path d="M766.8,1336.0 L772.8,1328.0 L807.664,1328.0 L807.664,1344.0 L772.8,1344.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="774.8" y="1340.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<rect x="1056.6" y="104.0" width="176.0" height="220.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="1056.6" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">J401  USB-C PC</text>
+<text x="1056.6" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">TYPE-C-31-M-12  LCSC C165948</text>
+<line x1="1012.6" y1="126.0" x2="1056.6" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="130.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1053.6" y="123.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A1</text>
+<path d="M1012.5680000000002,126.0 L1006.5680000000002,118.0 L971.7040000000002,118.0 L971.7040000000002,134.0 L1006.5680000000002,134.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1004.6" y="130.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1012.6" y1="148.0" x2="1056.6" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="152.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="1053.6" y="145.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A4</text>
+<path d="M1012.5680000000002,148.0 L1006.5680000000002,140.0 L938.5520000000001,140.0 L938.5520000000001,156.0 L1006.5680000000002,156.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1004.6" y="152.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<line x1="1012.6" y1="170.0" x2="1056.6" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="174.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">CC1</text>
+<text x="1053.6" y="167.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A5</text>
+<path d="M1012.5680000000002,170.0 L1006.5680000000002,162.0 L952.1680000000002,162.0 L952.1680000000002,178.0 L1006.5680000000002,178.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1004.6" y="174.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PC_CC1</text>
+<line x1="1012.6" y1="192.0" x2="1056.6" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="196.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D+</text>
+<text x="1053.6" y="189.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A6</text>
+<path d="M1012.5680000000002,192.0 L1006.5680000000002,184.0 L929.9680000000002,184.0 L929.9680000000002,200.0 L1006.5680000000002,200.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1004.6" y="196.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PC_USB_DP</text>
+<line x1="1012.6" y1="214.0" x2="1056.6" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="218.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">D-</text>
+<text x="1053.6" y="211.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A7</text>
+<path d="M1012.5680000000002,214.0 L1006.5680000000002,206.0 L929.9680000000002,206.0 L929.9680000000002,222.0 L1006.5680000000002,222.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1004.6" y="218.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PC_USB_DN</text>
+<line x1="1012.6" y1="236.0" x2="1056.6" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="240.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">SBU1</text>
+<text x="1053.6" y="233.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A8</text>
+<path d="M1007.5680000000002,231.0 L1017.5680000000002,241.0 M1007.5680000000002,241.0 L1017.5680000000002,231.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="1012.6" y1="258.0" x2="1056.6" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="262.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="1053.6" y="255.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A9</text>
+<path d="M1012.5680000000002,258.0 L1006.5680000000002,250.0 L938.5520000000001,250.0 L938.5520000000001,266.0 L1006.5680000000002,266.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1004.6" y="262.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<line x1="1012.6" y1="280.0" x2="1056.6" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1061.6" y="284.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1053.6" y="277.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A12</text>
+<path d="M1012.5680000000002,280.0 L1006.5680000000002,272.0 L971.7040000000002,272.0 L971.7040000000002,288.0 L1006.5680000000002,288.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1004.6" y="284.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1232.6" y1="126.0" x2="1276.6" y2="126.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="130.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1235.6" y="123.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B1</text>
+<path d="M1276.5680000000002,126.0 L1282.5680000000002,118.0 L1317.4320000000002,118.0 L1317.4320000000002,134.0 L1282.5680000000002,134.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1284.6" y="130.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1232.6" y1="148.0" x2="1276.6" y2="148.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="152.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="1235.6" y="145.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B4</text>
+<path d="M1276.5680000000002,148.0 L1282.5680000000002,140.0 L1350.5840000000003,140.0 L1350.5840000000003,156.0 L1282.5680000000002,156.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1284.6" y="152.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<line x1="1232.6" y1="170.0" x2="1276.6" y2="170.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="174.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">CC2</text>
+<text x="1235.6" y="167.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B5</text>
+<path d="M1276.5680000000002,170.0 L1282.5680000000002,162.0 L1336.9680000000003,162.0 L1336.9680000000003,178.0 L1282.5680000000002,178.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1284.6" y="174.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">PC_CC2</text>
+<line x1="1232.6" y1="192.0" x2="1276.6" y2="192.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="196.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">D+</text>
+<text x="1235.6" y="189.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B6</text>
+<path d="M1276.5680000000002,192.0 L1282.5680000000002,184.0 L1359.1680000000001,184.0 L1359.1680000000001,200.0 L1282.5680000000002,200.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1284.6" y="196.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PC_USB_DP</text>
+<line x1="1232.6" y1="214.0" x2="1276.6" y2="214.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="218.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">D-</text>
+<text x="1235.6" y="211.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B7</text>
+<path d="M1276.5680000000002,214.0 L1282.5680000000002,206.0 L1359.1680000000001,206.0 L1359.1680000000001,222.0 L1282.5680000000002,222.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="1284.6" y="218.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PC_USB_DN</text>
+<line x1="1232.6" y1="236.0" x2="1276.6" y2="236.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="240.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SBU2</text>
+<text x="1235.6" y="233.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B8</text>
+<path d="M1271.5680000000002,231.0 L1281.5680000000002,241.0 M1271.5680000000002,241.0 L1281.5680000000002,231.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="1232.6" y1="258.0" x2="1276.6" y2="258.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="262.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="1235.6" y="255.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B9</text>
+<path d="M1276.5680000000002,258.0 L1282.5680000000002,250.0 L1350.5840000000003,250.0 L1350.5840000000003,266.0 L1282.5680000000002,266.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1284.6" y="262.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<line x1="1232.6" y1="280.0" x2="1276.6" y2="280.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="284.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">GND</text>
+<text x="1235.6" y="277.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">B12</text>
+<path d="M1276.5680000000002,280.0 L1282.5680000000002,272.0 L1317.4320000000002,272.0 L1317.4320000000002,288.0 L1282.5680000000002,288.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1284.6" y="284.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1232.6" y1="302.0" x2="1276.6" y2="302.0" stroke="#374151" stroke-width="1.4"/>
+<text x="1227.6" y="306.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SHIELD</text>
+<text x="1235.6" y="299.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">S1</text>
+<path d="M1276.5680000000002,302.0 L1282.5680000000002,294.0 L1317.4320000000002,294.0 L1317.4320000000002,310.0 L1282.5680000000002,310.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1284.6" y="306.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<rect x="172.6" y="1472.0" width="176.0" height="176.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="172.6" y="1452.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">J402  RJ45 10/100</text>
+<text x="172.6" y="1467.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">HR911105A  LCSC C12074</text>
+<line x1="128.6" y1="1494.0" x2="172.6" y2="1494.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.6" y="1498.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">TD+</text>
+<text x="169.6" y="1491.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M128.60000000000002,1494.0 L122.60000000000002,1486.0 L46.000000000000014,1486.0 L46.000000000000014,1502.0 L122.60000000000002,1502.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="1498.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_TXP_J</text>
+<line x1="128.6" y1="1516.0" x2="172.6" y2="1516.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.6" y="1520.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">TD-</text>
+<text x="169.6" y="1513.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M128.60000000000002,1516.0 L122.60000000000002,1508.0 L46.000000000000014,1508.0 L46.000000000000014,1524.0 L122.60000000000002,1524.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="1520.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_TXN_J</text>
+<line x1="128.6" y1="1538.0" x2="172.6" y2="1538.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.6" y="1542.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">RD+</text>
+<text x="169.6" y="1535.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M128.60000000000002,1538.0 L122.60000000000002,1530.0 L46.000000000000014,1530.0 L46.000000000000014,1546.0 L122.60000000000002,1546.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="1542.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_RXP_J</text>
+<line x1="128.6" y1="1560.0" x2="172.6" y2="1560.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.6" y="1564.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">TCT</text>
+<text x="169.6" y="1557.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">4</text>
+<path d="M128.60000000000002,1560.0 L122.60000000000002,1552.0 L60.80000000000002,1552.0 L60.80000000000002,1568.0 L122.60000000000002,1568.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="120.6" y="1564.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">ETH_TCT</text>
+<line x1="128.6" y1="1582.0" x2="172.6" y2="1582.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.6" y="1586.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">RCT</text>
+<text x="169.6" y="1579.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">5</text>
+<path d="M128.60000000000002,1582.0 L122.60000000000002,1574.0 L60.80000000000002,1574.0 L60.80000000000002,1590.0 L122.60000000000002,1590.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="120.6" y="1586.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">ETH_RCT</text>
+<line x1="128.6" y1="1604.0" x2="172.6" y2="1604.0" stroke="#374151" stroke-width="1.4"/>
+<text x="177.6" y="1608.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">RD-</text>
+<text x="169.6" y="1601.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">6</text>
+<path d="M128.60000000000002,1604.0 L122.60000000000002,1596.0 L46.000000000000014,1596.0 L46.000000000000014,1612.0 L122.60000000000002,1612.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="120.6" y="1608.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_RXN_J</text>
+<line x1="348.6" y1="1494.0" x2="392.6" y2="1494.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1498.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">NC</text>
+<text x="351.6" y="1491.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">7</text>
+<path d="M387.6,1489.0 L397.6,1499.0 M387.6,1499.0 L397.6,1489.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="348.6" y1="1516.0" x2="392.6" y2="1516.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1520.5" font-size="12" text-anchor="end" fill="#0e7490" font-weight="normal">BS</text>
+<text x="351.6" y="1513.0" font-size="10.5" text-anchor="start" fill="#0e7490" font-weight="normal">8</text>
+<path d="M392.6,1516.0 L398.6,1508.0 L453.0,1508.0 L453.0,1524.0 L398.6,1524.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="400.6" y="1520.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">ETH_BS</text>
+<line x1="348.6" y1="1538.0" x2="392.6" y2="1538.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1542.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">LED1</text>
+<text x="351.6" y="1535.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">9</text>
+<path d="M387.6,1533.0 L397.6,1543.0 M387.6,1543.0 L397.6,1533.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="348.6" y1="1560.0" x2="392.6" y2="1560.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1564.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">LED1</text>
+<text x="351.6" y="1557.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">10</text>
+<path d="M387.6,1555.0 L397.6,1565.0 M387.6,1565.0 L397.6,1555.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="348.6" y1="1582.0" x2="392.6" y2="1582.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1586.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">LED2</text>
+<text x="351.6" y="1579.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">11</text>
+<path d="M387.6,1577.0 L397.6,1587.0 M387.6,1587.0 L397.6,1577.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="348.6" y1="1604.0" x2="392.6" y2="1604.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1608.5" font-size="12" text-anchor="end" fill="#d97706" font-weight="normal">LED2</text>
+<text x="351.6" y="1601.0" font-size="10.5" text-anchor="start" fill="#d97706" font-weight="normal">12</text>
+<path d="M387.6,1599.0 L397.6,1609.0 M387.6,1609.0 L397.6,1599.0" stroke="#9ca3af" stroke-width="2"/>
+<line x1="348.6" y1="1626.0" x2="392.6" y2="1626.0" stroke="#374151" stroke-width="1.4"/>
+<text x="343.6" y="1630.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">SHIELD</text>
+<text x="351.6" y="1623.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">SH</text>
+<path d="M392.6,1626.0 L398.6,1618.0 L433.46400000000006,1618.0 L433.46400000000006,1634.0 L398.6,1634.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="400.6" y="1630.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<rect x="613.6" y="1472.0" width="132.0" height="88.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
+<text x="613.6" y="1452.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U402  USBLC6-2SC6</text>
+<text x="613.6" y="1467.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">LCSC C7519</text>
+<line x1="591.6" y1="1494.0" x2="613.6" y2="1494.0" stroke="#374151" stroke-width="1.4"/>
+<text x="618.6" y="1498.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I/O1</text>
+<text x="610.6" y="1491.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
+<path d="M591.6,1494.0 L585.6,1486.0 L509.0,1486.0 L509.0,1502.0 L585.6,1502.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="583.6" y="1498.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PC_USB_DP</text>
+<line x1="591.6" y1="1516.0" x2="613.6" y2="1516.0" stroke="#374151" stroke-width="1.4"/>
+<text x="618.6" y="1520.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
+<text x="610.6" y="1513.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">2</text>
+<path d="M591.6,1516.0 L585.6,1508.0 L550.736,1508.0 L550.736,1524.0 L585.6,1524.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="583.6" y="1520.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
+<line x1="591.6" y1="1538.0" x2="613.6" y2="1538.0" stroke="#374151" stroke-width="1.4"/>
+<text x="618.6" y="1542.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">I/O2</text>
+<text x="610.6" y="1535.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">3</text>
+<path d="M591.6,1538.0 L585.6,1530.0 L509.0,1530.0 L509.0,1546.0 L585.6,1546.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="583.6" y="1542.2" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">PC_USB_DN</text>
+<line x1="745.6" y1="1494.0" x2="767.6" y2="1494.0" stroke="#374151" stroke-width="1.4"/>
+<text x="740.6" y="1498.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I/O2</text>
+<text x="748.6" y="1491.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">4</text>
+<path d="M767.6,1494.0 L773.6,1486.0 L850.2,1486.0 L850.2,1502.0 L773.6,1502.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="775.6" y="1498.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PC_USB_DN</text>
+<line x1="745.6" y1="1516.0" x2="767.6" y2="1516.0" stroke="#374151" stroke-width="1.4"/>
+<text x="740.6" y="1520.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">VBUS</text>
+<text x="748.6" y="1513.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">5</text>
+<path d="M767.6,1516.0 L773.6,1508.0 L808.464,1508.0 L808.464,1524.0 L773.6,1524.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="775.6" y="1520.2" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">3V3</text>
+<line x1="745.6" y1="1538.0" x2="767.6" y2="1538.0" stroke="#374151" stroke-width="1.4"/>
+<text x="740.6" y="1542.5" font-size="12" text-anchor="end" fill="#1f2937" font-weight="normal">I/O1</text>
+<text x="748.6" y="1535.0" font-size="10.5" text-anchor="start" fill="#1f2937" font-weight="normal">6</text>
+<path d="M767.6,1538.0 L773.6,1530.0 L850.2,1530.0 L850.2,1546.0 L773.6,1546.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="775.6" y="1542.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PC_USB_DP</text>
+<line x1="150.8" y1="1799.2" x2="178.8" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="210.8" y1="1799.2" x2="238.8" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="178.8" y1="1799.2" x2="190.8" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="198.8" y1="1799.2" x2="210.8" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="190.8" y1="1789.2" x2="190.8" y2="1809.2" stroke="#374151" stroke-width="2.4"/>
+<line x1="198.8" y1="1789.2" x2="198.8" y2="1809.2" stroke="#374151" stroke-width="2.4"/>
+<text x="194.8" y="1784.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C401</text>
+<text x="194.8" y="1824.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">22uF 10V</text>
+<path d="M150.8,1799.2 L144.8,1791.2 L85.072,1791.2 L85.072,1807.2 L144.8,1807.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="142.8" y="1803.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">5V_SYS</text>
+<path d="M238.8,1799.2 L244.8,1791.2 L279.664,1791.2 L279.664,1807.2 L244.8,1807.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="1803.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="1869.6000000000001" x2="178.8" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="210.8" y1="1869.6000000000001" x2="238.8" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="178.8" y1="1869.6000000000001" x2="190.8" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="198.8" y1="1869.6000000000001" x2="210.8" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="190.8" y1="1859.6000000000001" x2="190.8" y2="1879.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="198.8" y1="1859.6000000000001" x2="198.8" y2="1879.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="194.8" y="1854.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C402</text>
+<text x="194.8" y="1894.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M150.8,1869.6000000000001 L144.8,1861.6000000000001 L85.072,1861.6000000000001 L85.072,1877.6000000000001 L144.8,1877.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="142.8" y="1873.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">5V_SYS</text>
+<path d="M238.8,1869.6000000000001 L244.8,1861.6000000000001 L279.664,1861.6000000000001 L279.664,1877.6000000000001 L244.8,1877.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="1873.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="172.8" y1="1940.0" x2="189.8" y2="1940.0" stroke="#374151" stroke-width="1.6"/>
+<circle cx="194.8" cy="1940.0" r="5" fill="white" stroke="#374151" stroke-width="1.6"/>
+<text x="203.8" y="1944.0" font-size="12" text-anchor="start" fill="#1f2937" font-weight="bold">TP401</text>
+<path d="M172.8,1940.0 L166.8,1932.0 L65.63199999999999,1932.0 L65.63199999999999,1948.0 L166.8,1948.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="164.8" y="1944.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">VCC_3V3_MOD</text>
+<line x1="150.8" y1="2010.4" x2="178.8" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="210.8" y1="2010.4" x2="238.8" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="178.8" y="2004.4" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="194.8" y="1995.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R401</text>
+<text x="194.8" y="2035.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">5.1k 1%</text>
+<path d="M150.8,2010.4 L144.8,2002.4 L90.4,2002.4 L90.4,2018.4 L144.8,2018.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="142.8" y="2014.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PC_CC1</text>
+<path d="M238.8,2010.4 L244.8,2002.4 L279.664,2002.4 L279.664,2018.4 L244.8,2018.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="2014.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="2080.7999999999997" x2="178.8" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="210.8" y1="2080.7999999999997" x2="238.8" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="178.8" y="2074.7999999999997" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="194.8" y="2065.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R402</text>
+<text x="194.8" y="2105.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">5.1k 1%</text>
+<path d="M150.8,2080.7999999999997 L144.8,2072.7999999999997 L90.4,2072.7999999999997 L90.4,2088.7999999999997 L144.8,2088.7999999999997 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="142.8" y="2085.0" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PC_CC2</text>
+<path d="M238.8,2080.7999999999997 L244.8,2072.7999999999997 L279.664,2072.7999999999997 L279.664,2088.7999999999997 L244.8,2088.7999999999997 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="2085.0" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="2151.2" x2="178.8" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="210.8" y1="2151.2" x2="238.8" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="178.8" y1="2151.2" x2="190.8" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="198.8" y1="2151.2" x2="210.8" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="190.8" y1="2141.2" x2="190.8" y2="2161.2" stroke="#374151" stroke-width="2.4"/>
+<line x1="198.8" y1="2141.2" x2="198.8" y2="2161.2" stroke="#374151" stroke-width="2.4"/>
+<text x="194.8" y="2136.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C403</text>
+<text x="194.8" y="2176.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M150.8,2151.2 L144.8,2143.2 L109.936,2143.2 L109.936,2159.2 L144.8,2159.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="142.8" y="2155.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3</text>
+<path d="M238.8,2151.2 L244.8,2143.2 L279.664,2143.2 L279.664,2159.2 L244.8,2159.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="2155.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="150.8" y1="2221.6" x2="178.8" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="210.8" y1="2221.6" x2="238.8" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="178.8" y1="2221.6" x2="190.8" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="198.8" y1="2221.6" x2="210.8" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="190.8" y1="2211.6" x2="190.8" y2="2231.6" stroke="#374151" stroke-width="2.4"/>
+<line x1="198.8" y1="2211.6" x2="198.8" y2="2231.6" stroke="#374151" stroke-width="2.4"/>
+<text x="194.8" y="2206.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C404</text>
+<text x="194.8" y="2246.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1uF 25V</text>
+<path d="M150.8,2221.6 L144.8,2213.6 L76.78399999999999,2213.6 L76.78399999999999,2229.6 L144.8,2229.6 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="142.8" y="2225.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<path d="M238.8,2221.6 L244.8,2213.6 L279.664,2213.6 L279.664,2229.6 L244.8,2229.6 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="2225.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="506.76800000000003" y1="1799.2" x2="534.768" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="1799.2" x2="594.768" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="534.768" y1="1799.2" x2="566.768" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<path d="M558.768,1790.2 L558.768,1808.2 L542.768,1799.2 Z" fill="white" stroke="#374151" stroke-width="1.6"/>
+<path d="M538.768,1787.2 L542.768,1790.2 L542.768,1808.2 L546.768,1811.2" stroke="#374151" stroke-width="2" fill="none"/>
+<text x="550.8" y="1784.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">D401</text>
+<text x="550.8" y="1824.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">SMF6.0A</text>
+<path d="M506.76800000000003,1799.2 L500.76800000000003,1791.2 L432.752,1791.2 L432.752,1807.2 L500.76800000000003,1807.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="498.8" y="1803.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<path d="M594.768,1799.2 L600.768,1791.2 L635.6320000000001,1791.2 L635.6320000000001,1807.2 L600.768,1807.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="602.8" y="1803.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="506.76800000000003" y1="1869.6000000000001" x2="534.768" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="1869.6000000000001" x2="594.768" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="534.768" y="1863.6000000000001" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="550.8" y="1854.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R403</text>
+<text x="550.8" y="1894.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10k</text>
+<path d="M506.76800000000003,1869.6000000000001 L500.76800000000003,1861.6000000000001 L432.752,1861.6000000000001 L432.752,1877.6000000000001 L500.76800000000003,1877.6000000000001 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="498.8" y="1873.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
+<path d="M594.768,1869.6000000000001 L600.768,1861.6000000000001 L692.168,1861.6000000000001 L692.168,1877.6000000000001 L600.768,1877.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="602.8" y="1873.8" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">PC_VBUS_DET</text>
+<line x1="506.76800000000003" y1="1940.0" x2="534.768" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="1940.0" x2="594.768" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="534.768" y="1934.0" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="550.8" y="1925.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R404</text>
+<text x="550.8" y="1965.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">18k</text>
+<path d="M506.76800000000003,1940.0 L500.76800000000003,1932.0 L409.36800000000005,1932.0 L409.36800000000005,1948.0 L500.76800000000003,1948.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="498.8" y="1944.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PC_VBUS_DET</text>
+<path d="M594.768,1940.0 L600.768,1932.0 L635.6320000000001,1932.0 L635.6320000000001,1948.0 L600.768,1948.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="602.8" y="1944.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="506.76800000000003" y1="2010.4" x2="534.768" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="2010.4" x2="594.768" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="534.768" y1="2010.4" x2="546.768" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="554.768" y1="2010.4" x2="566.768" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="546.768" y1="2000.4" x2="546.768" y2="2020.4" stroke="#374151" stroke-width="2.4"/>
+<line x1="554.768" y1="2000.4" x2="554.768" y2="2020.4" stroke="#374151" stroke-width="2.4"/>
+<text x="550.8" y="1995.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C405</text>
+<text x="550.8" y="2035.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF</text>
+<path d="M506.76800000000003,2010.4 L500.76800000000003,2002.4 L409.36800000000005,2002.4 L409.36800000000005,2018.4 L500.76800000000003,2018.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="498.8" y="2014.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">PC_VBUS_DET</text>
+<path d="M594.768,2010.4 L600.768,2002.4 L635.6320000000001,2002.4 L635.6320000000001,2018.4 L600.768,2018.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="602.8" y="2014.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="506.76800000000003" y1="2080.7999999999997" x2="534.768" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="2080.7999999999997" x2="594.768" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="534.768" y="2074.7999999999997" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="550.8" y="2065.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R405</text>
+<text x="550.8" y="2105.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">0R</text>
+<path d="M506.76800000000003,2080.7999999999997 L500.76800000000003,2072.7999999999997 L431.56800000000004,2072.7999999999997 L431.56800000000004,2088.7999999999997 L500.76800000000003,2088.7999999999997 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="498.8" y="2085.0" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_TX_P</text>
+<path d="M594.768,2080.7999999999997 L600.768,2072.7999999999997 L677.368,2072.7999999999997 L677.368,2088.7999999999997 L600.768,2088.7999999999997 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="602.8" y="2085.0" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_TXP_J</text>
+<line x1="506.76800000000003" y1="2151.2" x2="534.768" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="2151.2" x2="594.768" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="534.768" y="2145.2" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="550.8" y="2136.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R406</text>
+<text x="550.8" y="2176.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">0R</text>
+<path d="M506.76800000000003,2151.2 L500.76800000000003,2143.2 L431.56800000000004,2143.2 L431.56800000000004,2159.2 L500.76800000000003,2159.2 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="498.8" y="2155.4" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_TX_N</text>
+<path d="M594.768,2151.2 L600.768,2143.2 L677.368,2143.2 L677.368,2159.2 L600.768,2159.2 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="602.8" y="2155.4" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_TXN_J</text>
+<line x1="506.76800000000003" y1="2221.6" x2="534.768" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="566.768" y1="2221.6" x2="594.768" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="534.768" y="2215.6" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="550.8" y="2206.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R407</text>
+<text x="550.8" y="2246.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">0R</text>
+<path d="M506.76800000000003,2221.6 L500.76800000000003,2213.6 L431.56800000000004,2213.6 L431.56800000000004,2229.6 L500.76800000000003,2229.6 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="498.8" y="2225.8" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_RX_P</text>
+<path d="M594.768,2221.6 L600.768,2213.6 L677.368,2213.6 L677.368,2229.6 L600.768,2229.6 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="602.8" y="2225.8" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_RXP_J</text>
+<line x1="862.7360000000001" y1="1799.2" x2="890.7360000000001" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="1799.2" x2="950.7360000000001" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="890.7360000000001" y="1793.2" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="906.7" y="1784.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R408</text>
+<text x="906.7" y="1824.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">0R</text>
+<path d="M862.7360000000001,1799.2 L856.7360000000001,1791.2 L787.5360000000001,1791.2 L787.5360000000001,1807.2 L856.7360000000001,1807.2 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="854.7" y="1803.4" font-size="11.5" text-anchor="end" fill="#7e22ce" font-weight="normal">ETH_RX_N</text>
+<path d="M950.7360000000001,1799.2 L956.7360000000001,1791.2 L1033.336,1791.2 L1033.336,1807.2 L956.7360000000001,1807.2 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="958.7" y="1803.4" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">ETH_RXN_J</text>
+<line x1="862.7360000000001" y1="1869.6000000000001" x2="890.7360000000001" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="1869.6000000000001" x2="950.7360000000001" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="890.7360000000001" y1="1869.6000000000001" x2="902.7360000000001" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="910.7360000000001" y1="1869.6000000000001" x2="922.7360000000001" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="902.7360000000001" y1="1859.6000000000001" x2="902.7360000000001" y2="1879.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="910.7360000000001" y1="1859.6000000000001" x2="910.7360000000001" y2="1879.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="906.7" y="1854.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C406</text>
+<text x="906.7" y="1894.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10nF 50V</text>
+<path d="M862.7360000000001,1869.6000000000001 L856.7360000000001,1861.6000000000001 L794.9360000000001,1861.6000000000001 L794.9360000000001,1877.6000000000001 L856.7360000000001,1877.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="854.7" y="1873.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">ETH_TCT</text>
+<path d="M950.7360000000001,1869.6000000000001 L956.7360000000001,1861.6000000000001 L991.6000000000001,1861.6000000000001 L991.6000000000001,1877.6000000000001 L956.7360000000001,1877.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="958.7" y="1873.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="862.7360000000001" y1="1940.0" x2="890.7360000000001" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="1940.0" x2="950.7360000000001" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="890.7360000000001" y1="1940.0" x2="902.7360000000001" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="910.7360000000001" y1="1940.0" x2="922.7360000000001" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="902.7360000000001" y1="1930.0" x2="902.7360000000001" y2="1950.0" stroke="#374151" stroke-width="2.4"/>
+<line x1="910.7360000000001" y1="1930.0" x2="910.7360000000001" y2="1950.0" stroke="#374151" stroke-width="2.4"/>
+<text x="906.7" y="1925.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C407</text>
+<text x="906.7" y="1965.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10nF 50V</text>
+<path d="M862.7360000000001,1940.0 L856.7360000000001,1932.0 L794.9360000000001,1932.0 L794.9360000000001,1948.0 L856.7360000000001,1948.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="854.7" y="1944.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">ETH_RCT</text>
+<path d="M950.7360000000001,1940.0 L956.7360000000001,1932.0 L991.6000000000001,1932.0 L991.6000000000001,1948.0 L956.7360000000001,1948.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="958.7" y="1944.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="862.7360000000001" y1="2010.4" x2="890.7360000000001" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="2010.4" x2="950.7360000000001" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="890.7360000000001" y1="2010.4" x2="902.7360000000001" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="910.7360000000001" y1="2010.4" x2="922.7360000000001" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="902.7360000000001" y1="2000.4" x2="902.7360000000001" y2="2020.4" stroke="#374151" stroke-width="2.4"/>
+<line x1="910.7360000000001" y1="2000.4" x2="910.7360000000001" y2="2020.4" stroke="#374151" stroke-width="2.4"/>
+<text x="906.7" y="1995.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C408</text>
+<text x="906.7" y="2035.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1nF 100V</text>
+<path d="M862.7360000000001,2010.4 L856.7360000000001,2002.4 L802.3360000000001,2002.4 L802.3360000000001,2018.4 L856.7360000000001,2018.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="854.7" y="2014.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">ETH_BS</text>
+<path d="M950.7360000000001,2010.4 L956.7360000000001,2002.4 L991.6000000000001,2002.4 L991.6000000000001,2018.4 L956.7360000000001,2018.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="958.7" y="2014.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="862.7360000000001" y1="2080.7999999999997" x2="890.7360000000001" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="2080.7999999999997" x2="950.7360000000001" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="890.7360000000001" y="2074.7999999999997" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="906.7" y="2065.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R409</text>
+<text x="906.7" y="2105.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100k 1%</text>
+<path d="M862.7360000000001,2080.7999999999997 L856.7360000000001,2072.7999999999997 L821.8720000000001,2072.7999999999997 L821.8720000000001,2088.7999999999997 L856.7360000000001,2088.7999999999997 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="854.7" y="2085.0" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">VIN</text>
+<path d="M950.7360000000001,2080.7999999999997 L956.7360000000001,2072.7999999999997 L1033.336,2072.7999999999997 L1033.336,2088.7999999999997 L956.7360000000001,2088.7999999999997 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="958.7" y="2085.0" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">VIN_SENSE</text>
+<line x1="862.7360000000001" y1="2151.2" x2="890.7360000000001" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="2151.2" x2="950.7360000000001" y2="2151.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="890.7360000000001" y="2145.2" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="906.7" y="2136.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R410</text>
+<text x="906.7" y="2176.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">8.2k 1%</text>
+<path d="M862.7360000000001,2151.2 L856.7360000000001,2143.2 L780.1360000000001,2143.2 L780.1360000000001,2159.2 L856.7360000000001,2159.2 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="854.7" y="2155.4" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">VIN_SENSE</text>
+<path d="M950.7360000000001,2151.2 L956.7360000000001,2143.2 L991.6000000000001,2143.2 L991.6000000000001,2159.2 L956.7360000000001,2159.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="958.7" y="2155.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="862.7360000000001" y1="2221.6" x2="890.7360000000001" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="922.7360000000001" y1="2221.6" x2="950.7360000000001" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="890.7360000000001" y1="2221.6" x2="902.7360000000001" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="910.7360000000001" y1="2221.6" x2="922.7360000000001" y2="2221.6" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="902.7360000000001" y1="2211.6" x2="902.7360000000001" y2="2231.6" stroke="#374151" stroke-width="2.4"/>
+<line x1="910.7360000000001" y1="2211.6" x2="910.7360000000001" y2="2231.6" stroke="#374151" stroke-width="2.4"/>
+<text x="906.7" y="2206.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C409</text>
+<text x="906.7" y="2246.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10nF</text>
+<path d="M862.7360000000001,2221.6 L856.7360000000001,2213.6 L780.1360000000001,2213.6 L780.1360000000001,2229.6 L856.7360000000001,2229.6 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="854.7" y="2225.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">VIN_SENSE</text>
+<path d="M950.7360000000001,2221.6 L956.7360000000001,2213.6 L991.6000000000001,2213.6 L991.6000000000001,2229.6 L956.7360000000001,2229.6 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="958.7" y="2225.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1218.704" y1="1799.2" x2="1246.704" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1278.704" y1="1799.2" x2="1306.704" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="1246.704" y="1793.2" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="1262.7" y="1784.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R411</text>
+<text x="1262.7" y="1824.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10k</text>
+<path d="M1218.704,1799.2 L1212.704,1791.2 L1113.904,1791.2 L1113.904,1807.2 L1212.704,1807.2 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1210.7" y="1803.4" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">SOC_RECOVERY</text>
+<path d="M1306.704,1799.2 L1312.704,1791.2 L1413.872,1791.2 L1413.872,1807.2 L1312.704,1807.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1314.7" y="1803.4" font-size="11.5" text-anchor="start" fill="#b91c1c" font-weight="bold">VCC_1V8_MOD</text>
+<line x1="1218.704" y1="1869.6000000000001" x2="1246.704" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1278.704" y1="1869.6000000000001" x2="1306.704" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1246.704" y1="1869.6000000000001" x2="1258.704" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1266.704" y1="1869.6000000000001" x2="1278.704" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1258.704" y1="1859.6000000000001" x2="1258.704" y2="1879.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<line x1="1266.704" y1="1859.6000000000001" x2="1266.704" y2="1879.6000000000001" stroke="#374151" stroke-width="2.4"/>
+<text x="1262.7" y="1854.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C410</text>
+<text x="1262.7" y="1894.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1nF C0G</text>
+<path d="M1218.704,1869.6000000000001 L1212.704,1861.6000000000001 L1113.904,1861.6000000000001 L1113.904,1877.6000000000001 L1212.704,1877.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1210.7" y="1873.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">SOC_RECOVERY</text>
+<path d="M1306.704,1869.6000000000001 L1312.704,1861.6000000000001 L1347.568,1861.6000000000001 L1347.568,1877.6000000000001 L1312.704,1877.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1314.7" y="1873.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
+<line x1="1218.704" y1="1940.0" x2="1246.704" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1278.704" y1="1940.0" x2="1306.704" y2="1940.0" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="1246.704" y="1934.0" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="1262.7" y="1925.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R412</text>
+<text x="1262.7" y="1965.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100R</text>
+<path d="M1218.704,1940.0 L1212.704,1932.0 L1113.904,1932.0 L1113.904,1948.0 L1212.704,1948.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1210.7" y="1944.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">SOC_RECOVERY</text>
+<path d="M1306.704,1940.0 L1312.704,1932.0 L1411.504,1932.0 L1411.504,1948.0 L1312.704,1948.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1314.7" y="1944.2" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">RECOVERY_KEY</text>
+<line x1="1218.704" y1="2010.4" x2="1246.704" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<line x1="1278.704" y1="2010.4" x2="1306.704" y2="2010.4" stroke="#374151" stroke-width="1.6" fill="none"/>
+<rect x="1246.704" y="2004.4" width="32" height="12" stroke="#374151" stroke-width="1.6" fill="none"/>
+<text x="1262.7" y="1995.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">R413</text>
+<text x="1262.7" y="2035.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1k</text>
+<path d="M1218.704,2010.4 L1212.704,2002.4 L1121.3039999999999,2002.4 L1121.3039999999999,2018.4 L1212.704,2018.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1210.7" y="2014.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">SOC_MCU_RST</text>
+<path d="M1306.704,2010.4 L1312.704,2002.4 L1381.904,2002.4 L1381.904,2018.4 L1312.704,2018.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="1314.7" y="2014.6" font-size="11.5" text-anchor="start" fill="#1d4ed8" font-weight="normal">MCU_NRST</text>
+</g></svg>

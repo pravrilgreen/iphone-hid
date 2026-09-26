@@ -1,0 +1,9964 @@
+(export
+	(version "E")
+	(design
+		(source "box-v1.kicad_sch")
+		(date "2026-09-26")
+		(tool "generate.py (iphone-hid box-v1)")
+	)
+	(components
+		(comp
+			(ref "C101")
+			(value "47uF 35V")
+			(footprint "Capacitor_SMD:CP_Elec_6.3x7.7")
+			(fields
+				(field
+					(name "MPN")
+					"nhôm polymer/điện phân 47 µF 35 V 6.3x7.7"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "CP")
+				(description "Tụ khối VIN, giảm dao động khi cắm nóng cáp dài")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "5f80005f-d5ee-5f1b-ae68-a3f638405404")
+		)
+		(comp
+			(ref "C102")
+			(value "1uF 25V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ VDD CH224K")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "c3f017e3-08af-579d-9b46-f73926aa9212")
+		)
+		(comp
+			(ref "C103")
+			(value "10uF 50V X7R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ vào U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "9d19f24e-b11f-55d4-a88e-2193068b06f4")
+		)
+		(comp
+			(ref "C104")
+			(value "10uF 50V X7R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ vào U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "3e5c087f-625f-5584-842b-26a6c1d160e9")
+		)
+		(comp
+			(ref "C105")
+			(value "100nF 50V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ cao tần sát chân VIN/GND U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "6a36be41-7089-5efd-90f7-0ef7a8422358")
+		)
+		(comp
+			(ref "C106")
+			(value "1uF 16V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ LDO nội U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "58dacb8f-3513-578a-9152-856adcae843f")
+		)
+		(comp
+			(ref "C107")
+			(value "100nF 16V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ bootstrap U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "7b759bb5-1b45-54a6-98cf-b8d4f8af4c6d")
+		)
+		(comp
+			(ref "C108")
+			(value "22uF 10V X5R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "3fda70e9-1db7-588e-92db-83f2b3d8998f")
+		)
+		(comp
+			(ref "C109")
+			(value "22uF 10V X5R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "4b133bdb-ade3-5267-93f4-002a975950ab")
+		)
+		(comp
+			(ref "C110")
+			(value "22uF 10V X5R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "0571bca2-b8cb-5173-8a9c-6a75bbb4ccd9")
+		)
+		(comp
+			(ref "C111")
+			(value "10uF 50V X7R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ vào U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "de983af1-0fc6-52c7-96bb-3aa259cdcea8")
+		)
+		(comp
+			(ref "C112")
+			(value "10uF 50V X7R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ vào U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "0f6e8307-623b-5a21-b5f1-001e07d66ac1")
+		)
+		(comp
+			(ref "C113")
+			(value "100nF 50V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ cao tần sát chân VIN/GND U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "5762eae4-2705-5539-8c98-377185bfbcae")
+		)
+		(comp
+			(ref "C114")
+			(value "1uF 16V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ LDO nội U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "a5ed9021-3511-5c74-9c97-5e7ac63acfbd")
+		)
+		(comp
+			(ref "C115")
+			(value "100nF 16V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ bootstrap U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "1788907b-8079-5eea-9509-210de5307313")
+		)
+		(comp
+			(ref "C116")
+			(value "22uF 10V X5R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "0d5e4704-a6b2-5fd3-a345-4a66037f283a")
+		)
+		(comp
+			(ref "C117")
+			(value "22uF 10V X5R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "7782b3bc-e6a7-552b-908e-ecd3749b66b0")
+		)
+		(comp
+			(ref "C118")
+			(value "22uF 10V X5R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "a4ee1483-e409-564f-afb8-a163acd10c53")
+		)
+		(comp
+			(ref "C119")
+			(value "10uF 10V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ vào U104")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "7995a281-bfb0-5791-bd74-014167d009af")
+		)
+		(comp
+			(ref "C120")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ cao tần vào U104")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "cd8d0b2e-f65a-59f6-aab0-368804529421")
+		)
+		(comp
+			(ref "C121")
+			(value "22uF 6.3V X5R")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U104")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "33148ab0-c977-5dc9-9f80-89212ee1e34b")
+		)
+		(comp
+			(ref "C122")
+			(value "22uF 6.3V X5R")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U104")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "8f994521-5a52-5630-9e2a-ed87808415fa")
+		)
+		(comp
+			(ref "C123")
+			(value "10uF 10V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ vào U105")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "f7e8ca2c-9c57-59f0-8caf-6151bdc87b09")
+		)
+		(comp
+			(ref "C124")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ cao tần vào U105")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "e55cd916-a07d-5395-9dfb-46973bb9dd81")
+		)
+		(comp
+			(ref "C125")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ trễ EN U105 (τ = 10 ms)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "f6ef52bf-da8a-56cc-95c6-5bac69d5811f")
+		)
+		(comp
+			(ref "C126")
+			(value "22uF 6.3V X5R")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U105")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "1c41444b-a854-5801-aba2-13283dcb283c")
+		)
+		(comp
+			(ref "C127")
+			(value "22uF 6.3V X5R")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ ra U105")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "e1f8bd02-9de3-52ec-9f5a-9b6bc0ea4f8e")
+		)
+		(comp
+			(ref "C128")
+			(value "47nF 50V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Khởi động mềm (~0.5 ms), giới hạn dòng nạp tụ iPhone")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "fa3cea9c-bfdf-5cb9-9b73-654cf877162c")
+		)
+		(comp
+			(ref "C129")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ nguồn U106")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "e2b91c17-3972-5c49-ad01-e64838b143c2")
+		)
+		(comp
+			(ref "C130")
+			(value "1nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc đầu ra U106 trước ADC")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "b25ad4e1-b88e-5944-a9b9-f52e5a4133ea")
+		)
+		(comp
+			(ref "C201")
+			(value "18pF C0G")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ tải thạch anh (chưa rõ, theo sơ đồ Lontium)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "e2944f0f-bcf7-5133-8336-45b66b9cb001")
+		)
+		(comp
+			(ref "C202")
+			(value "18pF C0G")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ tải thạch anh")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "9809b07b-9369-5386-8c9d-ed8e200171b5")
+		)
+		(comp
+			(ref "C203")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D pin 1")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "69cb8c1e-ac9f-5a51-b88a-adc4c192d493")
+		)
+		(comp
+			(ref "C204")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D pin 4")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "7f3fd190-73ff-58a5-beef-ba7b71d7857c")
+		)
+		(comp
+			(ref "C205")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D pin 7")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "9321074d-4c4c-58d3-a0b3-2110978ef2c8")
+		)
+		(comp
+			(ref "C206")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D pin 10")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "c7bb6fd2-d1f8-53c5-a503-51949b5214cf")
+		)
+		(comp
+			(ref "C207")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D pin 13")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "c9fdc3e3-5d5b-5f64-964f-f62005855ff3")
+		)
+		(comp
+			(ref "C208")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D pin 16")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "8f93b489-0e76-5257-ad2a-f9a82649ea13")
+		)
+		(comp
+			(ref "C209")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D VDD")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "7eafb837-b899-52bb-9fb4-5b8a03a25fa6")
+		)
+		(comp
+			(ref "C210")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D VCC33_TX")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "a9803566-6903-59fa-9539-e93a1231d3da")
+		)
+		(comp
+			(ref "C211")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc sát LT7911D VCC12_TX")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "84b96574-ada5-5c32-bd8c-6db259ca1fd8")
+		)
+		(comp
+			(ref "C212")
+			(value "10uF 6.3V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ khối 1V2 tại LT7911D")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "3b4dd975-9d82-5742-95eb-d23ab0820307")
+		)
+		(comp
+			(ref "C213")
+			(value "10uF 6.3V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ khối 1V2_LT_A")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "c27b55d1-c4d6-5f52-aba1-c2db4d974688")
+		)
+		(comp
+			(ref "C214")
+			(value "10uF 6.3V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ khối 3V3_LT")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "41b62d6b-726e-532c-9508-c446949e75cd")
+		)
+		(comp
+			(ref "C215")
+			(value "1uF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "RC reset khi bật nguồn (τ = 10 ms)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "9bd6e3af-59da-5c75-bd52-82406e3e9592")
+		)
+		(comp
+			(ref "C216")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ AC AUX (chưa rõ chiều/phân cực, theo sơ đồ Lontium)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "7315d409-cd32-517d-b55a-4112a96b7fba")
+		)
+		(comp
+			(ref "C217")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ AC AUX")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "2d926127-99b2-5303-b170-75eafe887599")
+		)
+		(comp
+			(ref "C218")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ tại chân VBUS của U205")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "6dffc395-e062-5761-9f23-11c7e92cda12")
+		)
+		(comp
+			(ref "C219")
+			(value "10uF 25V")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ VBUS phía iPhone (nguồn Type-C ≤ 120 µF)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "eb5ff378-1aaf-5b20-a9a9-97ad61db55e1")
+		)
+		(comp
+			(ref "C220")
+			(value "100nF 25V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ cao tần VBUS iPhone")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "2238afe1-ba04-52a9-8204-80125d534627")
+		)
+		(comp
+			(ref "C301")
+			(value "18pF C0G")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ tải HSE: 2 x (12 pF - ~3 pF ký sinh)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "c1dbb8af-3cf6-5ded-974b-c2d22dcc81ad")
+		)
+		(comp
+			(ref "C302")
+			(value "18pF C0G")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ tải HSE")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "59feee64-b8c4-507c-a930-e3c0d0daa515")
+		)
+		(comp
+			(ref "C303")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc VBAT pin 1 (datasheet Figure 4-1-1)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "ca659b60-03a5-5951-8d98-2e0b3d9b777a")
+		)
+		(comp
+			(ref "C304")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc VDD_4 pin 19 (datasheet Figure 4-1-1)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "12425f8e-b64f-5d22-bcb0-d361afdab93f")
+		)
+		(comp
+			(ref "C305")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc VIO_1 pin 32 (datasheet Figure 4-1-1)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "28d1f789-5875-5ae8-b858-e1be9d031fb5")
+		)
+		(comp
+			(ref "C306")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc VDD_2 pin 48 (datasheet Figure 4-1-1)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "b8eb0dcf-5983-5c63-9621-94e2789f123d")
+		)
+		(comp
+			(ref "C307")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc VIO_3 pin 64 (datasheet Figure 4-1-1)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "d754552b-cc0f-514a-a772-f2502fb09191")
+		)
+		(comp
+			(ref "C308")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ lọc VDDA pin 13 (datasheet Figure 4-1-1)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "92d86a06-0a99-5dd6-9bad-1895c0cff09d")
+		)
+		(comp
+			(ref "C309")
+			(value "1uF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ VDDA thêm cho ADC")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "3e9ecc30-6969-5a35-8f2a-6ed787ca0ec0")
+		)
+		(comp
+			(ref "C310")
+			(value "10uF 6.3V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ khối 3V3 tại MCU")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "7b717340-c6fe-507c-9257-cd61e718a68d")
+		)
+		(comp
+			(ref "C311")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ NRST")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "4fe20801-1177-5c85-af16-4ead68a70945")
+		)
+		(comp
+			(ref "C312")
+			(value "1nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc ADC CC1")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "86f3cc27-9744-5eec-9e84-3a71bb7f30e2")
+		)
+		(comp
+			(ref "C313")
+			(value "1nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc ADC CC2")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "9d151c7f-297e-5e80-a65d-60e70a6cd4c5")
+		)
+		(comp
+			(ref "C314")
+			(value "10nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc ADC VBUS")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "48ee9b9e-7f45-53b2-8ea1-10776ec1d642")
+		)
+		(comp
+			(ref "C401")
+			(value "22uF 10V")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ khối VCC5V0_SYS sát module")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "261e17ea-950c-51a4-988f-20dd22bca4d3")
+		)
+		(comp
+			(ref "C402")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ cao tần VCC5V0_SYS")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "5eee86fd-df26-50f0-82ba-22063b77d275")
+		)
+		(comp
+			(ref "C403")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ tại chân VBUS của U402")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "107d65fa-5a52-53bd-b178-11620087f909")
+		)
+		(comp
+			(ref "C404")
+			(value "1uF 25V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ VBUS phía PC (UFP ≤ 10 µF)")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "bb9f8234-1f76-5057-a357-0a7f12785079")
+		)
+		(comp
+			(ref "C405")
+			(value "100nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc VBUSDET")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "51b156ab-e18b-5ecc-a532-44a30d4516b5")
+		)
+		(comp
+			(ref "C406")
+			(value "10nF 50V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ center tap TX (PHY kiểu voltage-mode)")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "db724e70-00d1-5419-aaee-de45c6acdc01")
+		)
+		(comp
+			(ref "C407")
+			(value "10nF 50V")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ center tap RX")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "a03f6946-3cf9-5bc8-a8dc-c5b6ddefacba")
+		)
+		(comp
+			(ref "C408")
+			(value "1nF 100V")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Tụ nút Bob-Smith")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "28841436-3e68-5611-bcf8-2ab63b21f8f2")
+		)
+		(comp
+			(ref "C409")
+			(value "10nF")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc ADC VIN")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "29d21ff0-ab85-5cbd-9ecd-51ec26dbb351")
+		)
+		(comp
+			(ref "C410")
+			(value "1nF C0G")
+			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "C")
+				(description "Lọc phím RECOVERY")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "0b171a03-0b14-5234-b1ea-3edd2471cd1f")
+		)
+		(comp
+			(ref "D101")
+			(value "SMAJ24A")
+			(footprint "Diode_SMD:D_SMA")
+			(fields
+				(field
+					(name "MPN")
+					"SMAJ24A"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "D_TVS")
+				(description "TVS 24 V standoff trên VIN")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "c40eb9b7-312d-56e3-ad6a-ee8657d1de17")
+		)
+		(comp
+			(ref "D102")
+			(value "BZT52C10")
+			(footprint "Diode_SMD:D_SOD-123")
+			(fields
+				(field
+					(name "MPN")
+					"BZT52C10"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "D_Zener")
+				(description "Zener 10 V kẹp Vgs khi dùng phương án B (VIN tới 20 V)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "f39fcad6-4c6f-5e2e-a72d-b048be7e7f3e")
+		)
+		(comp
+			(ref "D104")
+			(value "SS34")
+			(footprint "Diode_SMD:D_SMA")
+			(fields
+				(field
+					(name "MPN")
+					"SS34"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "D_Schottky")
+				(description "Schottky 3 A 40 V: PC_VBUS -> 5V_SYS (chế độ phát triển)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "9b28bb9e-c280-5ac0-aa36-fbca01bd13f0")
+		)
+		(comp
+			(ref "D201")
+			(value "SMF6.0A")
+			(footprint "Diode_SMD:D_SOD-123F")
+			(fields
+				(field
+					(name "MPN")
+					"SMF6.0A"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "D_TVS")
+				(description "TVS VBUS iPhone (phương án B, VIN tới 20 V: đổi sang SMF22A)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "24d758d5-7059-536f-a228-2dee9a1d790f")
+		)
+		(comp
+			(ref "D401")
+			(value "SMF6.0A")
+			(footprint "Diode_SMD:D_SOD-123F")
+			(fields
+				(field
+					(name "MPN")
+					"SMF6.0A"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "D_TVS")
+				(description "TVS VBUS PC")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "673cd9fc-e76e-5688-851d-6967a974d0fe")
+		)
+		(comp
+			(ref "D501")
+			(value "RED")
+			(footprint "LED_SMD:LED_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					"LED 0603 red, Vf ≤ 2.2 V"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "LED")
+				(description "LED trạng thái RED (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "de038c83-4e37-57ff-a8ed-0c1da079530b")
+		)
+		(comp
+			(ref "D502")
+			(value "YELLOW")
+			(footprint "LED_SMD:LED_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					"LED 0603 yellow, Vf ≤ 2.2 V"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "LED")
+				(description "LED trạng thái YELLOW (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "ef8a8cbd-8531-50b4-be34-89e57e7105c0")
+		)
+		(comp
+			(ref "D503")
+			(value "GREEN")
+			(footprint "LED_SMD:LED_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					"LED 0603 green, Vf ≤ 2.2 V"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "LED")
+				(description "LED trạng thái GREEN (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "4767bd5e-6da2-5615-91f4-b30e22a20eaf")
+		)
+		(comp
+			(ref "F101")
+			(value "5A 32V")
+			(footprint "Fuse:Fuse_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					"Littelfuse 0466005.NR"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "F")
+				(description "Cầu chì nhanh 5 A / 32 V cho đầu vào")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "28cd81bf-269e-5442-b50a-c02554c1feee")
+		)
+		(comp
+			(ref "FB201")
+			(value "600R@100MHz")
+			(footprint "Inductor_SMD:L_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					"BLM18KG601SN1D"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "FB")
+				(description "Hạt ferrite tách 3.3 V của LT7911D")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "a424d1e0-dd95-5700-855b-7cbc99525005")
+		)
+		(comp
+			(ref "FB202")
+			(value "600R@100MHz")
+			(footprint "Inductor_SMD:L_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					"BLM18KG601SN1D"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "FB")
+				(description "Hạt ferrite tách 1.2 V analog/PLL")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "0720345a-b117-5337-9c2c-44028f91e9d4")
+		)
+		(comp
+			(ref "FB301")
+			(value "600R@100MHz")
+			(footprint "Inductor_SMD:L_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					"BLM18KG601SN1D"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "FB")
+				(description "Ferrite tách VDDA (VDDA = VIO về DC)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "21e94da2-8206-562a-8418-f10508e0c96f")
+		)
+		(comp
+			(ref "J101")
+			(value "USB-C PD IN")
+			(footprint "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12")
+			(fields
+				(field
+					(name "MPN")
+					"TYPE-C-31-M-12"
+				)
+				(field
+					(name "LCSC")
+					"C165948"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "USB-C_PD_IN_394007")
+				(description "Cổng USB-C nhận nguồn PD từ sạc (chỉ nguồn + CC)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "39daf1b5-ae67-52ba-beb5-5a6c5057dcb1")
+		)
+		(comp
+			(ref "J201")
+			(value "USB-C iPhone")
+			(footprint "Connector_USB:USB_C_Receptacle_Molex_105450-0101")
+			(fields
+				(field
+					(name "MPN")
+					"Molex 105450-0101"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "USB-C_iPhone_964311")
+				(description "Ổ USB-C 24 chân đủ cặp SS (DP Alt Mode 4 lane) + USB 2.0 + CC + VBUS")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "ff852143-8501-5e7f-97f4-e29f1308dc3c")
+		)
+		(comp
+			(ref "J401")
+			(value "USB-C PC")
+			(footprint "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12")
+			(fields
+				(field
+					(name "MPN")
+					"TYPE-C-31-M-12"
+				)
+				(field
+					(name "LCSC")
+					"C165948"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "USB-C_PC_d92c6f")
+				(description "USB-C tới PC: box là thiết bị USB (UVC + mạng USB + điều khiển)")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "ec3de038-09c9-5bc8-af3b-b769db39a60d")
+		)
+		(comp
+			(ref "J402")
+			(value "RJ45 10/100")
+			(footprint "Connector_RJ:RJ45_Hanrun_HR911105A_Horizontal")
+			(fields
+				(field
+					(name "MPN")
+					"HR911105A"
+				)
+				(field
+					(name "LCSC")
+					"C12074"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "RJ45_10_100_47cfd9")
+				(description "RJ45 có biến áp (magjack) 10/100")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "4e6da129-8043-5977-9cd1-721417235fc4")
+		)
+		(comp
+			(ref "J501")
+			(value "MCU SWD+UART")
+			(footprint "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical")
+			(fields
+				(field
+					(name "MPN")
+					"PinHeader 1x07 2.54"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "MCU_SWD_UART_4da2a0")
+				(description "Header WCH-LinkE cho CH32V305 (SWD 2 dây + UART debug)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "11af6e33-ba4f-5143-87f3-5a6d94d3a178")
+		)
+		(comp
+			(ref "J502")
+			(value "MCU USB FS")
+			(footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
+			(fields
+				(field
+					(name "MPN")
+					"PinHeader 1x03 2.54"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "MCU_USB_FS_b8bd60")
+				(description "USB Full-Speed thứ hai của CH32V305 (ISP qua USB, thử nghiệm)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "a6b37776-5e9a-56e0-9580-bbd2ce9928a7")
+		)
+		(comp
+			(ref "J503")
+			(value "SoC UART")
+			(footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
+			(fields
+				(field
+					(name "MPN")
+					"PinHeader 1x03 2.54"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "SoC_UART_cf85a2")
+				(description "Console RV1106 (UART2_M1, 115200 8N1, 3.3 V)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "c0560550-1c6e-5474-8c70-831fb3945747")
+		)
+		(comp
+			(ref "JP101")
+			(value "PSW_SRC")
+			(footprint "Jumper:SolderJumper-3_P1.3mm_Bridged12_RoundedPad1.0x1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "PSW_SRC_34952c")
+				(description "Chọn nguồn cho iPhone: 1-2 = 5V2_PHONE (phương án A, mặc định), 2-3 = VIN (phương án B)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "c9bb4670-0e9e-52c2-9b2a-56b3007e88e5")
+		)
+		(comp
+			(ref "JP102")
+			(value "PC_PWR")
+			(footprint "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "PC_PWR_135723")
+				(description "Hở mặc định. Hàn để nuôi box từ PC (chỉ khi KHÔNG cắm sạc vào J101)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "65b7c9e0-05e8-564b-88a1-68a9c73de585")
+		)
+		(comp
+			(ref "L101")
+			(value "10uH")
+			(footprint "Inductor_SMD:L_Bourns_SRP1038C_10.0x10.0mm")
+			(fields
+				(field
+					(name "MPN")
+					"Bourns SRP1038C-100M (hoặc tương đương)"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "L")
+				(description "Cuộn cảm buck U102, Isat ≥ 5 A")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "6425583f-3ad2-56e6-9c2b-fa66ba00d225")
+		)
+		(comp
+			(ref "L102")
+			(value "10uH")
+			(footprint "Inductor_SMD:L_Bourns_SRP1038C_10.0x10.0mm")
+			(fields
+				(field
+					(name "MPN")
+					"Bourns SRP1038C-100M (hoặc tương đương)"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "L")
+				(description "Cuộn cảm buck U103, Isat ≥ 4 A")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "37171c21-391e-5266-b84b-fb561c56d60b")
+		)
+		(comp
+			(ref "L103")
+			(value "2.2uH")
+			(footprint "Inductor_SMD:L_Bourns-SRN4018")
+			(fields
+				(field
+					(name "MPN")
+					"Bourns SRN4018-2R2M (hoặc tương đương)"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "L")
+				(description "Cuộn cảm U104, Isat ≥ 3 A, 4x4 mm")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "96fbc8d0-5acb-5e0b-8543-0797fa332c1f")
+		)
+		(comp
+			(ref "L104")
+			(value "2.2uH")
+			(footprint "Inductor_SMD:L_Bourns-SRN4018")
+			(fields
+				(field
+					(name "MPN")
+					"Bourns SRN4018-2R2M (hoặc tương đương)"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "L")
+				(description "Cuộn cảm U105, Isat ≥ 3 A, 4x4 mm")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "6637e403-3ce2-5109-94f2-cf333fcd1b5c")
+		)
+		(comp
+			(ref "Q101")
+			(value "AO4407A")
+			(footprint "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm")
+			(fields
+				(field
+					(name "MPN")
+					"AO4407A"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "AO4407A_d239dd")
+				(description "P-MOSFET phía nguồn (back-to-back): -30 V, ~11 mΩ @ -10 V")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "cde3c509-dad6-5888-a2bc-4ee15cd93fe7")
+		)
+		(comp
+			(ref "Q102")
+			(value "AO4407A")
+			(footprint "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm")
+			(fields
+				(field
+					(name "MPN")
+					"AO4407A"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "AO4407A_d239dd")
+				(description "P-MOSFET phía iPhone (back-to-back): -30 V, ~11 mΩ @ -10 V")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "b451b4c1-552b-52da-9d9f-8b5d33410bed")
+		)
+		(comp
+			(ref "Q103")
+			(value "2N7002")
+			(footprint "Package_TO_SOT_SMD:SOT-23")
+			(fields
+				(field
+					(name "MPN")
+					"2N7002"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "2N7002_f53d6c")
+				(description "N-MOSFET kéo cổng xuống")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "f16d776f-ad77-5cc2-bf10-7c4756b92979")
+		)
+		(comp
+			(ref "R101")
+			(value "1k")
+			(footprint "Resistor_SMD:R_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Điện trở cấp VDD CH224K (datasheet §6.2)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "8ce4fed2-bc41-537f-92c3-26a9a3d53577")
+		)
+		(comp
+			(ref "R102")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Nối tiếp chân VBUS của CH224K (§6.2)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "2e559f36-07de-52e6-9e5f-b6ba8212a7fc")
+		)
+		(comp
+			(ref "R103")
+			(value "6.8k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chọn điện áp xin: 6.8k=9V (mặc định), 24k=12V, 56k=15V, bỏ trống=20V")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "232a456f-0089-5d1e-b414-0f91dc644fad")
+		)
+		(comp
+			(ref "R104")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phương án A: CC của sạc vào CH224K")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "b591f361-0bd4-59f0-9dc9-ead95de79da8")
+		)
+		(comp
+			(ref "R105")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phương án A: CC của sạc vào CH224K")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "fcfa630a-dbc5-5c02-98cf-660019bd6b2f")
+		)
+		(comp
+			(ref "R106")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phương án B: CC của sạc vào cổng PD thứ hai của LT7911D")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "35f1292a-de0c-5b5f-af60-26ae491a2638")
+		)
+		(comp
+			(ref "R107")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phương án B (như R106)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "76a80954-db44-54f2-85bc-310f1173d8e4")
+		)
+		(comp
+			(ref "R108")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo lên cho PG (open-drain) tới MCU PB12")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "4061b2d5-7cc5-5316-94b7-a829312ba258")
+		)
+		(comp
+			(ref "R109")
+			(value "100k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp trên U102")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "5401e4ed-c0e8-5080-9615-4b2428be1dcf")
+		)
+		(comp
+			(ref "R110")
+			(value "23.7k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp dưới U102: Vout = 1.0 V x (1 + 100k/Rfbb)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "b5e056c1-7f98-5924-946d-2d8b476a3390")
+		)
+		(comp
+			(ref "R111")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp EN U102 (trên)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "370f62f4-c93d-5da9-83fd-f3f1795d49d3")
+		)
+		(comp
+			(ref "R112")
+			(value "20k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp EN U102 (dưới)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "bb60f746-3ac2-50a4-8a05-1a2aed1ae3e6")
+		)
+		(comp
+			(ref "R113")
+			(value "100k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp trên U103")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "a5a9fbba-f082-5de6-9900-d2e841188e4f")
+		)
+		(comp
+			(ref "R114")
+			(value "24.9k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp dưới U103: Vout = 1.0 V x (1 + 100k/Rfbb)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "795f7a1f-a7bf-5a9d-83c9-c36046f27fef")
+		)
+		(comp
+			(ref "R115")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp EN U103 (trên)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "2b19fff5-ed6b-5ded-93e5-729468004823")
+		)
+		(comp
+			(ref "R116")
+			(value "39k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp EN U103 (dưới)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "780e6717-1bf5-5bb2-8e30-772cdf6f8775")
+		)
+		(comp
+			(ref "R117")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "EN U104: bật ngay khi có 5V_SYS")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "3d618a7b-f979-549e-af8e-9145699d92f1")
+		)
+		(comp
+			(ref "R118")
+			(value "100k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp trên U104")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "6a051ad1-232a-5b3e-bbcf-18f0cc166b51")
+		)
+		(comp
+			(ref "R119")
+			(value "22.1k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp dưới U104: Vout = 0.6 V x (1 + 100k/Rbot)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "fa1c0802-e518-5d57-a855-12f8f2e41fcf")
+		)
+		(comp
+			(ref "R120")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "EN U105 lấy từ 3V3 qua RC: 1V2 lên sau 3V3 ~4 ms")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "9aa61c99-04a9-580a-b94c-46d56a000848")
+		)
+		(comp
+			(ref "R121")
+			(value "100k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp trên U105")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "ede1ebb5-8e61-5ca5-9a47-057212c25434")
+		)
+		(comp
+			(ref "R122")
+			(value "100k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hồi tiếp dưới U105: Vout = 0.6 V x (1 + 100k/Rbot)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "ed3f052c-af77-5926-9feb-6ae91e433f1f")
+		)
+		(comp
+			(ref "R123")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo cổng lên nguồn chung: MOSFET tắt mặc định")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "1fbae66e-a752-5fb7-bf30-9579eba3263f")
+		)
+		(comp
+			(ref "R124")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Điện trở cổng: Vgs = -Vin x 100k/110k")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "763242f5-293f-53ac-99f2-19479b9ef363")
+		)
+		(comp
+			(ref "R125")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Mặc định tắt VBUS iPhone")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "3e8e18b7-e1a1-5ff7-9ed5-6ea590537971")
+		)
+		(comp
+			(ref "R126")
+			(value "10m 1%")
+			(footprint "Resistor_SMD:R_1206_3216Metric")
+			(fields
+				(field
+					(name "MPN")
+					"1206 10 mΩ 1% 0.5 W"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Shunt đo dòng sạc iPhone (Kelvin)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "60ffb1ba-44bb-515c-b71b-e3ac02e64a75")
+		)
+		(comp
+			(ref "R127")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phương án A: CH32V305 bật VBUS iPhone")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "2d26aefa-3a53-5c99-b6da-2f9a30118ac0")
+		)
+		(comp
+			(ref "R128")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phương án B: GPIO của LT7911D bật VBUS iPhone")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "96f1f481-67c0-5356-aaed-f8ad0b5c2a05")
+		)
+		(comp
+			(ref "R201")
+			(value "2.2k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo lên I2C (bus I2C2_M0 của RV1106, 3.3 V)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "dca26582-e180-5297-8f3f-9a00d2e9b7ab")
+		)
+		(comp
+			(ref "R202")
+			(value "2.2k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo lên I2C")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "27c56093-8a21-5f46-bf30-d8a037c46fe3")
+		)
+		(comp
+			(ref "R203")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo lên RST_N: LT7911D chạy ngay khi có nguồn")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "986da081-fa79-57d7-9685-240880a3f208")
+		)
+		(comp
+			(ref "R204")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Tuỳ chọn mức cho SLEEP_33 (chưa rõ)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "75a173c3-81f8-569e-b8cd-5fb15582020a")
+		)
+		(comp
+			(ref "R205")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Giữ LT_INT ở mức thấp khi LT7911D đang reset")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "de52f8b8-7054-5043-8bdc-c7a0291a9064")
+		)
+		(comp
+			(ref "R206")
+			(value "1M")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phân cực AUX phía sink (chưa rõ)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "9114a1da-1815-5a11-bc1f-78da19f09757")
+		)
+		(comp
+			(ref "R207")
+			(value "1M")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Phân cực AUX phía sink (chưa rõ)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "06b49c93-0743-5d6e-8a50-1b53d1166d7f")
+		)
+		(comp
+			(ref "R210")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0603_1608Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Xả VBUS về vSafe0V (< 0.8 V trong ~0.4 s)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "66803764-4b8c-5a4f-903f-7b6ef712bbbe")
+		)
+		(comp
+			(ref "R211")
+			(value "5.1k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Rd tạm cho bring-up chế độ chỉ HID (chưa hàn LT7911D): iPhone thành nguồn + host")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "778d6569-d3ff-5eaa-bb05-6ccfb6a9bc48")
+		)
+		(comp
+			(ref "R212")
+			(value "5.1k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"yes"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Rd tạm cho bring-up chế độ chỉ HID")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "5c3e66f5-b58e-535d-ae79-d8121b226771")
+		)
+		(comp
+			(ref "R301")
+			(value "4.7k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo lên NRST, đủ mạnh để thắng pull-down mặc định của GPIO1_D3 (RV1106) qua R413")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "5acf833a-1f09-53ae-b251-5f5f043e6d9d")
+		)
+		(comp
+			(ref "R302")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "BOOT0 = 0: chạy từ flash")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "933f8a27-8a6a-53c2-9f46-3e933b45686f")
+		)
+		(comp
+			(ref "R303")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "BOOT1 = 0: BOOT0 = 1 thì vào system memory (ISP)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "6a67f075-f078-5eba-940a-c3d3b19ac07e")
+		)
+		(comp
+			(ref "R304")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Đo áp CC1, trở kháng cao để không tải CC")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "7a0559f5-b178-568a-8e11-c1d6841cceb6")
+		)
+		(comp
+			(ref "R305")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Đo áp CC2")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "83807526-9359-563d-9285-65dc4b97d54e")
+		)
+		(comp
+			(ref "R306")
+			(value "100k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp VBUS iPhone (20 V -> 2.6 V)")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "fea428b2-fb74-5bee-abf9-be279ae1060a")
+		)
+		(comp
+			(ref "R307")
+			(value "15k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp VBUS iPhone")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "f2cee5a6-c16b-5774-b0b8-90d1d752ea40")
+		)
+		(comp
+			(ref "R401")
+			(value "5.1k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Rd: box là UFP (sink) phía PC")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "c6b999a7-7aa9-51b4-908c-de080c17bf3e")
+		)
+		(comp
+			(ref "R402")
+			(value "5.1k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Rd")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "a40d0706-8025-5091-a056-effb996e2cdf")
+		)
+		(comp
+			(ref "R403")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp VBUS -> USB_VBUSDET (5 V -> 3.2 V)")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "d05524ca-b6c8-5ae1-b3e6-038dba13bddc")
+		)
+		(comp
+			(ref "R404")
+			(value "18k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp VBUSDET")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "8186cd02-6ce9-5a16-a64f-6b6fc70dc119")
+		)
+		(comp
+			(ref "R405")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "75f4ca06-792f-5b9b-8e5b-a2d6cf1ee858")
+		)
+		(comp
+			(ref "R406")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "6bc92398-33cd-5b40-9935-77576d90564c")
+		)
+		(comp
+			(ref "R407")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "79e2ba47-0756-524c-bfd9-63c2c76a1a98")
+		)
+		(comp
+			(ref "R408")
+			(value "0R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "e7aef655-a6e2-5d82-b3fc-bfabd65f800c")
+		)
+		(comp
+			(ref "R409")
+			(value "100k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp VIN cho SARADC_IN1 (20 V -> 1.52 V)")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "d55cd776-127f-5646-b41b-f59e62803abd")
+		)
+		(comp
+			(ref "R410")
+			(value "8.2k 1%")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Chia áp VIN")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "ea180fc7-2f49-5969-a501-96ae4ddd680d")
+		)
+		(comp
+			(ref "R411")
+			(value "10k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Kéo lên SARADC_IN0 (bắt buộc)")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "8680f776-3e9f-51e4-9466-c208dc55867e")
+		)
+		(comp
+			(ref "R412")
+			(value "100R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Nối tiếp phím RECOVERY")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "b497d538-fc27-5b75-9d3e-84dbd74e5e97")
+		)
+		(comp
+			(ref "R413")
+			(value "1k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hạn dòng khi RV1106 và WCH-LinkE cùng lái NRST")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "c82bfbb3-1a8f-5e5a-becf-5d9dac2e80ef")
+		)
+		(comp
+			(ref "R501")
+			(value "680R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hạn dòng LED RED ~2 mA")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "f1812dbc-1346-5a1b-a70c-d4d0fad41993")
+		)
+		(comp
+			(ref "R502")
+			(value "680R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hạn dòng LED YELLOW ~2 mA")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "1863b58c-7708-5de4-bf1a-e9ed86481be7")
+		)
+		(comp
+			(ref "R503")
+			(value "560R")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Hạn dòng LED GREEN ~2 mA")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "238472ae-7369-58ee-9cc3-47d6834bdf37")
+		)
+		(comp
+			(ref "SW501")
+			(value "RECOVERY")
+			(footprint "Button_Switch_SMD:SW_SPST_TL3342")
+			(fields
+				(field
+					(name "MPN")
+					"TL3342"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "SW")
+				(description "Giữ khi cấp nguồn: RV1106 vào chế độ loader (rockusb) qua USB-C PC")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "0cbb7fe5-9332-54ba-acf4-06fbfab8d414")
+		)
+		(comp
+			(ref "SW502")
+			(value "RESET")
+			(footprint "Button_Switch_SMD:SW_SPST_TL3342")
+			(fields
+				(field
+					(name "MPN")
+					"TL3342"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "SW")
+				(description "Reset RV1106 (NPOR)")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "8b747270-d54e-50a3-9ae8-f76130fad70e")
+		)
+		(comp
+			(ref "TP201")
+			(value "LT_SLEEP")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Đo/ép SLEEP_33")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "28afe969-fa2d-560f-a73f-92d223a98f9e")
+		)
+		(comp
+			(ref "TP202")
+			(value "LT_RX_HPD")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Đo RX_HPD")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "87dee030-e77f-512a-80fe-fe2724cdf311")
+		)
+		(comp
+			(ref "TP401")
+			(value "VCC_3V3_MOD")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Kiểm tra PMIC module đã lên")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "c19e7e4a-7bc2-5bfb-80d3-ad7227a1c46c")
+		)
+		(comp
+			(ref "TP501")
+			(value "VIN")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point VIN")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "dc08c9c0-1685-596e-9bfc-5eff70db6081")
+		)
+		(comp
+			(ref "TP502")
+			(value "5V2_PHONE")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point 5V2_PHONE")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "b41772dd-c37d-5557-9600-b93042ffda42")
+		)
+		(comp
+			(ref "TP503")
+			(value "5V_SYS")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point 5V_SYS")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "cbcbe6c2-a7c2-5b6a-b1a0-e65684ae8afd")
+		)
+		(comp
+			(ref "TP504")
+			(value "3V3")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point 3V3")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "50d44cb0-d6f7-5101-bca7-6a09722cf8fd")
+		)
+		(comp
+			(ref "TP505")
+			(value "1V2")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point 1V2")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "b1a10898-331f-5749-b6bd-36cb3f398d9d")
+		)
+		(comp
+			(ref "TP506")
+			(value "PHONE_VBUS")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point PHONE_VBUS")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "1706f2f0-5b95-5048-8d3a-42604f903900")
+		)
+		(comp
+			(ref "TP507")
+			(value "GND")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point GND")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "81ba323d-a2b7-53f5-8e16-dec8629a1880")
+		)
+		(comp
+			(ref "TP508")
+			(value "GND")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point GND")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "28688868-0a7c-5a22-beca-d3d84da4bd14")
+		)
+		(comp
+			(ref "TP509")
+			(value "3V3_LT")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point 3V3_LT")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "e20be611-48b5-521f-8bf5-9b61474192ca")
+		)
+		(comp
+			(ref "TP510")
+			(value "1V2_LT_A")
+			(footprint "TestPoint:TestPoint_Pad_D1.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TP")
+				(description "Test point 1V2_LT_A")
+			)
+			(sheetpath
+				(names "/debug/")
+				(tstamps "/f8f20165-fe63-57ee-90a2-fa6c661a9f9e/")
+			)
+			(tstamps "53ce3c40-dd4f-5957-9426-97e6ffb19bd4")
+		)
+		(comp
+			(ref "U101")
+			(value "CH224K")
+			(footprint "Package_SO:SSOP-10-1EP_3.9x4.9mm_P1mm_EP2.1x3.3mm")
+			(fields
+				(field
+					(name "MPN")
+					"CH224K"
+				)
+				(field
+					(name "LCSC")
+					"C970725"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "CH224K_054505")
+				(description "Bộ kích PD (sink) cho nguồn vào")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "786e0ff3-e73f-5525-8c52-713457244fef")
+		)
+		(comp
+			(ref "U102")
+			(value "LMR33630ADDA")
+			(footprint "Package_SO:Texas_HSOP-8-1EP_3.9x4.9mm_P1.27mm_ThermalVias")
+			(fields
+				(field
+					(name "MPN")
+					"LMR33630ADDAR"
+				)
+				(field
+					(name "LCSC")
+					"C841384"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "LMR33630ADDA_4e82db")
+				(description "Buck VIN -> 5V2_PHONE (5.22 V / 3 A) nuôi iPhone; khởi động khi VIN > ~7.2 V")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "6d14b2fa-a815-5e84-9f60-9c9ce320da5f")
+		)
+		(comp
+			(ref "U103")
+			(value "LMR33630ADDA")
+			(footprint "Package_SO:Texas_HSOP-8-1EP_3.9x4.9mm_P1.27mm_ThermalVias")
+			(fields
+				(field
+					(name "MPN")
+					"LMR33630ADDAR"
+				)
+				(field
+					(name "LCSC")
+					"C841384"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "LMR33630ADDA_4e82db")
+				(description "Buck VIN -> 5V_SYS (5.02 V / 3 A) cho Core1106 và các rail; khởi động khi VIN > ~4.3 V")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "8cdb972a-cb9c-535c-854c-b4bb517f5c87")
+		)
+		(comp
+			(ref "U104")
+			(value "TLV62569DBV")
+			(footprint "Package_TO_SOT_SMD:SOT-23-5")
+			(fields
+				(field
+					(name "MPN")
+					"TLV62569DBVR"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TLV62569DBV_19e620")
+				(description "Buck 5V_SYS -> 3V3 (3.315 V / 2 A)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "235467df-65d9-5c21-a51a-fee5ab549620")
+		)
+		(comp
+			(ref "U105")
+			(value "TLV62569DBV")
+			(footprint "Package_TO_SOT_SMD:SOT-23-5")
+			(fields
+				(field
+					(name "MPN")
+					"TLV62569DBVR"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TLV62569DBV_19e620")
+				(description "Buck 5V_SYS -> 1V2 (1.2 V / 2 A) cho LT7911D, bật sau 3V3")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "2247f86b-e69e-5ac3-a754-95d4a685517b")
+		)
+		(comp
+			(ref "U106")
+			(value "INA180A2")
+			(footprint "Package_TO_SOT_SMD:SOT-23-5")
+			(fields
+				(field
+					(name "MPN")
+					"INA180A2IDBVR"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "INA180A2_e8db91")
+				(description "Khuếch đại dòng shunt, gain 50: 3 A -> 1.5 V")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "744e3613-ae6b-5a42-8847-924046841c2b")
+		)
+		(comp
+			(ref "U201")
+			(value "LT7911D")
+			(footprint "box-v1:LT7911D_QFN-64-1EP_7.5x7.5mm_P0.4mm")
+			(fields
+				(field
+					(name "MPN")
+					"LT7911D"
+				)
+				(field
+					(name "LCSC")
+					"C5310990"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "LT7911D_b1329e")
+				(description "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, MCU + flash nội")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "a10a46db-adc7-5c79-a353-7cfebce9a4ae")
+		)
+		(comp
+			(ref "U202")
+			(value "TPD4E05U06DQA")
+			(footprint "Package_SON:USON-10_2.5x1.0mm_P0.5mm")
+			(fields
+				(field
+					(name "MPN")
+					"TPD4E05U06DQAR"
+				)
+				(field
+					(name "LCSC")
+					"C138714"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TPD4E05U06DQA_dd89b8")
+				(description "ESD cặp SS TX1/RX1 (0.5 pF, flow-through)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "e2479ec6-73dd-58c2-8297-27abbc5fe896")
+		)
+		(comp
+			(ref "U203")
+			(value "TPD4E05U06DQA")
+			(footprint "Package_SON:USON-10_2.5x1.0mm_P0.5mm")
+			(fields
+				(field
+					(name "MPN")
+					"TPD4E05U06DQAR"
+				)
+				(field
+					(name "LCSC")
+					"C138714"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TPD4E05U06DQA_dd89b8")
+				(description "ESD cặp SS TX2/RX2 (0.5 pF, flow-through)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "d7269b89-cde1-59f5-a588-46f11cadf74c")
+		)
+		(comp
+			(ref "U204")
+			(value "TPD4E05U06DQA")
+			(footprint "Package_SON:USON-10_2.5x1.0mm_P0.5mm")
+			(fields
+				(field
+					(name "MPN")
+					"TPD4E05U06DQAR"
+				)
+				(field
+					(name "LCSC")
+					"C138714"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TPD4E05U06DQA_dd89b8")
+				(description "ESD CC1/CC2/SBU1/SBU2 (0.5 pF, flow-through)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "4ebb09b3-bccd-5ef6-a099-2569f242f8a9")
+		)
+		(comp
+			(ref "U205")
+			(value "USBLC6-2SC6")
+			(footprint "Package_TO_SOT_SMD:SOT-23-6")
+			(fields
+				(field
+					(name "MPN")
+					"USBLC6-2SC6"
+				)
+				(field
+					(name "LCSC")
+					"C7519"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "USBLC6-2SC6_0f9024")
+				(description "ESD cặp USB 2.0 iPhone")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "688a24f3-7b47-58c5-9028-c29896022894")
+		)
+		(comp
+			(ref "U301")
+			(value "CH32V305RBT6")
+			(footprint "Package_QFP:LQFP-64_10x10mm_P0.5mm")
+			(fields
+				(field
+					(name "MPN")
+					"CH32V305RBT6"
+				)
+				(field
+					(name "LCSC")
+					"C5187529"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "CH32V305RBT6_36f065")
+				(description "MCU RISC-V: USB HS (PHY nội) làm HID cho iPhone, link SPI/UART tới RV1106")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "8fca37c1-32c0-5665-abda-a1cebe4bf22f")
+		)
+		(comp
+			(ref "U401")
+			(value "Luckfox Core1106")
+			(footprint "box-v1:Luckfox_Core1106_Castellated_30x30mm_P1.0mm")
+			(fields
+				(field
+					(name "MPN")
+					"Luckfox Core1106 (RV1106G3, 256 MB, eMMC 8 GB, Wi-Fi 6/BT 5.2)"
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "Luckfox_Core1106_33ccee")
+				(description "Module SoC RV1106G3: CSI-2 4 lane, H.264, PHY Ethernet 100M, USB 2.0 OTG, Wi-Fi trên module")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "67f43e41-0b6b-5f98-8278-0fb8eae834d8")
+		)
+		(comp
+			(ref "U402")
+			(value "USBLC6-2SC6")
+			(footprint "Package_TO_SOT_SMD:SOT-23-6")
+			(fields
+				(field
+					(name "MPN")
+					"USBLC6-2SC6"
+				)
+				(field
+					(name "LCSC")
+					"C7519"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "USBLC6-2SC6_0f9024")
+				(description "ESD USB 2.0 phía PC")
+			)
+			(sheetpath
+				(names "/soc/")
+				(tstamps "/1aea1e43-0faa-5f79-9837-3fa45fbf6c1f/")
+			)
+			(tstamps "1c77b262-dca8-5083-8d00-e5d95369f85e")
+		)
+		(comp
+			(ref "X201")
+			(value "25MHz")
+			(footprint "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "X")
+				(description "Thạch anh LT7911D (tần số và tải chưa rõ)")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "9747c49c-4aab-5483-868d-6931ad9d8a6d")
+		)
+		(comp
+			(ref "X301")
+			(value "8MHz")
+			(footprint "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm")
+			(fields
+				(field
+					(name "MPN")
+					""
+				)
+				(field
+					(name "LCSC")
+					""
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "X")
+				(description "Thạch anh HSE 8 MHz, CL 12 pF, ±20 ppm")
+			)
+			(sheetpath
+				(names "/mcu/")
+				(tstamps "/42694a87-27af-5a9c-9a82-abe08fd45f09/")
+			)
+			(tstamps "cfaf223d-ca78-533a-968e-9276f029ca3d")
+		)
+	)
+	(nets
+		(net
+			(code "1")
+			(name "1V2")
+			(node
+				(ref "L104")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C126")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C127")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R121")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U201")
+				(pin "1")
+				(pinfunction "VCC12D_RX")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U201")
+				(pin "?VDD")
+				(pinfunction "VDD")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U201")
+				(pin "?VCC12_TX")
+				(pinfunction "VCC12_TX")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C203")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C209")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C211")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C212")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "FB202")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP505")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "2")
+			(name "1V2_LT_A")
+			(node
+				(ref "U201")
+				(pin "4")
+				(pinfunction "VCC12A_RX")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U201")
+				(pin "10")
+				(pinfunction "VCC12_PI")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U201")
+				(pin "13")
+				(pinfunction "VCC12_RXPLL")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C204")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C206")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C207")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C213")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "FB202")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP510")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "3")
+			(name "3V3")
+			(node
+				(ref "R108")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "L103")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C121")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C122")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R118")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R120")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U106")
+				(pin "5")
+				(pinfunction "V+")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C129")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "FB201")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R201")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R202")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R203")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U205")
+				(pin "5")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "C218")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "1")
+				(pinfunction "VBAT")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "19")
+				(pinfunction "VDD_4")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "32")
+				(pinfunction "VIO_1")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "64")
+				(pinfunction "VIO_3")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "48")
+				(pinfunction "VDD_2")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C303")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C304")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C305")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C306")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C307")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C310")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "FB301")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R301")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U402")
+				(pin "5")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "C403")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J501")
+				(pin "1")
+				(pinfunction "3V3")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP504")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "4")
+			(name "3V3_LT")
+			(node
+				(ref "U201")
+				(pin "7")
+				(pinfunction "VCC33_RX")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U201")
+				(pin "16")
+				(pinfunction "VCC33_IO")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U201")
+				(pin "?VCC33_TX")
+				(pinfunction "VCC33_TX")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C205")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C208")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C210")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C214")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "FB201")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R207")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP509")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "5")
+			(name "5V2_PHONE")
+			(node
+				(ref "L101")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C108")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C109")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C110")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R109")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "JP101")
+				(pin "1")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP502")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "6")
+			(name "5V_SYS")
+			(node
+				(ref "L102")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C116")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C117")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C118")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R113")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U104")
+				(pin "4")
+				(pinfunction "VIN")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C119")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C120")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R117")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U105")
+				(pin "4")
+				(pinfunction "VIN")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C123")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C124")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D104")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "81")
+				(pinfunction "VCC5V0_SYS")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "80")
+				(pinfunction "VCC5V0_SYS")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "79")
+				(pinfunction "VCC5V0_SYS")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C401")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C402")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP503")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "7")
+			(name "CC1_SENSE")
+			(node
+				(ref "U301")
+				(pin "14")
+				(pinfunction "PA0/ADC0")
+				(pintype "input")
+			)
+			(node
+				(ref "R304")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C312")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "8")
+			(name "CC2_SENSE")
+			(node
+				(ref "U301")
+				(pin "15")
+				(pinfunction "PA1/ADC1")
+				(pintype "input")
+			)
+			(node
+				(ref "R305")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C313")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "9")
+			(name "CH224_CC1")
+			(node
+				(ref "U101")
+				(pin "7")
+				(pinfunction "CC1")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R104")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "10")
+			(name "CH224_CC2")
+			(node
+				(ref "U101")
+				(pin "6")
+				(pinfunction "CC2")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R105")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "11")
+			(name "CH224_CFG1")
+			(node
+				(ref "U101")
+				(pin "9")
+				(pinfunction "CFG1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R103")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "12")
+			(name "CH224_DPDM")
+			(node
+				(ref "U101")
+				(pin "4")
+				(pinfunction "DP")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U101")
+				(pin "5")
+				(pinfunction "DM")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "13")
+			(name "CH224_VDD")
+			(node
+				(ref "U101")
+				(pin "1")
+				(pinfunction "VDD")
+				(pintype "power_in")
+			)
+			(node
+				(ref "R101")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C102")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "14")
+			(name "CH224_VSNS")
+			(node
+				(ref "U101")
+				(pin "8")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "R102")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "15")
+			(name "CSI_CLK_N")
+			(node
+				(ref "U201")
+				(pin "?TXCN")
+				(pinfunction "TXA_CLKN")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "9")
+				(pinfunction "MIPI_CSI_RX_CK0N/GPI3_C0")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "16")
+			(name "CSI_CLK_P")
+			(node
+				(ref "U201")
+				(pin "?TXCP")
+				(pinfunction "TXA_CLKP")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "10")
+				(pinfunction "MIPI_CSI_RX_CK0P/GPI3_C1")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "17")
+			(name "CSI_D0_N")
+			(node
+				(ref "U201")
+				(pin "?TX0N")
+				(pinfunction "TXA_D0N")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "11")
+				(pinfunction "MIPI_CSI_RX_D0N/GPI3_C2")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "18")
+			(name "CSI_D0_P")
+			(node
+				(ref "U201")
+				(pin "?TX0P")
+				(pinfunction "TXA_D0P")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "12")
+				(pinfunction "MIPI_CSI_RX_D0P/GPI3_C3")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "19")
+			(name "CSI_D1_N")
+			(node
+				(ref "U201")
+				(pin "?TX1N")
+				(pinfunction "TXA_D1N")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "7")
+				(pinfunction "MIPI_CSI_RX_D1N/GPI3_B6")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "20")
+			(name "CSI_D1_P")
+			(node
+				(ref "U201")
+				(pin "?TX1P")
+				(pinfunction "TXA_D1P")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "8")
+				(pinfunction "MIPI_CSI_RX_D1P/GPI3_B7")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "21")
+			(name "CSI_D2_N")
+			(node
+				(ref "U201")
+				(pin "?TX2N")
+				(pinfunction "TXA_D2N")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "5")
+				(pinfunction "MIPI_CSI_RX_D2N/GPI3_B4")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "22")
+			(name "CSI_D2_P")
+			(node
+				(ref "U201")
+				(pin "?TX2P")
+				(pinfunction "TXA_D2P")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "6")
+				(pinfunction "MIPI_CSI_RX_D2P/GPI3_B5")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "23")
+			(name "CSI_D3_N")
+			(node
+				(ref "U201")
+				(pin "?TX3N")
+				(pinfunction "TXA_D3N")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "3")
+				(pinfunction "MIPI_CSI_RX_D3N/GPI3_B0")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "24")
+			(name "CSI_D3_P")
+			(node
+				(ref "U201")
+				(pin "?TX3P")
+				(pinfunction "TXA_D3P")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "4")
+				(pinfunction "MIPI_CSI_RX_D3P/GPI3_B1")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "25")
+			(name "ETH_BS")
+			(node
+				(ref "J402")
+				(pin "8")
+				(pinfunction "BS")
+				(pintype "passive")
+			)
+			(node
+				(ref "C408")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "26")
+			(name "ETH_RCT")
+			(node
+				(ref "J402")
+				(pin "5")
+				(pinfunction "RCT")
+				(pintype "passive")
+			)
+			(node
+				(ref "C407")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "27")
+			(name "ETH_RXN_J")
+			(node
+				(ref "J402")
+				(pin "6")
+				(pinfunction "RD-")
+				(pintype "passive")
+			)
+			(node
+				(ref "R408")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "28")
+			(name "ETH_RXP_J")
+			(node
+				(ref "J402")
+				(pin "3")
+				(pinfunction "RD+")
+				(pintype "passive")
+			)
+			(node
+				(ref "R407")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "29")
+			(name "ETH_RX_N")
+			(node
+				(ref "U401")
+				(pin "85")
+				(pinfunction "FEPHY_RXN")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R408")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "30")
+			(name "ETH_RX_P")
+			(node
+				(ref "U401")
+				(pin "86")
+				(pinfunction "FEPHY_RXP")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R407")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "31")
+			(name "ETH_TCT")
+			(node
+				(ref "J402")
+				(pin "4")
+				(pinfunction "TCT")
+				(pintype "passive")
+			)
+			(node
+				(ref "C406")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "32")
+			(name "ETH_TXN_J")
+			(node
+				(ref "J402")
+				(pin "2")
+				(pinfunction "TD-")
+				(pintype "passive")
+			)
+			(node
+				(ref "R406")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "33")
+			(name "ETH_TXP_J")
+			(node
+				(ref "J402")
+				(pin "1")
+				(pinfunction "TD+")
+				(pintype "passive")
+			)
+			(node
+				(ref "R405")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "34")
+			(name "ETH_TX_N")
+			(node
+				(ref "U401")
+				(pin "87")
+				(pinfunction "FEPHY_TXN")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R406")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "35")
+			(name "ETH_TX_P")
+			(node
+				(ref "U401")
+				(pin "88")
+				(pinfunction "FEPHY_TXP")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R405")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "36")
+			(name "GND")
+			(node
+				(ref "J101")
+				(pin "A1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "A12")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "B1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "B12")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "S1")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "D101")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+			(node
+				(ref "C101")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U101")
+				(pin "11")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C102")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R103")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U102")
+				(pin "1")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U102")
+				(pin "9")
+				(pinfunction "EP")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C103")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C104")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C105")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C106")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C108")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C109")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C110")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R110")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R112")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U103")
+				(pin "1")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U103")
+				(pin "9")
+				(pinfunction "EP")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C111")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C112")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C113")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C114")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C116")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C117")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C118")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R114")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R116")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U104")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C119")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C120")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C121")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C122")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R119")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U105")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C123")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C124")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C126")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C127")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R122")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C125")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q103")
+				(pin "2")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "R125")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U106")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C129")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C130")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "A1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "A12")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "B1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "B12")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "S1")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "U201")
+				(pin "?EPAD")
+				(pinfunction "EPAD")
+				(pintype "power_in")
+			)
+			(node
+				(ref "X201")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "X201")
+				(pin "4")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "C201")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C202")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C203")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C204")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C205")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C206")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C207")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C208")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C209")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C210")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C211")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C212")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C213")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C214")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C215")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R204")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R205")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R206")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U202")
+				(pin "3")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U202")
+				(pin "8")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U203")
+				(pin "3")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U203")
+				(pin "8")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U204")
+				(pin "3")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U204")
+				(pin "8")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U205")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "C218")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D201")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+			(node
+				(ref "C219")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C220")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R210")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R211")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R212")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "12")
+				(pinfunction "VSSA")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "18")
+				(pinfunction "VSS_4")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "31")
+				(pinfunction "VSS_1")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "63")
+				(pinfunction "VSS_3")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U301")
+				(pin "47")
+				(pinfunction "VSS_2")
+				(pintype "power_in")
+			)
+			(node
+				(ref "X301")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "X301")
+				(pin "4")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "C301")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C302")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C303")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C304")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C305")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C306")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C307")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C308")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C309")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C310")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C311")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R302")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R303")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C312")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C313")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R307")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C314")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "21")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "25")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "28")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "29")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "36")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "47")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "55")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "56")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "112")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "89")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "84")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "83")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "82")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "75")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U401")
+				(pin "57")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C401")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C402")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "A1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "A12")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "B1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "B12")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "S1")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "R401")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R402")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U402")
+				(pin "2")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "C403")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C404")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D401")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+			(node
+				(ref "R404")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C405")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J402")
+				(pin "SH")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "C406")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C407")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C408")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R410")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C409")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C410")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J501")
+				(pin "4")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J502")
+				(pin "3")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "J503")
+				(pin "1")
+				(pinfunction "GND")
+				(pintype "passive")
+			)
+			(node
+				(ref "SW501")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "SW502")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D501")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "D502")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "D503")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP507")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP508")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "37")
+			(name "HSE_IN")
+			(node
+				(ref "U301")
+				(pin "5")
+				(pinfunction "OSC_IN/PD0")
+				(pintype "input")
+			)
+			(node
+				(ref "X301")
+				(pin "1")
+				(pinfunction "~")
+				(pintype "passive")
+			)
+			(node
+				(ref "C301")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "38")
+			(name "HSE_OUT")
+			(node
+				(ref "U301")
+				(pin "6")
+				(pinfunction "OSC_OUT/PD1")
+				(pintype "output")
+			)
+			(node
+				(ref "X301")
+				(pin "3")
+				(pinfunction "~")
+				(pintype "passive")
+			)
+			(node
+				(ref "C302")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "39")
+			(name "LED_G")
+			(node
+				(ref "U301")
+				(pin "39")
+				(pinfunction "PC8/TIM8_CH3")
+				(pintype "output")
+			)
+			(node
+				(ref "R503")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "40")
+			(name "LED_G_A")
+			(node
+				(ref "R503")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D503")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "41")
+			(name "LED_R")
+			(node
+				(ref "U301")
+				(pin "37")
+				(pinfunction "PC6/TIM8_CH1")
+				(pintype "output")
+			)
+			(node
+				(ref "R501")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "42")
+			(name "LED_R_A")
+			(node
+				(ref "R501")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D501")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "43")
+			(name "LED_Y")
+			(node
+				(ref "U301")
+				(pin "38")
+				(pinfunction "PC7/TIM8_CH2")
+				(pintype "output")
+			)
+			(node
+				(ref "R502")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "44")
+			(name "LED_Y_A")
+			(node
+				(ref "R502")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D502")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "45")
+			(name "LT_AUX_N")
+			(node
+				(ref "U201")
+				(pin "18")
+				(pinfunction "AUXN")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "C217")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R207")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "46")
+			(name "LT_AUX_P")
+			(node
+				(ref "U201")
+				(pin "17")
+				(pinfunction "AUXP")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "C216")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R206")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "47")
+			(name "LT_INT")
+			(node
+				(ref "U201")
+				(pin "?INT")
+				(pinfunction "GPIO_INT")
+				(pintype "output")
+			)
+			(node
+				(ref "R205")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "67")
+				(pinfunction "PWM0_M0/GPIO1_A2")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "48")
+			(name "LT_PDCC1")
+			(node
+				(ref "R106")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U201")
+				(pin "?PDCC1")
+				(pinfunction "PD_CC1")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "49")
+			(name "LT_PDCC2")
+			(node
+				(ref "R107")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U201")
+				(pin "?PDCC2")
+				(pinfunction "PD_CC2")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "50")
+			(name "LT_RST_N")
+			(node
+				(ref "U201")
+				(pin "20")
+				(pinfunction "RST_N")
+				(pintype "input")
+			)
+			(node
+				(ref "R203")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C215")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "61")
+				(pinfunction "PWR_CTRL_M1/GPIO0_A3")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "51")
+			(name "LT_RX_HPD")
+			(node
+				(ref "U201")
+				(pin "23")
+				(pinfunction "RX_HPD")
+				(pintype "output")
+			)
+			(node
+				(ref "TP202")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "52")
+			(name "LT_SCL")
+			(node
+				(ref "U201")
+				(pin "21")
+				(pinfunction "CSCL")
+				(pintype "input")
+			)
+			(node
+				(ref "R201")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "65")
+				(pinfunction "I2C2_SCL_M0/UART3_TX_M0/GPIO1_A0")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "53")
+			(name "LT_SDA")
+			(node
+				(ref "U201")
+				(pin "22")
+				(pinfunction "CSDA")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R202")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "66")
+				(pinfunction "I2C2_SDA_M0/UART3_RX_M0/GPIO1_A1")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "54")
+			(name "LT_SLEEP")
+			(node
+				(ref "U201")
+				(pin "19")
+				(pinfunction "SLEEP_33")
+				(pintype "input")
+			)
+			(node
+				(ref "R204")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP201")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "55")
+			(name "LT_VBUS_EN")
+			(node
+				(ref "R128")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U201")
+				(pin "?VBUSEN")
+				(pinfunction "GPIO_VBUS_EN")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "56")
+			(name "LT_XI")
+			(node
+				(ref "U201")
+				(pin "?XTALI")
+				(pinfunction "XTALI")
+				(pintype "input")
+			)
+			(node
+				(ref "X201")
+				(pin "1")
+				(pinfunction "~")
+				(pintype "passive")
+			)
+			(node
+				(ref "C201")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "57")
+			(name "LT_XO")
+			(node
+				(ref "U201")
+				(pin "?XTALO")
+				(pinfunction "XTALO")
+				(pintype "output")
+			)
+			(node
+				(ref "X201")
+				(pin "3")
+				(pinfunction "~")
+				(pintype "passive")
+			)
+			(node
+				(ref "C202")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "58")
+			(name "MCU_BOOT0")
+			(node
+				(ref "U301")
+				(pin "60")
+				(pinfunction "BOOT0")
+				(pintype "input")
+			)
+			(node
+				(ref "R302")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "91")
+				(pinfunction "GPIO1_D2")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "59")
+			(name "MCU_BOOT1")
+			(node
+				(ref "U301")
+				(pin "28")
+				(pinfunction "PB2/BOOT1")
+				(pintype "input")
+			)
+			(node
+				(ref "R303")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "60")
+			(name "MCU_DBG_RX")
+			(node
+				(ref "U301")
+				(pin "30")
+				(pinfunction "PB11/USART3_RX")
+				(pintype "input")
+			)
+			(node
+				(ref "J501")
+				(pin "7")
+				(pinfunction "RX")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "61")
+			(name "MCU_DBG_TX")
+			(node
+				(ref "U301")
+				(pin "29")
+				(pinfunction "PB10/USART3_TX")
+				(pintype "output")
+			)
+			(node
+				(ref "J501")
+				(pin "6")
+				(pinfunction "TX")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "62")
+			(name "MCU_FS_DN")
+			(node
+				(ref "U301")
+				(pin "44")
+				(pinfunction "PA11/OTG_FS_DM")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J502")
+				(pin "2")
+				(pinfunction "D-")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "63")
+			(name "MCU_FS_DP")
+			(node
+				(ref "U301")
+				(pin "45")
+				(pinfunction "PA12/OTG_FS_DP")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J502")
+				(pin "1")
+				(pinfunction "D+")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "64")
+			(name "MCU_IRQ")
+			(node
+				(ref "U301")
+				(pin "26")
+				(pinfunction "PB0")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "92")
+				(pinfunction "GPIO1_D1")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "65")
+			(name "MCU_NRST")
+			(node
+				(ref "U301")
+				(pin "7")
+				(pinfunction "NRST")
+				(pintype "input")
+			)
+			(node
+				(ref "R301")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C311")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R413")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J501")
+				(pin "5")
+				(pinfunction "NRST")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "66")
+			(name "MCU_UART_RX")
+			(node
+				(ref "U301")
+				(pin "43")
+				(pinfunction "PA10/USART1_RX")
+				(pintype "input")
+			)
+			(node
+				(ref "U401")
+				(pin "71")
+				(pinfunction "UART4_TX_M0/GPIO1_B1")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "67")
+			(name "MCU_UART_TX")
+			(node
+				(ref "U301")
+				(pin "42")
+				(pinfunction "PA9/USART1_TX")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "70")
+				(pinfunction "UART4_RX_M0/GPIO1_B0")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "68")
+			(name "MCU_VBUS_EN")
+			(node
+				(ref "R127")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "27")
+				(pinfunction "PB1")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "69")
+			(name "PCPWR_A")
+			(node
+				(ref "JP102")
+				(pin "2")
+				(pinfunction "B")
+				(pintype "passive")
+			)
+			(node
+				(ref "D104")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "70")
+			(name "PC_CC1")
+			(node
+				(ref "J401")
+				(pin "A5")
+				(pinfunction "CC1")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R401")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "71")
+			(name "PC_CC2")
+			(node
+				(ref "J401")
+				(pin "B5")
+				(pinfunction "CC2")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R402")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "72")
+			(name "PC_USB_DN")
+			(node
+				(ref "U401")
+				(pin "22")
+				(pinfunction "USB_N")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J401")
+				(pin "A7")
+				(pinfunction "D-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J401")
+				(pin "B7")
+				(pinfunction "D-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U402")
+				(pin "3")
+				(pinfunction "I/O2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U402")
+				(pin "4")
+				(pinfunction "I/O2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "73")
+			(name "PC_USB_DP")
+			(node
+				(ref "U401")
+				(pin "23")
+				(pinfunction "USB_P")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J401")
+				(pin "A6")
+				(pinfunction "D+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J401")
+				(pin "B6")
+				(pinfunction "D+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U402")
+				(pin "1")
+				(pinfunction "I/O1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U402")
+				(pin "6")
+				(pinfunction "I/O1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "74")
+			(name "PC_VBUS")
+			(node
+				(ref "JP102")
+				(pin "1")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "A4")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "A9")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "B4")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J401")
+				(pin "B9")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "C404")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D401")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "R403")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "75")
+			(name "PC_VBUS_DET")
+			(node
+				(ref "U401")
+				(pin "24")
+				(pinfunction "USB_VBUSDET")
+				(pintype "input")
+			)
+			(node
+				(ref "R403")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R404")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C405")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "76")
+			(name "PD_CC1")
+			(node
+				(ref "J101")
+				(pin "A5")
+				(pinfunction "CC1")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R104")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R106")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "77")
+			(name "PD_CC2")
+			(node
+				(ref "J101")
+				(pin "B5")
+				(pinfunction "CC2")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "R105")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R107")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "78")
+			(name "PD_PG")
+			(node
+				(ref "U101")
+				(pin "10")
+				(pinfunction "PG")
+				(pintype "open_collector")
+			)
+			(node
+				(ref "R108")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "33")
+				(pinfunction "PB12")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "79")
+			(name "PHONE_CC1")
+			(node
+				(ref "J201")
+				(pin "A5")
+				(pinfunction "CC1")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "14")
+				(pinfunction "UCC1")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U204")
+				(pin "1")
+				(pinfunction "D1+")
+				(pintype "passive")
+			)
+			(node
+				(ref "R211")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R304")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "80")
+			(name "PHONE_CC2")
+			(node
+				(ref "J201")
+				(pin "B5")
+				(pinfunction "CC2")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "15")
+				(pinfunction "UCC2")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U204")
+				(pin "2")
+				(pinfunction "D1-")
+				(pintype "passive")
+			)
+			(node
+				(ref "R212")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R305")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "81")
+			(name "PHONE_ISENSE")
+			(node
+				(ref "U106")
+				(pin "1")
+				(pinfunction "OUT")
+				(pintype "output")
+			)
+			(node
+				(ref "C130")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "17")
+				(pinfunction "PA3/ADC3")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "82")
+			(name "PHONE_SBU1")
+			(node
+				(ref "J201")
+				(pin "A8")
+				(pinfunction "SBU1")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "C216")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U204")
+				(pin "4")
+				(pinfunction "D2+")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "83")
+			(name "PHONE_SBU2")
+			(node
+				(ref "J201")
+				(pin "B8")
+				(pinfunction "SBU2")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "C217")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U204")
+				(pin "5")
+				(pinfunction "D2-")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "84")
+			(name "PHONE_USB_DN")
+			(node
+				(ref "J201")
+				(pin "A7")
+				(pinfunction "D-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J201")
+				(pin "B7")
+				(pinfunction "D-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U205")
+				(pin "3")
+				(pinfunction "I/O2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U205")
+				(pin "4")
+				(pinfunction "I/O2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "58")
+				(pinfunction "PB6/USBHS_DM")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "85")
+			(name "PHONE_USB_DP")
+			(node
+				(ref "J201")
+				(pin "A6")
+				(pinfunction "D+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J201")
+				(pin "B6")
+				(pinfunction "D+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U205")
+				(pin "1")
+				(pinfunction "I/O1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U205")
+				(pin "6")
+				(pinfunction "I/O1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U301")
+				(pin "59")
+				(pinfunction "PB7/USBHS_DP")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "86")
+			(name "PHONE_VBUS")
+			(node
+				(ref "R126")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "U106")
+				(pin "4")
+				(pinfunction "IN-")
+				(pintype "input")
+			)
+			(node
+				(ref "J201")
+				(pin "A4")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "A9")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "B4")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "B9")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "D201")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "C219")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C220")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R210")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R306")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP506")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "87")
+			(name "PHONE_VBUS_EN")
+			(node
+				(ref "Q103")
+				(pin "1")
+				(pinfunction "G")
+				(pintype "input")
+			)
+			(node
+				(ref "R125")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R127")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R128")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "88")
+			(name "PHONE_VBUS_SENSE")
+			(node
+				(ref "U301")
+				(pin "16")
+				(pinfunction "PA2/ADC2")
+				(pintype "input")
+			)
+			(node
+				(ref "R306")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R307")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C314")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "89")
+			(name "PSW_G")
+			(node
+				(ref "Q101")
+				(pin "4")
+				(pinfunction "G")
+				(pintype "input")
+			)
+			(node
+				(ref "Q102")
+				(pin "4")
+				(pinfunction "G")
+				(pintype "input")
+			)
+			(node
+				(ref "R123")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C128")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D102")
+				(pin "2")
+				(pinfunction "A")
+				(pintype "passive")
+			)
+			(node
+				(ref "R124")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "90")
+			(name "PSW_GD")
+			(node
+				(ref "R124")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q103")
+				(pin "3")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "91")
+			(name "PSW_IN")
+			(node
+				(ref "JP101")
+				(pin "2")
+				(pinfunction "C")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q101")
+				(pin "5")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q101")
+				(pin "6")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q101")
+				(pin "7")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q101")
+				(pin "8")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "92")
+			(name "PSW_OUT")
+			(node
+				(ref "Q102")
+				(pin "5")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q102")
+				(pin "6")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q102")
+				(pin "7")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q102")
+				(pin "8")
+				(pinfunction "D")
+				(pintype "passive")
+			)
+			(node
+				(ref "R126")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U106")
+				(pin "3")
+				(pinfunction "IN+")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "93")
+			(name "PSW_S")
+			(node
+				(ref "Q101")
+				(pin "1")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q101")
+				(pin "2")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q101")
+				(pin "3")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q102")
+				(pin "1")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q102")
+				(pin "2")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q102")
+				(pin "3")
+				(pinfunction "S")
+				(pintype "passive")
+			)
+			(node
+				(ref "R123")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C128")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D102")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "94")
+			(name "RECOVERY_KEY")
+			(node
+				(ref "R412")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "SW501")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "95")
+			(name "SOC_CON_RX")
+			(node
+				(ref "U401")
+				(pin "73")
+				(pinfunction "UART2_RX_M1/GPIO1_B3")
+				(pintype "input")
+			)
+			(node
+				(ref "J503")
+				(pin "3")
+				(pinfunction "RX")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "96")
+			(name "SOC_CON_TX")
+			(node
+				(ref "U401")
+				(pin "72")
+				(pinfunction "UART2_TX_M1/GPIO1_B2")
+				(pintype "output")
+			)
+			(node
+				(ref "J503")
+				(pin "2")
+				(pinfunction "TX")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "97")
+			(name "SOC_MCU_RST")
+			(node
+				(ref "U401")
+				(pin "90")
+				(pinfunction "GPIO1_D3")
+				(pintype "output")
+			)
+			(node
+				(ref "R413")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "98")
+			(name "SOC_NPOR")
+			(node
+				(ref "U401")
+				(pin "74")
+				(pinfunction "NPOR")
+				(pintype "input")
+			)
+			(node
+				(ref "SW502")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "99")
+			(name "SOC_RECOVERY")
+			(node
+				(ref "U401")
+				(pin "26")
+				(pinfunction "SARADC_IN0/GPIO4_C0")
+				(pintype "input")
+			)
+			(node
+				(ref "R411")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C410")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R412")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "100")
+			(name "SPI_CS")
+			(node
+				(ref "U301")
+				(pin "20")
+				(pinfunction "PA4/SPI1_NSS")
+				(pintype "input")
+			)
+			(node
+				(ref "U401")
+				(pin "101")
+				(pinfunction "SPI0_CS0_M0/GPIO1_C0")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "101")
+			(name "SPI_MISO")
+			(node
+				(ref "U301")
+				(pin "22")
+				(pinfunction "PA6/SPI1_MISO")
+				(pintype "output")
+			)
+			(node
+				(ref "U401")
+				(pin "98")
+				(pinfunction "SPI0_MISO_M0/GPIO1_C3")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "102")
+			(name "SPI_MOSI")
+			(node
+				(ref "U301")
+				(pin "23")
+				(pinfunction "PA7/SPI1_MOSI")
+				(pintype "input")
+			)
+			(node
+				(ref "U401")
+				(pin "99")
+				(pinfunction "SPI0_MOSI_M0/GPIO1_C2")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "103")
+			(name "SPI_SCK")
+			(node
+				(ref "U301")
+				(pin "21")
+				(pinfunction "PA5/SPI1_SCK")
+				(pintype "input")
+			)
+			(node
+				(ref "U401")
+				(pin "100")
+				(pinfunction "SPI0_CLK_M0/GPIO1_C1")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "104")
+			(name "SS_RX1_N")
+			(node
+				(ref "J201")
+				(pin "B10")
+				(pinfunction "RX1-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "9")
+				(pinfunction "D2N")
+				(pintype "input")
+			)
+			(node
+				(ref "U202")
+				(pin "5")
+				(pinfunction "D2-")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "105")
+			(name "SS_RX1_P")
+			(node
+				(ref "J201")
+				(pin "B11")
+				(pinfunction "RX1+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "8")
+				(pinfunction "D2P")
+				(pintype "input")
+			)
+			(node
+				(ref "U202")
+				(pin "4")
+				(pinfunction "D2+")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "106")
+			(name "SS_RX2_N")
+			(node
+				(ref "J201")
+				(pin "A10")
+				(pinfunction "RX2-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "3")
+				(pinfunction "D0N")
+				(pintype "input")
+			)
+			(node
+				(ref "U203")
+				(pin "5")
+				(pinfunction "D2-")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "107")
+			(name "SS_RX2_P")
+			(node
+				(ref "J201")
+				(pin "A11")
+				(pinfunction "RX2+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "2")
+				(pinfunction "D0P")
+				(pintype "input")
+			)
+			(node
+				(ref "U203")
+				(pin "4")
+				(pinfunction "D2+")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "108")
+			(name "SS_TX1_N")
+			(node
+				(ref "J201")
+				(pin "A3")
+				(pinfunction "TX1-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "12")
+				(pinfunction "D3N")
+				(pintype "input")
+			)
+			(node
+				(ref "U202")
+				(pin "2")
+				(pinfunction "D1-")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "109")
+			(name "SS_TX1_P")
+			(node
+				(ref "J201")
+				(pin "A2")
+				(pinfunction "TX1+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "11")
+				(pinfunction "D3P")
+				(pintype "input")
+			)
+			(node
+				(ref "U202")
+				(pin "1")
+				(pinfunction "D1+")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "110")
+			(name "SS_TX2_N")
+			(node
+				(ref "J201")
+				(pin "B3")
+				(pinfunction "TX2-")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "6")
+				(pinfunction "D1N")
+				(pintype "input")
+			)
+			(node
+				(ref "U203")
+				(pin "2")
+				(pinfunction "D1-")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "111")
+			(name "SS_TX2_P")
+			(node
+				(ref "J201")
+				(pin "B2")
+				(pinfunction "TX2+")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U201")
+				(pin "5")
+				(pinfunction "D1P")
+				(pintype "input")
+			)
+			(node
+				(ref "U203")
+				(pin "1")
+				(pinfunction "D1+")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "112")
+			(name "SWCLK")
+			(node
+				(ref "U301")
+				(pin "49")
+				(pinfunction "PA14/SWCLK")
+				(pintype "input")
+			)
+			(node
+				(ref "J501")
+				(pin "3")
+				(pinfunction "SWCLK")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "113")
+			(name "SWDIO")
+			(node
+				(ref "U301")
+				(pin "46")
+				(pinfunction "PA13/SWDIO")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "J501")
+				(pin "2")
+				(pinfunction "SWDIO")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "114")
+			(name "U102_BOOT")
+			(node
+				(ref "U102")
+				(pin "7")
+				(pinfunction "BOOT")
+				(pintype "passive")
+			)
+			(node
+				(ref "C107")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "115")
+			(name "U102_EN")
+			(node
+				(ref "U102")
+				(pin "3")
+				(pinfunction "EN")
+				(pintype "input")
+			)
+			(node
+				(ref "R111")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R112")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "116")
+			(name "U102_FB")
+			(node
+				(ref "U102")
+				(pin "5")
+				(pinfunction "FB")
+				(pintype "input")
+			)
+			(node
+				(ref "R109")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R110")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "117")
+			(name "U102_SW")
+			(node
+				(ref "U102")
+				(pin "8")
+				(pinfunction "SW")
+				(pintype "output")
+			)
+			(node
+				(ref "C107")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "L101")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "118")
+			(name "U102_VCC")
+			(node
+				(ref "U102")
+				(pin "6")
+				(pinfunction "VCC")
+				(pintype "power_out")
+			)
+			(node
+				(ref "C106")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "119")
+			(name "U103_BOOT")
+			(node
+				(ref "U103")
+				(pin "7")
+				(pinfunction "BOOT")
+				(pintype "passive")
+			)
+			(node
+				(ref "C115")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "120")
+			(name "U103_EN")
+			(node
+				(ref "U103")
+				(pin "3")
+				(pinfunction "EN")
+				(pintype "input")
+			)
+			(node
+				(ref "R115")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R116")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "121")
+			(name "U103_FB")
+			(node
+				(ref "U103")
+				(pin "5")
+				(pinfunction "FB")
+				(pintype "input")
+			)
+			(node
+				(ref "R113")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R114")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "122")
+			(name "U103_SW")
+			(node
+				(ref "U103")
+				(pin "8")
+				(pinfunction "SW")
+				(pintype "output")
+			)
+			(node
+				(ref "C115")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "L102")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "123")
+			(name "U103_VCC")
+			(node
+				(ref "U103")
+				(pin "6")
+				(pinfunction "VCC")
+				(pintype "power_out")
+			)
+			(node
+				(ref "C114")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "124")
+			(name "U104_EN")
+			(node
+				(ref "U104")
+				(pin "1")
+				(pinfunction "EN")
+				(pintype "input")
+			)
+			(node
+				(ref "R117")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "125")
+			(name "U104_FB")
+			(node
+				(ref "U104")
+				(pin "5")
+				(pinfunction "FB")
+				(pintype "input")
+			)
+			(node
+				(ref "R118")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R119")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "126")
+			(name "U104_SW")
+			(node
+				(ref "U104")
+				(pin "3")
+				(pinfunction "SW")
+				(pintype "output")
+			)
+			(node
+				(ref "L103")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "127")
+			(name "U105_EN")
+			(node
+				(ref "U105")
+				(pin "1")
+				(pinfunction "EN")
+				(pintype "input")
+			)
+			(node
+				(ref "R120")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C125")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "128")
+			(name "U105_FB")
+			(node
+				(ref "U105")
+				(pin "5")
+				(pinfunction "FB")
+				(pintype "input")
+			)
+			(node
+				(ref "R121")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R122")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "129")
+			(name "U105_SW")
+			(node
+				(ref "U105")
+				(pin "3")
+				(pinfunction "SW")
+				(pintype "output")
+			)
+			(node
+				(ref "L104")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "130")
+			(name "VBUS_IN")
+			(node
+				(ref "J101")
+				(pin "A4")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "A9")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "B4")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "J101")
+				(pin "B9")
+				(pinfunction "VBUS")
+				(pintype "passive")
+			)
+			(node
+				(ref "F101")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "131")
+			(name "VCC_1V8_MOD")
+			(node
+				(ref "U401")
+				(pin "77")
+				(pinfunction "VCC_1V8")
+				(pintype "power_out")
+			)
+			(node
+				(ref "R411")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "132")
+			(name "VCC_3V3_MOD")
+			(node
+				(ref "U401")
+				(pin "78")
+				(pinfunction "VCC_3V3")
+				(pintype "power_out")
+			)
+			(node
+				(ref "TP401")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "133")
+			(name "VDDA_MCU")
+			(node
+				(ref "U301")
+				(pin "13")
+				(pinfunction "VDDA")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C308")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C309")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "FB301")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "134")
+			(name "VIN")
+			(node
+				(ref "F101")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D101")
+				(pin "1")
+				(pinfunction "K")
+				(pintype "passive")
+			)
+			(node
+				(ref "C101")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R101")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R102")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U102")
+				(pin "2")
+				(pinfunction "VIN")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C103")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C104")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C105")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R111")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U103")
+				(pin "2")
+				(pinfunction "VIN")
+				(pintype "power_in")
+			)
+			(node
+				(ref "C111")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C112")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C113")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R115")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "JP101")
+				(pin "3")
+				(pinfunction "B")
+				(pintype "passive")
+			)
+			(node
+				(ref "R409")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "TP501")
+				(pin "1")
+				(pinfunction "TP")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "135")
+			(name "VIN_SENSE")
+			(node
+				(ref "U401")
+				(pin "27")
+				(pinfunction "SARADC_IN1/GPIO4_C1")
+				(pintype "input")
+			)
+			(node
+				(ref "R409")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R410")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C409")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+		)
+	)
+)

@@ -1,0 +1,255 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0")
+	(paper "A4")
+	(title_block
+		(title "box-v1: sơ đồ tổng")
+		(date "2026-09-26")
+		(rev "v1")
+		(company "iphone-hid / hardware/box-v1")
+		(comment 1 "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này")
+		(comment 2 "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout")
+		(comment 3 "Trang 1/6")
+	)
+	(lib_symbols)
+	(text "Box điều khiển iPhone v1 (phương án B): LT7911D + CH32V305RBT6 + Luckfox Core1106"
+		(exclude_from_sim no)
+		(at 20.32 25.4 0)
+		(effects
+			(font (size 3 3) (bold yes))
+			(justify left bottom)
+		)
+		(uuid "1157f8ed-3c51-5fc0-899e-83b0ecbe376d")
+	)
+	(text "Các trang con nối với nhau bằng global label và power symbol cùng tên. Xem hardware/box-v1/README.md."
+		(exclude_from_sim no)
+		(at 20.32 33.02 0)
+		(effects
+			(font (size 1.5 1.5))
+			(justify left bottom)
+		)
+		(uuid "463a4241-f9f8-5541-b54d-975a1ea5bd5b")
+	)
+	(sheet
+		(at 20.32 50.8)
+		(size 76.2 30.48)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "edf33a92-f845-59f1-9b4d-dbb6e9c8885b")
+		(property "Sheetname" "power"
+			(at 20.32 50.0888 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 20.32 81.8288 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left top)
+			)
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0"
+					(page "2")
+				)
+			)
+		)
+	)
+	(text "1. Nguồn: USB-C PD vào (CH224K), buck 5V2/5V/3V3/1V2, công tắc VBUS iPhone"
+		(exclude_from_sim no)
+		(at 21.59 66.04 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left bottom)
+		)
+		(uuid "1b7d90f9-6f4f-5961-8f35-8b4c501e541c")
+	)
+	(sheet
+		(at 110.32 50.8)
+		(size 76.2 30.48)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3")
+		(property "Sheetname" "iphone"
+			(at 110.32 50.0888 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "iphone.kicad_sch"
+			(at 110.32 81.8288 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left top)
+			)
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0"
+					(page "3")
+				)
+			)
+		)
+	)
+	(text "2. Cổng USB-C iPhone + LT7911D (DP Alt Mode -> MIPI CSI-2)"
+		(exclude_from_sim no)
+		(at 111.59 66.04 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left bottom)
+		)
+		(uuid "257f3001-c316-5618-845d-9e2e296ebb41")
+	)
+	(sheet
+		(at 200.32 50.8)
+		(size 76.2 30.48)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "42694a87-27af-5a9c-9a82-abe08fd45f09")
+		(property "Sheetname" "mcu"
+			(at 200.32 50.0888 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu.kicad_sch"
+			(at 200.32 81.8288 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left top)
+			)
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0"
+					(page "4")
+				)
+			)
+		)
+	)
+	(text "3. CH32V305RBT6: USB HS HID tới iPhone, link SPI/UART tới RV1106"
+		(exclude_from_sim no)
+		(at 201.59 66.04 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left bottom)
+		)
+		(uuid "afa4754f-5d59-53e9-a00b-59c459e056f4")
+	)
+	(sheet
+		(at 20.32 101.6)
+		(size 76.2 30.48)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "1aea1e43-0faa-5f79-9837-3fa45fbf6c1f")
+		(property "Sheetname" "soc"
+			(at 20.32 100.8888 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "soc.kicad_sch"
+			(at 20.32 132.6288 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left top)
+			)
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0"
+					(page "5")
+				)
+			)
+		)
+	)
+	(text "4. Luckfox Core1106 (RV1106G3) + RJ45 100M + USB-C tới PC"
+		(exclude_from_sim no)
+		(at 21.59 116.84 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left bottom)
+		)
+		(uuid "0b3a299f-330d-5b34-956d-db0b1ed7c161")
+	)
+	(sheet
+		(at 110.32 101.6)
+		(size 76.2 30.48)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "f8f20165-fe63-57ee-90a2-fa6c661a9f9e")
+		(property "Sheetname" "debug"
+			(at 110.32 100.8888 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "debug.kicad_sch"
+			(at 110.32 132.6288 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left top)
+			)
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0"
+					(page "6")
+				)
+			)
+		)
+	)
+	(text "5. Debug header, LED trạng thái, nút, test point"
+		(exclude_from_sim no)
+		(at 111.59 116.84 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left bottom)
+		)
+		(uuid "99111794-251c-5914-a773-381a9fc96694")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)

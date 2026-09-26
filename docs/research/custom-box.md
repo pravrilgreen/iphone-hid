@@ -11,6 +11,7 @@
 - **Nhãn:** **[Chắc]** = đã đọc nguồn gốc (mã, datasheet, tài liệu hãng). **[Có thể]** = lời hãng, đoạn trích tìm
   kiếm, hoặc nhiều nguồn gián tiếp khớp nhau. **[Chưa biết]** = chưa có dữ liệu, phải tự đo. Giá lấy từ đoạn trích LCSC
   là **[Có thể]**; số nào là ước tính thì ghi rõ "ước tính".
+- **Sơ đồ mạch:** thiết kế mức chân của phương án B nằm ở [hardware/box-v1](../../hardware/box-v1/README.md).
 - **Giấy phép:** JetKVM (GPL-2.0), Luckfox PicoKVM (GPL) và Aiden (AGPL-3.0) chỉ dùng để tham khảo kiến trúc. Không
   chép mã của các dự án này; firmware và phần mềm của box tự viết.
 

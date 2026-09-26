@@ -23,4 +23,5 @@
 |---|---|
 | [Absolute pointer on iPhone](research/absolute-pointer.md) | How iOS handles an absolute pointer over USB |
 | [Custom box design](research/custom-box.md) (Vietnamese) | The purpose-built box: chips, cost, plan, shopping list |
+| [Box v1 schematic](../hardware/box-v1/README.md) (Vietnamese) | Pin-level circuit of the purpose-built box, KiCad project and BOM |
 | [Market survey](research/china-market.md) | How iPhone-control hardware on the market works |
