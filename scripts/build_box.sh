@@ -78,7 +78,7 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE/bin"
 cp "$BUILD/ihcd" "$STAGE/bin/"
 cp "$ROOT/packaging/install.sh" "$ROOT/packaging/ihcd.service" "$ROOT/packaging/ihcd-gadget.service" \
-   "$ROOT/packaging/99-ihc.rules" "$ROOT/box/THIRD_PARTY.md" "$STAGE/"
+   "$ROOT/packaging/99-ihc.rules" "$ROOT/box/THIRD_PARTY.md" "$ROOT/LICENSE" "$STAGE/"
 echo "$FULL" > "$STAGE/VERSION"
 OUT="$ROOT/dist/ihc-box-$VERSION-linux-$ARCH.run"
 sed -e "s/@VERSION@/$FULL/" -e "s/@ARCH@/$ARCH/" "$ROOT/packaging/run-header.sh" > "$OUT"

@@ -22,7 +22,7 @@ Every box serves one phone. The machine-readable description is at `/api/openapi
 ```json
 {
   "id": "iphone-b40d9e",
-  "version": "0.4.0",
+  "version": "0.1.0",
   "state": "ready",
   "message": "",
   "usb": {"udc": "fc000000.usb", "state": "configured", "connected": true, "profile": "RA"},

@@ -1,6 +1,7 @@
 # Build the box bundle (static ARM64 ihcd with libjpeg-turbo), smoke-test it under emulation, and
-# publish it as a release. Runs when a version tag (v0.3.0, ...) is pushed, or by hand ("Run
+# publish it as a release. Runs when a version tag (v0.1.0, ...) is pushed, or by hand ("Run
 # workflow"): then the release and its tag are created at the head of the branch it runs on.
+# Versions 0.x are published as pre-releases.
 name: Release box bundle
 
 on:
@@ -9,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, e.g. v0.3.0 (created at this branch's head if it does not exist)"
+        description: "Release tag, e.g. v0.1.0 (created at this branch's head if it does not exist)"
         required: true
 
 permissions:
@@ -57,6 +58,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           (cd dist && sha256sum *.run > SHA256SUMS)
+          pre=""
+          case "$TAG" in v0.*) pre="--prerelease" ;; esac
           gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" --target "$GITHUB_SHA" --title "iphone-hid $TAG" --notes-file RELEASE_NOTES.md
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "iphone-hid $TAG" --notes-file RELEASE_NOTES.md $pre
           gh release upload "$TAG" dist/*.run dist/SHA256SUMS --clobber

@@ -1,7 +1,7 @@
 # Third-party software in the box binary
 
-`ihcd` is built from this repository with the following components. Their licences allow
-redistribution in binary form with this notice.
+`ihcd` is under the Apache License 2.0 (`LICENSE`). It is built from this repository with the
+following components. Their licences allow redistribution in binary form with this notice.
 
 | Component | Use | Licence |
 |---|---|---|

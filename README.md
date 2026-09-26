@@ -58,8 +58,8 @@ live.
   will be published in `docs/test-logs/`.
 - **Everything else** (the console, the API, the SDK, the touch engine, the fault states) is tested
   against the simulated iPhone, in CI and in the demo videos.
-- **Early software:** the API may still change before 1.0; changes are listed in the
-  [changelog](CHANGELOG.md).
+- **Pre-release:** versions 0.x are pre-releases, not yet tested as a whole on real hardware; the
+  API may still change before 1.0. Changes are listed in the [changelog](CHANGELOG.md).
 
 ## Limits
 
@@ -101,8 +101,9 @@ video output. Each box drives one phone; a lab runs one box per phone.
 
 ## Install
 
-1. Download `ihc-box-<version>-linux-arm64.run` from the
-   [latest release](https://github.com/pravrilgreen/iphone-hid/releases/latest) and copy it to the board.
+1. Download `ihc-box-<version>-linux-arm64.run` from the newest of the
+   [releases](https://github.com/pravrilgreen/iphone-hid/releases) (0.x releases are pre-releases) and
+   copy it to the board.
 2. `sudo sh ihc-box-*-linux-arm64.run`. It installs `ihcd`, the USB gadget and the service, and
    starts them. The API token is in `/var/lib/ihc/token`.
 3. Open `http://<board address>:8000`.
@@ -182,3 +183,8 @@ make demo         # record docs/media/console-demo*.mp4 against a simulated box 
 ```
 
 Changes are listed in the [changelog](CHANGELOG.md).
+
+## License
+
+[Apache License 2.0](LICENSE), for the software and the hardware design files alike. The box
+binary also carries third-party components under their own licences: [box/THIRD_PARTY.md](box/THIRD_PARTY.md).
