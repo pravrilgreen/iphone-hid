@@ -5,13 +5,13 @@
 	(uuid "dff54cf8-4148-5093-849f-03bad2d06960")
 	(paper "A3")
 	(title_block
-		(title "box-v1: USB-C iPhone + LT7911D")
+		(title "box-v1: iPhone USB-C + LT7911D")
 		(date "2026-09-26")
 		(rev "v1")
 		(company "iphone-hid / hardware/box-v1")
-		(comment 1 "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này")
-		(comment 2 "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout")
-		(comment 3 "Trang 3/6")
+		(comment 1 "Generated from netlist.py by generate.py; edit netlist.py, not this file")
+		(comment 2 "Pin numbers '?..' = [Unknown], must be confirmed before layout")
+		(comment 3 "Sheet 3/6")
 	)
 	(lib_symbols
 		(symbol "box-v1:25MHz_537f32"
@@ -49,7 +49,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Thạch anh LT7911D (tần số và tải chưa rõ)"
+			(property "Description" "LT7911D crystal (frequency and load unknown)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -489,7 +489,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, MCU + flash nội"
+			(property "Description" "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, on-chip MCU + flash"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -1865,7 +1865,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "ESD cặp SS TX1/RX1 (0.5 pF, flow-through)"
+			(property "Description" "ESD for SS pairs TX1/RX1 (0.5 pF, flow-through)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2063,7 +2063,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Ổ USB-C 24 chân đủ cặp SS (DP Alt Mode 4 lane) + USB 2.0 + CC + VBUS"
+			(property "Description" "24-pin USB-C receptacle with all SS pairs (4-lane DP Alt Mode) + USB 2.0 + CC + VBUS"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2471,7 +2471,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "ESD cặp USB 2.0 iPhone"
+			(property "Description" "ESD for the iPhone USB 2.0 pair"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2579,7 +2579,7 @@
 			)
 		)
 	)
-	(text "2. Cổng USB-C iPhone + LT7911D (DP Alt Mode -> MIPI CSI-2)"
+	(text "2. iPhone USB-C port + LT7911D (DP Alt Mode -> MIPI CSI-2)"
 		(exclude_from_sim no)
 		(at 10.16 12.7 0)
 		(effects
@@ -2588,7 +2588,7 @@
 		)
 		(uuid "279c4889-0284-54d6-a2c5-eeec0463ce80")
 	)
-	(text "Nhãn net đặt ngay đầu chân (không vẽ dây). Chân số '?..' = chưa có datasheet, phải xác nhận trước khi làm footprint/layout."
+	(text "Net labels sit on the pin ends (no wires). Pin numbers '?..' = no datasheet yet, must be confirmed before footprint/layout work."
 		(exclude_from_sim no)
 		(at 10.16 16.51 0)
 		(effects
@@ -2634,7 +2634,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, MCU + flash nội"
+		(property "Description" "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, on-chip MCU + flash"
 			(at 58.42 66.04 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2648,6 +2648,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "Lontium Semiconductor"
+			(at 58.42 66.04 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C5310990"
 			(at 58.42 66.04 0)
 			(effects
@@ -2655,14 +2662,14 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Có thể"
+		(property "Confidence" "Likely"
 			(at 58.42 66.04 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Note" "Datasheet chịu NDA: chỉ vẽ chân theo chức năng; footprint phải làm lại khi có datasheet"
+		(property "Note" "Datasheet under NDA: pins drawn by function only; the footprint must be redone once the datasheet is in hand"
 			(at 58.42 66.04 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4123,35 +4130,42 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Ổ USB-C 24 chân đủ cặp SS (DP Alt Mode 4 lane) + USB 2.0 + CC + VBUS"
+		(property "Description" "24-pin USB-C receptacle with all SS pairs (4-lane DP Alt Mode) + USB 2.0 + CC + VBUS"
 			(at 139.7 53.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "Molex 105450-0101"
+		(property "MPN" "1054500101"
 			(at 139.7 53.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Molex"
 			(at 139.7 53.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C134092"
 			(at 139.7 53.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Note" "Chọn ổ 24P đạt USB 3.2 Gen2; ổ 16P (USB 2.0) không có cặp SS"
+		(property "Confidence" "Confirmed"
+			(at 139.7 53.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Note" "Use a 24P receptacle rated USB 3.2 Gen2; a 16P (USB 2.0) one has no SS pairs"
 			(at 139.7 53.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5152,7 +5166,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ESD cặp SS TX1/RX1 (0.5 pF, flow-through)"
+		(property "Description" "ESD for SS pairs TX1/RX1 (0.5 pF, flow-through)"
 			(at 203.2 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5166,6 +5180,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 203.2 43.18 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C138714"
 			(at 203.2 43.18 0)
 			(effects
@@ -5173,7 +5194,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 203.2 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5474,7 +5495,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ESD cặp SS TX2/RX2 (0.5 pF, flow-through)"
+		(property "Description" "ESD for SS pairs TX2/RX2 (0.5 pF, flow-through)"
 			(at 256.54 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5488,6 +5509,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 256.54 43.18 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C138714"
 			(at 256.54 43.18 0)
 			(effects
@@ -5495,7 +5523,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 256.54 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5796,7 +5824,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ESD CC1/CC2/SBU1/SBU2 (0.5 pF, flow-through)"
+		(property "Description" "ESD for CC1/CC2/SBU1/SBU2 (0.5 pF, flow-through)"
 			(at 312.42 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5810,6 +5838,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 312.42 43.18 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C138714"
 			(at 312.42 43.18 0)
 			(effects
@@ -5817,7 +5852,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 312.42 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6118,7 +6153,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ESD cặp USB 2.0 iPhone"
+		(property "Description" "ESD for the iPhone USB 2.0 pair"
 			(at 368.3 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6132,6 +6167,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "STMicroelectronics"
+			(at 368.3 40.64 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C7519"
 			(at 368.3 40.64 0)
 			(effects
@@ -6139,7 +6181,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 368.3 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6412,28 +6454,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Thạch anh LT7911D (tần số và tải chưa rõ)"
+		(property "Description" "LT7911D crystal (frequency and load unknown)"
 			(at 33.02 121.92 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "X322525MOB4SI"
 			(at 33.02 121.92 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "YXC (Yangxing Tech)"
 			(at 33.02 121.92 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C9006"
+			(at 33.02 121.92 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 33.02 121.92 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6642,28 +6691,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ tải thạch anh (chưa rõ, theo sơ đồ Lontium)"
+		(property "Description" "Crystal load capacitor (unclear, per the Lontium reference design)"
 			(at 38.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402CG180J500NT"
 			(at 38.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 38.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C1549"
+			(at 38.1 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 38.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6803,28 +6859,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ tải thạch anh"
+		(property "Description" "Crystal load capacitor"
 			(at 38.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402CG180J500NT"
 			(at 38.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 38.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C1549"
+			(at 38.1 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 38.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6964,28 +7027,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D pin 1"
+		(property "Description" "Decoupling capacitor at LT7911D pin 1"
 			(at 38.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 38.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 38.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 38.1 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7172,28 +7242,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D pin 4"
+		(property "Description" "Decoupling capacitor at LT7911D pin 4"
 			(at 38.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 38.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 38.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 38.1 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7380,28 +7457,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D pin 7"
+		(property "Description" "Decoupling capacitor at LT7911D pin 7"
 			(at 38.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 38.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 38.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 38.1 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7588,28 +7672,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D pin 10"
+		(property "Description" "Decoupling capacitor at LT7911D pin 10"
 			(at 83.82 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 83.82 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 83.82 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 83.82 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7796,28 +7887,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D pin 13"
+		(property "Description" "Decoupling capacitor at LT7911D pin 13"
 			(at 83.82 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 83.82 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 83.82 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 83.82 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8004,28 +8102,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D pin 16"
+		(property "Description" "Decoupling capacitor at LT7911D pin 16"
 			(at 83.82 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 83.82 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 83.82 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 83.82 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8212,28 +8317,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D VDD"
+		(property "Description" "Decoupling capacitor at LT7911D VDD"
 			(at 83.82 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 83.82 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 83.82 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 83.82 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8420,28 +8532,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D VCC33_TX"
+		(property "Description" "Decoupling capacitor at LT7911D VCC33_TX"
 			(at 83.82 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 83.82 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 83.82 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 83.82 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8628,28 +8747,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc sát LT7911D VCC12_TX"
+		(property "Description" "Decoupling capacitor at LT7911D VCC12_TX"
 			(at 129.54 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 129.54 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 129.54 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 129.54 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 129.54 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8816,7 +8942,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "10uF 6.3V"
+		(property "Value" "10uF 10V"
 			(at 129.54 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8836,28 +8962,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ khối 1V2 tại LT7911D"
+		(property "Description" "1V2 bulk capacitor at the LT7911D"
 			(at 129.54 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 129.54 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 129.54 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C19702"
+			(at 129.54 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 129.54 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9024,7 +9157,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "10uF 6.3V"
+		(property "Value" "10uF 10V"
 			(at 129.54 167.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9044,28 +9177,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ khối 1V2_LT_A"
+		(property "Description" "1V2_LT_A bulk capacitor"
 			(at 129.54 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 129.54 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 129.54 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C19702"
+			(at 129.54 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 129.54 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9232,7 +9372,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "10uF 6.3V"
+		(property "Value" "10uF 10V"
 			(at 129.54 175.26 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9252,28 +9392,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ khối 3V3_LT"
+		(property "Description" "3V3_LT bulk capacitor"
 			(at 129.54 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 129.54 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 129.54 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C19702"
+			(at 129.54 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 129.54 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9460,7 +9607,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hạt ferrite tách 3.3 V của LT7911D"
+		(property "Description" "Ferrite bead isolating the LT7911D 3.3 V"
 			(at 129.54 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9474,14 +9621,21 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Murata"
 			(at 129.54 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C85833"
+			(at 129.54 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 129.54 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9668,7 +9822,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hạt ferrite tách 1.2 V analog/PLL"
+		(property "Description" "Ferrite bead isolating the 1.2 V analog/PLL supply"
 			(at 177.8 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9682,14 +9836,21 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Murata"
 			(at 177.8 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C85833"
+			(at 177.8 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 177.8 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9876,28 +10037,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Kéo lên I2C (bus I2C2_M0 của RV1106, 3.3 V)"
+		(property "Description" "I2C pull-up (RV1106 bus I2C2_M0, 3.3 V)"
 			(at 177.8 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF2201TCE"
 			(at 177.8 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 177.8 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25879"
+			(at 177.8 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 177.8 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10037,28 +10205,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Kéo lên I2C"
+		(property "Description" "I2C pull-up"
 			(at 177.8 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF2201TCE"
 			(at 177.8 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 177.8 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25879"
+			(at 177.8 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 177.8 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10198,28 +10373,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Kéo lên RST_N: LT7911D chạy ngay khi có nguồn"
+		(property "Description" "RST_N pull-up: the LT7911D runs as soon as it is powered"
 			(at 177.8 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1002TCE"
 			(at 177.8 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 177.8 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25744"
+			(at 177.8 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 177.8 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10339,7 +10521,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "1uF 25V"
 			(at 177.8 182.88 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10359,28 +10541,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RC reset khi bật nguồn (τ = 10 ms)"
+		(property "Description" "Power-on reset RC (τ = 10 ms)"
 			(at 177.8 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05A105KA5NQNC"
 			(at 177.8 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 177.8 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C52923"
+			(at 177.8 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 177.8 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10520,28 +10709,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tuỳ chọn mức cho SLEEP_33 (chưa rõ)"
+		(property "Description" "Optional level for SLEEP_33 (unclear)"
 			(at 223.52 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1002TCE"
 			(at 223.52 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 223.52 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C25744"
+			(at 223.52 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 223.52 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10681,28 +10877,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Giữ LT_INT ở mức thấp khi LT7911D đang reset"
+		(property "Description" "Holds LT_INT low while the LT7911D is in reset"
 			(at 223.52 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1003TCE"
 			(at 223.52 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 223.52 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25741"
+			(at 223.52 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 223.52 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10842,28 +11045,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ AC AUX (chưa rõ chiều/phân cực, theo sơ đồ Lontium)"
+		(property "Description" "AUX AC capacitor (direction/bias unclear, per the Lontium reference design)"
 			(at 223.52 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 223.52 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 223.52 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C1525"
+			(at 223.52 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 223.52 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10956,28 +11166,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ AC AUX"
+		(property "Description" "AUX AC capacitor"
 			(at 223.52 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 223.52 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 223.52 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C1525"
+			(at 223.52 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 223.52 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11070,28 +11287,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Phân cực AUX phía sink (chưa rõ)"
+		(property "Description" "Sink-side AUX bias (unclear)"
 			(at 223.52 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1004TCE"
 			(at 223.52 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 223.52 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C26083"
+			(at 223.52 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 223.52 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11231,28 +11455,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Phân cực AUX phía sink (chưa rõ)"
+		(property "Description" "Sink-side AUX bias (unclear)"
 			(at 269.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1004TCE"
 			(at 269.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 269.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chưa biết"
+		(property "LCSC" "C26083"
+			(at 269.24 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Unknown"
 			(at 269.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11394,14 +11625,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Đo/ép SLEEP_33"
+		(property "Description" "Measure/force SLEEP_33"
 			(at 269.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 269.24 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 269.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11415,7 +11653,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 269.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11489,14 +11727,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Đo RX_HPD"
+		(property "Description" "Measure RX_HPD"
 			(at 269.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 269.24 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 269.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11510,7 +11755,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 269.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11582,28 +11827,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ tại chân VBUS của U205"
+		(property "Description" "Capacitor at the U205 VBUS pin"
 			(at 269.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 269.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 269.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 269.24 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 269.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11790,7 +12042,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "TVS VBUS iPhone (phương án B, VIN tới 20 V: đổi sang SMF22A)"
+		(property "Description" "iPhone VBUS TVS (Option B with VIN up to 20 V: change to SMF22A)"
 			(at 269.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11804,14 +12056,21 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Littelfuse"
 			(at 269.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C207260"
+			(at 269.24 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 269.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11998,28 +12257,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ VBUS phía iPhone (nguồn Type-C ≤ 120 µF)"
+		(property "Description" "iPhone-side VBUS capacitor (Type-C source ≤ 120 µF)"
 			(at 317.5 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL21A106KAYNNNE"
 			(at 317.5 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 317.5 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C15850"
+			(at 317.5 149.86 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 317.5 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -12186,7 +12452,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "100nF 25V"
+		(property "Value" "100nF 50V"
 			(at 317.5 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -12206,28 +12472,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ cao tần VBUS iPhone"
+		(property "Description" "iPhone VBUS high-frequency capacitor"
 			(at 317.5 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KB54PNC"
 			(at 317.5 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 317.5 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C307331"
+			(at 317.5 157.48 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 317.5 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -12414,28 +12687,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Xả VBUS về vSafe0V (< 0.8 V trong ~0.4 s)"
+		(property "Description" "Discharges VBUS to vSafe0V (< 0.8 V in ~0.4 s)"
 			(at 317.5 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0603WAF1002T5E"
 			(at 317.5 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 317.5 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25804"
+			(at 317.5 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 317.5 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -12622,28 +12902,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Rd tạm cho bring-up chế độ chỉ HID (chưa hàn LT7911D): iPhone thành nguồn + host"
+		(property "Description" "Temporary Rd for HID-only bring-up (LT7911D not fitted): the iPhone becomes source + host"
 			(at 317.5 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF5101TCE"
 			(at 317.5 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 317.5 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25905"
+			(at 317.5 172.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 317.5 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -12783,28 +13070,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Rd tạm cho bring-up chế độ chỉ HID"
+		(property "Description" "Temporary Rd for HID-only bring-up"
 			(at 317.5 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF5101TCE"
 			(at 317.5 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 317.5 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25905"
+			(at 317.5 180.34 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 317.5 180.34 0)
 			(effects
 				(font (size 1.27 1.27))

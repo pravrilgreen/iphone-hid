@@ -13,11 +13,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"nhôm polymer/điện phân 47 µF 35 V 6.3x7.7"
+					"RVT47UF35V67RV0039"
+				)
+				(field
+					(name "Manufacturer")
+					"KNSCHA"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C2836440"
 				)
 				(field
 					(name "DNP")
@@ -27,7 +31,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "CP")
-				(description "Tụ khối VIN, giảm dao động khi cắm nóng cáp dài")
+				(description "VIN bulk capacitor, damps ringing when a long cable is hot-plugged")
 			)
 			(sheetpath
 				(names "/power/")
@@ -37,16 +41,20 @@
 		)
 		(comp
 			(ref "C102")
-			(value "1uF 25V")
+			(value "1uF 50V")
 			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A105KB8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15849"
 				)
 				(field
 					(name "DNP")
@@ -56,7 +64,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ VDD CH224K")
+				(description "CH224K VDD capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -71,11 +79,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31B106KBHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C89632"
 				)
 				(field
 					(name "DNP")
@@ -85,7 +97,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ vào U102")
+				(description "U102 input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -100,11 +112,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31B106KBHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C89632"
 				)
 				(field
 					(name "DNP")
@@ -114,7 +130,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ vào U102")
+				(description "U102 input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -129,11 +145,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CC0603KRX7R9BB104"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C14663"
 				)
 				(field
 					(name "DNP")
@@ -143,7 +163,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ cao tần sát chân VIN/GND U102")
+				(description "High-frequency capacitor at the U102 VIN/GND pins")
 			)
 			(sheetpath
 				(names "/power/")
@@ -153,16 +173,20 @@
 		)
 		(comp
 			(ref "C106")
-			(value "1uF 16V")
+			(value "1uF 25V")
 			(footprint "Capacitor_SMD:C_0402_1005Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05A105KA5NQNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C52923"
 				)
 				(field
 					(name "DNP")
@@ -172,7 +196,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ LDO nội U102")
+				(description "U102 internal LDO capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -187,11 +211,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -201,7 +229,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ bootstrap U102")
+				(description "U102 bootstrap capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -211,16 +239,20 @@
 		)
 		(comp
 			(ref "C108")
-			(value "22uF 10V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31A226KAHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C12891"
 				)
 				(field
 					(name "DNP")
@@ -230,7 +262,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U102")
+				(description "U102 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -240,16 +272,20 @@
 		)
 		(comp
 			(ref "C109")
-			(value "22uF 10V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31A226KAHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C12891"
 				)
 				(field
 					(name "DNP")
@@ -259,7 +295,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U102")
+				(description "U102 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -269,16 +305,20 @@
 		)
 		(comp
 			(ref "C110")
-			(value "22uF 10V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31A226KAHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C12891"
 				)
 				(field
 					(name "DNP")
@@ -288,7 +328,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U102")
+				(description "U102 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -303,11 +343,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31B106KBHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C89632"
 				)
 				(field
 					(name "DNP")
@@ -317,7 +361,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ vào U103")
+				(description "U103 input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -332,11 +376,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31B106KBHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C89632"
 				)
 				(field
 					(name "DNP")
@@ -346,7 +394,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ vào U103")
+				(description "U103 input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -361,11 +409,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CC0603KRX7R9BB104"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C14663"
 				)
 				(field
 					(name "DNP")
@@ -375,7 +427,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ cao tần sát chân VIN/GND U103")
+				(description "High-frequency capacitor at the U103 VIN/GND pins")
 			)
 			(sheetpath
 				(names "/power/")
@@ -385,16 +437,20 @@
 		)
 		(comp
 			(ref "C114")
-			(value "1uF 16V")
+			(value "1uF 25V")
 			(footprint "Capacitor_SMD:C_0402_1005Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05A105KA5NQNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C52923"
 				)
 				(field
 					(name "DNP")
@@ -404,7 +460,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ LDO nội U103")
+				(description "U103 internal LDO capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -419,11 +475,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -433,7 +493,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ bootstrap U103")
+				(description "U103 bootstrap capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -443,16 +503,20 @@
 		)
 		(comp
 			(ref "C116")
-			(value "22uF 10V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31A226KAHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C12891"
 				)
 				(field
 					(name "DNP")
@@ -462,7 +526,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U103")
+				(description "U103 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -472,16 +536,20 @@
 		)
 		(comp
 			(ref "C117")
-			(value "22uF 10V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31A226KAHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C12891"
 				)
 				(field
 					(name "DNP")
@@ -491,7 +559,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U103")
+				(description "U103 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -501,16 +569,20 @@
 		)
 		(comp
 			(ref "C118")
-			(value "22uF 10V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL31A226KAHNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C12891"
 				)
 				(field
 					(name "DNP")
@@ -520,7 +592,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U103")
+				(description "U103 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -535,11 +607,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A106KP8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C19702"
 				)
 				(field
 					(name "DNP")
@@ -549,7 +625,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ vào U104")
+				(description "U104 input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -564,11 +640,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -578,7 +658,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ cao tần vào U104")
+				(description "U104 high-frequency input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -588,16 +668,20 @@
 		)
 		(comp
 			(ref "C121")
-			(value "22uF 6.3V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_0805_2012Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL21A226MAQNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C45783"
 				)
 				(field
 					(name "DNP")
@@ -607,7 +691,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U104")
+				(description "U104 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -617,16 +701,20 @@
 		)
 		(comp
 			(ref "C122")
-			(value "22uF 6.3V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_0805_2012Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL21A226MAQNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C45783"
 				)
 				(field
 					(name "DNP")
@@ -636,7 +724,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U104")
+				(description "U104 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -651,11 +739,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A106KP8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C19702"
 				)
 				(field
 					(name "DNP")
@@ -665,7 +757,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ vào U105")
+				(description "U105 input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -680,11 +772,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -694,7 +790,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ cao tần vào U105")
+				(description "U105 high-frequency input capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -709,11 +805,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -723,7 +823,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ trễ EN U105 (τ = 10 ms)")
+				(description "U105 EN delay capacitor (τ = 10 ms)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -733,16 +833,20 @@
 		)
 		(comp
 			(ref "C126")
-			(value "22uF 6.3V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_0805_2012Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL21A226MAQNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C45783"
 				)
 				(field
 					(name "DNP")
@@ -752,7 +856,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U105")
+				(description "U105 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -762,16 +866,20 @@
 		)
 		(comp
 			(ref "C127")
-			(value "22uF 6.3V X5R")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_0805_2012Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL21A226MAQNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C45783"
 				)
 				(field
 					(name "DNP")
@@ -781,7 +889,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ ra U105")
+				(description "U105 output capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -792,15 +900,19 @@
 		(comp
 			(ref "C128")
 			(value "47nF 50V")
-			(footprint "Capacitor_SMD:C_0402_1005Metric")
+			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10B473KB8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1622"
 				)
 				(field
 					(name "DNP")
@@ -810,7 +922,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Khởi động mềm (~0.5 ms), giới hạn dòng nạp tụ iPhone")
+				(description "Soft start (~0.5 ms), limits the charging current into the iPhone")
 			)
 			(sheetpath
 				(names "/power/")
@@ -825,11 +937,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -839,7 +955,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ nguồn U106")
+				(description "U106 supply capacitor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -854,11 +970,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402B102K500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1523"
 				)
 				(field
 					(name "DNP")
@@ -868,7 +988,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc đầu ra U106 trước ADC")
+				(description "U106 output filter before the ADC")
 			)
 			(sheetpath
 				(names "/power/")
@@ -883,11 +1003,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402CG180J500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1549"
 				)
 				(field
 					(name "DNP")
@@ -897,7 +1021,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ tải thạch anh (chưa rõ, theo sơ đồ Lontium)")
+				(description "Crystal load capacitor (unclear, per the Lontium reference design)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -912,11 +1036,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402CG180J500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1549"
 				)
 				(field
 					(name "DNP")
@@ -926,7 +1054,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ tải thạch anh")
+				(description "Crystal load capacitor")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -941,11 +1069,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -955,7 +1087,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D pin 1")
+				(description "Decoupling capacitor at LT7911D pin 1")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -970,11 +1102,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -984,7 +1120,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D pin 4")
+				(description "Decoupling capacitor at LT7911D pin 4")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -999,11 +1135,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1013,7 +1153,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D pin 7")
+				(description "Decoupling capacitor at LT7911D pin 7")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1028,11 +1168,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1042,7 +1186,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D pin 10")
+				(description "Decoupling capacitor at LT7911D pin 10")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1057,11 +1201,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1071,7 +1219,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D pin 13")
+				(description "Decoupling capacitor at LT7911D pin 13")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1086,11 +1234,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1100,7 +1252,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D pin 16")
+				(description "Decoupling capacitor at LT7911D pin 16")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1115,11 +1267,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1129,7 +1285,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D VDD")
+				(description "Decoupling capacitor at LT7911D VDD")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1144,11 +1300,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1158,7 +1318,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D VCC33_TX")
+				(description "Decoupling capacitor at LT7911D VCC33_TX")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1173,11 +1333,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1187,7 +1351,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc sát LT7911D VCC12_TX")
+				(description "Decoupling capacitor at LT7911D VCC12_TX")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1197,16 +1361,20 @@
 		)
 		(comp
 			(ref "C212")
-			(value "10uF 6.3V")
+			(value "10uF 10V")
 			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A106KP8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C19702"
 				)
 				(field
 					(name "DNP")
@@ -1216,7 +1384,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ khối 1V2 tại LT7911D")
+				(description "1V2 bulk capacitor at the LT7911D")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1226,16 +1394,20 @@
 		)
 		(comp
 			(ref "C213")
-			(value "10uF 6.3V")
+			(value "10uF 10V")
 			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A106KP8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C19702"
 				)
 				(field
 					(name "DNP")
@@ -1245,7 +1417,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ khối 1V2_LT_A")
+				(description "1V2_LT_A bulk capacitor")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1255,16 +1427,20 @@
 		)
 		(comp
 			(ref "C214")
-			(value "10uF 6.3V")
+			(value "10uF 10V")
 			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A106KP8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C19702"
 				)
 				(field
 					(name "DNP")
@@ -1274,7 +1450,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ khối 3V3_LT")
+				(description "3V3_LT bulk capacitor")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1284,16 +1460,20 @@
 		)
 		(comp
 			(ref "C215")
-			(value "1uF")
+			(value "1uF 25V")
 			(footprint "Capacitor_SMD:C_0402_1005Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05A105KA5NQNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C52923"
 				)
 				(field
 					(name "DNP")
@@ -1303,7 +1483,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "RC reset khi bật nguồn (τ = 10 ms)")
+				(description "Power-on reset RC (τ = 10 ms)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1318,11 +1498,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1332,7 +1516,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ AC AUX (chưa rõ chiều/phân cực, theo sơ đồ Lontium)")
+				(description "AUX AC capacitor (direction/bias unclear, per the Lontium reference design)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1347,11 +1531,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1361,7 +1549,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ AC AUX")
+				(description "AUX AC capacitor")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1376,11 +1564,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1390,7 +1582,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ tại chân VBUS của U205")
+				(description "Capacitor at the U205 VBUS pin")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1405,11 +1597,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL21A106KAYNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15850"
 				)
 				(field
 					(name "DNP")
@@ -1419,7 +1615,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ VBUS phía iPhone (nguồn Type-C ≤ 120 µF)")
+				(description "iPhone-side VBUS capacitor (Type-C source ≤ 120 µF)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1429,16 +1625,20 @@
 		)
 		(comp
 			(ref "C220")
-			(value "100nF 25V")
+			(value "100nF 50V")
 			(footprint "Capacitor_SMD:C_0402_1005Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KB54PNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C307331"
 				)
 				(field
 					(name "DNP")
@@ -1448,7 +1648,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ cao tần VBUS iPhone")
+				(description "iPhone VBUS high-frequency capacitor")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -1463,11 +1663,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402CG180J500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1549"
 				)
 				(field
 					(name "DNP")
@@ -1477,7 +1681,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ tải HSE: 2 x (12 pF - ~3 pF ký sinh)")
+				(description "HSE load capacitor: 2 x (12 pF - ~3 pF stray)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1492,11 +1696,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402CG180J500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1549"
 				)
 				(field
 					(name "DNP")
@@ -1506,7 +1714,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ tải HSE")
+				(description "HSE load capacitor")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1521,11 +1729,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1535,7 +1747,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc VBAT pin 1 (datasheet Figure 4-1-1)")
+				(description "Decoupling capacitor VBAT pin 1 (datasheet Figure 4-1-1)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1550,11 +1762,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1564,7 +1780,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc VDD_4 pin 19 (datasheet Figure 4-1-1)")
+				(description "Decoupling capacitor VDD_4 pin 19 (datasheet Figure 4-1-1)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1579,11 +1795,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1593,7 +1813,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc VIO_1 pin 32 (datasheet Figure 4-1-1)")
+				(description "Decoupling capacitor VIO_1 pin 32 (datasheet Figure 4-1-1)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1608,11 +1828,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1622,7 +1846,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc VDD_2 pin 48 (datasheet Figure 4-1-1)")
+				(description "Decoupling capacitor VDD_2 pin 48 (datasheet Figure 4-1-1)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1637,11 +1861,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1651,7 +1879,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc VIO_3 pin 64 (datasheet Figure 4-1-1)")
+				(description "Decoupling capacitor VIO_3 pin 64 (datasheet Figure 4-1-1)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1666,11 +1894,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1680,7 +1912,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ lọc VDDA pin 13 (datasheet Figure 4-1-1)")
+				(description "Decoupling capacitor VDDA pin 13 (datasheet Figure 4-1-1)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1690,16 +1922,20 @@
 		)
 		(comp
 			(ref "C309")
-			(value "1uF")
+			(value "1uF 25V")
 			(footprint "Capacitor_SMD:C_0402_1005Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05A105KA5NQNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C52923"
 				)
 				(field
 					(name "DNP")
@@ -1709,7 +1945,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ VDDA thêm cho ADC")
+				(description "Extra VDDA capacitor for the ADC")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1719,16 +1955,20 @@
 		)
 		(comp
 			(ref "C310")
-			(value "10uF 6.3V")
+			(value "10uF 10V")
 			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A106KP8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C19702"
 				)
 				(field
 					(name "DNP")
@@ -1738,7 +1978,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ khối 3V3 tại MCU")
+				(description "3V3 bulk capacitor at the MCU")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1753,11 +1993,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1767,7 +2011,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ NRST")
+				(description "NRST capacitor")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1782,11 +2026,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402B102K500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1523"
 				)
 				(field
 					(name "DNP")
@@ -1796,7 +2044,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc ADC CC1")
+				(description "CC1 ADC filter")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1811,11 +2059,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402B102K500NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1523"
 				)
 				(field
 					(name "DNP")
@@ -1825,7 +2077,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc ADC CC2")
+				(description "CC2 ADC filter")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1840,11 +2092,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B103KB5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15195"
 				)
 				(field
 					(name "DNP")
@@ -1854,7 +2110,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc ADC VBUS")
+				(description "VBUS ADC filter")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -1864,16 +2120,20 @@
 		)
 		(comp
 			(ref "C401")
-			(value "22uF 10V")
+			(value "22uF 25V X5R")
 			(footprint "Capacitor_SMD:C_0805_2012Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL21A226MAQNNNE"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C45783"
 				)
 				(field
 					(name "DNP")
@@ -1883,7 +2143,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ khối VCC5V0_SYS sát module")
+				(description "VCC5V0_SYS bulk capacitor next to the module")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -1898,11 +2158,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1912,7 +2176,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ cao tần VCC5V0_SYS")
+				(description "VCC5V0_SYS high-frequency capacitor")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -1927,11 +2191,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1941,7 +2209,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ tại chân VBUS của U402")
+				(description "Capacitor at the U402 VBUS pin")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -1951,16 +2219,20 @@
 		)
 		(comp
 			(ref "C404")
-			(value "1uF 25V")
+			(value "1uF 50V")
 			(footprint "Capacitor_SMD:C_0603_1608Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL10A105KB8NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15849"
 				)
 				(field
 					(name "DNP")
@@ -1970,7 +2242,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ VBUS phía PC (UFP ≤ 10 µF)")
+				(description "PC-side VBUS capacitor (UFP ≤ 10 µF)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -1985,11 +2257,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B104KO5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1999,7 +2275,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc VBUSDET")
+				(description "VBUSDET filter")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2014,11 +2290,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B103KB5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15195"
 				)
 				(field
 					(name "DNP")
@@ -2028,7 +2308,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ center tap TX (PHY kiểu voltage-mode)")
+				(description "TX centre-tap capacitor (voltage-mode PHY)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2043,11 +2323,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B103KB5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15195"
 				)
 				(field
 					(name "DNP")
@@ -2057,7 +2341,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ center tap RX")
+				(description "RX centre-tap capacitor")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2067,16 +2351,20 @@
 		)
 		(comp
 			(ref "C408")
-			(value "1nF 100V")
-			(footprint "Capacitor_SMD:C_0603_1608Metric")
+			(value "1nF 2kV X7R")
+			(footprint "Capacitor_SMD:C_1206_3216Metric")
 			(fields
 				(field
 					(name "MPN")
-					""
+					"1206B102K202NT"
+				)
+				(field
+					(name "Manufacturer")
+					"FH (Guangdong Fenghua)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C9196"
 				)
 				(field
 					(name "DNP")
@@ -2086,7 +2374,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Tụ nút Bob-Smith")
+				(description "Bob-Smith node capacitor (2 kV keeps the 1500 V isolation of the magnetics)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2101,11 +2389,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"CL05B103KB5NNNC"
+				)
+				(field
+					(name "Manufacturer")
+					"Samsung Electro-Mechanics"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C15195"
 				)
 				(field
 					(name "DNP")
@@ -2115,7 +2407,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc ADC VIN")
+				(description "VIN ADC filter")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2130,11 +2422,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"GRM1555C1H102JA01D"
+				)
+				(field
+					(name "Manufacturer")
+					"Murata"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C76947"
 				)
 				(field
 					(name "DNP")
@@ -2144,7 +2440,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Lọc phím RECOVERY")
+				(description "RECOVERY key filter")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2162,8 +2458,12 @@
 					"SMAJ24A"
 				)
 				(field
+					(name "Manufacturer")
+					"hongjiacheng"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C19077541"
 				)
 				(field
 					(name "DNP")
@@ -2173,7 +2473,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "D_TVS")
-				(description "TVS 24 V standoff trên VIN")
+				(description "TVS on VIN, 24 V standoff")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2188,11 +2488,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"BZT52C10"
+					"BZT52C10-7-F"
+				)
+				(field
+					(name "Manufacturer")
+					"Diodes Incorporated"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C155227"
 				)
 				(field
 					(name "DNP")
@@ -2202,7 +2506,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "D_Zener")
-				(description "Zener 10 V kẹp Vgs khi dùng phương án B (VIN tới 20 V)")
+				(description "10 V zener clamping Vgs in Option B (VIN up to 20 V)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2220,8 +2524,12 @@
 					"SS34"
 				)
 				(field
+					(name "Manufacturer")
+					"MDD (Microdiode Electronics)"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C8678"
 				)
 				(field
 					(name "DNP")
@@ -2231,7 +2539,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "D_Schottky")
-				(description "Schottky 3 A 40 V: PC_VBUS -> 5V_SYS (chế độ phát triển)")
+				(description "3 A 40 V Schottky: PC_VBUS -> 5V_SYS (development mode)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2249,8 +2557,12 @@
 					"SMF6.0A"
 				)
 				(field
+					(name "Manufacturer")
+					"Littelfuse"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C207260"
 				)
 				(field
 					(name "DNP")
@@ -2260,7 +2572,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "D_TVS")
-				(description "TVS VBUS iPhone (phương án B, VIN tới 20 V: đổi sang SMF22A)")
+				(description "iPhone VBUS TVS (Option B with VIN up to 20 V: change to SMF22A)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -2278,8 +2590,12 @@
 					"SMF6.0A"
 				)
 				(field
+					(name "Manufacturer")
+					"Littelfuse"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C207260"
 				)
 				(field
 					(name "DNP")
@@ -2289,7 +2605,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "D_TVS")
-				(description "TVS VBUS PC")
+				(description "PC VBUS TVS")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2304,11 +2620,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"LED 0603 red, Vf ≤ 2.2 V"
+					"KT-0603R"
+				)
+				(field
+					(name "Manufacturer")
+					"Hubei KENTO Elec"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C2286"
 				)
 				(field
 					(name "DNP")
@@ -2318,7 +2638,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "LED")
-				(description "LED trạng thái RED (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)")
+				(description "RED status LED (red: no iPhone, yellow: HID but no video, green: ready)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -2333,11 +2653,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"LED 0603 yellow, Vf ≤ 2.2 V"
+					"NCD0603Y2"
+				)
+				(field
+					(name "Manufacturer")
+					"Foshan NationStar"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C89811"
 				)
 				(field
 					(name "DNP")
@@ -2347,7 +2671,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "LED")
-				(description "LED trạng thái YELLOW (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)")
+				(description "YELLOW status LED (red: no iPhone, yellow: HID but no video, green: ready)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -2362,11 +2686,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"LED 0603 green, Vf ≤ 2.2 V"
+					"KT-0603YG"
+				)
+				(field
+					(name "Manufacturer")
+					"Hubei KENTO Elec"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C2289"
 				)
 				(field
 					(name "DNP")
@@ -2376,7 +2704,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "LED")
-				(description "LED trạng thái GREEN (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)")
+				(description "GREEN status LED (red: no iPhone, yellow: HID but no video, green: ready)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -2391,11 +2719,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"Littelfuse 0466005.NR"
+					"0466005.NRHF"
+				)
+				(field
+					(name "Manufacturer")
+					"Littelfuse"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C57525"
 				)
 				(field
 					(name "DNP")
@@ -2405,7 +2737,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "F")
-				(description "Cầu chì nhanh 5 A / 32 V cho đầu vào")
+				(description "Very fast 5 A / 32 V input fuse")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2423,8 +2755,12 @@
 					"BLM18KG601SN1D"
 				)
 				(field
+					(name "Manufacturer")
+					"Murata"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C85833"
 				)
 				(field
 					(name "DNP")
@@ -2434,7 +2770,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "FB")
-				(description "Hạt ferrite tách 3.3 V của LT7911D")
+				(description "Ferrite bead isolating the LT7911D 3.3 V")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -2452,8 +2788,12 @@
 					"BLM18KG601SN1D"
 				)
 				(field
+					(name "Manufacturer")
+					"Murata"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C85833"
 				)
 				(field
 					(name "DNP")
@@ -2463,7 +2803,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "FB")
-				(description "Hạt ferrite tách 1.2 V analog/PLL")
+				(description "Ferrite bead isolating the 1.2 V analog/PLL supply")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -2481,8 +2821,12 @@
 					"BLM18KG601SN1D"
 				)
 				(field
+					(name "Manufacturer")
+					"Murata"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C85833"
 				)
 				(field
 					(name "DNP")
@@ -2492,7 +2836,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "FB")
-				(description "Ferrite tách VDDA (VDDA = VIO về DC)")
+				(description "Ferrite isolating VDDA (VDDA = VIO at DC)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -2510,6 +2854,10 @@
 					"TYPE-C-31-M-12"
 				)
 				(field
+					(name "Manufacturer")
+					"Korean Hroparts Elec"
+				)
+				(field
 					(name "LCSC")
 					"C165948"
 				)
@@ -2521,7 +2869,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "USB-C_PD_IN_394007")
-				(description "Cổng USB-C nhận nguồn PD từ sạc (chỉ nguồn + CC)")
+				(description "USB-C port that takes PD power from the charger (power + CC only)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2536,11 +2884,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"Molex 105450-0101"
+					"1054500101"
+				)
+				(field
+					(name "Manufacturer")
+					"Molex"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C134092"
 				)
 				(field
 					(name "DNP")
@@ -2550,7 +2902,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "USB-C_iPhone_964311")
-				(description "Ổ USB-C 24 chân đủ cặp SS (DP Alt Mode 4 lane) + USB 2.0 + CC + VBUS")
+				(description "24-pin USB-C receptacle with all SS pairs (4-lane DP Alt Mode) + USB 2.0 + CC + VBUS")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -2568,6 +2920,10 @@
 					"TYPE-C-31-M-12"
 				)
 				(field
+					(name "Manufacturer")
+					"Korean Hroparts Elec"
+				)
+				(field
 					(name "LCSC")
 					"C165948"
 				)
@@ -2579,7 +2935,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "USB-C_PC_d92c6f")
-				(description "USB-C tới PC: box là thiết bị USB (UVC + mạng USB + điều khiển)")
+				(description "USB-C to the PC: the box is a USB device (UVC + USB network + control)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2597,6 +2953,10 @@
 					"HR911105A"
 				)
 				(field
+					(name "Manufacturer")
+					"HANRUN (Zhongshan HanRun Elec)"
+				)
+				(field
 					(name "LCSC")
 					"C12074"
 				)
@@ -2608,7 +2968,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "RJ45_10_100_47cfd9")
-				(description "RJ45 có biến áp (magjack) 10/100")
+				(description "RJ45 with magnetics (magjack) 10/100")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -2623,7 +2983,11 @@
 			(fields
 				(field
 					(name "MPN")
-					"PinHeader 1x07 2.54"
+					"61300711121"
+				)
+				(field
+					(name "Manufacturer")
+					"Würth Elektronik"
 				)
 				(field
 					(name "LCSC")
@@ -2637,7 +3001,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "MCU_SWD_UART_4da2a0")
-				(description "Header WCH-LinkE cho CH32V305 (SWD 2 dây + UART debug)")
+				(description "WCH-LinkE header for the CH32V305 (2-wire SWD + debug UART)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -2652,7 +3016,11 @@
 			(fields
 				(field
 					(name "MPN")
-					"PinHeader 1x03 2.54"
+					"61300311121"
+				)
+				(field
+					(name "Manufacturer")
+					"Würth Elektronik"
 				)
 				(field
 					(name "LCSC")
@@ -2666,7 +3034,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "MCU_USB_FS_b8bd60")
-				(description "USB Full-Speed thứ hai của CH32V305 (ISP qua USB, thử nghiệm)")
+				(description "Second (Full-Speed) USB of the CH32V305 (ISP over USB, experiments)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -2681,7 +3049,11 @@
 			(fields
 				(field
 					(name "MPN")
-					"PinHeader 1x03 2.54"
+					"61300311121"
+				)
+				(field
+					(name "Manufacturer")
+					"Würth Elektronik"
 				)
 				(field
 					(name "LCSC")
@@ -2695,7 +3067,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "SoC_UART_cf85a2")
-				(description "Console RV1106 (UART2_M1, 115200 8N1, 3.3 V)")
+				(description "RV1106 console (UART2_M1, 115200 8N1, 3.3 V)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -2710,7 +3082,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (solder jumper on the PCB)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -2724,7 +3100,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "PSW_SRC_34952c")
-				(description "Chọn nguồn cho iPhone: 1-2 = 5V2_PHONE (phương án A, mặc định), 2-3 = VIN (phương án B)")
+				(description "iPhone supply select: 1-2 = 5V2_PHONE (Option A, default), 2-3 = VIN (Option B)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2739,7 +3115,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (solder jumper on the PCB)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -2753,7 +3133,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "PC_PWR_135723")
-				(description "Hở mặc định. Hàn để nuôi box từ PC (chỉ khi KHÔNG cắm sạc vào J101)")
+				(description "Open by default. Bridge it to power the box from the PC (only when NO charger is on J101)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2768,11 +3148,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"Bourns SRP1038C-100M (hoặc tương đương)"
+					"SRP1038A-100M"
+				)
+				(field
+					(name "Manufacturer")
+					"Bourns"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C780184"
 				)
 				(field
 					(name "DNP")
@@ -2782,7 +3166,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "L")
-				(description "Cuộn cảm buck U102, Isat ≥ 5 A")
+				(description "U102 buck inductor, Isat ≥ 5 A")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2797,11 +3181,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"Bourns SRP1038C-100M (hoặc tương đương)"
+					"SRP1038A-100M"
+				)
+				(field
+					(name "Manufacturer")
+					"Bourns"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C780184"
 				)
 				(field
 					(name "DNP")
@@ -2811,7 +3199,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "L")
-				(description "Cuộn cảm buck U103, Isat ≥ 4 A")
+				(description "U103 buck inductor, Isat ≥ 4 A")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2826,11 +3214,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"Bourns SRN4018-2R2M (hoặc tương đương)"
+					"SRN4018-2R2M"
+				)
+				(field
+					(name "Manufacturer")
+					"Bourns"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C913207"
 				)
 				(field
 					(name "DNP")
@@ -2840,7 +3232,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "L")
-				(description "Cuộn cảm U104, Isat ≥ 3 A, 4x4 mm")
+				(description "U104 inductor, Isat ≥ 3 A, 4x4 mm")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2855,11 +3247,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"Bourns SRN4018-2R2M (hoặc tương đương)"
+					"SRN4018-2R2M"
+				)
+				(field
+					(name "Manufacturer")
+					"Bourns"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C913207"
 				)
 				(field
 					(name "DNP")
@@ -2869,7 +3265,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "L")
-				(description "Cuộn cảm U105, Isat ≥ 3 A, 4x4 mm")
+				(description "U105 inductor, Isat ≥ 3 A, 4x4 mm")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2887,8 +3283,12 @@
 					"AO4407A"
 				)
 				(field
+					(name "Manufacturer")
+					"Alpha & Omega Semiconductor"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C16072"
 				)
 				(field
 					(name "DNP")
@@ -2898,7 +3298,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "AO4407A_d239dd")
-				(description "P-MOSFET phía nguồn (back-to-back): -30 V, ~11 mΩ @ -10 V")
+				(description "Source-side P-MOSFET (back-to-back): -30 V, ~11 mΩ @ -10 V")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2916,8 +3316,12 @@
 					"AO4407A"
 				)
 				(field
+					(name "Manufacturer")
+					"Alpha & Omega Semiconductor"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C16072"
 				)
 				(field
 					(name "DNP")
@@ -2927,7 +3331,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "AO4407A_d239dd")
-				(description "P-MOSFET phía iPhone (back-to-back): -30 V, ~11 mΩ @ -10 V")
+				(description "iPhone-side P-MOSFET (back-to-back): -30 V, ~11 mΩ @ -10 V")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2945,8 +3349,12 @@
 					"2N7002"
 				)
 				(field
+					(name "Manufacturer")
+					"Changjiang Electronics Tech (CJ)"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C8545"
 				)
 				(field
 					(name "DNP")
@@ -2956,7 +3364,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "2N7002_f53d6c")
-				(description "N-MOSFET kéo cổng xuống")
+				(description "N-MOSFET pulling the gate down")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2971,11 +3379,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"1206W4F1001T5E"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C4410"
 				)
 				(field
 					(name "DNP")
@@ -2985,7 +3397,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Điện trở cấp VDD CH224K (datasheet §6.2)")
+				(description "CH224K VDD feed resistor (datasheet §6.2)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3000,11 +3412,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -3014,7 +3430,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Nối tiếp chân VBUS của CH224K (§6.2)")
+				(description "Series resistor of the CH224K VBUS pin (§6.2)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3029,11 +3445,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF6801TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25917"
 				)
 				(field
 					(name "DNP")
@@ -3043,7 +3463,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chọn điện áp xin: 6.8k=9V (mặc định), 24k=12V, 56k=15V, bỏ trống=20V")
+				(description "Requested voltage: 6.8k=9V (default), 24k=12V, 56k=15V, open=20V")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3058,11 +3478,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -3072,7 +3496,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phương án A: CC của sạc vào CH224K")
+				(description "Option A: charger CC to the CH224K")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3087,11 +3511,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -3101,7 +3529,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phương án A: CC của sạc vào CH224K")
+				(description "Option A: charger CC to the CH224K")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3116,11 +3544,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -3130,7 +3562,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phương án B: CC của sạc vào cổng PD thứ hai của LT7911D")
+				(description "Option B: charger CC to the second PD port of the LT7911D")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3145,11 +3577,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -3159,7 +3595,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phương án B (như R106)")
+				(description "Option B (as R106)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3174,11 +3610,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -3188,7 +3628,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo lên cho PG (open-drain) tới MCU PB12")
+				(description "Pull-up for PG (open drain) to MCU PB12")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3203,11 +3643,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3217,7 +3661,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp trên U102")
+				(description "U102 upper feedback resistor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3232,11 +3676,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"RC0402FR-0723K7L"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C327362"
 				)
 				(field
 					(name "DNP")
@@ -3246,7 +3694,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp dưới U102: Vout = 1.0 V x (1 + 100k/Rfbb)")
+				(description "U102 lower feedback resistor: Vout = 1.0 V x (1 + 100k/Rfbb)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3261,11 +3709,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3275,7 +3727,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp EN U102 (trên)")
+				(description "U102 EN divider (top)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3290,11 +3742,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF2002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25765"
 				)
 				(field
 					(name "DNP")
@@ -3304,7 +3760,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp EN U102 (dưới)")
+				(description "U102 EN divider (bottom)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3319,11 +3775,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3333,7 +3793,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp trên U103")
+				(description "U103 upper feedback resistor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3348,7 +3808,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"RC0402FR-0724K9L"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
@@ -3362,7 +3826,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp dưới U103: Vout = 1.0 V x (1 + 100k/Rfbb)")
+				(description "U103 lower feedback resistor: Vout = 1.0 V x (1 + 100k/Rfbb)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3377,11 +3841,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3391,7 +3859,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp EN U103 (trên)")
+				(description "U103 EN divider (top)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3406,11 +3874,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF3902TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25783"
 				)
 				(field
 					(name "DNP")
@@ -3420,7 +3892,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp EN U103 (dưới)")
+				(description "U103 EN divider (bottom)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3435,11 +3907,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3449,7 +3925,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "EN U104: bật ngay khi có 5V_SYS")
+				(description "U104 EN: on as soon as 5V_SYS is present")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3464,11 +3940,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3478,7 +3958,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp trên U104")
+				(description "U104 upper feedback resistor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3493,7 +3973,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"RC0402FR-0722K1L"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
@@ -3507,7 +3991,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp dưới U104: Vout = 0.6 V x (1 + 100k/Rbot)")
+				(description "U104 lower feedback resistor: Vout = 0.6 V x (1 + 100k/Rbot)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3522,11 +4006,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3536,7 +4024,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "EN U105 lấy từ 3V3 qua RC: 1V2 lên sau 3V3 ~4 ms")
+				(description "U105 EN from 3V3 through an RC: 1V2 comes up ~4 ms after 3V3")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3551,11 +4039,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3565,7 +4057,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp trên U105")
+				(description "U105 upper feedback resistor")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3580,11 +4072,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3594,7 +4090,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hồi tiếp dưới U105: Vout = 0.6 V x (1 + 100k/Rbot)")
+				(description "U105 lower feedback resistor: Vout = 0.6 V x (1 + 100k/Rbot)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3609,11 +4105,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3623,7 +4123,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo cổng lên nguồn chung: MOSFET tắt mặc định")
+				(description "Gate pulled up to the common source: MOSFETs off by default")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3638,11 +4138,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -3652,7 +4156,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Điện trở cổng: Vgs = -Vin x 100k/110k")
+				(description "Gate resistor: Vgs = -Vin x 100k/110k")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3667,11 +4171,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3681,7 +4189,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Mặc định tắt VBUS iPhone")
+				(description "iPhone VBUS off by default")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3696,11 +4204,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"1206 10 mΩ 1% 0.5 W"
+					"RL1206FR-7W0R01L"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C155193"
 				)
 				(field
 					(name "DNP")
@@ -3710,7 +4222,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Shunt đo dòng sạc iPhone (Kelvin)")
+				(description "iPhone charging current shunt (Kelvin)")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3725,11 +4237,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -3739,7 +4255,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phương án A: CH32V305 bật VBUS iPhone")
+				(description "Option A: the CH32V305 switches the iPhone VBUS")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3754,11 +4270,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -3768,7 +4288,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phương án B: GPIO của LT7911D bật VBUS iPhone")
+				(description "Option B: an LT7911D GPIO switches the iPhone VBUS")
 			)
 			(sheetpath
 				(names "/power/")
@@ -3783,11 +4303,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF2201TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25879"
 				)
 				(field
 					(name "DNP")
@@ -3797,7 +4321,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo lên I2C (bus I2C2_M0 của RV1106, 3.3 V)")
+				(description "I2C pull-up (RV1106 bus I2C2_M0, 3.3 V)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3812,11 +4336,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF2201TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25879"
 				)
 				(field
 					(name "DNP")
@@ -3826,7 +4354,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo lên I2C")
+				(description "I2C pull-up")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3841,11 +4369,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -3855,7 +4387,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo lên RST_N: LT7911D chạy ngay khi có nguồn")
+				(description "RST_N pull-up: the LT7911D runs as soon as it is powered")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3870,11 +4402,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -3884,7 +4420,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Tuỳ chọn mức cho SLEEP_33 (chưa rõ)")
+				(description "Optional level for SLEEP_33 (unclear)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3899,11 +4435,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -3913,7 +4453,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Giữ LT_INT ở mức thấp khi LT7911D đang reset")
+				(description "Holds LT_INT low while the LT7911D is in reset")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3928,11 +4468,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1004TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C26083"
 				)
 				(field
 					(name "DNP")
@@ -3942,7 +4486,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phân cực AUX phía sink (chưa rõ)")
+				(description "Sink-side AUX bias (unclear)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3957,11 +4501,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1004TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C26083"
 				)
 				(field
 					(name "DNP")
@@ -3971,7 +4519,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Phân cực AUX phía sink (chưa rõ)")
+				(description "Sink-side AUX bias (unclear)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -3986,11 +4534,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0603WAF1002T5E"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25804"
 				)
 				(field
 					(name "DNP")
@@ -4000,7 +4552,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Xả VBUS về vSafe0V (< 0.8 V trong ~0.4 s)")
+				(description "Discharges VBUS to vSafe0V (< 0.8 V in ~0.4 s)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4015,11 +4567,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF5101TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25905"
 				)
 				(field
 					(name "DNP")
@@ -4029,7 +4585,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Rd tạm cho bring-up chế độ chỉ HID (chưa hàn LT7911D): iPhone thành nguồn + host")
+				(description "Temporary Rd for HID-only bring-up (LT7911D not fitted): the iPhone becomes source + host")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4044,11 +4600,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF5101TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25905"
 				)
 				(field
 					(name "DNP")
@@ -4058,7 +4618,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Rd tạm cho bring-up chế độ chỉ HID")
+				(description "Temporary Rd for HID-only bring-up")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4073,11 +4633,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF4701TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25900"
 				)
 				(field
 					(name "DNP")
@@ -4087,7 +4651,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo lên NRST, đủ mạnh để thắng pull-down mặc định của GPIO1_D3 (RV1106) qua R413")
+				(description "NRST pull-up, strong enough to win over the default pull-down of GPIO1_D3 (RV1106) through R413")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4102,11 +4666,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -4116,7 +4684,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "BOOT0 = 0: chạy từ flash")
+				(description "BOOT0 = 0: run from flash")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4131,11 +4699,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -4145,7 +4717,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "BOOT1 = 0: BOOT0 = 1 thì vào system memory (ISP)")
+				(description "BOOT1 = 0: with BOOT0 = 1 the MCU enters system memory (ISP)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4160,11 +4732,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -4174,7 +4750,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Đo áp CC1, trở kháng cao để không tải CC")
+				(description "CC1 voltage sense, high impedance so the CC line is not loaded")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4189,11 +4765,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -4203,7 +4783,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Đo áp CC2")
+				(description "CC2 voltage sense")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4218,11 +4798,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -4232,7 +4816,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp VBUS iPhone (20 V -> 2.6 V)")
+				(description "iPhone VBUS divider (20 V -> 2.6 V)")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4247,11 +4831,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1502TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25756"
 				)
 				(field
 					(name "DNP")
@@ -4261,7 +4849,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp VBUS iPhone")
+				(description "iPhone VBUS divider")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -4276,11 +4864,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF5101TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25905"
 				)
 				(field
 					(name "DNP")
@@ -4290,7 +4882,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Rd: box là UFP (sink) phía PC")
+				(description "Rd: the box is the UFP (sink) towards the PC")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4305,11 +4897,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF5101TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25905"
 				)
 				(field
 					(name "DNP")
@@ -4334,11 +4930,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -4348,7 +4948,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp VBUS -> USB_VBUSDET (5 V -> 3.2 V)")
+				(description "VBUS divider -> USB_VBUSDET (5 V -> 3.2 V)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4363,11 +4963,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1802TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25762"
 				)
 				(field
 					(name "DNP")
@@ -4377,7 +4981,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp VBUSDET")
+				(description "VBUSDET divider")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4392,11 +4996,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -4406,7 +5014,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+				(description "0R as in the Luckfox design: room for a filter/ESD part")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4421,11 +5029,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -4435,7 +5047,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+				(description "0R as in the Luckfox design: room for a filter/ESD part")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4450,11 +5062,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -4464,7 +5080,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+				(description "0R as in the Luckfox design: room for a filter/ESD part")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4479,11 +5095,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF0000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C17168"
 				)
 				(field
 					(name "DNP")
@@ -4493,7 +5113,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD")
+				(description "0R as in the Luckfox design: room for a filter/ESD part")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4508,11 +5128,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1003TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25741"
 				)
 				(field
 					(name "DNP")
@@ -4522,7 +5146,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp VIN cho SARADC_IN1 (20 V -> 1.52 V)")
+				(description "VIN divider for SARADC_IN1 (20 V -> 1.52 V)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4537,11 +5161,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF8201TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25924"
 				)
 				(field
 					(name "DNP")
@@ -4551,7 +5179,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Chia áp VIN")
+				(description "VIN divider")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4566,11 +5194,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1002TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25744"
 				)
 				(field
 					(name "DNP")
@@ -4580,7 +5212,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Kéo lên SARADC_IN0 (bắt buộc)")
+				(description "SARADC_IN0 pull-up (mandatory)")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4595,11 +5227,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1000TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25076"
 				)
 				(field
 					(name "DNP")
@@ -4609,7 +5245,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Nối tiếp phím RECOVERY")
+				(description "RECOVERY key series resistor")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4624,11 +5260,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF1001TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C11702"
 				)
 				(field
 					(name "DNP")
@@ -4638,7 +5278,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hạn dòng khi RV1106 và WCH-LinkE cùng lái NRST")
+				(description "Limits the current when the RV1106 and a WCH-LinkE both drive NRST")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4653,11 +5293,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF6800TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25130"
 				)
 				(field
 					(name "DNP")
@@ -4667,7 +5311,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hạn dòng LED RED ~2 mA")
+				(description "RED LED current limit ~2 mA")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -4682,11 +5326,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"0402WGF6800TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C25130"
 				)
 				(field
 					(name "DNP")
@@ -4696,7 +5344,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hạn dòng LED YELLOW ~2 mA")
+				(description "YELLOW LED current limit ~2 mA")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -4711,7 +5359,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"RC0402FR-07560RL"
+				)
+				(field
+					(name "Manufacturer")
+					"YAGEO"
 				)
 				(field
 					(name "LCSC")
@@ -4725,7 +5377,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "Hạn dòng LED GREEN ~2 mA")
+				(description "GREEN LED current limit ~2 mA")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -4740,11 +5392,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"TL3342"
+					"TL3342F160QG"
+				)
+				(field
+					(name "Manufacturer")
+					"E-Switch"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C2886898"
 				)
 				(field
 					(name "DNP")
@@ -4754,7 +5410,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "SW")
-				(description "Giữ khi cấp nguồn: RV1106 vào chế độ loader (rockusb) qua USB-C PC")
+				(description "Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -4769,11 +5425,15 @@
 			(fields
 				(field
 					(name "MPN")
-					"TL3342"
+					"TL3342F160QG"
+				)
+				(field
+					(name "Manufacturer")
+					"E-Switch"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C2886898"
 				)
 				(field
 					(name "DNP")
@@ -4783,7 +5443,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "SW")
-				(description "Reset RV1106 (NPOR)")
+				(description "RV1106 reset (NPOR)")
 			)
 			(sheetpath
 				(names "/debug/")
@@ -4798,7 +5458,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -4812,7 +5476,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TP")
-				(description "Đo/ép SLEEP_33")
+				(description "Measure/force SLEEP_33")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4827,7 +5491,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -4841,7 +5509,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TP")
-				(description "Đo RX_HPD")
+				(description "Measure RX_HPD")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4856,7 +5524,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -4870,7 +5542,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TP")
-				(description "Kiểm tra PMIC module đã lên")
+				(description "Checks that the module PMIC is up")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -4885,7 +5557,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -4914,7 +5590,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -4943,7 +5623,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -4972,7 +5656,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5001,7 +5689,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5030,7 +5722,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5059,7 +5755,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5088,7 +5788,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5117,7 +5821,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5146,7 +5854,11 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"none (copper test pad)"
+				)
+				(field
+					(name "Manufacturer")
+					"-"
 				)
 				(field
 					(name "LCSC")
@@ -5178,6 +5890,10 @@
 					"CH224K"
 				)
 				(field
+					(name "Manufacturer")
+					"WCH (Jiangsu Qin Heng)"
+				)
+				(field
 					(name "LCSC")
 					"C970725"
 				)
@@ -5189,7 +5905,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "CH224K_054505")
-				(description "Bộ kích PD (sink) cho nguồn vào")
+				(description "PD trigger (sink) for the power input")
 			)
 			(sheetpath
 				(names "/power/")
@@ -5207,6 +5923,10 @@
 					"LMR33630ADDAR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
 					"C841384"
 				)
@@ -5218,7 +5938,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "LMR33630ADDA_4e82db")
-				(description "Buck VIN -> 5V2_PHONE (5.22 V / 3 A) nuôi iPhone; khởi động khi VIN > ~7.2 V")
+				(description "Buck VIN -> 5V2_PHONE (5.22 V / 3 A) for the iPhone; starts when VIN > ~7.2 V")
 			)
 			(sheetpath
 				(names "/power/")
@@ -5236,6 +5956,10 @@
 					"LMR33630ADDAR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
 					"C841384"
 				)
@@ -5247,7 +5971,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "LMR33630ADDA_4e82db")
-				(description "Buck VIN -> 5V_SYS (5.02 V / 3 A) cho Core1106 và các rail; khởi động khi VIN > ~4.3 V")
+				(description "Buck VIN -> 5V_SYS (5.02 V / 3 A) for the Core1106 and the rails; starts when VIN > ~4.3 V")
 			)
 			(sheetpath
 				(names "/power/")
@@ -5265,8 +5989,12 @@
 					"TLV62569DBVR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C141836"
 				)
 				(field
 					(name "DNP")
@@ -5294,8 +6022,12 @@
 					"TLV62569DBVR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C141836"
 				)
 				(field
 					(name "DNP")
@@ -5305,7 +6037,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TLV62569DBV_19e620")
-				(description "Buck 5V_SYS -> 1V2 (1.2 V / 2 A) cho LT7911D, bật sau 3V3")
+				(description "Buck 5V_SYS -> 1V2 (1.2 V / 2 A) for the LT7911D, after 3V3")
 			)
 			(sheetpath
 				(names "/power/")
@@ -5323,8 +6055,12 @@
 					"INA180A2IDBVR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
-					""
+					"C192764"
 				)
 				(field
 					(name "DNP")
@@ -5334,7 +6070,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "INA180A2_e8db91")
-				(description "Khuếch đại dòng shunt, gain 50: 3 A -> 1.5 V")
+				(description "Shunt current amplifier, gain 50: 3 A -> 1.5 V")
 			)
 			(sheetpath
 				(names "/power/")
@@ -5352,6 +6088,10 @@
 					"LT7911D"
 				)
 				(field
+					(name "Manufacturer")
+					"Lontium Semiconductor"
+				)
+				(field
 					(name "LCSC")
 					"C5310990"
 				)
@@ -5363,7 +6103,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "LT7911D_b1329e")
-				(description "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, MCU + flash nội")
+				(description "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, on-chip MCU + flash")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -5381,6 +6121,10 @@
 					"TPD4E05U06DQAR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
 					"C138714"
 				)
@@ -5392,7 +6136,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TPD4E05U06DQA_dd89b8")
-				(description "ESD cặp SS TX1/RX1 (0.5 pF, flow-through)")
+				(description "ESD for SS pairs TX1/RX1 (0.5 pF, flow-through)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -5410,6 +6154,10 @@
 					"TPD4E05U06DQAR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
 					"C138714"
 				)
@@ -5421,7 +6169,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TPD4E05U06DQA_dd89b8")
-				(description "ESD cặp SS TX2/RX2 (0.5 pF, flow-through)")
+				(description "ESD for SS pairs TX2/RX2 (0.5 pF, flow-through)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -5439,6 +6187,10 @@
 					"TPD4E05U06DQAR"
 				)
 				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
 					(name "LCSC")
 					"C138714"
 				)
@@ -5450,7 +6202,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "TPD4E05U06DQA_dd89b8")
-				(description "ESD CC1/CC2/SBU1/SBU2 (0.5 pF, flow-through)")
+				(description "ESD for CC1/CC2/SBU1/SBU2 (0.5 pF, flow-through)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -5468,6 +6220,10 @@
 					"USBLC6-2SC6"
 				)
 				(field
+					(name "Manufacturer")
+					"STMicroelectronics"
+				)
+				(field
 					(name "LCSC")
 					"C7519"
 				)
@@ -5479,7 +6235,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "USBLC6-2SC6_0f9024")
-				(description "ESD cặp USB 2.0 iPhone")
+				(description "ESD for the iPhone USB 2.0 pair")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -5497,6 +6253,10 @@
 					"CH32V305RBT6"
 				)
 				(field
+					(name "Manufacturer")
+					"WCH (Jiangsu Qin Heng)"
+				)
+				(field
 					(name "LCSC")
 					"C5187529"
 				)
@@ -5508,7 +6268,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "CH32V305RBT6_36f065")
-				(description "MCU RISC-V: USB HS (PHY nội) làm HID cho iPhone, link SPI/UART tới RV1106")
+				(description "RISC-V MCU: USB HS (internal PHY) as HID for the iPhone, SPI/UART link to the RV1106")
 			)
 			(sheetpath
 				(names "/mcu/")
@@ -5523,7 +6283,11 @@
 			(fields
 				(field
 					(name "MPN")
-					"Luckfox Core1106 (RV1106G3, 256 MB, eMMC 8 GB, Wi-Fi 6/BT 5.2)"
+					"Core1106 (RV1106G3, 256 MB, 8 GB eMMC, Wi-Fi 6/BT 5.2 variant)"
+				)
+				(field
+					(name "Manufacturer")
+					"Luckfox"
 				)
 				(field
 					(name "LCSC")
@@ -5537,7 +6301,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "Luckfox_Core1106_33ccee")
-				(description "Module SoC RV1106G3: CSI-2 4 lane, H.264, PHY Ethernet 100M, USB 2.0 OTG, Wi-Fi trên module")
+				(description "RV1106G3 SoC module: 4-lane CSI-2, H.264, 100M Ethernet PHY, USB 2.0 OTG, on-module Wi-Fi")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -5555,6 +6319,10 @@
 					"USBLC6-2SC6"
 				)
 				(field
+					(name "Manufacturer")
+					"STMicroelectronics"
+				)
+				(field
 					(name "LCSC")
 					"C7519"
 				)
@@ -5566,7 +6334,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "USBLC6-2SC6_0f9024")
-				(description "ESD USB 2.0 phía PC")
+				(description "ESD for the PC-side USB 2.0")
 			)
 			(sheetpath
 				(names "/soc/")
@@ -5581,11 +6349,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"X322525MOB4SI"
+				)
+				(field
+					(name "Manufacturer")
+					"YXC (Yangxing Tech)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C9006"
 				)
 				(field
 					(name "DNP")
@@ -5595,7 +6367,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "X")
-				(description "Thạch anh LT7911D (tần số và tải chưa rõ)")
+				(description "LT7911D crystal (frequency and load unknown)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -5610,11 +6382,15 @@
 			(fields
 				(field
 					(name "MPN")
-					""
+					"X32258MOB4SI"
+				)
+				(field
+					(name "Manufacturer")
+					"YXC (Yangxing Tech)"
 				)
 				(field
 					(name "LCSC")
-					""
+					"C2682775"
 				)
 				(field
 					(name "DNP")
@@ -5624,7 +6400,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "X")
-				(description "Thạch anh HSE 8 MHz, CL 12 pF, ±20 ppm")
+				(description "8 MHz HSE crystal, CL 12 pF, ±20 ppm")
 			)
 			(sheetpath
 				(names "/mcu/")

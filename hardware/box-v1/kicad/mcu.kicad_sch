@@ -9,9 +9,9 @@
 		(date "2026-09-26")
 		(rev "v1")
 		(company "iphone-hid / hardware/box-v1")
-		(comment 1 "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này")
-		(comment 2 "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout")
-		(comment 3 "Trang 4/6")
+		(comment 1 "Generated from netlist.py by generate.py; edit netlist.py, not this file")
+		(comment 2 "Pin numbers '?..' = [Unknown], must be confirmed before layout")
+		(comment 3 "Sheet 4/6")
 	)
 	(lib_symbols
 		(symbol "box-v1:8MHz_c8dad4"
@@ -49,7 +49,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Thạch anh HSE 8 MHz, CL 12 pF, ±20 ppm"
+			(property "Description" "8 MHz HSE crystal, CL 12 pF, ±20 ppm"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -278,7 +278,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "MCU RISC-V: USB HS (PHY nội) làm HID cho iPhone, link SPI/UART tới RV1106"
+			(property "Description" "RISC-V MCU: USB HS (internal PHY) as HID for the iPhone, SPI/UART link to the RV1106"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -1712,7 +1712,7 @@
 			)
 		)
 	)
-	(text "3. CH32V305RBT6: USB HS HID tới iPhone, link SPI/UART tới RV1106"
+	(text "3. CH32V305RBT6: USB HS HID to the iPhone, SPI/UART link to the RV1106"
 		(exclude_from_sim no)
 		(at 10.16 12.7 0)
 		(effects
@@ -1721,7 +1721,7 @@
 		)
 		(uuid "9dcf0723-796b-580e-998f-8bf3ef6712d8")
 	)
-	(text "Nhãn net đặt ngay đầu chân (không vẽ dây). Chân số '?..' = chưa có datasheet, phải xác nhận trước khi làm footprint/layout."
+	(text "Net labels sit on the pin ends (no wires). Pin numbers '?..' = no datasheet yet, must be confirmed before footprint/layout work."
 		(exclude_from_sim no)
 		(at 10.16 16.51 0)
 		(effects
@@ -1767,7 +1767,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "MCU RISC-V: USB HS (PHY nội) làm HID cho iPhone, link SPI/UART tới RV1106"
+		(property "Description" "RISC-V MCU: USB HS (internal PHY) as HID for the iPhone, SPI/UART link to the RV1106"
 			(at 63.5 78.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -1781,6 +1781,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "WCH (Jiangsu Qin Heng)"
+			(at 63.5 78.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C5187529"
 			(at 63.5 78.74 0)
 			(effects
@@ -1788,7 +1795,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 63.5 78.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3366,28 +3373,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Thạch anh HSE 8 MHz, CL 12 pF, ±20 ppm"
+		(property "Description" "8 MHz HSE crystal, CL 12 pF, ±20 ppm"
 			(at 129.54 38.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "X32258MOB4SI"
 			(at 129.54 38.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "YXC (Yangxing Tech)"
 			(at 129.54 38.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C2682775"
+			(at 129.54 38.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 129.54 38.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3596,28 +3610,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ tải HSE: 2 x (12 pF - ~3 pF ký sinh)"
+		(property "Description" "HSE load capacitor: 2 x (12 pF - ~3 pF stray)"
 			(at 43.18 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402CG180J500NT"
 			(at 43.18 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 43.18 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1549"
+			(at 43.18 139.7 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 43.18 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3757,28 +3778,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ tải HSE"
+		(property "Description" "HSE load capacitor"
 			(at 43.18 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402CG180J500NT"
 			(at 43.18 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 43.18 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1549"
+			(at 43.18 147.32 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 43.18 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3918,28 +3946,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc VBAT pin 1 (datasheet Figure 4-1-1)"
+		(property "Description" "Decoupling capacitor VBAT pin 1 (datasheet Figure 4-1-1)"
 			(at 43.18 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 43.18 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 43.18 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 43.18 154.94 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 43.18 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4126,28 +4161,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc VDD_4 pin 19 (datasheet Figure 4-1-1)"
+		(property "Description" "Decoupling capacitor VDD_4 pin 19 (datasheet Figure 4-1-1)"
 			(at 43.18 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 43.18 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 43.18 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 43.18 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 43.18 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4334,28 +4376,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc VIO_1 pin 32 (datasheet Figure 4-1-1)"
+		(property "Description" "Decoupling capacitor VIO_1 pin 32 (datasheet Figure 4-1-1)"
 			(at 101.6 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 101.6 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 101.6 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 101.6 139.7 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 101.6 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4542,28 +4591,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc VDD_2 pin 48 (datasheet Figure 4-1-1)"
+		(property "Description" "Decoupling capacitor VDD_2 pin 48 (datasheet Figure 4-1-1)"
 			(at 101.6 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 101.6 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 101.6 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 101.6 147.32 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 101.6 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4750,28 +4806,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc VIO_3 pin 64 (datasheet Figure 4-1-1)"
+		(property "Description" "Decoupling capacitor VIO_3 pin 64 (datasheet Figure 4-1-1)"
 			(at 101.6 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 101.6 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 101.6 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 101.6 154.94 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 101.6 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4958,28 +5021,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ lọc VDDA pin 13 (datasheet Figure 4-1-1)"
+		(property "Description" "Decoupling capacitor VDDA pin 13 (datasheet Figure 4-1-1)"
 			(at 101.6 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 101.6 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 101.6 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 101.6 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 101.6 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5146,7 +5216,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "1uF 25V"
 			(at 160.02 142.24 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5166,28 +5236,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ VDDA thêm cho ADC"
+		(property "Description" "Extra VDDA capacitor for the ADC"
 			(at 160.02 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05A105KA5NQNC"
 			(at 160.02 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 160.02 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C52923"
+			(at 160.02 139.7 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 160.02 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5354,7 +5431,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "10uF 6.3V"
+		(property "Value" "10uF 10V"
 			(at 160.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5374,28 +5451,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ khối 3V3 tại MCU"
+		(property "Description" "3V3 bulk capacitor at the MCU"
 			(at 160.02 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 160.02 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 160.02 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C19702"
+			(at 160.02 147.32 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 160.02 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5582,7 +5666,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Ferrite tách VDDA (VDDA = VIO về DC)"
+		(property "Description" "Ferrite isolating VDDA (VDDA = VIO at DC)"
 			(at 160.02 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5596,14 +5680,21 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Murata"
 			(at 160.02 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C85833"
+			(at 160.02 154.94 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 160.02 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5790,28 +5881,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Kéo lên NRST, đủ mạnh để thắng pull-down mặc định của GPIO1_D3 (RV1106) qua R413"
+		(property "Description" "NRST pull-up, strong enough to win over the default pull-down of GPIO1_D3 (RV1106) through R413"
 			(at 160.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF4701TCE"
 			(at 160.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 160.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25900"
+			(at 160.02 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 160.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5951,28 +6049,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ NRST"
+		(property "Description" "NRST capacitor"
 			(at 218.44 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 218.44 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 218.44 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 218.44 139.7 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 218.44 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6112,28 +6217,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "BOOT0 = 0: chạy từ flash"
+		(property "Description" "BOOT0 = 0: run from flash"
 			(at 218.44 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1002TCE"
 			(at 218.44 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 218.44 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25744"
+			(at 218.44 147.32 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 218.44 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6273,28 +6385,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "BOOT1 = 0: BOOT0 = 1 thì vào system memory (ISP)"
+		(property "Description" "BOOT1 = 0: with BOOT0 = 1 the MCU enters system memory (ISP)"
 			(at 218.44 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1002TCE"
 			(at 218.44 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 218.44 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25744"
+			(at 218.44 154.94 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 218.44 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6434,28 +6553,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Đo áp CC1, trở kháng cao để không tải CC"
+		(property "Description" "CC1 voltage sense, high impedance so the CC line is not loaded"
 			(at 218.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1003TCE"
 			(at 218.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 218.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25741"
+			(at 218.44 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 218.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6548,28 +6674,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Lọc ADC CC1"
+		(property "Description" "CC1 ADC filter"
 			(at 279.4 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402B102K500NT"
 			(at 279.4 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 279.4 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1523"
+			(at 279.4 139.7 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 279.4 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6709,28 +6842,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Đo áp CC2"
+		(property "Description" "CC2 voltage sense"
 			(at 279.4 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1003TCE"
 			(at 279.4 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 279.4 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25741"
+			(at 279.4 147.32 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 279.4 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6823,28 +6963,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Lọc ADC CC2"
+		(property "Description" "CC2 ADC filter"
 			(at 279.4 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402B102K500NT"
 			(at 279.4 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 279.4 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1523"
+			(at 279.4 154.94 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 279.4 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6984,28 +7131,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Chia áp VBUS iPhone (20 V -> 2.6 V)"
+		(property "Description" "iPhone VBUS divider (20 V -> 2.6 V)"
 			(at 279.4 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1003TCE"
 			(at 279.4 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 279.4 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25741"
+			(at 279.4 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 279.4 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7145,28 +7299,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Chia áp VBUS iPhone"
+		(property "Description" "iPhone VBUS divider"
 			(at 337.82 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1502TCE"
 			(at 337.82 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 337.82 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25756"
+			(at 337.82 139.7 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 337.82 139.7 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7306,28 +7467,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Lọc ADC VBUS"
+		(property "Description" "VBUS ADC filter"
 			(at 337.82 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B103KB5NNNC"
 			(at 337.82 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 337.82 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C15195"
+			(at 337.82 147.32 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 337.82 147.32 0)
 			(effects
 				(font (size 1.27 1.27))

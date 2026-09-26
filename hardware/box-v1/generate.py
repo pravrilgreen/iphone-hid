@@ -779,10 +779,10 @@ def bom_rows(design):
     groups = OrderedDict()
     for p in sorted(design.parts, key=lambda p: ref_key(p.ref)):
         o = p.order
-        k = (p.dnp, o.mpn if o else p.mpn, p.footprint)
+        k = (p.dnp, o.mpn if o else p.mpn, p.footprint, p.conf)
         groups.setdefault(k, []).append(p)
     rows = []
-    for (dnp, mpn, fp), ps in groups.items():
+    for (dnp, mpn, fp, _conf), ps in groups.items():
         o = ps[0].order
         values = list(OrderedDict.fromkeys(x.value for x in ps))
         value = " / ".join(values) if len(values) <= 3 else "test pads" if ps[0].symbol == "TP" else values[0]
@@ -834,6 +834,9 @@ def bom_stats(design):
         "dnp_lines": sum(1 for r in orderable if r[10] == "yes"),
         "empty_refs": [r[0] for r in orderable if not r[5]],
     }
+    fitted = [p for p in design.parts if not p.dnp and p.order]
+    for key, cls in (("smt", NL.SMT), ("tht", NL.THT), ("module", NL.MODULE)):
+        st[key] = sum(1 for p in fitted if p.order.assembly == cls)
     return st
 
 
@@ -965,6 +968,7 @@ def coverage_table(design):
         f"| No LCSC code (choose at order) | {st['lcsc_empty']}: {', '.join(st['empty_refs'])} |",
         f"| Lines in JLCPCB's Basic/Preferred list (no feeder fee) | {st['basic_pref']} |",
         f"| Lines assumed Extended (feeder fee per line) | {st['extended']} |",
+        f"| Placements per board (fitted parts): SMT / THT / module | {st['smt']} / {st['tht']} / {st['module']} |",
     ])
 
 
@@ -1004,6 +1008,7 @@ def readme_sections(design):
         sec[f"pins-{block}"] = "\n\n".join(chunks)
     sec["bom-coverage"] = coverage_table(design)
     sec["cost"] = cost_table(design)
+    sec["openings"] = MECH.openings_table()
     return sec
 
 

@@ -1,25 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1460" height="2405" viewBox="0 0 1460 2405" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">
 <rect x="0" y="0" width="1460" height="2405" fill="white"/>
-<text x="20.0" y="34.0" font-size="22" text-anchor="start" fill="#1f2937" font-weight="bold">4. Luckfox Core1106 (RV1106G3) + RJ45 100M + USB-C tới PC</text>
-<text x="20.0" y="58.0" font-size="13" text-anchor="start" fill="#4b5563" font-weight="normal">iPhone control box v1 · sinh từ netlist.py bởi generate.py · 2026-09-26</text>
+<text x="20.0" y="34.0" font-size="22" text-anchor="start" fill="#1f2937" font-weight="bold">4. Luckfox Core1106 (RV1106G3) + 100M RJ45 + USB-C to the PC</text>
+<text x="20.0" y="58.0" font-size="13" text-anchor="start" fill="#4b5563" font-weight="normal">iPhone control box v1 · generated from netlist.py by generate.py · 2026-09-26</text>
 <rect x="20" y="72" width="12" height="12" fill="#b91c1c"/>
 <text x="37.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">rail</text>
 <rect x="84.4" y="72" width="12" height="12" fill="#15803d"/>
 <text x="101.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
 <rect x="141.2" y="72" width="12" height="12" fill="#7e22ce"/>
-<text x="158.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">cặp vi sai</text>
-<rect x="251.2" y="72" width="12" height="12" fill="#1d4ed8"/>
-<text x="268.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">tín hiệu</text>
-<rect x="346.0" y="72" width="12" height="12" fill="#9ca3af"/>
-<text x="363.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">× = không nối</text>
-<rect x="478.8" y="72" width="12" height="12" fill="#0e7490"/>
-<text x="495.8" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân [Có thể]</text>
-<rect x="611.6" y="72" width="12" height="12" fill="#d97706"/>
-<text x="628.6" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân/giá trị [Chưa biết] (số '?..')</text>
+<text x="158.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">differential pair</text>
+<rect x="304.4" y="72" width="12" height="12" fill="#1d4ed8"/>
+<text x="321.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">signal</text>
+<rect x="384.0" y="72" width="12" height="12" fill="#9ca3af"/>
+<text x="401.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">× = no connect</text>
+<rect x="524.4" y="72" width="12" height="12" fill="#0e7490"/>
+<text x="541.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">pin [Likely]</text>
+<rect x="649.5999999999999" y="72" width="12" height="12" fill="#d97706"/>
+<text x="666.6" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">pin/value [Unknown] (number '?..')</text>
 <g transform="translate(0,92)">
 <rect x="194.8" y="104.0" width="528.0" height="1254.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
 <text x="194.8" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U401  Luckfox Core1106</text>
-<text x="194.8" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">Luckfox Core1106 (RV1106G3, 256 MB, eMMC 8 GB, Wi-Fi 6/BT 5.2)  </text>
+<text x="194.8" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">Core1106 (RV1106G3, 256 MB, 8 GB eMMC, Wi-Fi 6/BT 5.2 variant)  </text>
 <line x1="150.8" y1="126.0" x2="194.8" y2="126.0" stroke="#374151" stroke-width="1.4"/>
 <text x="199.8" y="130.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">MIPI_CSI_RX_CK1N/GPI3_B2</text>
 <text x="191.8" y="123.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
@@ -628,7 +628,7 @@
 <line x1="190.8" y1="1789.2" x2="190.8" y2="1809.2" stroke="#374151" stroke-width="2.4"/>
 <line x1="198.8" y1="1789.2" x2="198.8" y2="1809.2" stroke="#374151" stroke-width="2.4"/>
 <text x="194.8" y="1784.2" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C401</text>
-<text x="194.8" y="1824.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">22uF 10V</text>
+<text x="194.8" y="1824.2" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">22uF 25V X5R</text>
 <path d="M150.8,1799.2 L144.8,1791.2 L85.072,1791.2 L85.072,1807.2 L144.8,1807.2 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="142.8" y="1803.4" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">5V_SYS</text>
 <path d="M238.8,1799.2 L244.8,1791.2 L279.664,1791.2 L279.664,1807.2 L244.8,1807.2 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="1803.4" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="150.8" y1="1869.6000000000001" x2="178.8" y2="1869.6000000000001" stroke="#374151" stroke-width="1.6" fill="none"/>
@@ -676,7 +676,7 @@
 <line x1="190.8" y1="2211.6" x2="190.8" y2="2231.6" stroke="#374151" stroke-width="2.4"/>
 <line x1="198.8" y1="2211.6" x2="198.8" y2="2231.6" stroke="#374151" stroke-width="2.4"/>
 <text x="194.8" y="2206.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C404</text>
-<text x="194.8" y="2246.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1uF 25V</text>
+<text x="194.8" y="2246.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1uF 50V</text>
 <path d="M150.8,2221.6 L144.8,2213.6 L76.78399999999999,2213.6 L76.78399999999999,2229.6 L144.8,2229.6 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="142.8" y="2225.8" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PC_VBUS</text>
 <path d="M238.8,2221.6 L244.8,2213.6 L279.664,2213.6 L279.664,2229.6 L244.8,2229.6 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="246.8" y="2225.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="506.76800000000003" y1="1799.2" x2="534.768" y2="1799.2" stroke="#374151" stroke-width="1.6" fill="none"/>
@@ -767,7 +767,7 @@
 <line x1="902.7360000000001" y1="2000.4" x2="902.7360000000001" y2="2020.4" stroke="#374151" stroke-width="2.4"/>
 <line x1="910.7360000000001" y1="2000.4" x2="910.7360000000001" y2="2020.4" stroke="#374151" stroke-width="2.4"/>
 <text x="906.7" y="1995.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C408</text>
-<text x="906.7" y="2035.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1nF 100V</text>
+<text x="906.7" y="2035.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1nF 2kV X7R</text>
 <path d="M862.7360000000001,2010.4 L856.7360000000001,2002.4 L802.3360000000001,2002.4 L802.3360000000001,2018.4 L856.7360000000001,2018.4 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="854.7" y="2014.6" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">ETH_BS</text>
 <path d="M950.7360000000001,2010.4 L956.7360000000001,2002.4 L991.6000000000001,2002.4 L991.6000000000001,2018.4 L956.7360000000001,2018.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="958.7" y="2014.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="862.7360000000001" y1="2080.7999999999997" x2="890.7360000000001" y2="2080.7999999999997" stroke="#374151" stroke-width="1.6" fill="none"/>

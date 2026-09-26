@@ -5,13 +5,13 @@
 	(uuid "50b83e7b-e2da-5712-98e4-aff17b424105")
 	(paper "A3")
 	(title_block
-		(title "box-v1: Core1106 + Ethernet + USB PC")
+		(title "box-v1: Core1106 + Ethernet + PC USB")
 		(date "2026-09-26")
 		(rev "v1")
 		(company "iphone-hid / hardware/box-v1")
-		(comment 1 "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này")
-		(comment 2 "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout")
-		(comment 3 "Trang 5/6")
+		(comment 1 "Generated from netlist.py by generate.py; edit netlist.py, not this file")
+		(comment 2 "Pin numbers '?..' = [Unknown], must be confirmed before layout")
+		(comment 3 "Sheet 5/6")
 	)
 	(lib_symbols
 		(symbol "box-v1:C"
@@ -269,7 +269,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Module SoC RV1106G3: CSI-2 4 lane, H.264, PHY Ethernet 100M, USB 2.0 OTG, Wi-Fi trên module"
+			(property "Description" "RV1106G3 SoC module: 4-lane CSI-2, H.264, 100M Ethernet PHY, USB 2.0 OTG, on-module Wi-Fi"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2552,7 +2552,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "RJ45 có biến áp (magjack) 10/100"
+			(property "Description" "RJ45 with magnetics (magjack) 10/100"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2864,7 +2864,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "USB-C tới PC: box là thiết bị USB (UVC + mạng USB + điều khiển)"
+			(property "Description" "USB-C to the PC: the box is a USB device (UVC + USB network + control)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -3160,7 +3160,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "ESD cặp USB 2.0 iPhone"
+			(property "Description" "ESD for the iPhone USB 2.0 pair"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -3268,7 +3268,7 @@
 			)
 		)
 	)
-	(text "4. Luckfox Core1106 (RV1106G3) + RJ45 100M + USB-C tới PC"
+	(text "4. Luckfox Core1106 (RV1106G3) + 100M RJ45 + USB-C to the PC"
 		(exclude_from_sim no)
 		(at 10.16 12.7 0)
 		(effects
@@ -3277,7 +3277,7 @@
 		)
 		(uuid "ae0e89d1-cd18-53bd-9e86-5b09fc8e64aa")
 	)
-	(text "Nhãn net đặt ngay đầu chân (không vẽ dây). Chân số '?..' = chưa có datasheet, phải xác nhận trước khi làm footprint/layout."
+	(text "Net labels sit on the pin ends (no wires). Pin numbers '?..' = no datasheet yet, must be confirmed before footprint/layout work."
 		(exclude_from_sim no)
 		(at 10.16 16.51 0)
 		(effects
@@ -3323,14 +3323,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Module SoC RV1106G3: CSI-2 4 lane, H.264, PHY Ethernet 100M, USB 2.0 OTG, Wi-Fi trên module"
+		(property "Description" "RV1106G3 SoC module: 4-lane CSI-2, H.264, 100M Ethernet PHY, USB 2.0 OTG, on-module Wi-Fi"
 			(at 73.66 106.68 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "Luckfox Core1106 (RV1106G3, 256 MB, eMMC 8 GB, Wi-Fi 6/BT 5.2)"
+		(property "MPN" "Core1106 (RV1106G3, 256 MB, 8 GB eMMC, Wi-Fi 6/BT 5.2 variant)"
+			(at 73.66 106.68 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Luckfox"
 			(at 73.66 106.68 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3344,14 +3351,14 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Có thể"
+		(property "Confidence" "Likely"
 			(at 73.66 106.68 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Note" "Footprint: dùng Core1106-SMT của Luckfox (30x30 mm, 112 pad, bước 1.0 mm)"
+		(property "Note" "Footprint: use Luckfox Core1106-SMT (30x30 mm, 112 pads, 1.0 mm pitch)"
 			(at 73.66 106.68 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5898,7 +5905,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB-C tới PC: box là thiết bị USB (UVC + mạng USB + điều khiển)"
+		(property "Description" "USB-C to the PC: the box is a USB device (UVC + USB network + control)"
 			(at 167.64 48.26 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5912,6 +5919,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "Korean Hroparts Elec"
+			(at 167.64 48.26 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C165948"
 			(at 167.64 48.26 0)
 			(effects
@@ -5919,7 +5933,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 167.64 48.26 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6724,7 +6738,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RJ45 có biến áp (magjack) 10/100"
+		(property "Description" "RJ45 with magnetics (magjack) 10/100"
 			(at 231.14 45.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6738,6 +6752,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "HANRUN (Zhongshan HanRun Elec)"
+			(at 231.14 45.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C12074"
 			(at 231.14 45.72 0)
 			(effects
@@ -6745,7 +6766,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 231.14 45.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7048,7 +7069,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ESD USB 2.0 phía PC"
+		(property "Description" "ESD for the PC-side USB 2.0"
 			(at 289.56 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7062,6 +7083,13 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" "STMicroelectronics"
+			(at 289.56 40.64 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
 		(property "LCSC" "C7519"
 			(at 289.56 40.64 0)
 			(effects
@@ -7069,7 +7097,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 289.56 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7320,7 +7348,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "22uF 10V"
+		(property "Value" "22uF 25V X5R"
 			(at 38.1 200.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7340,28 +7368,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ khối VCC5V0_SYS sát module"
+		(property "Description" "VCC5V0_SYS bulk capacitor next to the module"
 			(at 38.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL21A226MAQNNNE"
 			(at 38.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 38.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C45783"
+			(at 38.1 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7548,28 +7583,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ cao tần VCC5V0_SYS"
+		(property "Description" "VCC5V0_SYS high-frequency capacitor"
 			(at 38.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 38.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 38.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 38.1 205.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7758,14 +7800,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Kiểm tra PMIC module đã lên"
+		(property "Description" "Checks that the module PMIC is up"
 			(at 38.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 38.1 213.36 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 38.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7779,7 +7828,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 38.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7898,28 +7947,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Rd: box là UFP (sink) phía PC"
+		(property "Description" "Rd: the box is the UFP (sink) towards the PC"
 			(at 38.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF5101TCE"
 			(at 38.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 38.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25905"
+			(at 38.1 223.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8066,21 +8122,28 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF5101TCE"
 			(at 88.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 88.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25905"
+			(at 88.9 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 88.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8220,28 +8283,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ tại chân VBUS của U402"
+		(property "Description" "Capacitor at the U402 VBUS pin"
 			(at 88.9 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 88.9 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 88.9 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 88.9 205.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 88.9 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8408,7 +8478,7 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 88.9 215.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8428,28 +8498,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ VBUS phía PC (UFP ≤ 10 µF)"
+		(property "Description" "PC-side VBUS capacitor (UFP ≤ 10 µF)"
 			(at 88.9 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10A105KB8NNNC"
 			(at 88.9 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 88.9 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C15849"
+			(at 88.9 213.36 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 88.9 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8636,7 +8713,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "TVS VBUS PC"
+		(property "Description" "PC VBUS TVS"
 			(at 88.9 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8650,14 +8727,21 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Littelfuse"
 			(at 88.9 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C207260"
+			(at 88.9 223.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 88.9 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -8844,28 +8928,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Chia áp VBUS -> USB_VBUSDET (5 V -> 3.2 V)"
+		(property "Description" "VBUS divider -> USB_VBUSDET (5 V -> 3.2 V)"
 			(at 139.7 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1002TCE"
 			(at 139.7 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 139.7 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25744"
+			(at 139.7 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 139.7 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9005,28 +9096,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Chia áp VBUSDET"
+		(property "Description" "VBUSDET divider"
 			(at 139.7 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1802TCE"
 			(at 139.7 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 139.7 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25762"
+			(at 139.7 205.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 139.7 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9166,28 +9264,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Lọc VBUSDET"
+		(property "Description" "VBUSDET filter"
 			(at 139.7 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B104KO5NNNC"
 			(at 139.7 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 139.7 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C1525"
+			(at 139.7 213.36 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 139.7 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9327,28 +9432,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD"
+		(property "Description" "0R as in the Luckfox design: room for a filter/ESD part"
 			(at 139.7 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF0000TCE"
 			(at 139.7 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 139.7 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C17168"
+			(at 139.7 223.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 139.7 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9441,28 +9553,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD"
+		(property "Description" "0R as in the Luckfox design: room for a filter/ESD part"
 			(at 190.5 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF0000TCE"
 			(at 190.5 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 190.5 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C17168"
+			(at 190.5 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 190.5 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9555,28 +9674,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD"
+		(property "Description" "0R as in the Luckfox design: room for a filter/ESD part"
 			(at 190.5 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF0000TCE"
 			(at 190.5 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 190.5 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C17168"
+			(at 190.5 205.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 190.5 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9669,28 +9795,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "0R như thiết kế Luckfox: chỗ để thêm lọc/ESD"
+		(property "Description" "0R as in the Luckfox design: room for a filter/ESD part"
 			(at 190.5 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF0000TCE"
 			(at 190.5 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 190.5 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C17168"
+			(at 190.5 213.36 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 190.5 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9783,28 +9916,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ center tap TX (PHY kiểu voltage-mode)"
+		(property "Description" "TX centre-tap capacitor (voltage-mode PHY)"
 			(at 190.5 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B103KB5NNNC"
 			(at 190.5 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 190.5 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C15195"
+			(at 190.5 223.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 190.5 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -9944,28 +10084,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ center tap RX"
+		(property "Description" "RX centre-tap capacitor"
 			(at 241.3 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B103KB5NNNC"
 			(at 241.3 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 241.3 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C15195"
+			(at 241.3 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 241.3 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10085,13 +10232,13 @@
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "1nF 100V"
+		(property "Value" "1nF 2kV X7R"
 			(at 241.3 208.28 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 241.3 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10105,28 +10252,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Tụ nút Bob-Smith"
+		(property "Description" "Bob-Smith node capacitor (2 kV keeps the 1500 V isolation of the magnetics)"
 			(at 241.3 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "1206B102K202NT"
 			(at 241.3 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
 			(at 241.3 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C9196"
+			(at 241.3 205.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 241.3 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10266,28 +10420,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Chia áp VIN cho SARADC_IN1 (20 V -> 1.52 V)"
+		(property "Description" "VIN divider for SARADC_IN1 (20 V -> 1.52 V)"
 			(at 241.3 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1003TCE"
 			(at 241.3 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 241.3 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25741"
+			(at 241.3 213.36 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 241.3 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10427,28 +10588,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Chia áp VIN"
+		(property "Description" "VIN divider"
 			(at 241.3 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF8201TCE"
 			(at 241.3 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 241.3 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25924"
+			(at 241.3 223.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 241.3 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10588,28 +10756,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Lọc ADC VIN"
+		(property "Description" "VIN ADC filter"
 			(at 292.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05B103KB5NNNC"
 			(at 292.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 292.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C15195"
+			(at 292.1 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 292.1 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10749,28 +10924,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Kéo lên SARADC_IN0 (bắt buộc)"
+		(property "Description" "SARADC_IN0 pull-up (mandatory)"
 			(at 292.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1002TCE"
 			(at 292.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 292.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25744"
+			(at 292.1 205.74 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 292.1 205.74 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -10910,28 +11092,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Lọc phím RECOVERY"
+		(property "Description" "RECOVERY key filter"
 			(at 292.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GRM1555C1H102JA01D"
 			(at 292.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Murata"
 			(at 292.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C76947"
+			(at 292.1 213.36 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 292.1 213.36 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11071,28 +11260,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Nối tiếp phím RECOVERY"
+		(property "Description" "RECOVERY key series resistor"
 			(at 292.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1000TCE"
 			(at 292.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 292.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25076"
+			(at 292.1 223.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 292.1 223.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -11185,28 +11381,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hạn dòng khi RV1106 và WCH-LinkE cùng lái NRST"
+		(property "Description" "Limits the current when the RV1106 and a WCH-LinkE both drive NRST"
 			(at 342.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF1001TCE"
 			(at 342.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 342.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C11702"
+			(at 342.9 198.12 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 342.9 198.12 0)
 			(effects
 				(font (size 1.27 1.27))

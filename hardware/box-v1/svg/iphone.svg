@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1337" height="2044" viewBox="0 0 1337 2044" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">
 <rect x="0" y="0" width="1337" height="2044" fill="white"/>
-<text x="20.0" y="34.0" font-size="22" text-anchor="start" fill="#1f2937" font-weight="bold">2. Cổng USB-C iPhone + LT7911D (DP Alt Mode -&gt; MIPI CSI-2)</text>
-<text x="20.0" y="58.0" font-size="13" text-anchor="start" fill="#4b5563" font-weight="normal">iPhone control box v1 · sinh từ netlist.py bởi generate.py · 2026-09-26</text>
+<text x="20.0" y="34.0" font-size="22" text-anchor="start" fill="#1f2937" font-weight="bold">2. iPhone USB-C port + LT7911D (DP Alt Mode -&gt; MIPI CSI-2)</text>
+<text x="20.0" y="58.0" font-size="13" text-anchor="start" fill="#4b5563" font-weight="normal">iPhone control box v1 · generated from netlist.py by generate.py · 2026-09-26</text>
 <rect x="20" y="72" width="12" height="12" fill="#b91c1c"/>
 <text x="37.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">rail</text>
 <rect x="84.4" y="72" width="12" height="12" fill="#15803d"/>
 <text x="101.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
 <rect x="141.2" y="72" width="12" height="12" fill="#7e22ce"/>
-<text x="158.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">cặp vi sai</text>
-<rect x="251.2" y="72" width="12" height="12" fill="#1d4ed8"/>
-<text x="268.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">tín hiệu</text>
-<rect x="346.0" y="72" width="12" height="12" fill="#9ca3af"/>
-<text x="363.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">× = không nối</text>
-<rect x="478.8" y="72" width="12" height="12" fill="#0e7490"/>
-<text x="495.8" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân [Có thể]</text>
-<rect x="611.6" y="72" width="12" height="12" fill="#d97706"/>
-<text x="628.6" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">chân/giá trị [Chưa biết] (số '?..')</text>
+<text x="158.2" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">differential pair</text>
+<rect x="304.4" y="72" width="12" height="12" fill="#1d4ed8"/>
+<text x="321.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">signal</text>
+<rect x="384.0" y="72" width="12" height="12" fill="#9ca3af"/>
+<text x="401.0" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">× = no connect</text>
+<rect x="524.4" y="72" width="12" height="12" fill="#0e7490"/>
+<text x="541.4" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">pin [Likely]</text>
+<rect x="649.5999999999999" y="72" width="12" height="12" fill="#d97706"/>
+<text x="666.6" y="83.0" font-size="12.5" text-anchor="start" fill="#1f2937" font-weight="normal">pin/value [Unknown] (number '?..')</text>
 <g transform="translate(0,92)">
 <rect x="216.6" y="104.0" width="264.0" height="550.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
 <text x="216.6" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">U201  LT7911D</text>
@@ -214,7 +214,7 @@
 <path d="M128.60000000000002,632.0 L122.60000000000002,624.0 L87.73600000000002,624.0 L87.73600000000002,640.0 L122.60000000000002,640.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="120.6" y="636.2" font-size="11.5" text-anchor="end" fill="#15803d" font-weight="bold">GND</text>
 <rect x="863.4" y="104.0" width="176.0" height="308.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
 <text x="863.4" y="84.0" font-size="14.5" text-anchor="start" fill="#1f2937" font-weight="bold">J201  USB-C iPhone</text>
-<text x="863.4" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">Molex 105450-0101  </text>
+<text x="863.4" y="99.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">1054500101  LCSC C134092</text>
 <line x1="819.4" y1="126.0" x2="863.4" y2="126.0" stroke="#374151" stroke-width="1.4"/>
 <text x="868.4" y="130.5" font-size="12" text-anchor="start" fill="#1f2937" font-weight="normal">GND</text>
 <text x="860.4" y="123.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">A1</text>
@@ -473,7 +473,7 @@
 <path d="M326.8,1124.0 L332.8,1116.0 L431.6,1116.0 L431.6,1132.0 L332.8,1132.0 Z" fill="white" stroke="#7e22ce" stroke-width="1.2"/><text x="334.8" y="1128.2" font-size="11.5" text-anchor="start" fill="#7e22ce" font-weight="normal">PHONE_USB_DP</text>
 <rect x="562.6" y="1058.0" width="88.0" height="44.0" fill="#fffbeb" stroke="#7c2d12" stroke-width="2"/>
 <text x="562.6" y="1038.0" font-size="14.5" text-anchor="start" fill="#d97706" font-weight="bold">X201  25MHz</text>
-<text x="562.6" y="1053.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal"></text>
+<text x="562.6" y="1053.0" font-size="11" text-anchor="start" fill="#6b7280" font-weight="normal">X322525MOB4SI  LCSC C9006</text>
 <line x1="540.6" y1="1080.0" x2="562.6" y2="1080.0" stroke="#374151" stroke-width="1.4"/>
 <text x="559.6" y="1077.0" font-size="10.5" text-anchor="end" fill="#1f2937" font-weight="normal">1</text>
 <path d="M540.6,1080.0 L534.6,1072.0 L487.6,1072.0 L487.6,1088.0 L534.6,1088.0 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="532.6" y="1084.2" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_XI</text>
@@ -603,7 +603,7 @@
 <line x1="510.0640000000001" y1="1428.0" x2="510.0640000000001" y2="1448.0" stroke="#374151" stroke-width="2.4"/>
 <line x1="518.0640000000001" y1="1428.0" x2="518.0640000000001" y2="1448.0" stroke="#374151" stroke-width="2.4"/>
 <text x="514.1" y="1423.0" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C212</text>
-<text x="514.1" y="1463.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 6.3V</text>
+<text x="514.1" y="1463.0" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 10V</text>
 <path d="M470.0640000000001,1438.0 L464.0640000000001,1430.0 L429.20000000000005,1430.0 L429.20000000000005,1446.0 L464.0640000000001,1446.0 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1442.2" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2</text>
 <path d="M558.0640000000001,1438.0 L564.0640000000001,1430.0 L598.9280000000001,1430.0 L598.9280000000001,1446.0 L564.0640000000001,1446.0 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1442.2" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="470.0640000000001" y1="1508.4" x2="498.0640000000001" y2="1508.4" stroke="#374151" stroke-width="1.6" fill="none"/>
@@ -613,7 +613,7 @@
 <line x1="510.0640000000001" y1="1498.4" x2="510.0640000000001" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
 <line x1="518.0640000000001" y1="1498.4" x2="518.0640000000001" y2="1518.4" stroke="#374151" stroke-width="2.4"/>
 <text x="514.1" y="1493.4" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C213</text>
-<text x="514.1" y="1533.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 6.3V</text>
+<text x="514.1" y="1533.4" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 10V</text>
 <path d="M470.0640000000001,1508.4 L464.0640000000001,1500.4 L387.76000000000005,1500.4 L387.76000000000005,1516.4 L464.0640000000001,1516.4 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1512.6" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">1V2_LT_A</text>
 <path d="M558.0640000000001,1508.4 L564.0640000000001,1500.4 L598.9280000000001,1500.4 L598.9280000000001,1516.4 L564.0640000000001,1516.4 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1512.6" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="470.0640000000001" y1="1578.8" x2="498.0640000000001" y2="1578.8" stroke="#374151" stroke-width="1.6" fill="none"/>
@@ -623,7 +623,7 @@
 <line x1="510.0640000000001" y1="1568.8" x2="510.0640000000001" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
 <line x1="518.0640000000001" y1="1568.8" x2="518.0640000000001" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
 <text x="514.1" y="1563.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C214</text>
-<text x="514.1" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 6.3V</text>
+<text x="514.1" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">10uF 10V</text>
 <path d="M470.0640000000001,1578.8 L464.0640000000001,1570.8 L404.33600000000007,1570.8 L404.33600000000007,1586.8 L464.0640000000001,1586.8 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="462.1" y="1583.0" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">3V3_LT</text>
 <path d="M558.0640000000001,1578.8 L564.0640000000001,1570.8 L598.9280000000001,1570.8 L598.9280000000001,1586.8 L564.0640000000001,1586.8 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="566.1" y="1583.0" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="470.0640000000001" y1="1649.2" x2="498.0640000000001" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>
@@ -672,7 +672,7 @@
 <line x1="835.248" y1="1357.6000000000001" x2="835.248" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
 <line x1="843.248" y1="1357.6000000000001" x2="843.248" y2="1377.6000000000001" stroke="#374151" stroke-width="2.4"/>
 <text x="839.2" y="1352.6" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C215</text>
-<text x="839.2" y="1392.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1uF</text>
+<text x="839.2" y="1392.6" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">1uF 25V</text>
 <path d="M795.248,1367.6000000000001 L789.248,1359.6000000000001 L720.048,1359.6000000000001 L720.048,1375.6000000000001 L789.248,1375.6000000000001 Z" fill="white" stroke="#1d4ed8" stroke-width="1.2"/><text x="787.2" y="1371.8" font-size="11.5" text-anchor="end" fill="#1d4ed8" font-weight="normal">LT_RST_N</text>
 <path d="M883.248,1367.6000000000001 L889.248,1359.6000000000001 L924.1120000000001,1359.6000000000001 L924.1120000000001,1375.6000000000001 L889.248,1375.6000000000001 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="891.2" y="1371.8" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="795.248" y1="1438.0" x2="823.248" y2="1438.0" stroke="#374151" stroke-width="1.6" fill="none"/>
@@ -767,7 +767,7 @@
 <line x1="1160.4320000000002" y1="1568.8" x2="1160.4320000000002" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
 <line x1="1168.4320000000002" y1="1568.8" x2="1168.4320000000002" y2="1588.8" stroke="#374151" stroke-width="2.4"/>
 <text x="1164.4" y="1563.8" font-size="12" text-anchor="middle" fill="#1f2937" font-weight="bold">C220</text>
-<text x="1164.4" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF 25V</text>
+<text x="1164.4" y="1603.8" font-size="11.5" text-anchor="middle" fill="#1f2937" font-weight="normal">100nF 50V</text>
 <path d="M1120.4320000000002,1578.8 L1114.4320000000002,1570.8 L1021.5520000000002,1570.8 L1021.5520000000002,1586.8 L1114.4320000000002,1586.8 Z" fill="white" stroke="#b91c1c" stroke-width="1.2"/><text x="1112.4" y="1583.0" font-size="11.5" text-anchor="end" fill="#b91c1c" font-weight="bold">PHONE_VBUS</text>
 <path d="M1208.4320000000002,1578.8 L1214.4320000000002,1570.8 L1249.2960000000003,1570.8 L1249.2960000000003,1586.8 L1214.4320000000002,1586.8 Z" fill="white" stroke="#15803d" stroke-width="1.2"/><text x="1216.4" y="1583.0" font-size="11.5" text-anchor="start" fill="#15803d" font-weight="bold">GND</text>
 <line x1="1120.4320000000002" y1="1649.2" x2="1148.4320000000002" y2="1649.2" stroke="#374151" stroke-width="1.6" fill="none"/>

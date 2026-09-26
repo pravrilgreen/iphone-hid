@@ -5,13 +5,13 @@
 	(uuid "8b95917e-abc7-5a05-b7bc-0a1f2f856e93")
 	(paper "A4")
 	(title_block
-		(title "box-v1: debug, LED, nút")
+		(title "box-v1: debug, LEDs, buttons")
 		(date "2026-09-26")
 		(rev "v1")
 		(company "iphone-hid / hardware/box-v1")
-		(comment 1 "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này")
-		(comment 2 "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout")
-		(comment 3 "Trang 6/6")
+		(comment 1 "Generated from netlist.py by generate.py; edit netlist.py, not this file")
+		(comment 2 "Pin numbers '?..' = [Unknown], must be confirmed before layout")
+		(comment 3 "Sheet 6/6")
 	)
 	(lib_symbols
 		(symbol "box-v1:LED"
@@ -174,7 +174,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Header WCH-LinkE cho CH32V305 (SWD 2 dây + UART debug)"
+			(property "Description" "WCH-LinkE header for the CH32V305 (2-wire SWD + debug UART)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -330,7 +330,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "USB Full-Speed thứ hai của CH32V305 (ISP qua USB, thử nghiệm)"
+			(property "Description" "Second (Full-Speed) USB of the CH32V305 (ISP over USB, experiments)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -1380,7 +1380,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Console RV1106 (UART2_M1, 115200 8N1, 3.3 V)"
+			(property "Description" "RV1106 console (UART2_M1, 115200 8N1, 3.3 V)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -1518,7 +1518,7 @@
 			)
 		)
 	)
-	(text "5. Debug header, LED trạng thái, nút, test point"
+	(text "5. Debug headers, status LEDs, buttons, test points"
 		(exclude_from_sim no)
 		(at 10.16 12.7 0)
 		(effects
@@ -1527,7 +1527,7 @@
 		)
 		(uuid "5e48afab-5ba7-5305-88c1-7fb93678236e")
 	)
-	(text "Nhãn net đặt ngay đầu chân (không vẽ dây). Chân số '?..' = chưa có datasheet, phải xác nhận trước khi làm footprint/layout."
+	(text "Net labels sit on the pin ends (no wires). Pin numbers '?..' = no datasheet yet, must be confirmed before footprint/layout work."
 		(exclude_from_sim no)
 		(at 10.16 16.51 0)
 		(effects
@@ -1573,14 +1573,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Header WCH-LinkE cho CH32V305 (SWD 2 dây + UART debug)"
+		(property "Description" "WCH-LinkE header for the CH32V305 (2-wire SWD + debug UART)"
 			(at 40.64 45.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "PinHeader 1x07 2.54"
+		(property "MPN" "61300711121"
+			(at 40.64 45.72 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Würth Elektronik"
 			(at 40.64 45.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -1594,7 +1601,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 40.64 45.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -1888,14 +1895,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB Full-Speed thứ hai của CH32V305 (ISP qua USB, thử nghiệm)"
+		(property "Description" "Second (Full-Speed) USB of the CH32V305 (ISP over USB, experiments)"
 			(at 81.28 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "PinHeader 1x03 2.54"
+		(property "MPN" "61300311121"
+			(at 81.28 40.64 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Würth Elektronik"
 			(at 81.28 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -1909,7 +1923,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 81.28 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2072,14 +2086,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Console RV1106 (UART2_M1, 115200 8N1, 3.3 V)"
+		(property "Description" "RV1106 console (UART2_M1, 115200 8N1, 3.3 V)"
 			(at 121.92 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "PinHeader 1x03 2.54"
+		(property "MPN" "61300311121"
+			(at 121.92 40.64 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Würth Elektronik"
 			(at 121.92 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2093,7 +2114,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 121.92 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2254,28 +2275,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Giữ khi cấp nguồn: RV1106 vào chế độ loader (rockusb) qua USB-C PC"
+		(property "Description" "Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C"
 			(at 38.1 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "TL3342"
+		(property "MPN" "TL3342F160QG"
 			(at 38.1 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "E-Switch"
 			(at 38.1 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C2886898"
+			(at 38.1 73.66 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2415,28 +2443,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Reset RV1106 (NPOR)"
+		(property "Description" "RV1106 reset (NPOR)"
 			(at 38.1 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "TL3342"
+		(property "MPN" "TL3342F160QG"
 			(at 38.1 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "E-Switch"
 			(at 38.1 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C2886898"
+			(at 38.1 81.28 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2576,28 +2611,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hạn dòng LED RED ~2 mA"
+		(property "Description" "RED LED current limit ~2 mA"
 			(at 38.1 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF6800TCE"
 			(at 38.1 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 38.1 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25130"
+			(at 38.1 88.9 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2690,28 +2732,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED trạng thái RED (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)"
+		(property "Description" "RED status LED (red: no iPhone, yellow: HID but no video, green: ready)"
 			(at 38.1 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "LED 0603 red, Vf ≤ 2.2 V"
+		(property "MPN" "KT-0603R"
 			(at 38.1 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Hubei KENTO Elec"
 			(at 38.1 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C2286"
+			(at 38.1 96.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 38.1 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2851,28 +2900,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hạn dòng LED YELLOW ~2 mA"
+		(property "Description" "YELLOW LED current limit ~2 mA"
 			(at 83.82 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0402WGF6800TCE"
 			(at 83.82 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
 			(at 83.82 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C25130"
+			(at 83.82 73.66 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2965,28 +3021,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED trạng thái YELLOW (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)"
+		(property "Description" "YELLOW status LED (red: no iPhone, yellow: HID but no video, green: ready)"
 			(at 83.82 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "LED 0603 yellow, Vf ≤ 2.2 V"
+		(property "MPN" "NCD0603Y2"
 			(at 83.82 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Foshan NationStar"
 			(at 83.82 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C89811"
+			(at 83.82 81.28 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3126,14 +3189,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hạn dòng LED GREEN ~2 mA"
+		(property "Description" "GREEN LED current limit ~2 mA"
 			(at 83.82 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0402FR-07560RL"
+			(at 83.82 88.9 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
 			(at 83.82 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3147,7 +3217,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 83.82 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3240,28 +3310,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED trạng thái GREEN (đỏ: chưa có iPhone, vàng: có HID chưa có hình, xanh: sẵn sàng)"
+		(property "Description" "GREEN status LED (red: no iPhone, yellow: HID but no video, green: ready)"
 			(at 83.82 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "LED 0603 green, Vf ≤ 2.2 V"
+		(property "MPN" "KT-0603YG"
 			(at 83.82 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "Manufacturer" "Hubei KENTO Elec"
 			(at 83.82 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "LCSC" "C2289"
+			(at 83.82 96.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
 			(at 83.82 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3410,7 +3487,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 129.54 73.66 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 129.54 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3424,7 +3508,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 129.54 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3552,7 +3636,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 129.54 81.28 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 129.54 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3566,7 +3657,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 129.54 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3694,7 +3785,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 129.54 88.9 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 129.54 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3708,7 +3806,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 129.54 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3836,7 +3934,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 129.54 96.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 129.54 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3850,7 +3955,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 129.54 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3978,7 +4083,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 175.26 73.66 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 175.26 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3992,7 +4104,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 175.26 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4120,7 +4232,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 175.26 81.28 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 175.26 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4134,7 +4253,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 175.26 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4262,7 +4381,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 175.26 88.9 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 175.26 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4276,7 +4402,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 175.26 88.9 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4404,7 +4530,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 175.26 96.52 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 175.26 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4418,7 +4551,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 175.26 96.52 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4546,7 +4679,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 218.44 73.66 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 218.44 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4560,7 +4700,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 218.44 73.66 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4688,7 +4828,14 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "none (copper test pad)"
+			(at 218.44 81.28 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
 			(at 218.44 81.28 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4702,7 +4849,7 @@
 				(hide yes)
 			)
 		)
-		(property "Confidence" "Chắc"
+		(property "Confidence" "Confirmed"
 			(at 218.44 81.28 0)
 			(effects
 				(font (size 1.27 1.27))

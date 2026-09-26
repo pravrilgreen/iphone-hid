@@ -152,36 +152,35 @@ class Buy:
         return self.price_ev or self.ev
 
 
-def _uniroyal(code, mpn, lcsc, cls, price):
-    return Buy("UNI-ROYAL (Uniroyal Elec)", mpn, lcsc, "SNAP", cls, price,
-               note="thick film 1 % 62.5 mW 0402" if mpn.startswith("0402") else "")
+def _uniroyal(mpn, lcsc, cls, price):
+    return Buy("UNI-ROYAL (Uniroyal Elec)", mpn, lcsc, "SNAP", cls, price, note="thick film 1 % 62.5 mW 0402")
 
 
 _R0402 = {
-    "0R": _uniroyal("0R", "0402WGF0000TCE", "C17168", "Basic", 0.004),
-    "100R": _uniroyal("100R", "0402WGF1000TCE", "C25076", "Basic", 0.004),
+    "0R": _uniroyal("0402WGF0000TCE", "C17168", "Basic", 0.004),
+    "100R": _uniroyal("0402WGF1000TCE", "C25076", "Basic", 0.004),
     "560R": Buy("YAGEO", "RC0402FR-07560RL", price=0.01, price_ev="ALLOW",
                 note="thick film 1 % 0402; UNI-ROYAL 0402WGF5600TCE is equivalent"),
-    "680R": _uniroyal("680R", "0402WGF6800TCE", "C25130", "Preferred", 0.004),
-    "1k": _uniroyal("1k", "0402WGF1001TCE", "C11702", "Basic", 0.004),
-    "2.2k": _uniroyal("2.2k", "0402WGF2201TCE", "C25879", "Basic", 0.004),
-    "4.7k": _uniroyal("4.7k", "0402WGF4701TCE", "C25900", "Basic", 0.004),
-    "5.1k": _uniroyal("5.1k", "0402WGF5101TCE", "C25905", "Basic", 0.004),
-    "6.8k": _uniroyal("6.8k", "0402WGF6801TCE", "C25917", "Preferred", 0.004),
-    "8.2k": _uniroyal("8.2k", "0402WGF8201TCE", "C25924", "Preferred", 0.004),
-    "10k": _uniroyal("10k", "0402WGF1002TCE", "C25744", "Basic", 0.005),
-    "15k": _uniroyal("15k", "0402WGF1502TCE", "C25756", "Basic", 0.004),
-    "18k": _uniroyal("18k", "0402WGF1802TCE", "C25762", "Preferred", 0.004),
-    "20k": _uniroyal("20k", "0402WGF2002TCE", "C25765", "Basic", 0.004),
+    "680R": _uniroyal("0402WGF6800TCE", "C25130", "Preferred", 0.004),
+    "1k": _uniroyal("0402WGF1001TCE", "C11702", "Basic", 0.004),
+    "2.2k": _uniroyal("0402WGF2201TCE", "C25879", "Basic", 0.004),
+    "4.7k": _uniroyal("0402WGF4701TCE", "C25900", "Basic", 0.004),
+    "5.1k": _uniroyal("0402WGF5101TCE", "C25905", "Basic", 0.004),
+    "6.8k": _uniroyal("0402WGF6801TCE", "C25917", "Preferred", 0.004),
+    "8.2k": _uniroyal("0402WGF8201TCE", "C25924", "Preferred", 0.004),
+    "10k": _uniroyal("0402WGF1002TCE", "C25744", "Basic", 0.005),
+    "15k": _uniroyal("0402WGF1502TCE", "C25756", "Basic", 0.004),
+    "18k": _uniroyal("0402WGF1802TCE", "C25762", "Preferred", 0.004),
+    "20k": _uniroyal("0402WGF2002TCE", "C25765", "Basic", 0.004),
     "22.1k": Buy("YAGEO", "RC0402FR-0722K1L", price=0.01, price_ev="ALLOW",
                  note="thick film 1 % 0402; UNI-ROYAL 0402WGF2212TCE is equivalent"),
     "23.7k": Buy("YAGEO", "RC0402FR-0723K7L", "C327362", "WEB", price=0.01, price_ev="ALLOW",
                  note="thick film 1 % 0402"),
     "24.9k": Buy("YAGEO", "RC0402FR-0724K9L", price=0.01, price_ev="ALLOW",
                  note="thick film 1 % 0402; UNI-ROYAL 0402WGF2492TCE is equivalent"),
-    "39k": _uniroyal("39k", "0402WGF3902TCE", "C25783", "Preferred", 0.004),
-    "100k": _uniroyal("100k", "0402WGF1003TCE", "C25741", "Basic", 0.004),
-    "1M": _uniroyal("1M", "0402WGF1004TCE", "C26083", "Basic", 0.004),
+    "39k": _uniroyal("0402WGF3902TCE", "C25783", "Preferred", 0.004),
+    "100k": _uniroyal("0402WGF1003TCE", "C25741", "Basic", 0.004),
+    "1M": _uniroyal("0402WGF1004TCE", "C26083", "Basic", 0.004),
 }
 
 _SAMSUNG = "Samsung Electro-Mechanics"
@@ -264,10 +263,12 @@ BUY = {
     "TPD4E05U06DQAR": Buy("Texas Instruments", "TPD4E05U06DQAR", "C138714", "WEB", "", 0.0361),
     "USBLC6-2SC6": Buy("STMicroelectronics", "USBLC6-2SC6", "C7519", "WEB", "", 0.0896),
     "CH32V305RBT6": Buy("WCH (Jiangsu Qin Heng)", "CH32V305RBT6", "C5187529", "WEB", "", 1.3334),
-    "CORE1106": Buy("Luckfox", "Core1106 RV1106G3 / 256 MB / 8 GB eMMC / Wi-Fi 6 + BT 5.2", "", "NONE", "n/a",
+    "CORE1106": Buy("Luckfox", "Core1106 (RV1106G3, 256 MB, 8 GB eMMC, Wi-Fi 6/BT 5.2 variant)", "", "NONE", "n/a",
                     27.0, price_ev="WEB", assembly=MODULE,
-                    note="not stocked by LCSC: buy from Luckfox or Waveshare and consign; price is the top of "
-                         "the $16.34-26.99 range seen in search excerpts (G2/G3, with or without Wi-Fi)"),
+                    note="not stocked by LCSC: buy from Luckfox or Waveshare and consign; Waveshare lists the "
+                         "variants as Core11060208 / Core11060408 / Core11061208 / Core11061408 (which code is "
+                         "G3 + eMMC + Wi-Fi was not verified here: check the store page); price is the top of "
+                         "the $16.34-26.99 range seen in search excerpts"),
     # --- crystals ---------------------------------------------------------------------------------------
     "XTAL8M": Buy("YXC (Yangxing Tech)", "X32258MOB4SI", "C2682775", "WEB", "", 0.0791,
                   note="8 MHz SMD3225-4P; 'MO' = 12 pF by analogy with X322525MOB4SI: confirm CL = 12 pF"),

@@ -5,16 +5,16 @@
 	(uuid "3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0")
 	(paper "A4")
 	(title_block
-		(title "box-v1: sơ đồ tổng")
+		(title "box-v1: top sheet")
 		(date "2026-09-26")
 		(rev "v1")
 		(company "iphone-hid / hardware/box-v1")
-		(comment 1 "Sinh từ netlist.py bằng generate.py; sửa netlist.py, không sửa file này")
-		(comment 2 "Số chân '?..' = [Chưa biết], phải xác nhận trước khi layout")
-		(comment 3 "Trang 1/6")
+		(comment 1 "Generated from netlist.py by generate.py; edit netlist.py, not this file")
+		(comment 2 "Pin numbers '?..' = [Unknown], must be confirmed before layout")
+		(comment 3 "Sheet 1/6")
 	)
 	(lib_symbols)
-	(text "Box điều khiển iPhone v1 (phương án B): LT7911D + CH32V305RBT6 + Luckfox Core1106"
+	(text "iPhone control box v1 (Option B): LT7911D + CH32V305RBT6 + Luckfox Core1106"
 		(exclude_from_sim no)
 		(at 20.32 25.4 0)
 		(effects
@@ -23,7 +23,7 @@
 		)
 		(uuid "1157f8ed-3c51-5fc0-899e-83b0ecbe376d")
 	)
-	(text "Các trang con nối với nhau bằng global label và power symbol cùng tên. Xem hardware/box-v1/README.md."
+	(text "Sub-sheets connect through global labels and power symbols of the same name. See hardware/box-v1/README.md and ORDERING.md."
 		(exclude_from_sim no)
 		(at 20.32 33.02 0)
 		(effects
@@ -66,7 +66,7 @@
 			)
 		)
 	)
-	(text "1. Nguồn: USB-C PD vào (CH224K), buck 5V2/5V/3V3/1V2, công tắc VBUS iPhone"
+	(text "1. Power: USB-C PD input (CH224K), 5V2/5V/3V3/1V2 bucks, iPhone VBUS switch"
 		(exclude_from_sim no)
 		(at 21.59 66.04 0)
 		(effects
@@ -109,7 +109,7 @@
 			)
 		)
 	)
-	(text "2. Cổng USB-C iPhone + LT7911D (DP Alt Mode -> MIPI CSI-2)"
+	(text "2. iPhone USB-C port + LT7911D (DP Alt Mode -> MIPI CSI-2)"
 		(exclude_from_sim no)
 		(at 111.59 66.04 0)
 		(effects
@@ -152,7 +152,7 @@
 			)
 		)
 	)
-	(text "3. CH32V305RBT6: USB HS HID tới iPhone, link SPI/UART tới RV1106"
+	(text "3. CH32V305RBT6: USB HS HID to the iPhone, SPI/UART link to the RV1106"
 		(exclude_from_sim no)
 		(at 201.59 66.04 0)
 		(effects
@@ -195,7 +195,7 @@
 			)
 		)
 	)
-	(text "4. Luckfox Core1106 (RV1106G3) + RJ45 100M + USB-C tới PC"
+	(text "4. Luckfox Core1106 (RV1106G3) + 100M RJ45 + USB-C to the PC"
 		(exclude_from_sim no)
 		(at 21.59 116.84 0)
 		(effects
@@ -238,7 +238,7 @@
 			)
 		)
 	)
-	(text "5. Debug header, LED trạng thái, nút, test point"
+	(text "5. Debug headers, status LEDs, buttons, test points"
 		(exclude_from_sim no)
 		(at 111.59 116.84 0)
 		(effects

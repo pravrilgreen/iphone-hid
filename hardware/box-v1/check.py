@@ -14,16 +14,22 @@ Rules on the design (errors):
   R6  differential pairs: both halves exist and touch exactly the same parts
   R7  every net carrying a power-input pin is a declared rail
   R8  every source key used by a part or pin exists in netlist.SOURCES; ICs and connectors cite one
-  R9  placeholder pin numbers ('?..') are marked [Chưa biết]
+  R9  placeholder pin numbers ('?..') are marked [Unknown]
   R10 electrical sanity: regulator outputs, UVLO thresholds, ADC input ranges, CH224K request
+  R11 ordering data: every part resolves to a BUY entry with manufacturer + MPN; LCSC codes are well
+      formed and carry an evidence key; a code is never [Confirmed] without the vendor page;
+      JLCPCB Basic/Preferred classes come only from the parts-list snapshot; every orderable
+      part has a unit price or an explicit allowance
 Rules on generated files (errors, skipped with a warning when the files are missing):
   G1  every .kicad_sch parses as one balanced S-expression 'kicad_sch' with version 20231120
   G2  every lib_id used is embedded in lib_symbols; hierarchy and instances are consistent
   G3  connectivity re-derived from the schematic geometry (pin ends, labels, power symbols,
       no-connect flags) equals netlist.py pin for pin
-  G4  SVG files are well-formed XML and show every reference of their block
-  G5  bom.csv lists every part exactly once; netlist.json matches netlist.py
-Warnings: nets with fewer than two fitted pins (options with DNP parts), [Chưa biết]/[Có thể] counts.
+  G4  SVG files are well-formed XML and show every reference of their block; svg/mechanical.svg parses
+  G5  bom.csv has the expected columns and lists every part exactly once; every line has an MPN; the
+      manufacturer, MPN, LCSC code, DNP flag and price of each line match netlist.py; a line without
+      an LCSC code says "choose at order"; netlist.json matches netlist.py
+Warnings: nets with fewer than two fitted pins (options with DNP parts), [Unknown]/[Likely] counts.
 """
 
 from __future__ import annotations
@@ -38,7 +44,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 import netlist as NL
-from netlist import NC, GND, RAILS, SOURCES, CHUABIET, COTHE, CHAC
+from netlist import NC, GND, RAILS, SOURCES, UNKNOWN, LIKELY, CONFIRMED
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 IC_PREFIX = ("U",)
@@ -252,9 +258,43 @@ def check_design(d, rep):
     # R9 placeholders
     for p in d.parts:
         for x in p.pins:
-            if x.num.startswith("?") and x.conf != CHUABIET:
-                rep.err("R9", f"{p.ref}.{x.num}: placeholder number must be [Chưa biết]")
+            if x.num.startswith("?") and x.conf != UNKNOWN:
+                rep.err("R9", f"{p.ref}.{x.num}: placeholder number must be [Unknown]")
     check_electrical(d, rep)
+    check_orders(d, rep)
+
+
+LCSC_RE = re.compile(r"C\d{3,9}")
+
+
+def check_orders(d, rep):
+    """R11: ordering data of every part."""
+    for p in d.parts:
+        o = p.order
+        if o is None:
+            rep.err("R11", f"{p.ref}: BUY key {p.buy!r} not found in netlist.BUY")
+            continue
+        if not o.manufacturer or not o.mpn:
+            rep.err("R11", f"{p.ref}: manufacturer or MPN missing")
+        if p.mpn != o.mpn or p.lcsc != o.lcsc:
+            rep.err("R11", f"{p.ref}: part MPN/LCSC differ from its BUY entry")
+        if o.assembly not in (NL.SMT, NL.THT, NL.MODULE, NL.PCB):
+            rep.err("R11", f"{p.ref}: unknown assembly class {o.assembly!r}")
+        if o.ev not in NL.EVIDENCE or (o.price_ev and o.price_ev not in NL.EVIDENCE):
+            rep.err("R11", f"{p.ref}: unknown evidence key {o.ev!r}/{o.price_ev!r}")
+        if o.lcsc:
+            if not LCSC_RE.fullmatch(o.lcsc):
+                rep.err("R11", f"{p.ref}: malformed LCSC code {o.lcsc!r}")
+            if o.ev not in NL.LCSC_CONF:
+                rep.err("R11", f"{p.ref}: LCSC code {o.lcsc} without evidence")
+            if o.lcsc_conf == CONFIRMED:
+                rep.err("R11", f"{p.ref}: LCSC code {o.lcsc} marked Confirmed, but no vendor page was read")
+        if o.jlc not in ("", "Basic", "Preferred", "n/a"):
+            rep.err("R11", f"{p.ref}: unknown JLCPCB class {o.jlc!r}")
+        if o.jlc in ("Basic", "Preferred") and o.ev != "SNAP":
+            rep.err("R11", f"{p.ref}: JLCPCB class {o.jlc} claimed without the parts-list snapshot")
+        if o.assembly != NL.PCB and (o.price is None or o.price <= 0):
+            rep.err("R11", f"{p.ref}: no unit price or allowance")
 
 
 # ---------------------------------------------------------------------------
@@ -455,19 +495,62 @@ def check_svg(d, rep, sdir):
         for p in d.parts:
             if p.block == block and not re.search(rf"\b{re.escape(p.ref)}\b", texts):
                 rep.err("G4", f"{block}.svg does not show {p.ref}")
+    mech = os.path.join(sdir, "mechanical.svg")
+    if not os.path.exists(mech):
+        rep.warn("G4", "mechanical.svg missing (run generate.py)")
+    else:
+        try:
+            ET.parse(mech)
+        except ET.ParseError as e:
+            rep.err("G4", f"mechanical.svg: {e}")
+
+
+BOM_COLUMNS = ["reference", "qty", "value", "manufacturer", "mpn", "lcsc", "lcsc_confidence", "lcsc_evidence",
+               "jlc_type", "assembly", "dnp", "unit_price_usd_est", "price_basis", "footprint", "confidence",
+               "notes"]
 
 
 def check_bom_json(d, rep):
     bom = os.path.join(HERE, "bom.csv")
+    refs = {p.ref: p for p in d.parts}
     if os.path.exists(bom):
         seen = []
         with open(bom, encoding="utf-8") as fh:
-            for row in csv.DictReader(fh):
-                refs = row["reference"].split()
-                if int(row["qty"]) != len(refs):
-                    rep.err("G5", f"bom.csv: qty {row['qty']} != {len(refs)} refs ({row['reference']})")
-                seen += refs
-        want = sorted(p.ref for p in d.parts)
+            reader = csv.DictReader(fh)
+            if reader.fieldnames != BOM_COLUMNS:
+                rep.err("G5", f"bom.csv columns {reader.fieldnames} != {BOM_COLUMNS}")
+                return
+            for row in reader:
+                rrefs = row["reference"].split()
+                if int(row["qty"]) != len(rrefs):
+                    rep.err("G5", f"bom.csv: qty {row['qty']} != {len(rrefs)} refs ({row['reference']})")
+                seen += rrefs
+                if not row["mpn"]:
+                    rep.err("G5", f"bom.csv: line {row['reference']} has no MPN")
+                code = row["lcsc"]
+                if code and not LCSC_RE.fullmatch(code):
+                    rep.err("G5", f"bom.csv: malformed LCSC code {code!r}")
+                if code and row["lcsc_confidence"] not in (CONFIRMED, LIKELY):
+                    rep.err("G5", f"bom.csv: LCSC code {code} without a confidence label")
+                if not code and row["lcsc_confidence"]:
+                    rep.err("G5", f"bom.csv: {row['reference']} has a confidence label but no LCSC code")
+                pcb_only = row["assembly"].startswith("none")
+                if not code and not pcb_only and "choose at order" not in row["notes"]:
+                    rep.err("G5", f"bom.csv: {row['reference']} has no LCSC code and no 'choose at order' note")
+                if not pcb_only and not row["unit_price_usd_est"]:
+                    rep.err("G5", f"bom.csv: {row['reference']} has no unit price estimate")
+                for r in rrefs:
+                    p = refs.get(r)
+                    if p is None or p.order is None:
+                        continue
+                    o = p.order
+                    got = (row["manufacturer"], row["mpn"], row["lcsc"], row["dnp"] == "yes")
+                    want = (o.manufacturer, o.mpn, o.lcsc, p.dnp)
+                    if got != want:
+                        rep.err("G5", f"bom.csv {r}: {got} != netlist.py {want}")
+                    if o.price is not None and row["unit_price_usd_est"] != f"{o.price:.4f}":
+                        rep.err("G5", f"bom.csv {r}: price {row['unit_price_usd_est']} != {o.price:.4f}")
+        want = sorted(refs)
         if sorted(seen) != want:
             rep.err("G5", f"bom.csv refs differ from netlist.py ({len(seen)} vs {len(want)})")
     else:
@@ -480,8 +563,26 @@ def check_bom_json(d, rep):
         dn = {n: sorted((p.ref, x.num) for p, x in v) for n, v in net_pins.items()}
         if jn != dn:
             rep.err("G5", "netlist.json nets differ from netlist.py (re-run generate.py)")
+        jm = {c["ref"]: (c["mpn"], c["lcsc"]) for c in data["components"]}
+        dm = {p.ref: (p.mpn, p.lcsc) for p in d.parts}
+        if jm != dm:
+            rep.err("G5", "netlist.json MPN/LCSC fields differ from netlist.py (re-run generate.py)")
     else:
         rep.warn("G5", "netlist.json missing")
+
+
+def bom_summary(d):
+    """Coverage of the ordering data, per unique orderable part (DNP included)."""
+    orders = {}
+    for p in d.parts:
+        if p.order and p.order.assembly != NL.PCB:
+            orders[(p.order.mpn, p.dnp, p.footprint, p.conf)] = p.order
+    n = len(orders)
+    conf = sum(1 for o in orders.values() if o.lcsc and o.lcsc_conf == CONFIRMED)
+    likely = sum(1 for o in orders.values() if o.lcsc and o.lcsc_conf == LIKELY)
+    empty = sum(1 for o in orders.values() if not o.lcsc)
+    return [f"BOM: {n} orderable lines, {sum(1 for o in orders.values() if o.mpn)} with MPN; LCSC code "
+            f"[Confirmed] {conf}, [Likely] {likely}, none {empty}"]
 
 
 def stats(d, rep):
@@ -489,17 +590,21 @@ def stats(d, rep):
     maybe = {}
     for p in d.parts:
         for x in p.pins:
-            if x.conf == CHUABIET:
+            if x.conf == UNKNOWN:
                 unk[p.ref] = unk.get(p.ref, 0) + 1
-            elif x.conf == COTHE:
+            elif x.conf == LIKELY:
                 maybe[p.ref] = maybe.get(p.ref, 0) + 1
     for ref, n in sorted(unk.items()):
-        rep.warn("W2", f"{ref}: {n} pin(s) [Chưa biết] - need the vendor datasheet before layout")
+        rep.warn("W2", f"{ref}: {n} pin(s) [Unknown] - need the vendor datasheet before layout")
     for ref, n in sorted(maybe.items()):
-        rep.warn("W3", f"{ref}: {n} pin(s) [Có thể] - confirm against the full datasheet")
-    parts_unknown = [p.ref for p in d.parts if p.conf == CHUABIET]
+        rep.warn("W3", f"{ref}: {n} pin(s) [Likely] - confirm against the full datasheet")
+    parts_unknown = [p.ref for p in d.parts if p.conf == UNKNOWN]
     if parts_unknown:
-        rep.warn("W4", f"values/choices [Chưa biết]: {', '.join(parts_unknown)}")
+        rep.warn("W4", f"values/choices [Unknown]: {', '.join(parts_unknown)}")
+    no_code = sorted({p.order.mpn for p in d.parts if p.order and not p.order.lcsc
+                      and p.order.assembly != NL.PCB})
+    if no_code:
+        rep.warn("W5", f"no LCSC code (choose at order): {', '.join(no_code)}")
 
 
 def run(d, with_files=True):
@@ -560,8 +665,21 @@ def selftest():
     case("wrong regulator feedback", "R10", fb)
 
     def placeholder(d):
-        d.part("U201").pin("?XTALI").conf = COTHE
+        d.part("U201").pin("?XTALI").conf = LIKELY
     case("placeholder pin not marked unknown", "R9", placeholder)
+
+    def nobuy(d):
+        d.part("C301").order = None
+    case("part without ordering data", "R11", nobuy)
+
+    def badcode(d):
+        d.part("U301").order = NL.Buy("WCH", "CH32V305RBT6", "5187529", "WEB")
+        d.part("U301").lcsc = "5187529"
+    case("malformed LCSC code", "R11", badcode)
+
+    def fakeclass(d):
+        d.part("U101").order = NL.Buy("WCH", "CH224K", "C970725", "WEB", "Basic", 0.33)
+    case("JLCPCB class without evidence", "R11", fakeclass)
 
     ok = True
     for name, rule, hit in cases:
@@ -584,11 +702,14 @@ def main():
           f"({nnc} no-connect), {len(net_pins)} nets")
     for line in rep.info:
         print("  " + line)
-    conf = {CHAC: 0, COTHE: 0, CHUABIET: 0}
+    conf = {CONFIRMED: 0, LIKELY: 0, UNKNOWN: 0}
     for p in d.parts:
         for x in p.pins:
             conf[x.conf] += 1
-    print(f"  pins by confidence: [Chắc] {conf[CHAC]}, [Có thể] {conf[COTHE]}, [Chưa biết] {conf[CHUABIET]}")
+    print(f"  pins by confidence: [Confirmed] {conf[CONFIRMED]}, [Likely] {conf[LIKELY]}, "
+          f"[Unknown] {conf[UNKNOWN]}")
+    for line in bom_summary(d):
+        print("  " + line)
     shown = rep.warnings if verbose else [w for w in rep.warnings if w.startswith(("W2", "G"))]
     print(f"  warnings: {len(rep.warnings)}" + ("" if verbose else " (use -v for all)"))
     for w in shown:
