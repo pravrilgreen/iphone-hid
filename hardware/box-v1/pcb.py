@@ -1031,6 +1031,7 @@ def fanout(board, netname="GND", region=None):
                 board.Add(t)
                 added += 1
                 continue
+            w = min(tw, 2 * min(hw, hh) - 0.1)   # 0.2 mm out of a 0.3 mm fine-pitch pad
             if hw > 1.2 and hh > 1.2:          # large exposed pads: vias inside the pad
                 if any(x0 >= own[0] and x1 <= own[2] and y0 >= own[1] and y1 <= own[3] and drilled
                        for x0, y0, x1, y1, net, drilled in boxes if net == gnd.GetNetCode()):
@@ -1050,7 +1051,7 @@ def fanout(board, netname="GND", region=None):
                                       py + dy * (hh + via_d / 2 + gap + step) if dy else py))
             for x, y in cands:
                 inside = own[0] <= x <= own[2] and own[1] <= y <= own[3]
-                if inside or (free(x, y, own) and track_free(px, py, x, y, own)):
+                if inside or (free(x, y, own) and track_free(px, py, x, y, own, w)):
                     v = pcbnew.PCB_VIA(board)
                     v.SetPosition(pt(x, y))
                     v.SetWidth(mm(via_d))
@@ -1063,7 +1064,7 @@ def fanout(board, netname="GND", region=None):
                         t = pcbnew.PCB_TRACK(board)
                         t.SetStart(pad.GetPosition())
                         t.SetEnd(pt(x, y))
-                        t.SetWidth(mm(tw))
+                        t.SetWidth(mm(w))
                         t.SetLayer(pcbnew.F_Cu)
                         t.SetNet(gnd)
                         t.SetLocked(True)
@@ -1194,10 +1195,11 @@ def restore_nets(saved):
 
 def autoroute(board, fps, passes: int):
     """Freerouting on everything but U201's pads and the LT7911D nets; the session file comes back
-    into the board. A second stage routes what the first left unconnected at 0.3 mm, with every
-    track of the first stage fixed: the sense and enable branches of the supplies (µA, but in a
-    wide class) often cannot reach their 0402 pads at full width. Work files go to $ROUTE_DIR
-    (default: a temporary directory)."""
+    into the board. When the first stage leaves connections open, a second stage starts from its
+    result with those nets in a 0.3 mm class: the sense and enable branches of the supplies (µA, but
+    in a wide class) often cannot reach their 0402 pads at full width. The router may move the
+    other tracks to make room; only the fan-out and the pre-routed tracks stay fixed. Work files go
+    to $ROUTE_DIR (default: a temporary directory)."""
     if not JAR or not os.path.exists(JAR):
         sys.exit("--route needs FREEROUTING_JAR pointing at a Freerouting jar")
     print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR), flush=True)
@@ -1217,16 +1219,14 @@ def autoroute(board, fps, passes: int):
     if left:
         print(f"second stage at 0.3 mm for {len(left)} nets: {' '.join(left)}", flush=True)
         dsn2, ses2, log2 = (os.path.join(work, "box-v1-2." + e) for e in ("dsn", "ses", "log"))
-        before = _lock_all(board)
         if not pcbnew.ExportSpecctraDSN(board, dsn2):
             sys.exit("DSN export failed")
         with open(dsn2, encoding="utf-8") as f:
             text = _dsn_narrow(f.read(), left)
         with open(dsn2, "w", encoding="utf-8") as f:
             f.write(text)
-        _freeroute(dsn2, ses2, log2, max(5, passes // 3))
-        import_ses(board, ses2)
-        _unlock_all_but(board, before)
+        _freeroute(dsn2, ses2, log2, max(10, passes // 2))
+        import_ses(board, ses2)                    # the whole board again, not only the new tracks
         sessions.append(ses2)
     restore_nets(saved)
     print("sessions:", " ".join(sessions), flush=True)
@@ -1280,20 +1280,6 @@ def _dsn_narrow(text, nets, width_um=300, clearance_um=150):
     return text[:i] + cls + text[i:]
 
 
-def _lock_all(board):
-    """Fix every track and via for a later routing stage; returns the ones that were fixed before."""
-    before = {t.m_Uuid.AsString() for t in board.GetTracks() if t.IsLocked()}
-    for t in board.GetTracks():
-        t.SetLocked(True)
-    return before
-
-
-def _unlock_all_but(board, before):
-    for t in board.GetTracks():
-        if t.m_Uuid.AsString() not in before:
-            t.SetLocked(False)
-
-
 def _sexpr(text):
     """Tiny S-expression reader: nested lists of strings."""
     tokens = re.findall(r'"(?:[^"\\]|\\.)*"|\(|\)|[^\s()"]+', text)
@@ -1338,6 +1324,8 @@ def import_ses(board, path):
                 coords = [float(v) * scale for v in path_[3:] if not isinstance(v, list)]
                 ptsl = [(coords[i], -coords[i + 1]) for i in range(0, len(coords) - 1, 2)]
                 for (x0, y0), (x1, y1) in zip(ptsl, ptsl[1:]):
+                    if math.hypot(x1 - x0, y1 - y0) < 0.005:    # the router's fragments at pad edges
+                        continue
                     tr = pcbnew.PCB_TRACK(board)
                     tr.SetStart(pcbnew.VECTOR2I(mm(x0), mm(y0)))
                     tr.SetEnd(pcbnew.VECTOR2I(mm(x1), mm(y1)))
@@ -1450,7 +1438,7 @@ def main():
     ap.add_argument("--route", action="store_true", help="route with Freerouting (FREEROUTING_JAR)")
     ap.add_argument("--passes", type=int, default=40, help="Freerouting passes")
     ap.add_argument("--ses", metavar="FILE", nargs="+",
-                    help="import these Specctra sessions (the routing stages, in order) instead of routing")
+                    help="import the Specctra session of the last routing stage instead of routing")
     ap.add_argument("--render", metavar="DIR", help="write SVG views of the board to DIR")
     ap.add_argument("--check-only", action="store_true", help="placement checks only, write nothing")
     args = ap.parse_args()
@@ -1478,11 +1466,7 @@ def main():
     elif args.ses:
         # the fan-out is fixed in the DSN, so the session does not carry it: make it again (same result)
         print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR), flush=True)
-        import_ses(board, args.ses[0])
-        for ses in args.ses[1:]:
-            before = _lock_all(board)
-            import_ses(board, ses)
-            _unlock_all_but(board, before)
+        import_ses(board, args.ses[-1])           # the last stage holds the whole routing
     zones(board)
     if args.route or args.ses:
         moved, stuck = fix_hole_spacing(board)
