@@ -183,6 +183,13 @@ func kernelConfig(root, release string) []string {
 	return out
 }
 
+// driverConfig says whether a kernel config line builds the HDMI receiver's driver itself
+// (CONFIG_VIDEO_ROCKCHIP_HDMIRX=y or =m), not one of its options (..._HDMIRX_LOAD_DEFAULT_EDID).
+func driverConfig(l string) bool {
+	k, v, ok := strings.Cut(strings.TrimSpace(l), "=")
+	return ok && strings.HasPrefix(k, "CONFIG_") && strings.HasSuffix(k, "HDMIRX") && (v == "y" || v == "m")
+}
+
 func modules(root, release string) (files, builtin []string) {
 	mods := filepath.Join(root, "lib", "modules", release)
 	_ = filepath.Walk(mods, func(p string, info os.FileInfo, err error) error {
@@ -222,12 +229,38 @@ func shippedOverlays(root string) []string {
 	for _, d := range []string{"boot/dtb/rockchip/overlay", "boot/dtb/overlay"} {
 		entries, _ := os.ReadDir(filepath.Join(root, d))
 		for _, e := range entries {
-			if matches(e.Name(), words) {
+			if strings.HasSuffix(e.Name(), ".dtbo") && matches(e.Name(), words) {
 				out = append(out, filepath.Join(d, e.Name()))
 			}
 		}
 	}
 	return out
+}
+
+// hdmiOverlay picks the overlay that turns the HDMI input on (relative to root): the one named
+// exactly rk3588-hdmirx, else the only candidate. "" when there are several to choose from.
+func hdmiOverlay(root string) (string, []string) {
+	shipped := shippedOverlays(root)
+	var exact []string
+	for _, s := range shipped {
+		if filepath.Base(s) == "rk3588-hdmirx.dtbo" {
+			exact = append(exact, s)
+		}
+	}
+	switch {
+	case len(exact) == 1:
+		return exact[0], shipped
+	case len(exact) == 0 && len(shipped) == 1:
+		return shipped[0], shipped
+	}
+	return "", shipped
+}
+
+// sameFile says whether two files have the same content.
+func sameFile(a, b string) bool {
+	x, err1 := os.ReadFile(a)
+	y, err2 := os.ReadFile(b)
+	return err1 == nil && err2 == nil && string(x) == string(y)
 }
 
 func contains(list []string, s string) bool {
@@ -288,6 +321,10 @@ func overlayAdvice(root, dtbo string) ([]string, string) {
 		userSteps += ", remove " + name + " from overlays="
 	}
 	userSteps += ", then reboot"
+	if contains(userListed, name) && exists(userFile) && !sameFile(userFile, filepath.Join(root, dtbo)) {
+		return findings, fmt.Sprintf("/boot/overlay-user/%s.dtbo differs from the kernel's /%s (copied before a kernel "+
+			"update?): copy it again (sudo cp /%s /boot/overlay-user/), then reboot", name, dtbo, dtbo)
+	}
 	if (hasEntry && contains(listed, entry)) || (contains(userListed, name) && exists(userFile)) {
 		if envPath != "" {
 			if st, err := os.Stat(envPath); err == nil {
@@ -387,17 +424,22 @@ func DiagnoseHDMI(root, release string) []string {
 	}
 	hasDriver := len(drivers) > 0 || len(files) > 0 || len(builtin) > 0
 	for _, l := range config {
-		if strings.HasSuffix(l, "=y") || strings.HasSuffix(l, "=m") {
-			hasDriver = true
-		}
+		hasDriver = hasDriver || driverConfig(l)
 	}
 	var verdict string
 	switch {
 	case len(receivers) == 0:
 		verdict = "this kernel's device tree does not describe the HDMI input: use a board image made for HDMI input"
 	case len(enabled) == 0 && len(shipped) > 0:
+		chosen, _ := hdmiOverlay(root)
+		if chosen == "" {
+			verdict = "the device tree has the HDMI input but leaves it off; this image ships several overlays that may turn " +
+				"it on (" + strings.Join(shipped, ", ") + "): doctor does not choose, see the image's documentation for the one " +
+				"made for this board"
+			break
+		}
 		var findings []string
-		findings, verdict = overlayAdvice(root, shipped[0])
+		findings, verdict = overlayAdvice(root, chosen)
 		out = append(out, findings...)
 	case len(enabled) == 0:
 		verdict = "the device tree has the HDMI input but leaves it off (status disabled): it needs a device tree " +

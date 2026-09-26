@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -74,6 +75,16 @@ func (p Paths) UDCState(udc string) string {
 // BoundUDC returns the UDC a gadget is bound to ("" if none).
 func (p Paths) BoundUDC(name string) string {
 	return readTrim(filepath.Join(p.ConfigFS, name, "UDC"))
+}
+
+// UDCFunction reads /sys/class/udc/<udc>/function: the name of the gadget driver bound to the
+// controller ("" if none). A configfs gadget shows its own name; a legacy gadget module (g_ether,
+// g_serial, ...) shows the module's.
+func (p Paths) UDCFunction(udc string) string {
+	if udc == "" {
+		return ""
+	}
+	return readTrim(filepath.Join(p.SysFS, "class", "udc", udc, "function"))
 }
 
 // UDCUsers maps each bound UDC to the configfs gadget using it (another one may be the board's ADB).
@@ -167,6 +178,23 @@ func (p Paths) Status(name string) GadgetStatus {
 	return st
 }
 
+// Matches says whether the gadget is up as o would set it up: bound, with the same profile, on the
+// controller o names (if it names one), with the same remote wakeup setting.
+func (p Paths) Matches(o GadgetOptions) bool {
+	if o.Name == "" {
+		o.Name = GadgetName
+	}
+	if o.Profile == "" {
+		o.Profile = DefaultProfile
+	}
+	udc := p.BoundUDC(o.Name)
+	if udc == "" || p.GadgetProfile(o.Name) != o.Profile || (o.UDC != "" && o.UDC != udc) {
+		return false
+	}
+	attrs, err := strconv.ParseUint(readTrim(filepath.Join(p.ConfigFS, o.Name, "configs", "c.1", "bmAttributes")), 0, 8)
+	return err != nil || (attrs&0x20 != 0) == o.RemoteWakeup
+}
+
 // GadgetUp creates the HID gadget and binds it to a USB device controller (needs root).
 // It returns the controller's name.
 func (p Paths) GadgetUp(o GadgetOptions) (string, error) {
@@ -211,6 +239,10 @@ func (p Paths) GadgetUp(o GadgetOptions) (string, error) {
 	if user := p.UDCUsers()[o.UDC]; user != "" {
 		return "", fmt.Errorf("%s is used by the gadget %q (often ADB): unbind it first (echo '' > %s)",
 			o.UDC, user, filepath.Join(p.ConfigFS, user, "UDC"))
+	}
+	if fn := p.UDCFunction(o.UDC); fn != "" {
+		return "", fmt.Errorf("%s is used by the gadget driver %q, a legacy gadget module: remove it first "+
+			"(sudo modprobe -r %s; lsmod | grep ^g_ lists them)", o.UDC, fn, fn)
 	}
 	attrs := byte(0x80) // bit 7 is always set
 	if o.RemoteWakeup {

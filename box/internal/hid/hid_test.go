@@ -243,3 +243,34 @@ func TestReopeningFollowsAGadgetSetUpAgain(t *testing.T) {
 	}
 	t.Fatalf("still writing to the old node: %v", err)
 }
+
+func TestMatchesComparesTheProfile(t *testing.T) {
+	p := fakeKernel(t, "fc000000.usb")
+	if p.Matches(GadgetOptions{}) {
+		t.Fatal("no gadget yet")
+	}
+	if _, err := p.GadgetUp(GadgetOptions{RemoteWakeup: true}); err != nil {
+		t.Fatal(err)
+	}
+	if !p.Matches(GadgetOptions{RemoteWakeup: true}) || !p.Matches(GadgetOptions{Profile: "RA", UDC: "fc000000.usb", RemoteWakeup: true}) {
+		t.Fatal("the same gadget must match")
+	}
+	for _, o := range []GadgetOptions{{Profile: "A", RemoteWakeup: true}, {UDC: "other.usb", RemoteWakeup: true}, {}} {
+		if p.Matches(o) {
+			t.Errorf("%+v must not match", o)
+		}
+	}
+}
+
+func TestGadgetUpRefusesALegacyGadget(t *testing.T) {
+	p := fakeKernel(t, "fc000000.usb")
+	if err := os.WriteFile(filepath.Join(p.SysFS, "class", "udc", "fc000000.usb", "function"), []byte("g_ether\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.GadgetUp(GadgetOptions{}); err == nil || !strings.Contains(err.Error(), "modprobe -r g_ether") {
+		t.Fatalf("%v", err)
+	}
+	if p.UDCFunction("fc000000.usb") != "g_ether" {
+		t.Fatal("function not read")
+	}
+}
