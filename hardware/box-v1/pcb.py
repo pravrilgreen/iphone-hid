@@ -821,6 +821,91 @@ def stitch_islands(board, via_r=0.275, clearance=0.2):
     return added, left
 
 
+def repair_gaps(board, report, width=0.25, clearance=0.2):
+    """Last mile after routing: for each connection KiCad still reports open (outside the LT7911D
+    area, not involving a pour), a straight, L-shaped or 45-degree track of `width` between its two
+    ends, on a layer both ends are on, if it keeps `clearance` from every other net and stays out
+    of the keep-outs. Returns (tracks added, connections left)."""
+    layers = {board.GetLayerName(i): i for i in range(pcbnew.PCB_LAYER_ID_COUNT)}
+    copper = [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu]
+    nets = board.GetNetsByName()
+    rule = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowTracks()]
+    for fp in board.GetFootprints():
+        rule += [z for z in fp.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowTracks()]
+    pads = [(p, p.GetEffectivePolygon()) for fp in board.GetFootprints() for p in fp.Pads()]
+    hw = width / 2
+
+    def item_layers(descr):
+        if descr.startswith(("Via", "PTH pad")):
+            return set(copper)
+        m = re.search(r" on (\S+\.Cu)", descr)
+        return {layers[m.group(1)]} if m else set()
+
+    def path_ok(pts, layer, net):
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            for x, y in ((x0, y0), (x1, y1)):
+                if not (0.3 + hw <= x <= W - 0.3 - hw and 0.3 + hw <= y <= H - 0.3 - hw):
+                    return False
+            seg = pcbnew.SEG(pt(x0, y0), pt(x1, y1))
+            n = max(2, int(math.hypot(x1 - x0, y1 - y0) / 0.1))
+            for i in range(n + 1):
+                q = pt(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n)
+                if any(z.GetLayerSet().Contains(layer) and z.Outline().Contains(q, -1, mm(hw)) for z in rule):
+                    return False
+            for p, poly in pads:
+                if p.GetNetCode() != net and p.IsOnLayer(layer) and poly.Collide(seg, mm(hw + clearance)):
+                    return False
+            for t in board.GetTracks():
+                if t.GetNetCode() == net:
+                    continue
+                w2 = pcbnew.ToMM(t.GetWidth()) / 2
+                if t.GetClass() == "PCB_VIA":
+                    if _pt_seg(*board_xy(t.GetPosition()), x0, y0, x1, y1) < hw + w2 + clearance:
+                        return False
+                elif t.GetLayer() == layer and _seg_seg((x0, y0), (x1, y1), board_xy(t.GetStart()),
+                                                         board_xy(t.GetEnd())) < hw + w2 + clearance:
+                    return False
+        return True
+
+    added = left = 0
+    with open(report, encoding="utf-8") as f:
+        blocks = [b for b in re.split(r"\n(?=\[)", f.read()) if b.startswith("[unconnected_items]")]
+    for blk in blocks:
+        ends = re.findall(r"@\(([\d.]+) mm, ([\d.]+) mm\): (.*)", blk)
+        names = re.findall(r"\[([^\]]+)\]", blk.split("\n", 1)[1])
+        if len(ends) != 2 or not names or "U201" in blk or UNROUTED_NETS.match(names[0]) or "Zone" in blk:
+            continue
+        (ax, ay, da), (bx, by, db) = [(float(x) - OX, float(y) - OY, d) for x, y, d in ends]
+        common = item_layers(da) & item_layers(db)
+        net = nets[names[0]].GetNetCode()
+        paths = [[(ax, ay), (bx, by)], [(ax, ay), (bx, ay), (bx, by)], [(ax, ay), (ax, by), (bx, by)]]
+        dx, dy = bx - ax, by - ay
+        d = min(abs(dx), abs(dy))
+        sx, sy = math.copysign(d, dx), math.copysign(d, dy)
+        paths += [[(ax, ay), (ax + sx, ay + sy), (bx, by)], [(ax, ay), (bx - sx, by - sy), (bx, by)]]
+        done = False
+        for layer in [l for l in copper if l in common]:
+            for pts in paths:
+                pts = [q for i, q in enumerate(pts) if i == 0 or math.hypot(q[0] - pts[i - 1][0], q[1] - pts[i - 1][1]) > 1e-6]
+                if len(pts) >= 2 and path_ok(pts, layer, net):
+                    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+                        t = pcbnew.PCB_TRACK(board)
+                        t.SetStart(pt(x0, y0))
+                        t.SetEnd(pt(x1, y1))
+                        t.SetWidth(mm(width))
+                        t.SetLayer(layer)
+                        t.SetNet(nets[names[0]])
+                        board.Add(t)
+                    added += 1
+                    done = True
+                    break
+            if done:
+                break
+        if not done:
+            left += 1
+    return added, left
+
+
 def plane(board):
     """Zones present during routing (the router sees them as planes of their net): L2, the solid GND
     reference plane, and the supply pours of POURS, each under a keep-out for tracks so that no
@@ -835,9 +920,7 @@ def plane(board):
 FULL = [(0.3, 0.3), (W - 0.3, 0.3), (W - 0.3, H - 0.3), (0.3, H - 0.3)]
 # L3 5V_SYS pour: the corridor between the module and the RJ45, from below the module up to its
 # supply pads (a band along the module's bottom edge would take the room its GND pads need for vias)
-FIVE_V_POUR = [(70.0, 40.4), (73.4, 40.4), (73.4, 9.0), (70.0, 9.0)]
-# pads that take a via into it: its own area and the module's supply pads 79-81 on the edge beside it
-FIVE_V_FANOUT = [(68.0, 40.4), (73.4, 40.4), (73.4, 9.0), (68.0, 9.0)]
+FIVE_V_POUR = [(70.4, 40.4), (73.4, 40.4), (73.4, 9.0), (70.4, 9.0)]
 # L4 VBUS_IN pour under the power receptacle J101 and the fuse F101: the CC lines leave J101 between
 # its two VBUS pads, so the pads meet through vias to this pour rather than on L1
 VBUS_POUR = [(82.7, 45.9), (88.5, 45.9), (88.5, 52.1), (82.7, 52.1)]
@@ -1219,7 +1302,7 @@ def autoroute(board, fps, passes: int):
     room. Work files go to $ROUTE_DIR (default: a temporary directory)."""
     if not JAR or not os.path.exists(JAR):
         sys.exit("--route needs FREEROUTING_JAR pointing at a Freerouting jar")
-    print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_FANOUT),
+    print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR),
           "VBUS_IN", fanout(board, "VBUS_IN", VBUS_POUR, 0.8, 0.4), flush=True)
     saved = strip_nets_for_routing(board, fps)
     work = os.environ.get("ROUTE_DIR") or tempfile.mkdtemp(prefix="box-v1-route-")
@@ -1535,7 +1618,7 @@ def main():
         autoroute(board, fps, args.passes)
     elif args.ses:
         # the fan-out is fixed in the DSN, so the session does not carry it: make it again (same result)
-        print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_FANOUT),
+        print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR),
               "VBUS_IN", fanout(board, "VBUS_IN", VBUS_POUR, 0.8, 0.4), flush=True)
         replay(board, fps, args.ses, tempfile.mkdtemp(prefix="box-v1-replay-"))
     zones(board)
@@ -1548,6 +1631,13 @@ def main():
     if args.route or args.ses:
         added, left = stitch_islands(board)
         print(f"GND pour islands given a via: {added}; without room for one: {left}", flush=True)
+        if added:
+            board.BuildConnectivity()
+            fill_zones(board)
+        rpt = os.path.join(tempfile.mkdtemp(prefix="box-v1-gaps-"), "gaps.rpt")
+        pcbnew.WriteDRCReport(board, rpt, pcbnew.EDA_UNITS_MILLIMETRES, False)
+        added, left = repair_gaps(board, rpt)
+        print(f"open connections closed by a direct track: {added}; left: {left}", flush=True)
         if added:
             board.BuildConnectivity()
             fill_zones(board)

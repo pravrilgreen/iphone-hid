@@ -1561,8 +1561,11 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    no new error and fewer open connections than after the first. The
    LT7911D's pads and its nets (the DP lanes `SS_*`, AUX, SBU and the CSI lanes) are left out: they wait for the
    pin table (H1). The DP and CSI lanes must be routed by hand anyway (§5: length and skew limits, no vias on DP).
-   `--ses FILE [FILE2]` rebuilds the board from the saved sessions of the two stages without routing again.
-8. **Zone fill and DRC** with KiCad's own engine → `kicad/drc.rpt`; `--render DIR` writes SVG views with
+   `--ses FILE [FILE2]` rebuilds the board from saved sessions without routing again (a debugging aid: the fixed
+   fan-out is made again and must come out as it did for the routing).
+8. **Last mile:** each connection KiCad still reports open (outside the LT7911D area) gets a straight,
+   L-shaped or 45° track of 0.25 mm between its two ends when one fits with the clearances kept.
+9. **Zone fill and DRC** with KiCad's own engine → `kicad/drc.rpt`; `--render DIR` writes SVG views with
    `kicad-cli`.
 
 Run it (KiCad 7 with its Python module, the KiCad 7.0.11 footprint library, Java 17+):
