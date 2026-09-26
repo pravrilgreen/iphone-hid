@@ -15,7 +15,10 @@ import (
 // JPEG is saved there for a look.
 func snapshot(t *testing.T, p *Phone, name string) []byte {
 	t.Helper()
-	raw := p.render.frame(p, time.Date(2026, 9, 26, 9, 41, 0, 0, time.UTC))
+	p.mu.Lock()
+	v := p.view()
+	p.mu.Unlock()
+	raw := p.render.frame(v, time.Date(2026, 9, 26, 9, 41, 0, 0, time.UTC))
 	img, err := video.Crop(raw, video.Layout{}.Rect(raw.W, raw.H), nil)
 	if err != nil {
 		t.Fatal(err)

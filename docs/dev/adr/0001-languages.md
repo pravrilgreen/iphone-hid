@@ -1,6 +1,6 @@
 # ADR 0001: Languages for the product
 
-- **Status:** accepted, 2026-09-25
+- **Status:** accepted, 2026-09-25; the box daemon part is superseded by [ADR 0002](0002-box-in-go.md)
 - **Scope:** which language each part of iphone-hid is written in, now and for the purpose-built box
 
 ## Context

@@ -324,6 +324,27 @@ var Buttons = []Button{
 		run: func(a *Actor) { a.Consumer(hid.ConsumerKeys["play_pause"], 0) }},
 }
 
+// SetHomeMethod chooses how Home is pressed: "keys" (Cmd+H, the default) or "button" (the secondary
+// pointer button, which AssistiveTouch must map to Home).
+func SetHomeMethod(method string) error {
+	for i, b := range Buttons {
+		if b.Name != "home" {
+			continue
+		}
+		switch method {
+		case "keys", "":
+			Buttons[i].How = "keyboard shortcut Cmd+H"
+			Buttons[i].run = func(a *Actor) { a.Combo("cmd+h") }
+		case "button":
+			Buttons[i].How = "secondary pointer button; AssistiveTouch must map the secondary button to Home"
+			Buttons[i].run = func(a *Actor) { a.PointerButton(hid.ButtonSecondary) }
+		default:
+			return fmt.Errorf("home method %q: keys or button", method)
+		}
+	}
+	return nil
+}
+
 // PressButton presses the named phone button.
 func (a *Actor) PressButton(name string) {
 	for _, b := range Buttons {

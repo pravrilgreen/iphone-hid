@@ -343,3 +343,31 @@ func TestStatsReportLatency(t *testing.T) {
 		t.Fatalf("stats %+v", s)
 	}
 }
+
+func TestHomeCanUseTheSecondaryButton(t *testing.T) {
+	if err := SetHomeMethod("button"); err != nil {
+		t.Fatal(err)
+	}
+	defer SetHomeMethod("keys")
+	sink := &fakeSink{}
+	e := New(sink, testConfig())
+	defer e.Close()
+	if err := e.Do(context.Background(), "home", func(a *Actor) error { a.PressButton("home"); return nil }); err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, r := range sink.all() {
+		if r.kind == "kbd" && len(r.ks.Keys) > 0 {
+			t.Fatal("Home sent keys with the button method")
+		}
+		if r.kind == "ptr" && r.p.Buttons == hid.ButtonSecondary {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("no secondary button press")
+	}
+	if SetHomeMethod("gesture") == nil {
+		t.Fatal("an unknown method must be refused")
+	}
+}

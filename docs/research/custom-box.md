@@ -137,7 +137,6 @@ Những cải tiến dùng được cho mọi phần cứng, kể cả Orange Pi
 - TinyUSB có driver HS/FS cho CH32V30x, nhưng mỗi lúc chỉ chạy một cổng. Cổng thứ hai dùng driver của WCH; repo
   `openwch/ch32v307` có ví dụ HID trên cả hai cổng.
 - RP2040/RP2350 chỉ có Full-Speed. NXP LPC55S16 và STM32F723 cũng làm được nhưng đắt hơn hoặc cần thêm linh kiện.
-  Không dùng ESP32, theo yêu cầu của dự án.
 
 **iPhone có poll ở 125 µs không?** Chưa có số đo công khai [Chưa biết].
 

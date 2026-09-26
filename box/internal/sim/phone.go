@@ -461,13 +461,19 @@ func (p *Phone) Run(ctx context.Context, emit func(*video.Raw)) error {
 		p.mu.Lock()
 		p.step(now.Sub(last).Seconds())
 		last = now
-		raw := p.render.frame(p, now)
+		v := p.view()
 		p.mu.Unlock()
-		emit(raw)
+		emit(p.render.frame(v, now)) // drawn outside the lock: input never waits for a frame
 	}
 }
 
 var _ video.Source = (*Phone)(nil)
+
+// view copies what the screen shows (p.mu held).
+func (p *Phone) view() *view {
+	return &view{screen: p.screen, app: p.app, page: p.page, scroll: p.scroll, notes: p.notes, search: p.search,
+		volume: p.volume, hudUntil: p.hudUntil, recent: append([]int(nil), p.recent...), ptr: p.ptr, ptrKnown: p.ptrKnown}
+}
 
 // -- helpers ------------------------------------------------------------------------------------------------
 

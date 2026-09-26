@@ -81,7 +81,8 @@ func usage() {
   serve     run the box: API and web console (--sim: a simulated iPhone)
   gadget    up | down | status | wake: the USB touch pointer and keyboard gadget
   check     what the board offers: USB device port, gadget, HDMI input
-  hid       drive the phone directly: corners | tap X Y | key COMBO | type TEXT | button NAME
+  hid       drive the phone directly: corners | tap X Y | key COMBO | type TEXT | button NAME |
+            click secondary|middle
   version   print the version
 
 Run "ihcd <command> -h" for the flags of a command.
@@ -102,6 +103,7 @@ func serve(args []string) error {
 	noToken := fl.Bool("no-token", false, "no API token: anyone on the network can drive the phone")
 	id := fl.String("id", "", "the phone's name on the network (default iphone-<board serial>)")
 	settle := fl.Duration("settle", input.DefaultConfig.Settle, "wait after a pointer jump before pressing")
+	home := fl.String("home", "keys", "how Home is pressed: keys (Cmd+H) or button (secondary pointer button mapped to Home)")
 	noMDNS := fl.Bool("no-mdns", false, "do not announce the box on the network")
 	webDir := fl.String("web", "", "serve the console from this directory (development)")
 	var allow multiFlag
@@ -109,6 +111,9 @@ func serve(args []string) error {
 	_ = fl.Parse(args)
 
 	logger := log.New(os.Stderr, "", log.LstdFlags)
+	if err := input.SetHomeMethod(*home); err != nil {
+		return err
+	}
 	tok, err := loadToken(*token, *tokenFile, *noToken || (*simulate && *token == "" && *tokenFile == ""))
 	if err != nil {
 		return err
@@ -382,7 +387,7 @@ func orDash(s string) string {
 
 func hidCmd(args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: ihcd hid corners | tap X Y | key COMBO | type TEXT | button NAME")
+		return errors.New("usage: ihcd hid corners | tap X Y | key COMBO | type TEXT | button NAME | click secondary|middle")
 	}
 	sink, err := hid.OpenGadget(hid.SystemPaths, hid.GadgetName, input.DefaultConfig.WriteTimeout)
 	if err != nil {
@@ -424,6 +429,12 @@ func hidCmd(args []string) error {
 			return errors.New("usage: ihcd hid type TEXT")
 		}
 		return e.Do(ctx, "type", func(a *input.Actor) error { a.Type(args[1]); return a.Err() })
+	case "click":
+		b := map[string]uint8{"secondary": hid.ButtonSecondary, "middle": hid.ButtonMiddle}
+		if len(args) != 2 || b[args[1]] == 0 {
+			return errors.New("usage: ihcd hid click secondary|middle (the AssistiveTouch button actions)")
+		}
+		return e.Do(ctx, "click", func(a *input.Actor) error { a.PointerButton(b[args[1]]); return a.Err() })
 	case "button":
 		if len(args) != 2 {
 			var names []string

@@ -15,6 +15,7 @@ import (
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/math/fixed"
 
+	"github.com/pravrilgreen/iphone-hid/box/internal/hid"
 	"github.com/pravrilgreen/iphone-hid/box/internal/video"
 )
 
@@ -66,7 +67,22 @@ func newRenderer() *renderer {
 func (r *renderer) px(v float64) int { return int(math.Round(v * r.scale)) }
 
 // frame draws the phone's screen and returns it as a captured frame.
-func (r *renderer) frame(p *Phone, now time.Time) *video.Raw {
+// view is what the renderer draws: a copy of the phone's display state.
+type view struct {
+	screen   screenKind
+	app      int
+	page     float64
+	scroll   float64
+	notes    string
+	search   string
+	volume   float64
+	hudUntil time.Time
+	recent   []int
+	ptr      hid.Pointer
+	ptrKnown bool
+}
+
+func (r *renderer) frame(p *view, now time.Time) *video.Raw {
 	c := r.canvas
 	switch p.screen {
 	case screenHome:
@@ -97,7 +113,7 @@ func (r *renderer) frame(p *Phone, now time.Time) *video.Raw {
 	return &video.Raw{Format: "NV12", W: FrameW, H: FrameH, Planes: [][]byte{r.buf}, Stride: []int{FrameW}}
 }
 
-func (r *renderer) home(p *Phone) {
+func (r *renderer) home(p *view) {
 	draw.Draw(r.canvas, r.canvas.Bounds(), r.wall, image.Point{}, draw.Src)
 	for pg := 0; pg < pages(); pg++ {
 		off := (float64(pg) - p.page) * ScreenW
@@ -142,7 +158,7 @@ func (r *renderer) home(p *Phone) {
 	r.homeIndicator(color.RGBA{255, 255, 255, 220})
 }
 
-func (r *renderer) app(p *Phone) {
+func (r *renderer) app(p *view) {
 	a := Apps[p.app]
 	bg := color.RGBA{242, 242, 247, 255}
 	draw.Draw(r.canvas, r.canvas.Bounds(), &image.Uniform{bg}, image.Point{}, draw.Src)
@@ -194,7 +210,7 @@ func (r *renderer) app(p *Phone) {
 	r.homeIndicator(color.RGBA{0, 0, 0, 200})
 }
 
-func (r *renderer) switcher(p *Phone) {
+func (r *renderer) switcher(p *view) {
 	draw.Draw(r.canvas, r.canvas.Bounds(), r.wall, image.Point{}, draw.Src)
 	r.rect(0, 0, ScreenW, ScreenH, color.RGBA{0, 0, 0, 140})
 	if len(p.recent) == 0 {
@@ -210,7 +226,7 @@ func (r *renderer) switcher(p *Phone) {
 	}
 }
 
-func (r *renderer) search(p *Phone) {
+func (r *renderer) search(p *view) {
 	draw.Draw(r.canvas, r.canvas.Bounds(), r.wall, image.Point{}, draw.Src)
 	r.rect(0, 0, ScreenW, ScreenH, color.RGBA{20, 20, 30, 170})
 	r.roundRect(16, 80, ScreenW-32, 44, 12, color.RGBA{255, 255, 255, 60})

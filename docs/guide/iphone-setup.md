@@ -1,75 +1,41 @@
-# Cài đặt iPhone (làm tay một lần cho mỗi máy)
+# iPhone setup
 
-Chỉ dùng iPhone có cổng USB-C: iPhone 15 trở lên, trừ 16e và 17e (hai máy này không xuất hình qua USB-C).
+Once per phone. Menu names may differ slightly between iOS versions.
 
-Tên menu có thể khác đôi chút giữa các bản iOS. Ghi lại phiên bản iOS và mọi khác biệt vào log test.
+## Required
 
-## Bắt buộc
+1. **Settings > Accessibility > Touch > AssistiveTouch: on.** iOS shows the pointer only with
+   AssistiveTouch. Turn off **Always Show Menu** if the floating button covers content.
+2. **Settings > Accessibility > Pointer Control:**
+   - **Automatically Hide Pointer: off**;
+   - **Pointer Size** about two thirds, and a visible colour, so the pointer shows in the console.
+3. **AssistiveTouch > Devices > iphone-hid touch + keyboard > Customize Additional Buttons:**
+   - middle button (Button 3) = **App Switcher**;
+   - secondary button (Button 2) = **Home** (Home also works through Cmd+H; this makes a right
+     click useful too).
 
-1. **Settings > Accessibility > Touch > AssistiveTouch: ON.** Trên iPhone, con trỏ chuột chỉ hiện khi bật
-   AssistiveTouch.
-   - Tắt **Always Show Menu** nếu nút nổi che nội dung. Nếu iOS không cho tắt, kéo nút nổi vào mép màn hình
-     và ghi lại vị trí.
-2. **AssistiveTouch > Pointer Devices > Devices > [tên thiết bị] > Customize Additional Buttons:**
-   - nút phải (Button 2) = **Home**;
-   - nút giữa (Button 3) = **App Switcher**.
+   The device appears in the list once the box has been plugged in. iOS may list it more than once
+   (one entry per pointer interface): set the buttons on each.
+4. **Settings > Display & Brightness > Auto-Lock: Never.** A sleeping iPhone suspends the USB bus
+   and stops taking input, and its video output stops. If Never is missing, **Low Power Mode** is
+   on (it forces 30 seconds) or a management profile sets a limit.
+5. **Settings > Privacy & Security > Wired Accessories:** **Always Allow** for a dedicated phone, so
+   the box keeps working after the phone locks or restarts. Check it again after iOS updates.
+6. **Settings > General > Keyboard > Hardware Keyboard:** layout **U.S.**; turn off
+   Auto-Capitalization, Auto-Correction and the "." shortcut, so typed text arrives as sent.
 
-   Phần mềm dùng đúng hai gán này cho lệnh `home` và `app_switcher`. Thiết bị chỉ hiện trong danh sách sau
-   khi cắm HID lần đầu. Với hộp Orange Pi, tên USB của thiết bị là `ihc keyboard + mouse`. Chuột tương đối và chuột
-   tuyệt đối là hai interface riêng, nên iOS có thể hiện nhiều mục: gán nút cho mọi mục hiện ra. Đổi profile
-   gadget (serial USB khác) có thể làm iOS coi là thiết bị mới, khi đó phải gán lại.
-3. **Settings > Accessibility > Pointer Control:**
-   - **Automatically Hide Pointer: OFF.** Con trỏ tự ẩn thì không nhìn thấy được.
-   - **Pointer Size:** tăng lên khoảng 2/3 thanh trượt.
-   - **Color:** tuỳ chọn, chọn màu viền dễ nhìn để người vận hành thấy con trỏ trên hình (phần mềm không
-     nhận diện hình ảnh nên màu không ảnh hưởng gì tới điều khiển).
-   - **Increase Contrast: ON** nếu có.
-   - **Tracking Speed:** chọn một mức, ghi lại, và **không đổi nữa**. Hiệu chỉnh con trỏ chỉ đúng với mức đã đo.
-4. **Settings > Display & Brightness:**
-   - **Auto-Lock: Never.** Bắt buộc. Máy ngủ thì cổng USB bị tắt (suspend), máy ngừng nhận lệnh chuột và phím, và
-     hình qua USB-C cũng tắt.
-   - Không có lựa chọn Never? Nguyên nhân là **Low Power Mode** đang bật (nó ép Auto-Lock về 30 giây), hoặc máy có
-     profile quản lý (MDM) hay Screen Time đặt thời gian khoá.
-   - Giảm độ sáng xuống mức thấp vừa đủ nhìn trên hình thu. Màn OLED sáng liên tục với hình tĩnh dễ bị lưu ảnh.
-   - Display Zoom: **Default**.
-5. **Settings > Privacy & Security > Wired Accessories** (iOS 26+):
-   - dàn máy chuyên dụng chọn **Always Allow**, để bàn phím và chuột vẫn chạy nếu máy lỡ khoá hoặc khởi động lại
-     (kém an toàn hơn: phụ kiện lạ cũng được nhận);
-   - máy dùng chung với người chọn **Automatically Allow When Unlocked**, và chấp nhận là máy khoá quá 1 giờ thì phải
-     có người mở khoá;
-   - cắm thử và chấp nhận phụ kiện một lần trong lúc máy đang mở khoá.
-   - Kiểm tra lại mục này sau mỗi lần cập nhật iOS (iOS 26.2 đã tự đổi nó về Always Allow).
-6. **Passcode:** máy chuyên cho tự động hoá thì nên **tắt passcode**, nếu các app đang dùng cho phép. Không có
-   passcode thì USB Restricted Mode và việc tự khởi động lại sau 72 giờ khoá không áp dụng, và box mở được màn khoá
-   chỉ bằng nút Home. Phải giữ passcode thì bắt buộc chọn Always Allow ở mục 5.
-7. **Settings > General > Keyboard > Hardware Keyboard:**
-   - layout **U.S.**;
-   - tắt Auto-Capitalization, Auto-Correction và phím tắt "." (hai lần dấu cách).
-8. **Khoá xoay dọc (Portrait Orientation Lock): ON** trong Control Center. Hiệu chỉnh và toạ độ đều tính theo
-   màn hình dọc.
-9. **Safari:** để thanh địa chỉ **ở dưới** (mặc định từ iOS 15). Để ở trên thì lúc tìm trang hiệu chỉnh, một
-   cú click có thể trúng thanh địa chỉ và bật bàn phím; hiệu chỉnh sẽ dừng an toàn nhưng phải chạy lại.
+## Recommended
 
-## Nên làm
+- **Passcode off** on a phone dedicated to automation, where its apps allow it: USB Restricted Mode
+  and the restart after 72 hours locked then do not apply. With a passcode, keep Wired Accessories
+  on Always Allow.
+- **Notifications off** or a Focus mode, so banners do not cover the screen.
+- **Automatic iOS updates off**, so the phone does not restart in the middle of a run.
+- **Optimized charging** on: the phone stays on the charger all day.
+- Screen brightness low: a bright static picture for months can mark an OLED screen.
 
-- **Tắt thông báo** hoặc bật Focus để popup không che màn hình khi đang chạy automation.
-- **Tắt tự cập nhật iOS**, tránh máy tự khởi động lại giữa chừng.
-- **Bật Optimized/Limit charging** (Battery > Charging > giới hạn 80%). Máy cắm sạc 24/7 sẽ nhẹ pin hơn.
-- **Tắt Low Power Mode** (nó ép Auto-Lock về 30 giây). Giữ máy luôn được sạc qua hub để iOS không tự bật lại
-  chế độ này khi pin yếu.
+## Check
 
-## Kiểm tra nhanh sau khi cài
-
-Cắm HID (hộp: cổng USB-A của hub → cáp USB-A → USB-C → cổng Type-C của board, gadget đã bật) và chạy trên board:
-
-```bash
-ihc-hidtest --gadget "info; move 200 0; move 0 200; home"
-```
-
-Với cáp CH9329 (phương án dự phòng), thay `--gadget` bằng `--port <cổng>`. Nếu server đang chạy như service, dừng
-nó trước (`sudo systemctl stop ihc`) để hai tiến trình không cùng gửi lệnh, rồi bật lại sau khi kiểm tra.
-
-Kết quả đúng:
-- `info` báo `USB connected`;
-- con trỏ tròn xuất hiện và đi sang phải rồi xuống dưới;
-- `home` đưa về màn hình chính.
+With the box installed and the phone plugged in, open the console: the phone's screen appears, the
+pointer follows the mouse over it, and a click opens what it lands on. The
+[hardware check](hardware-check.md) tries every button.
