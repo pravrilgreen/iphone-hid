@@ -137,3 +137,95 @@ func TestHDMIInputAndDeviceID(t *testing.T) {
 		t.Fatalf("device id %q", id)
 	}
 }
+
+func TestAnOptionOfTheDriverIsNotTheDriver(t *testing.T) {
+	root := fakeBoard(t)
+	makeNode(t, root, "hdmirx-controller@fdee0000", "okay")
+	write(t, filepath.Join(root, "boot/config-"+release),
+		"# CONFIG_VIDEO_ROCKCHIP_HDMIRX is not set\nCONFIG_VIDEO_ROCKCHIP_HDMIRX_LOAD_DEFAULT_EDID=y\n")
+	if v := verdict(t, root); !strings.Contains(v, "no driver for it") {
+		t.Fatal(v)
+	}
+	write(t, filepath.Join(root, "boot/config-"+release), "CONFIG_VIDEO_ROCKCHIP_HDMIRX=m\n")
+	if v := verdict(t, root); strings.Contains(v, "no driver for it") {
+		t.Fatal(v)
+	}
+}
+
+func TestTheExactOverlayNameWins(t *testing.T) {
+	root := armbian(t, newScript, "panthor-gpu", "", 100*time.Second, time.Hour)
+	write(t, filepath.Join(root, "boot/dtb/rockchip/overlay/rk3588-hdmiin-orangepi.dtbo"), "")
+	if f := HDMIBootFix(root); f == nil || f.Entry != "rk3588-hdmirx" {
+		t.Fatalf("%+v", f)
+	}
+	if v := verdict(t, root); !strings.Contains(v, "add rk3588-hdmirx to the overlays= line") {
+		t.Fatal(v)
+	}
+	if err := os.Remove(filepath.Join(root, "boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo")); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(root, "boot/dtb/rockchip/overlay/rk3588-hdmi-in-m1.dtbo"), "")
+	if f := HDMIBootFix(root); f != nil {
+		t.Fatalf("two candidates: %+v", f)
+	}
+	if v := verdict(t, root); !strings.Contains(v, "several overlays") || !strings.Contains(v, "rk3588-hdmi-in-m1.dtbo") {
+		t.Fatal(v)
+	}
+}
+
+func TestStaleUserOverlay(t *testing.T) {
+	root := armbian(t, oldScript, "panthor-gpu", "rk3588-hdmirx", 100*time.Second, time.Hour)
+	write(t, filepath.Join(root, "boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo"), "new")
+	write(t, filepath.Join(root, "boot/overlay-user/rk3588-hdmirx.dtbo"), "old")
+	f := HDMIBootFix(root)
+	if f == nil || !f.Stale || f.To != "/boot/overlay-user/rk3588-hdmirx.dtbo" {
+		t.Fatalf("%+v", f)
+	}
+	if v := verdict(t, root); !strings.Contains(v, "differs from the kernel's") {
+		t.Fatal(v)
+	}
+	write(t, filepath.Join(root, "boot/overlay-user/rk3588-hdmirx.dtbo"), "new")
+	if f := StaleUserOverlay(root); f != nil {
+		t.Fatalf("%+v", f)
+	}
+}
+
+func TestTestSetFollowsTheBootScript(t *testing.T) {
+	root := armbian(t, oldScript, "panthor-gpu rk3588-hdmirx nosuch", "", 100*time.Second, time.Hour)
+	env := "overlay_prefix=rockchip-rk3588\nfdtfile=rockchip/rk3588-orangepi-5-plus.dtb\noverlays=panthor-gpu rk3588-hdmirx nosuch\nuser_overlays=extra\n"
+	write(t, filepath.Join(root, "boot/armbianEnv.txt"), env)
+	write(t, filepath.Join(root, "boot/overlay-user/extra.dtbo"), "")
+	f := HDMIBootFix(root)
+	if f == nil || f.Key != "user_overlays" || f.Drop != "rk3588-hdmirx" {
+		t.Fatalf("%+v", f)
+	}
+	if _, _, why := f.TestSet(root); why != "no /boot/dtb/rockchip/rk3588-orangepi-5-plus.dtb" {
+		t.Fatal(why)
+	}
+	write(t, filepath.Join(root, "boot/dtb/rockchip/rk3588-orangepi-5-plus.dtb"), "")
+	base, overlays, why := f.TestSet(root)
+	o := filepath.Join(root, "boot/dtb/rockchip/overlay")
+	want := []string{filepath.Join(o, "rockchip-rk3588-panthor-gpu.dtbo"), filepath.Join(root, "boot/overlay-user/extra.dtbo"),
+		filepath.Join(o, "rk3588-hdmirx.dtbo")}
+	if why != "" || base != filepath.Join(root, "boot/dtb/rockchip/rk3588-orangepi-5-plus.dtb") || strings.Join(overlays, " ") != strings.Join(want, " ") {
+		t.Fatalf("%s %v %q", base, overlays, why)
+	}
+}
+
+func TestTypeCPorts(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "sys/class/typec/port0/data_role"), "[host] device\n")
+	write(t, filepath.Join(root, "sys/class/typec/port0/power_role"), "[source] sink\n")
+	write(t, filepath.Join(root, "sys/class/typec/port0-partner/uevent"), "")
+	write(t, filepath.Join(root, "sys/class/typec/port1/data_role"), "device\n")
+	ports := TypeCPorts(root)
+	if len(ports) != 2 {
+		t.Fatalf("%+v", ports)
+	}
+	if p := ports[0]; p.DataRole != "host" || p.PowerRole != "source" || !p.DualData || !p.Partner {
+		t.Fatalf("%+v", p)
+	}
+	if p := ports[1]; p.DataRole != "device" || p.PowerRole != "" || p.DualData || p.Partner {
+		t.Fatalf("%+v", p)
+	}
+}
