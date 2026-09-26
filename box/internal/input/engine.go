@@ -469,21 +469,24 @@ func (e *Engine) emit(ev Event) {
 	}
 }
 
-// Stats summarizes the input path over the last seconds.
+// Stats summarizes the input path over the last two seconds.
 type Stats struct {
-	Reports   int     `json:"reports"`     // reports sent in the window
-	Rate      float64 `json:"rate"`        // reports per second
-	Merged    int     `json:"merged"`      // moves replaced by a newer one before they went out
-	Dropped   int     `json:"dropped"`     // live input dropped because it was stale
-	LatencyP50 float64 `json:"latency_p50_ms"` // from the input reaching the box to the report being queued on USB
+	Reports    int     `json:"reports"`        // reports sent in the window
+	Rate       float64 `json:"rate"`           // reports per second
+	Merged     int     `json:"merged"`         // moves replaced by a newer one before they went out (in all)
+	Dropped    int     `json:"dropped"`        // live input dropped because it was stale (in all)
+	LatencyP50 float64 `json:"latency_p50_ms"` // from the input reaching the box to its report queued on USB
 	LatencyP95 float64 `json:"latency_p95_ms"`
 	LatencyMax float64 `json:"latency_max_ms"`
-	Errors    int     `json:"errors"`
-	LastError string  `json:"last_error,omitempty"`
-	Busy      string  `json:"busy,omitempty"`
+	Errors     int     `json:"errors"`
+	LastError  string  `json:"last_error,omitempty"`
+	Busy       string  `json:"busy,omitempty"`
 }
 
-// Stats returns the input statistics of the last window and starts a new one.
+// StatsWindow is how far back Stats looks.
+const StatsWindow = 2 * time.Second
+
+// Stats returns the input statistics of the last StatsWindow.
 func (e *Engine) Stats() Stats {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -496,33 +499,51 @@ func (e *Engine) Stats() Stats {
 	return s
 }
 
+type sample struct {
+	at time.Time
+	d  time.Duration
+}
+
 type statsWindow struct {
-	start   time.Time
-	lat     []time.Duration
+	samples []sample
 	merged  int
 	dropped int
 }
 
 func (w *statsWindow) add(d time.Duration) {
-	if len(w.lat) < 20000 {
-		w.lat = append(w.lat, d)
+	now := time.Now()
+	w.samples = append(w.samples, sample{now, d})
+	if len(w.samples) > 8192 {
+		w.prune(now)
+		if len(w.samples) > 8192 {
+			w.samples = w.samples[len(w.samples)-8192:]
+		}
 	}
 }
 
+func (w *statsWindow) prune(now time.Time) {
+	i := 0
+	for i < len(w.samples) && now.Sub(w.samples[i].at) > StatsWindow {
+		i++
+	}
+	w.samples = append(w.samples[:0], w.samples[i:]...)
+}
+
 func (w *statsWindow) summary(now time.Time) Stats {
-	secs := now.Sub(w.start).Seconds()
-	if w.start.IsZero() || secs <= 0 {
-		secs = 1
-	}
-	s := Stats{Reports: len(w.lat), Rate: math.Round(float64(len(w.lat))/secs*10) / 10, Merged: w.merged, Dropped: w.dropped}
-	if n := len(w.lat); n > 0 {
-		sort.Slice(w.lat, func(i, j int) bool { return w.lat[i] < w.lat[j] })
+	w.prune(now)
+	s := Stats{Reports: len(w.samples), Rate: math.Round(float64(len(w.samples))/StatsWindow.Seconds()*10) / 10,
+		Merged: w.merged, Dropped: w.dropped}
+	if n := len(w.samples); n > 0 {
+		lat := make([]time.Duration, n)
+		for i, x := range w.samples {
+			lat[i] = x.d
+		}
+		sort.Slice(lat, func(i, j int) bool { return lat[i] < lat[j] })
 		ms := func(d time.Duration) float64 { return math.Round(float64(d)/1e4) / 100 }
-		s.LatencyP50 = ms(w.lat[n/2])
-		s.LatencyP95 = ms(w.lat[(n*95)/100])
-		s.LatencyMax = ms(w.lat[n-1])
+		s.LatencyP50 = ms(lat[n/2])
+		s.LatencyP95 = ms(lat[(n*95)/100])
+		s.LatencyMax = ms(lat[n-1])
 	}
-	*w = statsWindow{start: now, lat: w.lat[:0]}
 	return s
 }
 

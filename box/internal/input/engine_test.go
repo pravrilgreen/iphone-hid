@@ -333,7 +333,6 @@ func TestStatsReportLatency(t *testing.T) {
 	sink := &fakeSink{poll: time.Millisecond}
 	e := New(sink, testConfig())
 	defer e.Close()
-	e.Stats()
 	for i := 0; i < 20; i++ {
 		e.Live(Touch{X: float64(i) / 20, Y: 0.5})
 		time.Sleep(2 * time.Millisecond)
