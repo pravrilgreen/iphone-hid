@@ -7,8 +7,8 @@ still change.
 ## Unreleased
 
 - **Box v1 hardware (`hardware/box-v1`):**
-  - A draft 4-layer layout, 96×66 mm, generated from the netlist by `pcb.py`: every part placed, everything
-    routed except the LT7911D area, KiCad DRC report.
+  - A draft 4-layer layout, 96×66 mm, generated from the netlist by `pcb.py`: every part placed, routed
+    except the LT7911D area and 8 listed connections, no DRC errors.
   - Second design review: CH224K VBUS pin left open, a TVS that clamps below the buck's input rating, ESD on
     the rear CC lines, a gentler LT7911D reset, I2C pull-ups on the module's own 3.3 V, a hybrid iPhone
     receptacle that can be routed, smaller buttons.

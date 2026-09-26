@@ -5,8 +5,8 @@
 > specification, mechanical drawing, acceptance tests, cost estimate, RFQ email). This README is the engineering
 > reference behind it.
 
-- **Date:** 2026-09-26. **Status:** pin-level schematic and a **draft PCB layout** (every part placed, everything
-  routed except the LT7911D area, §15). Architecture and parts come from
+- **Date:** 2026-09-26. **Status:** pin-level schematic and a **draft PCB layout** (every part placed, routed
+  except the LT7911D area and 7 small places listed in §15, no DRC errors). Architecture and parts come from
   [custom-box.md](../../docs/research/custom-box.md) §4–§9 and §13.
 - **Scope:** one 4-layer PCB of 96×66 mm with the LT7911D (USB-C DP Alt Mode → MIPI CSI-2), the CH32V305RBT6
   (USB High-Speed HID to the iPhone), a Luckfox Core1106 module (RV1106G3), USB-C PD power input, 100M RJ45, USB-C to
@@ -53,7 +53,8 @@
    (§12). Design-review findings of 2026-09-26 are in §14.
 7. **Layout (draft):** 96×66 mm, 4 layers, all SMD parts on the top. The iPhone port is on the front edge; Ethernet,
    the PC port and the power input on the rear. `pcb.py` places every part, routes with Freerouting and fills the
-   copper zones; KiCad's DRC is clean apart from the LT7911D connections left open on purpose (§15).
+   copper zones. KiCad's DRC finds no clearance, hole or edge error; besides the LT7911D connections left open on
+   purpose, 8 connections in 7 places are left for the person finishing the layout (§15).
 
 ---
 
@@ -1318,7 +1319,7 @@ distributors provide.
 | H11 | LCSC codes, JLCPCB classes and prices come from a parts-list snapshot (2026-04-02) and search excerpts, not from the vendor pages | Medium | the assembly house re-validates every line at quotation; `bom.csv` marks them [Likely] |
 | H12 | ~~D101 SMAJ24A clamps at 38.9 V, above the LMR33630's 36 V~~ | Closed | D101 is now an SMBJ20A (32.4 V clamp) |
 | H13 | The iPhone receptacle's B row is through-hole: four DP lanes (TX2, RX1) see a ~1.6 mm pin stub | Low | the TYPE-C-31-M-04 is sold for USB 3.1 (5 Gbit/s); 1080p60 needs HBR (2.7 Gbit/s); confirm eye margin at bring-up (T2) |
-| H14 | The layout is autorouted: USB and Ethernet pairs are not length-matched or coupled by rule, and a router makes choices a person would not | Medium | layout review before fabrication (ORDERING.md §3); re-route the USB pairs as coupled pairs in KiCad |
+| H14 | The layout is autorouted: USB and Ethernet pairs are not length-matched or coupled by rule, a router makes choices a person would not, and 8 connections are still open (§15) | Medium | layout review before fabrication (ORDERING.md §3); close the open connections; re-route the USB pairs as coupled pairs in KiCad |
 
 ---
 
@@ -1581,7 +1582,34 @@ Freerouting 1.9 always opens a window: without a display, `pcb.py` runs it under
 took its pass limit from its own settings file instead of the command line and stopped with many nets unrouted on
 this board, so `pcb.py` expects 1.9.0.
 
-<!-- PCB-RESULT -->
+**Result of the last run** (2026-09-26, `pcb.py --route --passes 30`, Freerouting 1.9.0, `kicad/drc.rpt`):
+
+| Item | Value |
+|---|---|
+| Footprints | 195, all placed (U201 has 20 placeholder pins without a pad) |
+| Router tracks and vias | 1318 track segments, 109 vias; second stage kept |
+| Fixed vias before routing | 132 GND fan-out, 2 to the 5V_SYS pour, 3 to the VBUS_IN pour |
+| Open connections closed by a direct 0.25 mm track after routing | 2 |
+| GND stitching vias | 237, plus 3 in pour islands (10 islands too small for one) |
+| DRC errors (clearance, holes, board edge, keep-outs) | 0 |
+| Unconnected: the LT7911D's pins, DP, AUX, SBU and CSI lanes (on purpose) | 37 |
+| Unconnected elsewhere | 8, listed below |
+| Warnings | 43 silkscreen overlaps, 31 silkscreen over copper, 3 silkscreen at the board edge, 9 thermal reliefs with one spoke, 0 other |
+
+Open connections outside the LT7911D area (8 items in 7 places), for the person finishing the layout:
+
+- 5V_SYS: D104, the diode that feeds 5V_SYS from the PC port through JP102 (development only), is joined to
+  neither the 5V_SYS track nor the via beside it (2 items).
+- GND: two islands of the L1 GND pour that no via reaches.
+- MCU_DBG_RX: U301 pin 30 to the debug header J501 pin 7.
+- PC_CC1: J401 pad A5 to its track.
+- PSW_OUT: U106 pin 3 (the INA180's IN+, the Kelvin sense at R126) to the PSW_OUT track.
+- VCC_3V3_MOD: the module's pad 78 to its track (the I2C pull-ups R201/R202 and TP401).
+- VIN: R111 (the enable divider of U102) to C105.
+
+Freerouting's result changes with every change to the placement: across the runs made for this draft, 5 to 13
+connections stayed open outside the LT7911D area. The silkscreen warnings are reference texts over pads and
+each other; they are tidied by hand with the rest.
 
 **Views** (`svg/pcb-*.svg`, from `kicad-cli`): `pcb-assembly` (placement, above in §11) and `pcb-l1` … `pcb-l4`
 (each copper layer).

@@ -1532,7 +1532,9 @@ def fill_zones(board):
 
 def drc(board, path):
     pcbnew.WriteDRCReport(board, path, pcbnew.EDA_UNITS_MILLIMETRES, True)
-    text = open(path, encoding="utf-8").read()
+    text = open(path, encoding="utf-8").read().replace(os.path.dirname(HERE.rstrip("/")) + "/", "hardware/")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
     counts = {k: int(v) for v, k in re.findall(r"\*\* Found (\d+) (DRC violations|unconnected pads|Footprint errors)", text)}
     return counts, text
 

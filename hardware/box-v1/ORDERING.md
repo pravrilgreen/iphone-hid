@@ -15,7 +15,7 @@
 | Schematic, pin level | Complete for every part with a public datasheet; `check.py --selftest` passes (759 pins, 135 nets) |
 | LT7911D pinout, footprint, reference circuit, firmware | **Blocking:** the datasheet R1.4 is public (LCSC) but its pin table is not copied in yet: 25 pins carry placeholder numbers `?..` [Unknown]; reference circuit and firmware come from Lontium (§4) |
 | Bill of materials | Every orderable line has a manufacturer and MPN; LCSC codes [Likely] (§9) |
-| PCB layout | **Draft** in `kicad/box-v1.kicad_pcb`: every part placed, everything routed except the LT7911D pins, DP and CSI lanes; to be finished and reviewed by the layout house (§3). No Gerbers yet |
+| PCB layout | **Draft** in `kicad/box-v1.kicad_pcb`: every part placed, routed except the LT7911D pins, DP and CSI lanes and 8 small connections (README §15), no DRC errors; to be finished and reviewed by the layout house (§3). No Gerbers yet |
 | Custom footprints (LT7911D QFN-64, Core1106 castellated module, CH224K ESSOP-10, HRO TYPE-C-31-M-04) | Drafts in the board; the LT7911D one is provisional until the package drawing is read (§3) |
 | Enclosure | Proposal drawing only ([svg/mechanical.svg](svg/mechanical.svg), §8) |
 | Firmware and software | Not in the package (§11) |
@@ -60,7 +60,8 @@ proposal.
 2. Replace the LT7911D placeholder pins in `netlist.py` (or ask the buyer to) and re-run `generate.py`, `check.py`
    and `pcb.py`; the check refuses a placeholder that is not labelled [Unknown].
 3. Finish the layout to §7: route U201 (its supplies, crystal, I2C, CC, the 4 DP lanes from J201 through U202/U203,
-   AUX, and the 5 CSI pairs to the module), then review the autorouted rest: re-route the USB and Ethernet pairs as
+   AUX, and the 5 CSI pairs to the module), close the 8 other open connections listed in README §15, then review
+   the autorouted rest: re-route the USB and Ethernet pairs as
    coupled, length-matched pairs, check the buck loops and the 3 A paths. Stack-up and impedance confirmation with
    the fab (§5), DRC.
 4. Outputs: Gerber X2 + Excellon drill, IPC-D-356 netlist, pick-and-place (CPL) file, assembly drawings (top/bottom,
@@ -314,8 +315,8 @@ USB High-Speed device, a Luckfox Core1106 (Rockchip RV1106G3) castellated module
 two TI buck converters and a 10/100 Ethernet jack.
 
 Attached: the schematic package (KiCad 8 project, netlist, BOM with MPNs, schematic PDFs/SVGs), a draft KiCad
-layout (every part placed, everything routed except the LT7911D area), ORDERING.md with the fabrication and
-assembly specification, layout constraints, enclosure proposal and acceptance tests.
+layout (every part placed, routed except the LT7911D area and a few listed connections), ORDERING.md with
+the fabrication and assembly specification, layout constraints, enclosure proposal and acceptance tests.
 
 Please quote separately:
 1. Finishing the PCB layout from our draft: the LT7911D footprint (QFN-64 7.5 x 7.5 mm 0.4 mm pitch) and its
