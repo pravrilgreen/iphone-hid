@@ -918,14 +918,15 @@ def plane(board):
 
 
 FULL = [(0.3, 0.3), (W - 0.3, 0.3), (W - 0.3, H - 0.3), (0.3, H - 0.3)]
-# L3 5V_SYS pour: the corridor between the module and the RJ45, from below the module up to its
-# supply pads (a band along the module's bottom edge would take the room its GND pads need for vias)
-FIVE_V_POUR = [(70.4, 40.4), (73.4, 40.4), (73.4, 9.0), (70.4, 9.0)]
+# L3 5V_SYS pour: the corridor between the module and the RJ45 up to the module's supply pads, and
+# below the module a wider foot where the route from U103's output arrives (a band along the whole
+# bottom edge of the module would take the room its GND pads need for vias)
+FIVE_V_POUR = [(70.4, 9.0), (73.4, 9.0), (73.4, 40.0), (75.5, 40.0), (75.5, 46.5), (68.5, 46.5), (68.5, 40.0),
+               (70.4, 40.0)]
 # L4 VBUS_IN pour under the power receptacle J101 and the fuse F101: the CC lines leave J101 between
 # its two VBUS pads, so the pads meet through vias to this pour rather than on L1
 VBUS_POUR = [(82.7, 45.9), (88.5, 45.9), (88.5, 52.1), (82.7, 52.1)]
-# after routing: the corridor continued down to where the 5V_SYS route from U103 passes
-FIVE_V_LINK = [(68.5, 40.0), (75.5, 40.0), (75.5, 46.5), (68.5, 46.5)]
+
 POURS = [("5V_SYS", pcbnew.In2_Cu, FIVE_V_POUR), ("VBUS_IN", pcbnew.B_Cu, VBUS_POUR)]
 
 
@@ -951,9 +952,8 @@ def _zone(board, layer, net, pts, prio=0, name=""):
 
 
 def zones(board):
-    """After routing: GND pours on L1, L3 (around the 5V_SYS pour) and L4; the 5V_SYS corridor
-    continued below the module on L3; VBUS_IN pour on L1 from the power receptacle to the fuse (its
-    tracks leave the pads at 0.3 mm)."""
+    """After routing: GND pours on L1, L3 (around the 5V_SYS pour) and L4; VBUS_IN pour on L1 from
+    the power receptacle to the fuse (its tracks leave the pads at 0.3 mm)."""
     nets = _nets(board)
     fp = {f.GetReference(): f for f in board.GetFootprints()}
     vb = [board_xy(p.GetPosition()) for p in fp["J101"].Pads() if p.GetNetname() == "VBUS_IN"]
@@ -964,9 +964,6 @@ def zones(board):
     _zone(board, pcbnew.F_Cu, nets["GND"], FULL, 0, "GND top")
     _zone(board, pcbnew.B_Cu, nets["GND"], FULL, 0, "GND bottom")
     _zone(board, pcbnew.In2_Cu, nets["GND"], FULL, 0, "GND inner")
-    # 5V_SYS: the corridor pour continued below the module, where the route from U103's output
-    # passes with its vias, so that the pour joins it wherever the router left a via there
-    _zone(board, pcbnew.In2_Cu, nets["5V_SYS"], FIVE_V_LINK, 1, "5V_SYS link")
 
 
 # ---------------------------------------------------------------------------------------------
