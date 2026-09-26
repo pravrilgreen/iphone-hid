@@ -1532,7 +1532,8 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    and the HRO TYPE-C-31-M-04 receptacle (`footprints/box-v1.pretty`).
 2. **Placement:** the connectors, ICs, inductors and crystals at the positions of `placement.py` (§11); each
    decoupling capacitor next to the pin it serves, its supply pad towards the pin; every other small part near the parts it connects to, moved
-   until no two courtyards overlap and the corridors kept for the DP and CSI lanes stay empty. `--check-only`
+   until no two courtyards overlap, the corridors kept for the DP and CSI lanes stay empty and 1.2 mm around the
+   castellated module stays free (to solder and inspect its pads, and for the vias that leave them). `--check-only`
    stops here and reports overlaps, parts off the board and parts on holes or fiducials.
 3. **Rules** within JLCPCB's 4-layer capabilities: 0.1 mm track and space, 0.25 mm drill and 0.45 mm via pad,
    0.25 mm between holes and from copper to the board edge. Net classes (`netlist.NETCLASSES`): 100 Ω pairs
@@ -1545,8 +1546,9 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    one row: D+ closes on the connector side of the row, D− on the board side.
 6. **GND and pours:** L2 is a solid GND plane. Before routing, every GND pad on L1 gets a via to the plane beside
    it, or a short track to a through-hole GND pad of the same part; these are fixed, so the router cannot remove
-   them. After routing, GND stitching vias fill a 3 mm grid wherever they clear other copper, and GND pours cover
-   L1, L3 and L4. L3 also carries a 5V_SYS pour, present during routing so that the router uses it: from the
+   them. After routing, GND stitching vias fill a 3 mm grid wherever they clear other copper (and stay out of the
+   other nets' pours), GND pours cover L1, L3 and L4, and every GND pour island without a via gets one where it
+   fits. L3 also carries a 5V_SYS pour, present during routing so that the router uses it: from the
    U103 side along the module's bottom edge and up the corridor between the module and the RJ45 to the module's
    supply pads (§11). L1 has a VBUS_IN pour from the power receptacle J101 to the fuse F101.
 7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself). The
