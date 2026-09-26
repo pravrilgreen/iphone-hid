@@ -40,7 +40,8 @@ func newFixture(t *testing.T) *fixture {
 	ctx, cancel := context.WithCancel(context.Background())
 	go hub.Run(ctx)
 	s := New(Config{DeviceID: "iphone-test", Version: "test", Token: token,
-		Web: fstest.MapFS{"index.html": {Data: []byte("<!doctype html>console")}}}, engine, hub)
+		Web:      fstest.MapFS{"index.html": {Data: []byte("<!doctype html>console")}},
+		SimState: func() any { return phone.State() }, SimSet: phone.Set}, engine, hub)
 	ts := httptest.NewServer(s.Handler())
 	t.Cleanup(func() {
 		ts.Close()
@@ -376,4 +377,55 @@ func TestStatusSaysStartingUntilTheFirstPicture(t *testing.T) {
 	if st := s.Snapshot(); st.State != "starting" {
 		t.Fatalf("state %q before any frame", st.State)
 	}
+}
+
+// waitStatus polls the status API until it reports want.
+func waitStatus(t *testing.T, f *fixture, want string) map[string]any {
+	t.Helper()
+	deadline := time.Now().Add(6 * time.Second)
+	for {
+		_, st := f.do(t, "GET", f.base, "", true)
+		if st["state"] == want {
+			return st
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("state %v, want %s: %v", st["state"], want, st["message"])
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+}
+
+func TestUnpluggedAsleepAndNoPicture(t *testing.T) {
+	f := newFixture(t)
+	waitStatus(t, f, "ready")
+	if r, _ := f.do(t, "POST", f.base+"/sim", `{"usb": "loose"}`, true); r.StatusCode != 400 {
+		t.Fatalf("an unknown condition: %d", r.StatusCode)
+	}
+
+	f.do(t, "POST", f.base+"/sim", `{"usb": "unplugged"}`, true)
+	waitStatus(t, f, "no_usb")
+	if r, body := f.do(t, "POST", f.base+"/home", "", true); r.StatusCode != 503 || body["code"] != "no_usb" {
+		t.Fatalf("Home while unplugged: %d %v", r.StatusCode, body)
+	}
+	if r, body := f.do(t, "POST", f.base+"/wake", "", true); r.StatusCode != 503 || body["code"] != "no_usb" {
+		t.Fatalf("wake while unplugged: %d %v", r.StatusCode, body)
+	}
+
+	f.do(t, "POST", f.base+"/sim", `{"usb": "asleep"}`, true)
+	waitStatus(t, f, "asleep")
+	if r, body := f.do(t, "POST", f.base+"/tap", `{"x": 0.5, "y": 0.5}`, true); r.StatusCode != 503 || body["code"] != "asleep" {
+		t.Fatalf("tap while asleep: %d %v", r.StatusCode, body)
+	}
+	if r, body := f.do(t, "POST", f.base+"/wake", "", true); r.StatusCode != 200 {
+		t.Fatalf("wake: %d %v", r.StatusCode, body)
+	}
+	waitStatus(t, f, "ready")
+
+	f.do(t, "POST", f.base+"/sim", `{"video": "no_signal"}`, true)
+	waitStatus(t, f, "no_video")
+	if r, body := f.do(t, "GET", f.base+"/screenshot?wait=true", "", true); r.StatusCode != 503 {
+		t.Fatalf("a screenshot with no picture: %d %v", r.StatusCode, body)
+	}
+	f.do(t, "POST", f.base+"/sim", `{"video": "ok"}`, true)
+	waitStatus(t, f, "ready")
 }

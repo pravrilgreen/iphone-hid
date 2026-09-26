@@ -89,6 +89,13 @@ const STATES = {
   no_video: "No picture", offline: "Box unreachable",
 };
 
+// A note over the phone's screen; the last picture stays, greyed, until a new one comes.
+function screenNote(text) {
+  $("screen-note").hidden = !text;
+  if (text) $("screen-note").textContent = text;
+  $("bezel").classList.toggle("stale", !!text && video.width > 0);
+}
+
 /* ---------------------------------------------------------------- the phone ------------------------------ */
 
 const phone = {
@@ -142,6 +149,7 @@ const phone = {
       b.setAttribute("aria-checked", String(b.dataset.landscape === String(land)));
     }
     const u = st.usb || {}, v = st.video || {}, i = st.input || {};
+    if (v.state && v.state !== "ok" && v.state !== "starting") screenNote("No picture from the phone");
     $("f-usb").textContent = u.connected ? `connected (${u.profile || "gadget"})` : (u.state || "–");
     $("f-video").textContent = v.state === "ok"
       ? `${v.width}×${v.height} ${v.format || ""} at ${v.fps} fps`
@@ -220,7 +228,7 @@ const video = {
         }
         ctx.drawImage(bmp, 0, 0);
         bmp.close();
-        $("screen-note").hidden = true;
+        screenNote(null);
       } catch (e) { /* a damaged frame: skip it */ }
       if (ws.readyState === WebSocket.OPEN) ws.send("ack");
       const now = performance.now();
@@ -231,8 +239,12 @@ const video = {
     };
     ws.onclose = (ev) => {
       if (ev.code === 1008 || ev.code === 4401) { auth.ask().then(() => this.open()); return; }
-      $("screen-note").hidden = false;
-      $("screen-note").textContent = ev.code === 4429 ? "Too many viewers on this box" : "Reconnecting to the picture";
+      if (ev.code === 4429) {
+        screenNote("Too many viewers on this box");
+      } else {
+        screenNote("Reconnecting to the picture");
+        phone.setState("offline", "reconnecting");
+      }
       setTimeout(() => this.open(), ev.code === 4429 ? 5000 : 1000);
     };
     clearInterval(this.timer);
@@ -278,6 +290,9 @@ const control = {
       } else if (msg.t === "stats") {
         if (msg.input && msg.input.reports) $("m-touch").textContent = fmtMs(msg.input.latency_p50_ms);
       } else if (msg.t === "error" || msg.t === "dropped") {
+        // the state line already says why hover and touches cannot reach an unplugged or sleeping phone
+        const st = phone.status && phone.status.state;
+        if (msg.t === "error" && (st === "no_usb" || st === "asleep")) return;
         toast(msg.error, "error");
       }
     };
@@ -354,7 +369,7 @@ const actions = {
 /* ---------------------------------------------------------------- touch ----------------------------------- */
 
 const touch = {
-  buttons: 0, wheelAcc: 0, last: null,
+  buttons: 0, wheelAcc: 0, last: null, kind: "mouse",
 
   pos(ev) {
     const r = $("screen").getBoundingClientRect();
@@ -367,6 +382,7 @@ const touch = {
     s.addEventListener("contextmenu", (e) => e.preventDefault());
     s.addEventListener("pointerdown", (ev) => {
       ev.preventDefault();
+      this.kind = ev.pointerType;
       s.focus({ preventScroll: true });
       s.setPointerCapture(ev.pointerId);
       const [x, y] = this.pos(ev);
@@ -433,6 +449,7 @@ const keyboard = {
   wire() {
     const s = $("screen"), device = $("device");
     s.addEventListener("focus", () => {
+      if (touch.kind === "touch") return; // a finger brings no keyboard: Type is the way to write
       device.classList.add("keyboard");
       $("hint").textContent = "The keyboard goes to the phone. Click outside the phone to stop.";
     });

@@ -64,7 +64,9 @@ origin checks, mDNS announcement. See [API](api.md).
 `ihcd serve --sim` runs a simulated phone behind the same interfaces: it takes the HID reports and
 produces the HDMI frames of its screen (home screen pages, a scrolling list with momentum, Notes,
 Search, an app switcher, a volume indicator). The console, the API and the Python SDK tests run
-against it; `/api/devices/{id}/sim` reports what it shows.
+against it; `GET /api/devices/{id}/sim` reports what it shows. `POST /api/devices/{id}/sim` with
+`{"usb": "unplugged"}` (`connected`, `asleep`) or `{"video": "no_signal"}` (`ok`) makes its cables
+report a fault, so the console's and the clients' handling of each state can be tried.
 
 ## Python SDK (`src/ihc`)
 

@@ -103,6 +103,10 @@ type Phone struct {
 	startPage float64
 	startScr  float64
 
+	// conditions set with Set, to see how the box and its clients handle them
+	usb    string // connected, unplugged, asleep
+	signal bool   // the HDMI signal
+
 	fps    int
 	render *renderer
 	now    func() time.Time
@@ -110,7 +114,42 @@ type Phone struct {
 
 // New returns a phone showing its home screen.
 func New() *Phone {
-	return &Phone{volume: 0.5, fps: 30, now: time.Now, render: newRenderer()}
+	return &Phone{volume: 0.5, usb: "connected", signal: true, fps: 30, now: time.Now, render: newRenderer()}
+}
+
+// Set changes what the simulated phone's cables report: usb is connected, unplugged or asleep; video
+// is ok or no_signal. An empty value keeps the current one.
+func (p *Phone) Set(usb, video string) error {
+	switch usb {
+	case "", "connected", "unplugged", "asleep":
+	default:
+		return fmt.Errorf("usb is connected, unplugged or asleep, not %q", usb)
+	}
+	switch video {
+	case "", "ok", "no_signal":
+	default:
+		return fmt.Errorf("video is ok or no_signal, not %q", video)
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if usb != "" {
+		p.usb = usb
+	}
+	if video != "" {
+		p.signal = video == "ok"
+	}
+	return nil
+}
+
+// refused is the error a report meets on the USB link as it is (p.mu held).
+func (p *Phone) refused() error {
+	switch p.usb {
+	case "unplugged":
+		return hid.ErrNotConnected
+	case "asleep":
+		return hid.ErrNotTaken
+	}
+	return nil
 }
 
 // -- hid.Sink ------------------------------------------------------------------------------------------
@@ -119,6 +158,9 @@ func New() *Phone {
 func (p *Phone) Pointer(r hid.Pointer) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if err := p.refused(); err != nil {
+		return err
+	}
 	p.reports++
 	x, y := float64(r.X)/hid.AbsMax*ScreenW, float64(r.Y)/hid.AbsMax*ScreenH
 	now := p.now()
@@ -163,6 +205,9 @@ func (p *Phone) Pointer(r hid.Pointer) error {
 func (p *Phone) Keyboard(ks hid.KeyState) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if err := p.refused(); err != nil {
+		return err
+	}
 	p.reports++
 	prev := p.keys
 	p.keys = hid.KeyState{Mods: ks.Mods, Keys: append([]uint8(nil), ks.Keys...)}
@@ -179,6 +224,9 @@ func (p *Phone) Keyboard(ks hid.KeyState) error {
 func (p *Phone) Consumer(bits uint32) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if err := p.refused(); err != nil {
+		return err
+	}
 	p.reports++
 	pressed := bits &^ p.consumer
 	p.consumer = bits
@@ -199,13 +247,32 @@ func (p *Phone) Consumer(bits uint32) error {
 // Sync returns at once: the simulated phone takes every report.
 func (p *Phone) Sync(time.Duration) error { return nil }
 
-// Link reports a phone that enumerated the gadget.
+// Link reports the USB link as a device controller would.
 func (p *Phone) Link() hid.Link {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	switch p.usb {
+	case "unplugged":
+		return hid.Link{UDC: "sim", State: "not attached", Profile: hid.DefaultProfile}
+	case "asleep":
+		return hid.Link{UDC: "sim", State: "suspended", Profile: hid.DefaultProfile}
+	}
 	return hid.Link{UDC: "sim", State: "configured", Connected: true, Profile: hid.DefaultProfile}
 }
 
-// Wake does nothing: the simulated phone never sleeps.
-func (p *Phone) Wake(time.Duration) (string, string, error) { return "configured", "configured", nil }
+// Wake wakes an asleep phone; an unplugged one stays unplugged.
+func (p *Phone) Wake(time.Duration) (string, string, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	switch p.usb {
+	case "unplugged":
+		return "not attached", "not attached", hid.ErrNotConnected
+	case "asleep":
+		p.usb = "connected"
+		return "suspended", "configured", nil
+	}
+	return "configured", "configured", nil
+}
 
 // Close does nothing.
 func (p *Phone) Close() error { return nil }
@@ -459,6 +526,10 @@ func (p *Phone) Run(ctx context.Context, emit func(*video.Raw)) error {
 		}
 		now := p.now()
 		p.mu.Lock()
+		if !p.signal {
+			p.mu.Unlock()
+			return video.ErrNoSignal
+		}
 		p.step(now.Sub(last).Seconds())
 		last = now
 		v := p.view()

@@ -132,10 +132,12 @@ func serve(args []string) error {
 	var sink hid.Sink
 	var src video.Source
 	var simState func() any
+	var simSet func(usb, video string) error
 	if *simulate {
 		phone := sim.New()
 		sink, src = phone, phone
 		simState = func() any { return phone.State() }
+		simSet = phone.Set
 	} else {
 		sink = hid.NewReopening(hid.SystemPaths, hid.GadgetName, input.DefaultConfig.WriteTimeout)
 		dev := *videoDev
@@ -163,7 +165,7 @@ func serve(args []string) error {
 		webFS = os.DirFS(*webDir)
 	}
 	srv := server.New(server.Config{DeviceID: deviceID, Version: version, Token: tok, AllowHosts: allow,
-		Web: webFS, Log: logger, SimState: simState}, engine, hub)
+		Web: webFS, Log: logger, SimState: simState, SimSet: simSet}, engine, hub)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

@@ -32,6 +32,8 @@ type Config struct {
 	Web        fs.FS    // the console's static files
 	Log        *log.Logger
 	SimState   func() any // with a simulated phone: what it shows, served at /api/devices/{id}/sim
+	// with a simulated phone: POST /api/devices/{id}/sim {"usb": ..., "video": ...} sets what its cables report
+	SimSet func(usb, video string) error
 }
 
 // Server is the box's API.
@@ -76,6 +78,23 @@ func (s *Server) routes() {
 	if s.cfg.SimState != nil {
 		m.Handle("GET /api/devices/{id}/sim", s.auth(s.device(func(w http.ResponseWriter, _ *http.Request) {
 			writeJSON(w, http.StatusOK, s.cfg.SimState())
+		})))
+	}
+	if s.cfg.SimSet != nil {
+		m.Handle("POST /api/devices/{id}/sim", s.auth(s.device(func(w http.ResponseWriter, r *http.Request) {
+			var c struct {
+				USB   string `json:"usb"`
+				Video string `json:"video"`
+			}
+			if err := decode(r, &c); err != nil {
+				writeError(w, http.StatusBadRequest, "bad_request", err.Error())
+				return
+			}
+			if err := s.cfg.SimSet(c.USB, c.Video); err != nil {
+				writeError(w, http.StatusBadRequest, "bad_request", err.Error())
+				return
+			}
+			writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 		})))
 	}
 	m.Handle("POST /api/devices/{id}/{action}", s.auth(s.device(s.action)))
