@@ -1196,10 +1196,10 @@ def restore_nets(saved):
 def autoroute(board, fps, passes: int):
     """Freerouting on everything but U201's pads and the LT7911D nets; the session file comes back
     into the board. When the first stage leaves connections open, a second stage starts from its
-    result with those nets in a 0.3 mm class: the sense and enable branches of the supplies (µA, but
-    in a wide class) often cannot reach their 0402 pads at full width. The router may move the
-    other tracks to make room; only the fan-out and the pre-routed tracks stay fixed. Work files go
-    to $ROUTE_DIR (default: a temporary directory)."""
+    result: the tracks of the nets left open stay fixed and their missing connections are routed
+    at 0.3 mm (the sense and enable branches of the supplies, µA but in a wide class, often cannot
+    reach their 0402 pads at full width), while the router may move the other nets' tracks to make
+    room. Work files go to $ROUTE_DIR (default: a temporary directory)."""
     if not JAR or not os.path.exists(JAR):
         sys.exit("--route needs FREEROUTING_JAR pointing at a Freerouting jar")
     print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR), flush=True)
@@ -1219,6 +1219,7 @@ def autoroute(board, fps, passes: int):
     if left:
         print(f"second stage at 0.3 mm for {len(left)} nets: {' '.join(left)}", flush=True)
         dsn2, ses2, log2 = (os.path.join(work, "box-v1-2." + e) for e in ("dsn", "ses", "log"))
+        fixed = _fix_nets(board, left)       # keep their full-width tracks; only the gaps get 0.3 mm
         if not pcbnew.ExportSpecctraDSN(board, dsn2):
             sys.exit("DSN export failed")
         with open(dsn2, encoding="utf-8") as f:
@@ -1226,7 +1227,7 @@ def autoroute(board, fps, passes: int):
         with open(dsn2, "w", encoding="utf-8") as f:
             f.write(text)
         _freeroute(dsn2, ses2, log2, max(10, passes // 2))
-        import_ses(board, ses2)                    # the whole board again, not only the new tracks
+        _import_stage2(board, ses2, fixed)
         sessions.append(ses2)
     restore_nets(saved)
     print("sessions:", " ".join(sessions), flush=True)
@@ -1265,7 +1266,33 @@ def _unrouted_nets(board, ses, report):
     return sorted(nets - {"GND"})
 
 
-def _dsn_narrow(text, nets, width_um=300, clearance_um=150):
+def _fix_nets(board, nets):
+    """Fix the tracks of `nets` for the second stage; returns the tracks that were fixed already."""
+    fixed = {t.m_Uuid.AsString() for t in board.GetTracks() if t.IsLocked()}
+    for t in board.GetTracks():
+        if t.GetNetname() in nets:
+            t.SetLocked(True)
+    return fixed
+
+
+def _import_stage2(board, ses, fixed):
+    import_ses(board, ses)                         # every unfixed track again, and the new ones
+    for t in board.GetTracks():
+        if t.m_Uuid.AsString() not in fixed:
+            t.SetLocked(False)
+
+
+def replay(board, fps, sessions, work):
+    """Rebuild the routing from saved sessions (first stage, and second stage if there was one), in
+    the same state as when they were routed (U201's pads and nets stripped)."""
+    saved = strip_nets_for_routing(board, fps)
+    left = _unrouted_nets(board, sessions[0], os.path.join(work, "stage1.rpt"))
+    if len(sessions) > 1:
+        _import_stage2(board, sessions[1], _fix_nets(board, left))
+    restore_nets(saved)
+
+
+def _dsn_narrow(text, nets, width_um=300, clearance_um=200):
     """Move `nets` from their classes into a narrow class of their own in a Specctra DSN."""
     names = set(nets)
 
@@ -1438,7 +1465,7 @@ def main():
     ap.add_argument("--route", action="store_true", help="route with Freerouting (FREEROUTING_JAR)")
     ap.add_argument("--passes", type=int, default=40, help="Freerouting passes")
     ap.add_argument("--ses", metavar="FILE", nargs="+",
-                    help="import the Specctra session of the last routing stage instead of routing")
+                    help="import the Specctra sessions of the routing stages, in order, instead of routing")
     ap.add_argument("--render", metavar="DIR", help="write SVG views of the board to DIR")
     ap.add_argument("--check-only", action="store_true", help="placement checks only, write nothing")
     args = ap.parse_args()
@@ -1466,7 +1493,7 @@ def main():
     elif args.ses:
         # the fan-out is fixed in the DSN, so the session does not carry it: make it again (same result)
         print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR), flush=True)
-        import_ses(board, args.ses[-1])           # the last stage holds the whole routing
+        replay(board, fps, args.ses, tempfile.mkdtemp(prefix="box-v1-replay-"))
     zones(board)
     if args.route or args.ses:
         moved, stuck = fix_hole_spacing(board)
