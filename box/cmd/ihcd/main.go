@@ -130,6 +130,7 @@ func serve(args []string) error {
 	webDir := fl.String("web", "", "serve the console from this directory (development)")
 	tlsCert := fl.String("tls-cert", "", "serve HTTPS with this certificate (PEM; with --tls-key)")
 	tlsKey := fl.String("tls-key", "", "the certificate's private key (PEM)")
+	maxViewers := fl.Int("max-viewers", 4, "screen streams served at once")
 	var allow multiFlag
 	fl.Var(&allow, "allow-host", "another host name the box answers to (repeatable)")
 	fl.Usage = func() {
@@ -142,6 +143,9 @@ func serve(args []string) error {
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	if (*tlsCert == "") != (*tlsKey == "") {
 		return errors.New("--tls-cert and --tls-key go together")
+	}
+	if *maxViewers < 1 {
+		return errors.New("--max-viewers is at least 1")
 	}
 	useTLS := *tlsCert != ""
 	if err := input.SetHomeMethod(*home); err != nil {
@@ -172,20 +176,9 @@ func serve(args []string) error {
 		simState = func() any { return phone.State() }
 		simSet = phone.Set
 	} else {
-		sink = hid.NewReopening(hid.SystemPaths, hid.GadgetName, input.DefaultConfig.WriteTimeout)
-		dev := *videoDev
-		if dev == "auto" {
-			dev = board.HDMIInput("/")
-			if dev == "" {
-				dev = "/dev/video0"
-				logger.Printf("no HDMI receiver found (ihcd doctor says why): trying %s", dev)
-			}
+		if sink, src, err = hardware(*videoDev, !*noEDID, logger); err != nil {
+			return err
 		}
-		vs := &video.V4L2Source{Path: dev}
-		if !*noEDID {
-			vs.EDID = video.EDID1080p60("iphone-hid")
-		}
-		src = vs
 	}
 	cfg := input.DefaultConfig
 	cfg.Settle = *settle
@@ -198,7 +191,7 @@ func serve(args []string) error {
 		webFS = os.DirFS(*webDir)
 	}
 	srv := server.New(server.Config{DeviceID: deviceID, Version: version, Token: tok, AllowHosts: allow,
-		Web: webFS, Log: logger, SimState: simState, SimSet: simSet}, engine, hub)
+		Web: webFS, Log: logger, SimState: simState, SimSet: simSet, MaxViewers: *maxViewers}, engine, hub)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -473,7 +466,7 @@ func hidCmd(args []string) error {
 	if err != nil {
 		return err
 	}
-	sink, err := hid.OpenGadget(hid.SystemPaths, hid.GadgetName, input.DefaultConfig.WriteTimeout)
+	sink, err := openGadget()
 	if errors.Is(err, fs.ErrPermission) {
 		return errors.New("permission denied: run with sudo (the nodes belong to the ihc group)")
 	}

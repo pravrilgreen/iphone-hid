@@ -20,14 +20,14 @@ TOKEN=smoke
 $BIN serve --sim --addr "127.0.0.1:$PORT" --token "$TOKEN" --no-mdns > "$WORK/log" 2>&1 &
 PID=$!
 URL="http://127.0.0.1:$PORT"
-for i in $(seq 100); do
+for _ in $(seq 100); do
     curl -sf "$URL/api/health" > /dev/null 2>&1 && break
     sleep 0.2
 done
 curl -sf "$URL/api/health" || { cat "$WORK/log"; exit 1; }
 echo
 AUTH="Authorization: Bearer $TOKEN"
-for i in $(seq 300); do  # the first frame takes a while under emulation
+for _ in $(seq 300); do  # the first frame takes a while under emulation
     curl -sf -H "$AUTH" "$URL/api/devices/iphone-sim" | grep -q '"state":"ready"' && break
     sleep 0.2
 done

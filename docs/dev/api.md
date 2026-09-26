@@ -80,7 +80,7 @@ action's last report: `{"ok": true, "result": {"action": "tap", "ok": true, "ms"
 | 403 | `bad_host`, `bad_origin` | A host name the box does not answer to, or a page of another origin |
 | 404 | `no_device`, `unknown_action`, `not_found` | No such phone, action or endpoint |
 | 405 | `method_not_allowed` | The endpoint takes another method (`Allow` says which) |
-| 429 | `too_many` | The box streams to 4 viewers at most |
+| 429 | `too_many` | The box streams to 4 viewers at most (`--max-viewers`) |
 | 500 | `failed` | The action failed on the box |
 | 503 | `no_usb`, `asleep` | The phone is not taking input (actions) |
 | 503 | `no_video` | No picture (screenshots, MJPEG) |
@@ -109,7 +109,7 @@ A failed action's body also has its `result`. `POST /api/devices/{id}/orientatio
   the next frame only then, or after a second without an answer (`ack=false` turns this off). Text
   messages from the box are `{"t": "status", "status": {...}}`, at connection and every second.
   Query: `quality` (75), `fps` (60).
-- The stream and MJPEG together serve 4 viewers per box; one more gets 429 `too_many` (MJPEG) or the
+- The stream and MJPEG together serve 4 viewers per box (`--max-viewers`); one more gets 429 `too_many` (MJPEG) or the
   close code 4429 (stream).
 
 ## Live control

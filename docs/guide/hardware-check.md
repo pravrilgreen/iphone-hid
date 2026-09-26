@@ -4,27 +4,33 @@ Every touch and button of the box, tried on the real iPhone. Run it on a new box
 update, and when a button stops working. It takes about ten minutes.
 
 Before starting: the phone set up as in [iPhone setup](iphone-setup.md), plugged in, unlocked, on
-its home screen. Stop the service while using `ihcd hid` (`sudo systemctl stop ihcd`), and start it
-again for the console part (`sudo systemctl start ihcd`).
+its home screen. `ihcd hid` writes to the gadget's nodes, which belong to the service's group, so it
+runs with `sudo`. Stop the service first, so two programs do not drive the phone at once:
+
+```sh
+sudo systemctl stop ihcd     # before the checks on the board
+sudo systemctl start ihcd    # before the checks in the console
+```
 
 ## On the board
 
 | # | Check | Command | Expected |
 |---|---|---|---|
 | 1 | USB link | `ihcd gadget status` | `"state": "configured"` |
-| 2 | Absolute pointer | `ihcd hid corners` | The pointer visits the four corners, then the centre |
-| 3 | Tap | `ihcd hid tap 0.5 0.95` | The app under the point opens (the dock) |
-| 4 | Home | `ihcd hid button home` | Back to the home screen (keyboard shortcut Cmd+H) |
-| 5 | Home, second way | `ihcd hid click secondary` | Home, if AssistiveTouch maps the secondary button to Home |
-| 6 | App Switcher | `ihcd hid button app_switcher` | The app switcher opens (middle button mapped to App Switcher) |
-| 7 | Search | `ihcd hid button spotlight` | Search opens (Cmd+Space) |
-| 8 | Typing | `ihcd hid type "Hello 123!"` with Search open | `Hello 123!` in the search field |
-| 9 | Volume | `ihcd hid button volume_up`, then `volume_down` | The volume indicator moves up, then down |
-| 10 | Mute | `ihcd hid button mute` | The volume indicator goes to zero |
-| 11 | Media | `ihcd hid button play_pause` with music playing | The music pauses |
-| 12 | Video | `ihcd doctor` | Picture: receiving 1920x1080 at about 60 Hz |
+| 2 | Absolute pointer | `sudo ihcd hid corners` | The pointer visits the four corners, then the centre |
+| 3 | Tap | `sudo ihcd hid tap 0.5 0.95` | The app under the point opens (the dock) |
+| 4 | Home | `sudo ihcd hid button home` | Back to the home screen (keyboard shortcut Cmd+H) |
+| 5 | Home, second way | `sudo ihcd hid click secondary` | Home, if AssistiveTouch maps the secondary button to Home |
+| 6 | App Switcher | `sudo ihcd hid button app_switcher` | The app switcher opens (middle button mapped to App Switcher) |
+| 7 | Search | `sudo ihcd hid button spotlight` | Search opens (Cmd+Space) |
+| 8 | Typing | `sudo ihcd hid type "Hello 123!"` with Search open | `Hello 123!` in the search field |
+| 9 | Volume | `sudo ihcd hid button volume_up`, then `volume_down` | The volume indicator moves up, then down |
+| 10 | Mute | `sudo ihcd hid button mute` | The volume indicator goes to zero |
+| 11 | Media | `sudo ihcd hid button play_pause` with music playing | The music pauses |
+| 12 | Video | `sudo ihcd doctor` | Picture: receiving 1920x1080 at about 60 Hz |
 
-If 4 fails and 5 works, start the service with `IHCD_ARGS="--home button"` in `/etc/default/ihc`.
+If 4 fails and 5 works, set `IHCD_ARGS="--home button"` in `/etc/default/ihc` before starting the
+service again.
 
 ## In the console
 

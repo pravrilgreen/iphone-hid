@@ -21,10 +21,18 @@ jobs:
         run: |
           test -z "$(gofmt -l box)" || { gofmt -l box; exit 1; }
           cd box && go vet ./...
+          GOOS=darwin go vet ./...  # the simulated box runs on a developer's Mac too
       - name: Tests (Go image/jpeg)
         run: cd box && go test -race ./...
       - name: Tests (libjpeg-turbo)
         run: cd box && go test -race -tags turbojpeg ./...
+
+  shell:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck (the installer, the bundle header and the scripts)
+        run: shellcheck -S style packaging/*.sh scripts/*.sh
 
   sdk:
     runs-on: ubuntu-24.04

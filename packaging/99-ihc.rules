@@ -4,5 +4,8 @@
 KERNEL=="hidg[0-9]*", MODE="0660", GROUP="ihc"
 # The service may signal USB remote wakeup to a phone that suspended the bus.
 SUBSYSTEM=="udc", ACTION=="add", RUN+="/bin/chgrp ihc /sys%p/srp", RUN+="/bin/chmod g+w /sys%p/srp"
+# A USB device controller that appears (its driver loaded late, the port switched to device mode)
+# gets the gadget.
+SUBSYSTEM=="udc", ACTION=="add", TAG+="systemd", ENV{SYSTEMD_WANTS}+="ihcd-gadget.service"
 # The HDMI input.
 SUBSYSTEM=="video4linux", MODE="0660", GROUP="video"

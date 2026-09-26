@@ -64,17 +64,28 @@ origin checks, mDNS announcement. See [API](api.md).
 
 `ihcd doctor` runs one check per part, in the order the parts depend on each other: the board, the
 kernel's gadget framework and HID function, the USB device port (device tree `dr_mode`, USB role
-switches), other gadgets holding the controller, the box's gadget, its `/dev/hidg` nodes, the link
-to the iPhone (the controller's state), the HDMI input (why it is missing: device tree, driver,
-kernel config, boot overlays), its signal, the services, the API and the token. Each result says
-what was found and either a fix doctor can make or advice for a person.
+switches, the Type-C port's data role and whether anything is plugged in), other gadgets holding
+the controller (configfs gadgets and legacy `g_*` modules), the box's gadget, its `/dev/hidg`
+nodes, the link to the iPhone (the controller's state), the HDMI input (why it is missing: device
+tree, driver, kernel config, boot overlays), its signal, the services, the API and the token. Each
+result says what was found and either a fix doctor can make or advice for a person. Without root,
+the checks that cannot read what they need say so and ask for `sudo`.
 
-`--fix` applies the run-time fixes (mount configfs, load `libcomposite`, switch a role switch to
-device, unbind another gadget, restart `ihcd-gadget` or `ihcd`, node and token permissions), then
-checks again. `--fix-boot` also adds the HDMI receiver's overlay to `/boot/armbianEnv.txt` (or
-`orangepiEnv.txt`), copying it to `/boot/overlay-user` when the boot script cannot load it by name,
-and keeps the old file as `<file>.ihc-<time>`. The checks read a root directory, so the tests run
-them on fake board trees.
+Fixes come in three kinds:
+
+- **Run-time fixes** (`--fix`): mount configfs, load `libcomposite`, start `ihcd-gadget` or `ihcd`,
+  node and token permissions. doctor then checks again.
+- **Disruptive fixes**, also with `--fix`: switch a USB role switch to device mode, unbind another
+  gadget, unload a legacy gadget module. Each may cut off something else that uses the port (a
+  console over USB, ADB), so `--fix-safe` leaves them out; the installer runs `--fix-safe`.
+- **Boot fixes** (`--fix-boot`): add the HDMI receiver's overlay to `/boot/armbianEnv.txt` (or
+  `orangepiEnv.txt`), copying it to `/boot/overlay-user` when the boot script cannot load it by
+  name. When the board has `fdtoverlay`, doctor first applies every overlay the boot script will
+  load, the new one with them, to the base device tree: the boot script drops all overlays when one
+  fails, so a failure refuses the change. The old file is kept as `<file>.ihc-<time>`, and the
+  result prints the command that puts it back.
+
+The checks read a root directory, so the tests run them on fake board trees.
 
 ## Simulated iPhone (`box/internal/sim`)
 
@@ -83,7 +94,9 @@ produces the HDMI frames of its screen (home screen pages, a scrolling list with
 Search, an app switcher, a volume indicator). The console, the API and the Python SDK tests run
 against it; `GET /api/devices/{id}/sim` reports what it shows. `POST /api/devices/{id}/sim` with
 `{"usb": "unplugged"}` (`connected`, `asleep`) or `{"video": "no_signal"}` (`ok`) makes its cables
-report a fault, so the console's and the clients' handling of each state can be tried.
+report a fault, so the console's and the clients' handling of each state can be tried. The gadget
+and the HDMI input are Linux interfaces (`*_linux.go`); the simulated box also builds and runs on
+macOS, so the console and the SDK can be worked on without a board.
 
 ## Python SDK (`src/ihc`)
 

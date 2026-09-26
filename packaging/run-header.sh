@@ -11,7 +11,7 @@ VERSION="@VERSION@"
 ARCH="@ARCH@"
 case "${1:-}" in
     --version) echo "iphone-hid box $VERSION (linux-$ARCH)"; exit 0 ;;
-    -h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"; exit 0 ;;
 esac
 
 machine="$(uname -m)"
@@ -44,4 +44,6 @@ echo "unpacking iphone-hid box $VERSION ..."
 payload "$work"
 sh "$work/install.sh" "$@"
 exit 0
+# the payload follows the marker; the shell never reaches it
+# shellcheck disable=SC2317
 __IHC_PAYLOAD_BELOW__

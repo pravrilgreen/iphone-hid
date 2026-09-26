@@ -29,8 +29,10 @@ test-sdk:
 
 lint:
 	@test -z "$$(gofmt -l box)" || { gofmt -l box; echo "gofmt: format these files"; exit 1; }
-	cd box && $(GO) vet ./...
+	cd box && $(GO) vet ./... && GOOS=darwin $(GO) vet ./...
 	$(PY) -m ruff check src tests scripts
+	@if command -v shellcheck >/dev/null; then shellcheck -S style packaging/*.sh scripts/*.sh; \
+	else echo "shellcheck not installed: shell scripts not checked"; fi
 
 box:
 	scripts/build_box.sh

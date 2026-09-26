@@ -29,7 +29,6 @@ import (
 
 	"github.com/pravrilgreen/iphone-hid/box/internal/board"
 	"github.com/pravrilgreen/iphone-hid/box/internal/hid"
-	"github.com/pravrilgreen/iphone-hid/box/internal/video"
 )
 
 // Status of a check.
@@ -91,17 +90,8 @@ type System struct {
 
 // Local is the board doctor runs on.
 func Local() System {
-	var u syscall.Utsname
-	_ = syscall.Uname(&u)
-	var rel []byte
-	for _, c := range u.Release {
-		if c == 0 {
-			break
-		}
-		rel = append(rel, byte(c))
-	}
 	return System{
-		Root: "/", Release: string(rel), Service: "ihc", Port: 8000,
+		Root: "/", Release: kernelRelease(), Service: "ihc", Port: 8000,
 		Command: func(name string, args ...string) (string, error) {
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
@@ -121,13 +111,7 @@ func Local() System {
 			}
 			return nil
 		},
-		Signal: func(node string) (string, error) {
-			t, err := video.QuerySignal(node)
-			if err != nil {
-				return "", err
-			}
-			return t.String(), nil
-		},
+		Signal: querySignal,
 		Owner: func(name string) (int, int, error) {
 			u, err := user.Lookup(name)
 			if err != nil {

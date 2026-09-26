@@ -21,6 +21,9 @@ type Frame struct {
 	mu      sync.Mutex
 }
 
+// ErrNoSignal wraps a source's "no usable signal" errors: the receiver has nothing to lock on.
+var ErrNoSignal = errors.New("no HDMI signal")
+
 // Source produces frames. Run blocks until ctx ends or the source fails; each frame goes to emit,
 // which must copy what it keeps.
 type Source interface {

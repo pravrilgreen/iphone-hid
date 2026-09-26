@@ -108,9 +108,10 @@ video output. Each box drives one phone; a lab runs one box per phone.
    starts them. The API token is in `/var/lib/ihc/token`.
 3. Open `http://<board address>:8000`.
 
-`ihcd doctor` examines the board and the box, part by part, and says how to fix each problem;
-`sudo ihcd doctor --fix` fixes what it can (the installer runs it). The
-[install guide](docs/guide/install.md) covers the board image, the HDMI input and troubleshooting.
+`sudo ihcd doctor` examines the board and the box, part by part, and says how to fix each problem;
+`--fix-safe` fixes what it can without cutting anything else off (the installer runs it), `--fix`
+also what might. The [install guide](docs/guide/install.md) covers the board image, the HDMI input
+and troubleshooting.
 
 ## Set up the iPhone
 

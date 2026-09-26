@@ -263,7 +263,7 @@ those features, not to save money.
   (HID) and a USB 3 hub chip.
 - The PC sees the dock as a webcam (the iPhone screen) plus a control device, with no driver needed on Linux,
   Windows or macOS.
-- `ihcd` runs on the PC (there is a Linux amd64 build; `ihcd` runs on Linux only). Two additions are needed: UVC
+- `ihcd` runs on the PC (there is a Linux amd64 build; its USB and video parts are Linux only). Two additions are needed: UVC
   capture from the dock (today `ihcd` reads only uncompressed V4L2 input from an HDMI receiver and rejects MJPEG),
   and an `mcu` HID sink for the MCU.
 - **Fits when:** the phone farm already has PCs or mini PCs, HDMI out is needed, or the box should have no operating

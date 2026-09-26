@@ -3,17 +3,40 @@
 One Orange Pi 5 Plus per iPhone. It is the iPhone's touch pointer and keyboard through its USB-C
 port, it reads the iPhone's screen from its HDMI input, and it serves the API and the console.
 
+The steps, in order: [prepare the board](#prepare-the-board), [wire it](#wiring),
+[install the box software](#install-the-box-software), turn on the
+[HDMI input](#the-hdmi-input) if doctor asks for it, then [check it](#check-it).
+
 ## Parts
 
 | Part | Notes |
 |---|---|
-| Orange Pi 5 Plus (v2.x is fine) | With its own 5 V / 4 A USB-C supply |
+| Orange Pi 5 Plus (v2.x is fine) | Any memory size. With its own 5 V / 4 A USB-C supply |
+| microSD card, 16 GB or more | For the board's system (or its eMMC module) |
 | iPhone 15 or later with USB-C | Not 16e or 17e: they have no video output |
 | USB-C hub: HDMI, USB-A, USB-C PD input | HDMI through DisplayPort Alt Mode. Example: UGREEN Revodok 105 (15495) |
 | USB-C charger, 30 W or more | Into the hub's PD input: powers the hub, charges the phone |
 | HDMI cable | Hub to the board's **HDMI IN** |
 | USB-A to USB-C cable, with data | Hub's USB-A to the board's **Type-C USB 3.0/DP** port |
 | Ethernet cable | API and console |
+
+## Prepare the board
+
+1. **Download an image** for the Orange Pi 5 Plus, with the vendor kernel (Linux 6.1):
+   - Orange Pi's own Ubuntu or Debian server image (orangepi.org, Orange Pi 5 Plus, Official
+     Images), or
+   - Armbian for the Orange Pi 5 Plus, a "vendor" kernel build.
+
+   A desktop image works too; the box needs no display on the board.
+2. **Write it to the microSD card** from a computer, with balenaEtcher or Raspberry Pi Imager
+   ("Use custom"). Unpack it first if it came as a `.7z` or `.zip`.
+3. **First boot:** the card into the board, Ethernet to the network, then the board's power supply.
+   Give it a minute.
+4. **Find its address** in the router's list of clients (or, with a monitor and a keyboard on the
+   board, `hostname -I`).
+5. **Log in** over SSH: `ssh orangepi@<address>` (password `orangepi`) on Orange Pi's image;
+   `ssh root@<address>` (password `1234`) on Armbian, which then asks for a user of your own.
+   Change the default password (`passwd`).
 
 ## Wiring
 
@@ -24,36 +47,16 @@ port, it reads the iPhone's screen from its HDMI input, and it serves the API an
 4. Hub to the iPhone. Unlock the phone and answer **Allow** if iOS asks about the accessory.
 5. Board power last.
 
+![Wiring a box with a USB-C hub: the iPhone into the hub, a charger into the hub's power input, the hub's HDMI into the board's HDMI IN, the hub's USB-A into the board's Type-C port, the board's power, Ethernet](../../box/web/guide/hub.svg)
+
 The USB-A end of the cable in step 3 tells the board that the other side is the host, so its port
 becomes a device. With a USB-C to USB-C cable the board may take the host role itself.
-
-## Board image and HDMI input
-
-Use the board's Ubuntu or Debian image. The Orange Pi image turns the HDMI input on. Armbian (vendor
-kernel 6.1) has the driver built in but leaves the HDMI input off in the device tree, and ships the
-`rk3588-hdmirx` overlay that turns it on.
-
-`ihcd doctor` (after installing) reads the device tree, the kernel and the boot scripts and says what
-this board needs; `sudo ihcd doctor --fix-boot` makes the change itself, keeping a copy of the file it
-edits. The two usual cases on Armbian:
-
-- **Armbian 24.11 or later:** add `rk3588-hdmirx` to the `overlays=` line of `/boot/armbianEnv.txt`
-  (one line, names separated by spaces), then reboot.
-- **Earlier boot scripts** load `overlays=` entries only as `<overlay_prefix>-<entry>.dtbo`, so
-  `rk3588-hdmirx` is skipped. Load it as a user overlay instead:
-
-  ```sh
-  sudo mkdir -p /boot/overlay-user
-  sudo cp /boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo /boot/overlay-user/
-  echo 'user_overlays=rk3588-hdmirx' | sudo tee -a /boot/armbianEnv.txt
-  sudo reboot
-  ```
 
 ## Install the box software
 
 Download `ihc-box-<version>-linux-arm64.run` from the
-[latest release](https://github.com/pravrilgreen/iphone-hid/releases/latest), copy it to the board,
-then:
+[releases page](https://github.com/pravrilgreen/iphone-hid/releases) (versions 0.x are
+pre-releases, listed there but not as "latest"), copy it to the board (`scp`), then:
 
 ```sh
 sudo sh ihc-box-*-linux-arm64.run
@@ -92,8 +95,50 @@ IHCD_ARGS="--id iphone-a01 --landscape"
 | `--addr 10.0.0.5:8000` | Listen on one interface only |
 | `--allow-host box-a.lab.example.com` | Answer to this DNS name (repeatable) |
 | `--tls-cert FILE --tls-key FILE` | Serve HTTPS |
+| `--max-viewers 8` | Screen streams served at once (default 4) |
 
-`ihcd serve -h` lists every flag.
+`ihcd serve -h` lists every flag. The gadget's own flags go in an `IHCD_GADGET_ARGS` line of the
+same file, then `sudo systemctl restart ihcd-gadget` (the phone sees the accessory unplugged and
+plugged in again): for example `IHCD_GADGET_ARGS="--no-remote-wakeup"`; `ihcd gadget up -h` lists
+them.
+
+## The HDMI input
+
+Orange Pi's image turns the HDMI input on. Armbian (vendor kernel 6.1) has the driver built in but
+leaves the HDMI input off in the device tree, and ships the `rk3588-hdmirx` overlay that turns it on.
+
+`sudo ihcd doctor` reads the device tree, the kernel and the boot scripts and says what this board
+needs. `sudo ihcd doctor --fix-safe --fix-boot` makes the change itself: it first checks that the
+overlays still apply together (with `fdtoverlay`, when the board has it: `sudo apt install
+device-tree-compiler`), keeps a copy of the file it edits, and prints the command that puts the
+copy back. Reboot after.
+
+By hand, on Armbian, keep a copy of the boot settings first:
+
+```sh
+sudo cp /boot/armbianEnv.txt /boot/armbianEnv.txt.bak
+```
+
+- **Armbian 24.11 or later:** add `rk3588-hdmirx` to the `overlays=` line of `/boot/armbianEnv.txt`
+  (one line, names separated by spaces; add the line if there is none), then reboot.
+- **Earlier boot scripts** load `overlays=` entries only as `<overlay_prefix>-<entry>.dtbo`, so
+  `rk3588-hdmirx` is skipped. Load it as a user overlay instead:
+
+  ```sh
+  sudo mkdir -p /boot/overlay-user
+  sudo cp /boot/dtb/rockchip/overlay/rk3588-hdmirx.dtbo /boot/overlay-user/
+  if grep -q '^user_overlays=' /boot/armbianEnv.txt; then
+      sudo sed -i 's/^user_overlays=.*/& rk3588-hdmirx/' /boot/armbianEnv.txt
+  else
+      sudo sed -i -e '$a\' /boot/armbianEnv.txt    # end the last line first
+      echo 'user_overlays=rk3588-hdmirx' | sudo tee -a /boot/armbianEnv.txt
+  fi
+  sudo reboot
+  ```
+
+If the board does not come back with the HDMI input (or at all, from a bad boot file), put the copy
+back: from the board, `sudo cp /boot/armbianEnv.txt.bak /boot/armbianEnv.txt`; or with the microSD
+card in a computer, in its first partition.
 
 ## Network and security
 
@@ -120,16 +165,19 @@ IHCD_ARGS="--id iphone-a01 --landscape"
 ## Check it
 
 ```sh
-ihcd doctor                # every part: gadget support, USB device port, gadget, iPhone, HDMI input,
-                           # picture, services, API, token; each problem with its fix
-sudo ihcd doctor --fix     # fix what can be fixed now: modules, USB role, other gadgets, the gadget,
-                           # node permissions, the services
-sudo ihcd doctor --fix-boot  # also turn the HDMI input on in the boot configuration (keeps a backup;
-                             # reboot after)
+sudo ihcd doctor             # every part: gadget support, USB device port, gadget, iPhone, HDMI input,
+                             # picture, services, API, token; each problem with its fix
+sudo ihcd doctor --fix-safe  # fix what can be fixed now without cutting anything else off: modules,
+                             # the gadget, node permissions, the services
+sudo ihcd doctor --fix       # also the fixes that may cut something else off the USB port: switch its
+                             # role to device, unbind another gadget (ADB, a USB network or console)
+sudo ihcd doctor --fix-boot  # --fix, and turn the HDMI input on in the boot configuration (keeps a
+                             # backup; reboot after). With --fix-safe: the safe fixes and the boot one
 ```
 
-The installer runs `ihcd doctor --fix` at the end. `ihcd doctor --json` gives the same results for
-scripts. It exits with status 1 while a problem remains.
+Without `sudo`, doctor still runs, but says which checks need it. The installer runs
+`ihcd doctor --fix-safe` at the end. `ihcd doctor --json` gives the same results for scripts. It
+exits with status 1 while a problem remains.
 
 A healthy box looks like this (addresses and versions differ):
 
@@ -158,11 +206,11 @@ programs do not drive it at once.
 
 | Symptom | Cause and fix |
 |---|---|
-| `ihcd doctor`: no USB device controller | The port is in host mode. `--fix` switches a USB role switch to device mode; a device tree that fixes the port in host mode needs the Orange Pi image or Armbian's vendor image, which allow device mode on the Type-C port next to the USB 3 ports |
-| `ihcd doctor`: the controller is used by another gadget | The image runs its own gadget, usually ADB. `--fix` unbinds it and sets the box's gadget up; doctor names the service that makes it at boot, to disable |
+| `ihcd doctor`: no USB device controller | The port is in host mode. `sudo ihcd doctor --fix` switches a USB role switch to device mode; a device tree that fixes the port in host mode needs the Orange Pi image or Armbian's vendor image, which allow device mode on the Type-C port next to the USB 3 ports |
+| `ihcd doctor`: the controller is used by another gadget | The image runs its own gadget, usually ADB. `sudo ihcd doctor --fix` unbinds it and sets the box's gadget up; doctor names the service that makes it at boot, to disable |
 | The gadget stays at `not attached` | Wrong cable or port: USB-A to USB-C, into the Type-C port next to the USB 3 ports |
 | The console says **Not connected** | The iPhone is locked or waits for **Allow** for the accessory. Unlock it and allow it |
 | The console says **Asleep** | Auto-Lock put the phone to sleep. Press **Wake** (or the side button of the drawn phone), and set Auto-Lock to Never ([iPhone setup](iphone-setup.md)) |
-| `ihcd doctor`: no HDMI input | The HDMI input is off in the device tree: doctor says which overlay step this board needs, and `--fix-boot` makes it |
+| `ihcd doctor`: no HDMI input | The HDMI input is off in the device tree: doctor says which overlay step this board needs, and `--fix-boot` makes it ([The HDMI input](#the-hdmi-input)) |
 | **No picture** while the HDMI input exists | The phone is locked, or the hub gets no picture from it: unlock it, replug the hub |
-| The pointer does not move | AssistiveTouch is off, or the phone kept an older descriptor: `sudo ihcd gadget up --replace --profile A`, then `--profile RA` again |
+| The pointer does not move | AssistiveTouch is off, or the phone kept an older descriptor: `sudo ihcd gadget up --replace --profile A`, then `sudo ihcd gadget up --replace` for the usual profile again |

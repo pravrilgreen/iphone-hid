@@ -21,9 +21,10 @@ Version numbers start here. Earlier builds were development versions and are not
     in order with live input.
 - **`ihcd doctor`:**
   - It examines the board and the box part by part, and says how to fix each problem.
-  - `--fix` fixes what can be fixed at run time.
-  - `--fix-boot` also turns the HDMI input on in the boot configuration, keeping a backup.
-  - The installer runs it.
+  - `--fix` fixes what can be fixed at run time; `--fix-safe` leaves out the fixes that could cut
+    something else off the USB port (the installer runs it).
+  - `--fix-boot` also turns the HDMI input on in the boot configuration, after checking that the
+    overlays still apply, keeping a backup.
 - **The API:**
   - REST actions, JSON errors with codes, and a complete OpenAPI description.
   - A live control WebSocket (actions in order, one operator at a time) and a screen stream with
@@ -38,8 +39,8 @@ Version numbers start here. Earlier builds were development versions and are not
   - `Farm` and `Phone` over the API.
   - Retryable error codes.
   - `Farm.discover()` on the local network.
-- **Simulated iPhone** (`ihcd serve --sim`) with USB and HDMI faults, for development, the SDK tests
-  and the demo videos (`make demo`).
+- **Simulated iPhone** (`ihcd serve --sim`, on Linux or macOS) with USB and HDMI faults, for
+  development, the SDK tests and the demo videos (`make demo`).
 - **The purpose-built box:** pin-level schematic, BOM with orderable parts, and an order package
   (`hardware/box-v1`). Its layout waits for the LT7911D's documents.
 

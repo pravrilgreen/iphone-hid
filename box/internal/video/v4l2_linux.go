@@ -2,7 +2,6 @@ package video
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -143,9 +142,6 @@ var noSignal = map[syscall.Errno]string{
 	unix.ENOLCK:  "the signal is not stable yet",
 	unix.ERANGE:  "the signal is out of the receiver's range",
 }
-
-// ErrNoSignal wraps the receiver's "no usable signal" errors.
-var ErrNoSignal = errors.New("no HDMI signal")
 
 // Timings are the video timings the receiver detected.
 type Timings struct {

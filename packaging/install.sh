@@ -29,11 +29,11 @@ for cmd in ihc ihc-hidtest ihc-capture-check; do
     [ -L "/usr/local/bin/$cmd" ] && case "$(readlink "/usr/local/bin/$cmd")" in /opt/ihc/*) rm -f "/usr/local/bin/$cmd" ;; esac
 done
 
-systemctl stop ihcd 2>/dev/null || true
+[ "$START" = 1 ] && { systemctl stop ihcd 2>/dev/null || true; }
 rm -rf "$PREFIX.new"
 mkdir -p "$PREFIX.new/bin"
 install -m 755 "$SRC/bin/ihcd" "$PREFIX.new/bin/ihcd"
-cp "$SRC/VERSION" "$SRC/THIRD_PARTY.md" "$PREFIX.new/"
+cp "$SRC/VERSION" "$SRC/THIRD_PARTY.md" "$SRC/LICENSE" "$PREFIX.new/"
 rm -rf "$PREFIX.old"
 [ -e "$PREFIX" ] && mv "$PREFIX" "$PREFIX.old"
 mv "$PREFIX.new" "$PREFIX"
@@ -42,7 +42,6 @@ ln -sf "$PREFIX/bin/ihcd" /usr/local/bin/ihcd
 
 install -m 644 "$SRC/99-ihc.rules" /etc/udev/rules.d/99-ihc.rules
 udevadm control --reload 2>/dev/null || true
-udevadm trigger 2>/dev/null || true
 
 # the API token: readable by the service only; kept across updates unless IHC_TOKEN is given
 TOKEN=/var/lib/ihc/token
@@ -65,11 +64,21 @@ for unit in ihcd.service ihcd-gadget.service; do
 done
 systemctl daemon-reload
 systemctl enable ihcd ihcd-gadget >/dev/null
+
+# the rules apply to what is there now: the nodes' group, and remote wakeup for the service (only
+# these subsystems, not every device of the board)
+for f in /sys/class/udc/*/srp; do
+    [ -e "$f" ] || continue
+    { chgrp ihc "$f" && chmod g+w "$f"; } || true
+done
+udevadm trigger --subsystem-match=hidg --subsystem-match=video4linux 2>/dev/null || true
+
 if [ "$START" = 1 ]; then
     if [ -n "$(ls /sys/class/udc 2>/dev/null)" ]; then
-        systemctl restart ihcd-gadget || echo "warning: the USB gadget did not start: journalctl -u ihcd-gadget"
+        # start, not restart: a gadget already up with this profile stays, so the phone sees no unplug
+        systemctl start ihcd-gadget || echo "warning: the USB gadget did not start: journalctl -u ihcd-gadget"
     else
-        echo "note: no USB device controller (ls /sys/class/udc is empty): the board's USB-C port is in host mode"
+        echo "note: no USB device controller (ls /sys/class/udc is empty): sudo ihcd doctor says why"
     fi
     systemctl restart ihcd
 fi
@@ -80,10 +89,11 @@ echo "iphone-hid box $(cat "$PREFIX/VERSION") installed"
 [ "$START" = 1 ] && echo "console: http://${ip:-<board address>}:8000     logs: journalctl -u ihcd -f"
 echo "API token (the console asks for it once): sudo cat $TOKEN"
 
-# examine the board; once started, fix what can be fixed at run time (never the boot configuration)
+# examine the board; once started, fix what can be fixed safely at run time: never the boot
+# configuration, and nothing that cuts off another gadget or the port's current role
 echo
 if [ "$START" = 1 ]; then
-    "$PREFIX/bin/ihcd" doctor --fix || true
+    "$PREFIX/bin/ihcd" doctor --fix-safe || true
 else
     "$PREFIX/bin/ihcd" doctor || true
 fi

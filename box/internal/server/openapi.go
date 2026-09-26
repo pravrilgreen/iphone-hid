@@ -124,7 +124,7 @@ func (s *Server) openapi(w http.ResponseWriter, _ *http.Request) {
 		return out
 	}
 	noVideo := errorResponse("no_video: no picture from the phone")
-	tooMany := errorResponse("too_many: the box streams to 4 viewers at most")
+	tooMany := errorResponse("too_many: the box already streams to its most viewers (4 by default, --max-viewers)")
 	paths := map[string]any{
 		"/api/health": map[string]any{"get": map[string]any{"operationId": "health", "summary": "Box health (no token needed)",
 			"security": []any{}, "responses": map[string]any{"200": jsonBody(ref("Health"), "the box answers")}}},
@@ -157,7 +157,7 @@ func (s *Server) openapi(w http.ResponseWriter, _ *http.Request) {
 			"parameters": []any{id, intQuery("quality", 75, 30, 95, "JPEG quality"), intQuery("fps", 60, 1, 60, "frames a second at most"),
 				map[string]any{"name": "ack", "in": "query", "schema": map[string]any{"type": "boolean", "default": true},
 					"description": "wait for the client's ack before the next frame"}},
-			"responses": common(map[string]any{"101": map[string]any{"description": "switching protocols; closed with 4429 when the box has 4 viewers"}})}},
+			"responses": common(map[string]any{"101": map[string]any{"description": "switching protocols; closed with 4429 when the box already streams to its most viewers"}})}},
 		"/api/devices/{id}/control": map[string]any{"get": map[string]any{"operationId": "control",
 			"summary":    "WebSocket: live touch, keys and actions, one controller at a time (the binary protocol is in the API reference)",
 			"parameters": []any{id, map[string]any{"name": "takeover", "in": "query", "schema": map[string]any{"type": "boolean"}}},

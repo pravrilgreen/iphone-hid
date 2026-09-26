@@ -313,7 +313,7 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request) {
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err == nil {
 			_ = ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(closeTooMany,
-				fmt.Sprintf("this box streams to %d viewers at most", s.maxViewers())), time.Now().Add(time.Second))
+				fmt.Sprintf("this box already streams to its most viewers (%d)", s.maxViewers())), time.Now().Add(time.Second))
 			_ = ws.Close()
 		}
 		return

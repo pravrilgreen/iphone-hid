@@ -139,7 +139,7 @@ func (s *Server) mjpeg(w http.ResponseWriter, r *http.Request) {
 	}
 	release, ok := s.viewer()
 	if !ok {
-		writeError(w, http.StatusTooManyRequests, "too_many", fmt.Sprintf("this box streams to %d viewers at most", s.maxViewers()))
+		writeError(w, http.StatusTooManyRequests, "too_many", fmt.Sprintf("this box already streams to its most viewers (%d)", s.maxViewers()))
 		return
 	}
 	defer release()

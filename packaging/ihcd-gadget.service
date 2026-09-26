@@ -1,16 +1,22 @@
-# iphone-hid box: at boot, make this board the iPhone's USB touch pointer and keyboard.
+# iphone-hid box: make this board the iPhone's USB touch pointer and keyboard, at boot and whenever
+# its USB device controller appears (99-ihc.rules starts it then).
 [Unit]
 Description=iphone-hid: the USB touch pointer and keyboard gadget
 Before=ihcd.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-# the USB controller driver may come up a little after boot: wait for it (up to 30 s)
-ExecStartPre=/bin/sh -c 'for i in $(seq 30); do [ -n "$(ls /sys/class/udc 2>/dev/null)" ] && exit 0; sleep 1; done; echo "no USB device controller: the USB-C port is in host mode" >&2; exit 1'
+# IHCD_GADGET_ARGS, e.g. "--udc fc000000.usb" on a board with more than one device controller
+EnvironmentFile=-/etc/default/ihc
+# the controller's driver may come up later: the udev rule starts this unit again when it does
+ExecStartPre=/bin/sh -c '[ -n "$(ls /sys/class/udc 2>/dev/null)" ] || { echo "no USB device controller yet: sudo ihcd doctor says why" >&2; exit 1; }'
 ExecStartPre=-/sbin/modprobe libcomposite
-ExecStart=/opt/ihc/bin/ihcd gadget up --replace --owner ihc
+ExecStart=/opt/ihc/bin/ihcd gadget up --if-missing --owner ihc $IHCD_GADGET_ARGS
 ExecStop=/opt/ihc/bin/ihcd gadget down
+Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
