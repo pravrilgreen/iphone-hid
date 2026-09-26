@@ -1672,6 +1672,89 @@
 				)
 			)
 		)
+		(symbol "box-v1:PWR_VCC_3V3_MOD"
+			(power)
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+				hide
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font (size 1.27 1.27))
+					(hide yes)
+				)
+			)
+			(property "Value" "VCC_3V3_MOD"
+				(at 0 3.556 0)
+				(effects
+					(font (size 1.27 1.27))
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font (size 1.27 1.27))
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font (size 1.27 1.27))
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol, net VCC_3V3_MOD"
+				(at 0 0 0)
+				(effects
+					(font (size 1.27 1.27))
+					(hide yes)
+				)
+			)
+			(symbol "PWR_VCC_3V3_MOD_0_1"
+				(polyline
+					(pts (xy 0 0) (xy 0 1.27))
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts (xy -1.27 1.27) (xy 1.27 1.27))
+					(stroke
+						(width 0.3048)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "PWR_VCC_3V3_MOD_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "VCC_3V3_MOD"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+					(number "1"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+				)
+			)
+		)
 		(symbol "box-v1:R"
 			(pin_numbers hide)
 			(pin_names
@@ -1865,7 +1948,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "ESD for SS pairs TX1/RX1 (0.5 pF, flow-through)"
+			(property "Description" "ESD for the CC lines of J101 (charger) and J401 (PC), between the two rear ports (flow-through)"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2028,7 +2111,7 @@
 				)
 			)
 		)
-		(symbol "box-v1:USB-C_iPhone_964311"
+		(symbol "box-v1:USB-C_iPhone_595a3e"
 			(pin_names
 				(offset 0.508)
 			)
@@ -2036,20 +2119,20 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "J"
-				(at -10.16 21.59 0)
+				(at -10.16 25.4 0)
 				(effects
 					(font (size 1.27 1.27))
 					(justify left bottom)
 				)
 			)
 			(property "Value" "USB-C iPhone"
-				(at -10.16 19.05 0)
+				(at -10.16 22.86 0)
 				(effects
 					(font (size 1.27 1.27))
 					(justify left bottom)
 				)
 			)
-			(property "Footprint" "Connector_USB:USB_C_Receptacle_Molex_105450-0101"
+			(property "Footprint" "box-v1:USB_C_Receptacle_HRO_TYPE-C-31-M-04"
 				(at 0 0 0)
 				(effects
 					(font (size 1.27 1.27))
@@ -2070,10 +2153,10 @@
 					(hide yes)
 				)
 			)
-			(symbol "USB-C_iPhone_964311_0_1"
+			(symbol "USB-C_iPhone_595a3e_0_1"
 				(rectangle
-					(start -10.16 17.78)
-					(end 10.16 -17.78)
+					(start -10.16 21.59)
+					(end 10.16 -21.59)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -2083,9 +2166,9 @@
 					)
 				)
 			)
-			(symbol "USB-C_iPhone_964311_1_1"
+			(symbol "USB-C_iPhone_595a3e_1_1"
 				(pin passive line
-					(at -15.24 15.24 0)
+					(at -15.24 19.05 0)
 					(length 5.08)
 					(name "GND"
 						(effects
@@ -2099,7 +2182,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 12.7 0)
+					(at -15.24 16.51 0)
 					(length 5.08)
 					(name "TX1+"
 						(effects
@@ -2113,7 +2196,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 10.16 0)
+					(at -15.24 13.97 0)
 					(length 5.08)
 					(name "TX1-"
 						(effects
@@ -2127,7 +2210,7 @@
 					)
 				)
 				(pin passive line
-					(at -15.24 7.62 0)
+					(at -15.24 11.43 0)
 					(length 5.08)
 					(name "VBUS"
 						(effects
@@ -2141,7 +2224,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 5.08 0)
+					(at -15.24 8.89 0)
 					(length 5.08)
 					(name "CC1"
 						(effects
@@ -2155,7 +2238,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 2.54 0)
+					(at -15.24 6.35 0)
 					(length 5.08)
 					(name "D+"
 						(effects
@@ -2169,7 +2252,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 0 0)
+					(at -15.24 3.81 0)
 					(length 5.08)
 					(name "D-"
 						(effects
@@ -2183,7 +2266,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 -2.54 0)
+					(at -15.24 1.27 0)
 					(length 5.08)
 					(name "SBU1"
 						(effects
@@ -2197,7 +2280,7 @@
 					)
 				)
 				(pin passive line
-					(at -15.24 -5.08 0)
+					(at -15.24 -1.27 0)
 					(length 5.08)
 					(name "VBUS"
 						(effects
@@ -2211,7 +2294,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 -7.62 0)
+					(at -15.24 -3.81 0)
 					(length 5.08)
 					(name "RX2-"
 						(effects
@@ -2225,7 +2308,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at -15.24 -10.16 0)
+					(at -15.24 -6.35 0)
 					(length 5.08)
 					(name "RX2+"
 						(effects
@@ -2239,7 +2322,7 @@
 					)
 				)
 				(pin passive line
-					(at -15.24 -12.7 0)
+					(at -15.24 -8.89 0)
 					(length 5.08)
 					(name "GND"
 						(effects
@@ -2253,7 +2336,7 @@
 					)
 				)
 				(pin passive line
-					(at 15.24 15.24 180)
+					(at 15.24 19.05 180)
 					(length 5.08)
 					(name "GND"
 						(effects
@@ -2267,7 +2350,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 12.7 180)
+					(at 15.24 16.51 180)
 					(length 5.08)
 					(name "TX2+"
 						(effects
@@ -2281,7 +2364,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 10.16 180)
+					(at 15.24 13.97 180)
 					(length 5.08)
 					(name "TX2-"
 						(effects
@@ -2295,7 +2378,7 @@
 					)
 				)
 				(pin passive line
-					(at 15.24 7.62 180)
+					(at 15.24 11.43 180)
 					(length 5.08)
 					(name "VBUS"
 						(effects
@@ -2309,7 +2392,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 5.08 180)
+					(at 15.24 8.89 180)
 					(length 5.08)
 					(name "CC2"
 						(effects
@@ -2323,7 +2406,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 2.54 180)
+					(at 15.24 6.35 180)
 					(length 5.08)
 					(name "D+"
 						(effects
@@ -2337,7 +2420,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 0 180)
+					(at 15.24 3.81 180)
 					(length 5.08)
 					(name "D-"
 						(effects
@@ -2351,7 +2434,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 -2.54 180)
+					(at 15.24 1.27 180)
 					(length 5.08)
 					(name "SBU2"
 						(effects
@@ -2365,7 +2448,7 @@
 					)
 				)
 				(pin passive line
-					(at 15.24 -5.08 180)
+					(at 15.24 -1.27 180)
 					(length 5.08)
 					(name "VBUS"
 						(effects
@@ -2379,7 +2462,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 -7.62 180)
+					(at 15.24 -3.81 180)
 					(length 5.08)
 					(name "RX1-"
 						(effects
@@ -2393,7 +2476,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 15.24 -10.16 180)
+					(at 15.24 -6.35 180)
 					(length 5.08)
 					(name "RX1+"
 						(effects
@@ -2407,7 +2490,7 @@
 					)
 				)
 				(pin passive line
-					(at 15.24 -12.7 180)
+					(at 15.24 -8.89 180)
 					(length 5.08)
 					(name "GND"
 						(effects
@@ -2421,14 +2504,56 @@
 					)
 				)
 				(pin passive line
-					(at 15.24 -15.24 180)
+					(at 15.24 -11.43 180)
 					(length 5.08)
 					(name "SHIELD"
 						(effects
 							(font (size 1.27 1.27))
 						)
 					)
-					(number "S1"
+					(number "31"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+				)
+				(pin passive line
+					(at 15.24 -13.97 180)
+					(length 5.08)
+					(name "SHIELD"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+					(number "32"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+				)
+				(pin passive line
+					(at 15.24 -16.51 180)
+					(length 5.08)
+					(name "SHIELD"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+					(number "33"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+				)
+				(pin passive line
+					(at 15.24 -19.05 180)
+					(length 5.08)
+					(name "SHIELD"
+						(effects
+							(font (size 1.27 1.27))
+						)
+					)
+					(number "34"
 						(effects
 							(font (size 1.27 1.27))
 						)
@@ -2669,7 +2794,7 @@
 				(hide yes)
 			)
 		)
-		(property "Note" "Datasheet under NDA: pins drawn by function only; the footprint must be redone once the datasheet is in hand"
+		(property "Note" "Pins 24-64 are drawn by function only: take them and the footprint from the public datasheet R1.4 (source LT7911D_DS) before U201 is routed"
 			(at 58.42 66.04 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2838,7 +2963,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "1f01cd9e-b6fa-5c71-9670-897c6867ef2f")
-		(property "Reference" "#PWR0118"
+		(property "Reference" "#PWR0119"
 			(at 30.48 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2879,7 +3004,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0118")
+					(reference "#PWR0119")
 					(unit 1)
 				)
 			)
@@ -2939,7 +3064,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "01ff7176-09e1-5992-b48c-47c84f49dc6f")
-		(property "Reference" "#PWR0119"
+		(property "Reference" "#PWR0120"
 			(at 30.48 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -2980,7 +3105,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0119")
+					(reference "#PWR0120")
 					(unit 1)
 				)
 			)
@@ -3040,7 +3165,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "0df0eba5-e893-57ae-ae22-fa79792c3ce6")
-		(property "Reference" "#PWR0120"
+		(property "Reference" "#PWR0121"
 			(at 30.48 52.07 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3081,7 +3206,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0120")
+					(reference "#PWR0121")
 					(unit 1)
 				)
 			)
@@ -3141,7 +3266,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "6887ca96-8d70-534f-8eaa-3b2ccbe1daa5")
-		(property "Reference" "#PWR0121"
+		(property "Reference" "#PWR0122"
 			(at 30.48 59.69 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3182,7 +3307,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0121")
+					(reference "#PWR0122")
 					(unit 1)
 				)
 			)
@@ -3242,7 +3367,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "6d06790b-b12a-5ab4-a08f-cd98350e361f")
-		(property "Reference" "#PWR0122"
+		(property "Reference" "#PWR0123"
 			(at 30.48 67.31 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3283,7 +3408,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0122")
+					(reference "#PWR0123")
 					(unit 1)
 				)
 			)
@@ -3343,7 +3468,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "635d3f9e-e8db-5047-aa05-4effd02bd9db")
-		(property "Reference" "#PWR0123"
+		(property "Reference" "#PWR0124"
 			(at 30.48 74.93 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3384,7 +3509,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0123")
+					(reference "#PWR0124")
 					(unit 1)
 				)
 			)
@@ -3534,7 +3659,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "a2047c19-742f-5fa2-aa17-f26d34674584")
-		(property "Reference" "#PWR0124"
+		(property "Reference" "#PWR0125"
 			(at 30.48 82.55 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3575,7 +3700,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0124")
+					(reference "#PWR0125")
 					(unit 1)
 				)
 			)
@@ -3599,7 +3724,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "79cc17cf-c9e7-5bf7-b094-2aa22daf79e3")
-		(property "Reference" "#PWR0125"
+		(property "Reference" "#PWR0126"
 			(at 30.48 85.09 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3640,7 +3765,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0125")
+					(reference "#PWR0126")
 					(unit 1)
 				)
 			)
@@ -3664,7 +3789,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "259a2aa6-37cf-5b21-89b4-551a6edff37b")
-		(property "Reference" "#PWR0126"
+		(property "Reference" "#PWR0127"
 			(at 30.48 87.63 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -3705,7 +3830,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0126")
+					(reference "#PWR0127")
 					(unit 1)
 				)
 			)
@@ -4037,7 +4162,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "5a8a1252-446b-5618-b1c1-c2831bfd8014")
-		(property "Reference" "#PWR0127"
+		(property "Reference" "#PWR0128"
 			(at 30.48 95.25 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -4078,7 +4203,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0127")
+					(reference "#PWR0128")
 					(unit 1)
 				)
 			)
@@ -4094,8 +4219,8 @@
 		(uuid "3f19e199-7cdb-5c9d-bd2d-59a4ac8a85ac")
 	)
 	(symbol
-		(lib_id "box-v1:USB-C_iPhone_964311")
-		(at 139.7 53.34 0)
+		(lib_id "box-v1:USB-C_iPhone_595a3e")
+		(at 139.7 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4103,70 +4228,70 @@
 		(dnp no)
 		(uuid "ff852143-8501-5e7f-97f4-e29f1308dc3c")
 		(property "Reference" "J201"
-			(at 129.54 31.75 0)
+			(at 129.54 30.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left bottom)
 			)
 		)
 		(property "Value" "USB-C iPhone"
-			(at 129.54 34.29 0)
+			(at 129.54 33.02 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left bottom)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_C_Receptacle_Molex_105450-0101"
-			(at 139.7 53.34 0)
+		(property "Footprint" "box-v1:USB_C_Receptacle_HRO_TYPE-C-31-M-04"
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 139.7 53.34 0)
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "24-pin USB-C receptacle with all SS pairs (4-lane DP Alt Mode) + USB 2.0 + CC + VBUS"
-			(at 139.7 53.34 0)
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "1054500101"
-			(at 139.7 53.34 0)
+		(property "MPN" "TYPE-C-31-M-04"
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Molex"
-			(at 139.7 53.34 0)
+		(property "Manufacturer" "Korean Hroparts Elec"
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C134092"
-			(at 139.7 53.34 0)
+		(property "LCSC" "C129018"
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 139.7 53.34 0)
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Note" "Use a 24P receptacle rated USB 3.2 Gen2; a 16P (USB 2.0) one has no SS pairs"
-			(at 139.7 53.34 0)
+		(property "Note" "Hybrid: A row SMD, B row through-hole, so the B row is reached from the inner layers; shell pads 31-34. A 16P (USB 2.0) receptacle has no SS pairs"
+			(at 139.7 55.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -4244,8 +4369,17 @@
 		(pin "B12"
 			(uuid "3559fd5a-33dc-536e-a3ef-b930ce970125")
 		)
-		(pin "S1"
-			(uuid "917f1c04-315d-50b7-bdb1-37b4b759fd0c")
+		(pin "31"
+			(uuid "593191e3-5b6b-56bd-aa8a-50f66746a1c6")
+		)
+		(pin "32"
+			(uuid "cb586e60-b7d7-551b-b886-bebb6bf4943a")
+		)
+		(pin "33"
+			(uuid "cc9405a6-d0d6-5ebd-b86c-0f55223e73fd")
+		)
+		(pin "34"
+			(uuid "9353ecd8-d516-584e-b88a-550848e02747")
 		)
 		(instances
 			(project "box-v1"
@@ -4258,43 +4392,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 124.46 38.1 270)
+		(at 124.46 36.83 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "00f11109-b8f1-55ec-a7a2-d6a7a2df86a5")
-		(property "Reference" "#PWR0128"
-			(at 124.46 38.1 0)
+		(property "Reference" "#PWR0129"
+			(at 124.46 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 124.46 42.545 0)
+			(at 124.46 41.275 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 38.1 0)
+			(at 124.46 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 38.1 0)
+			(at 124.46 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 38.1 0)
+			(at 124.46 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -4306,7 +4440,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0128")
+					(reference "#PWR0129")
 					(unit 1)
 				)
 			)
@@ -4314,7 +4448,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 120.015 38.1 0)
+		(at 120.015 36.83 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -4323,7 +4457,7 @@
 	)
 	(global_label "SS_TX1_P"
 		(shape passive)
-		(at 124.46 40.64 180)
+		(at 124.46 39.37 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -4331,7 +4465,7 @@
 		)
 		(uuid "b2adc902-44eb-5aa4-af8c-5e0978c43b85")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 40.64 0)
+			(at 124.46 39.37 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -4341,7 +4475,7 @@
 	)
 	(global_label "SS_TX1_N"
 		(shape passive)
-		(at 124.46 43.18 180)
+		(at 124.46 41.91 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -4349,7 +4483,7 @@
 		)
 		(uuid "b9873932-7d60-5ca6-9694-fe5f62aa7252")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 43.18 0)
+			(at 124.46 41.91 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -4359,43 +4493,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 124.46 45.72 90)
+		(at 124.46 44.45 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "b9d3c6bc-03ce-51b7-a73f-30fec319a4e9")
-		(property "Reference" "#PWR0129"
-			(at 124.46 45.72 0)
+		(property "Reference" "#PWR0130"
+			(at 124.46 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "PHONE_VBUS"
-			(at 124.46 50.165 0)
+			(at 124.46 48.895 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 45.72 0)
+			(at 124.46 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 45.72 0)
+			(at 124.46 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 45.72 0)
+			(at 124.46 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -4403,143 +4537,6 @@
 		)
 		(pin "1"
 			(uuid "1141bba6-4401-57e4-8ff8-87f693414379")
-		)
-		(instances
-			(project "box-v1"
-				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0129")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(text "PHONE_VBUS"
-		(exclude_from_sim no)
-		(at 120.015 45.72 0)
-		(effects
-			(font (size 1.27 1.27))
-			(justify right)
-		)
-		(uuid "6894af81-960c-5cd7-87e7-fe2c440c6128")
-	)
-	(global_label "PHONE_CC1"
-		(shape passive)
-		(at 124.46 48.26 180)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify right)
-		)
-		(uuid "dfa031c2-e96f-56e8-a111-af716f5f9e05")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 48.26 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "PHONE_USB_DP"
-		(shape passive)
-		(at 124.46 50.8 180)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify right)
-		)
-		(uuid "eccd03df-e7e6-5fa2-948e-c0efd4ff8389")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 50.8 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "PHONE_USB_DN"
-		(shape passive)
-		(at 124.46 53.34 180)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify right)
-		)
-		(uuid "23818596-cce9-5f7b-8a86-dddc4ab44889")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 53.34 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "PHONE_SBU1"
-		(shape passive)
-		(at 124.46 55.88 180)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify right)
-		)
-		(uuid "4b27f393-02f2-575c-bdb3-ef3c06bb81ed")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 55.88 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(symbol
-		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 124.46 58.42 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(dnp no)
-		(uuid "9e1f4ec9-1f6f-593a-afbf-1175ca0cdefe")
-		(property "Reference" "#PWR0130"
-			(at 124.46 58.42 0)
-			(effects
-				(font (size 1.27 1.27))
-				(hide yes)
-			)
-		)
-		(property "Value" "PHONE_VBUS"
-			(at 124.46 62.865 0)
-			(effects
-				(font (size 1.27 1.27))
-				(hide yes)
-			)
-		)
-		(property "Footprint" ""
-			(at 124.46 58.42 0)
-			(effects
-				(font (size 1.27 1.27))
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 124.46 58.42 0)
-			(effects
-				(font (size 1.27 1.27))
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 124.46 58.42 0)
-			(effects
-				(font (size 1.27 1.27))
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "58ed1ed4-9e06-58ea-ab54-430c206ac437")
 		)
 		(instances
 			(project "box-v1"
@@ -4552,24 +4549,24 @@
 	)
 	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 120.015 58.42 0)
+		(at 120.015 44.45 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
 		)
-		(uuid "7afec073-6ab1-5d7f-ad36-8cc9a2e04e2c")
+		(uuid "6894af81-960c-5cd7-87e7-fe2c440c6128")
 	)
-	(global_label "SS_RX2_N"
+	(global_label "PHONE_CC1"
 		(shape passive)
-		(at 124.46 60.96 180)
+		(at 124.46 46.99 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
 		)
-		(uuid "361c2e54-22b8-5f85-a94d-0c5956e08f68")
+		(uuid "dfa031c2-e96f-56e8-a111-af716f5f9e05")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 60.96 0)
+			(at 124.46 46.99 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -4577,17 +4574,53 @@
 			)
 		)
 	)
-	(global_label "SS_RX2_P"
+	(global_label "PHONE_USB_DP"
 		(shape passive)
-		(at 124.46 63.5 180)
+		(at 124.46 49.53 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
 		)
-		(uuid "f1d71d9e-87c6-5e13-98fb-7ca1f19408a7")
+		(uuid "eccd03df-e7e6-5fa2-948e-c0efd4ff8389")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 124.46 63.5 0)
+			(at 124.46 49.53 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PHONE_USB_DN"
+		(shape passive)
+		(at 124.46 52.07 180)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify right)
+		)
+		(uuid "23818596-cce9-5f7b-8a86-dddc4ab44889")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 124.46 52.07 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PHONE_SBU1"
+		(shape passive)
+		(at 124.46 54.61 180)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify right)
+		)
+		(uuid "4b27f393-02f2-575c-bdb3-ef3c06bb81ed")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 124.46 54.61 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -4596,51 +4629,51 @@
 		)
 	)
 	(symbol
-		(lib_id "box-v1:PWR_GND")
-		(at 124.46 66.04 270)
+		(lib_id "box-v1:PWR_PHONE_VBUS")
+		(at 124.46 57.15 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
-		(uuid "22d7f7c1-d7bc-5e77-a234-5c386c5cc28f")
+		(uuid "9e1f4ec9-1f6f-593a-afbf-1175ca0cdefe")
 		(property "Reference" "#PWR0131"
-			(at 124.46 66.04 0)
+			(at 124.46 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 124.46 70.485 0)
+		(property "Value" "PHONE_VBUS"
+			(at 124.46 61.595 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 66.04 0)
+			(at 124.46 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 66.04 0)
+			(at 124.46 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 66.04 0)
+			(at 124.46 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(pin "1"
-			(uuid "3f915de4-f967-5a82-a83d-c8202d314dcf")
+			(uuid "58ed1ed4-9e06-58ea-ab54-430c206ac437")
 		)
 		(instances
 			(project "box-v1"
@@ -4651,61 +4684,97 @@
 			)
 		)
 	)
-	(text "GND"
+	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 120.015 66.04 0)
+		(at 120.015 57.15 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
 		)
-		(uuid "483c75c5-a2eb-5d83-adf6-463e50923a30")
+		(uuid "7afec073-6ab1-5d7f-ad36-8cc9a2e04e2c")
+	)
+	(global_label "SS_RX2_N"
+		(shape passive)
+		(at 124.46 59.69 180)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify right)
+		)
+		(uuid "361c2e54-22b8-5f85-a94d-0c5956e08f68")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 124.46 59.69 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SS_RX2_P"
+		(shape passive)
+		(at 124.46 62.23 180)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify right)
+		)
+		(uuid "f1d71d9e-87c6-5e13-98fb-7ca1f19408a7")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 124.46 62.23 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 154.94 38.1 90)
+		(at 124.46 64.77 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
-		(uuid "9f0a9130-faa3-53e3-8bc6-cdae160ad572")
+		(uuid "22d7f7c1-d7bc-5e77-a234-5c386c5cc28f")
 		(property "Reference" "#PWR0132"
-			(at 154.94 38.1 0)
+			(at 124.46 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 154.94 42.545 0)
+			(at 124.46 69.215 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 154.94 38.1 0)
+			(at 124.46 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 154.94 38.1 0)
+			(at 124.46 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 154.94 38.1 0)
+			(at 124.46 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(pin "1"
-			(uuid "90802e34-cfa2-5d28-9f00-2e4427bab264")
+			(uuid "3f915de4-f967-5a82-a83d-c8202d314dcf")
 		)
 		(instances
 			(project "box-v1"
@@ -4718,95 +4787,59 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 159.385 38.1 0)
+		(at 120.015 64.77 0)
 		(effects
 			(font (size 1.27 1.27))
-			(justify left)
+			(justify right)
 		)
-		(uuid "d441f047-3389-5624-b665-822e25a3ddd7")
-	)
-	(global_label "SS_TX2_P"
-		(shape passive)
-		(at 154.94 40.64 0)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify left)
-		)
-		(uuid "e5ed12af-fa6a-52cf-81a8-f8f825104b4c")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 40.64 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "SS_TX2_N"
-		(shape passive)
-		(at 154.94 43.18 0)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify left)
-		)
-		(uuid "8f2255b7-0eed-5637-9601-e24165827a8b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 43.18 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify left)
-				(hide yes)
-			)
-		)
+		(uuid "483c75c5-a2eb-5d83-adf6-463e50923a30")
 	)
 	(symbol
-		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 154.94 45.72 270)
+		(lib_id "box-v1:PWR_GND")
+		(at 154.94 36.83 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
-		(uuid "a0722be3-d558-5b34-bced-637ab27fd8cd")
+		(uuid "9f0a9130-faa3-53e3-8bc6-cdae160ad572")
 		(property "Reference" "#PWR0133"
-			(at 154.94 45.72 0)
+			(at 154.94 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Value" "PHONE_VBUS"
-			(at 154.94 50.165 0)
+		(property "Value" "GND"
+			(at 154.94 41.275 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 154.94 45.72 0)
+			(at 154.94 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 154.94 45.72 0)
+			(at 154.94 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 154.94 45.72 0)
+			(at 154.94 36.83 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(pin "1"
-			(uuid "33a68093-c106-5fe4-aacc-08d47b88bfe2")
+			(uuid "90802e34-cfa2-5d28-9f00-2e4427bab264")
 		)
 		(instances
 			(project "box-v1"
@@ -4817,26 +4850,26 @@
 			)
 		)
 	)
-	(text "PHONE_VBUS"
+	(text "GND"
 		(exclude_from_sim no)
-		(at 159.385 45.72 0)
+		(at 159.385 36.83 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "336d1a67-b4be-522e-aeba-e3472fc764f1")
+		(uuid "d441f047-3389-5624-b665-822e25a3ddd7")
 	)
-	(global_label "PHONE_CC2"
+	(global_label "SS_TX2_P"
 		(shape passive)
-		(at 154.94 48.26 0)
+		(at 154.94 39.37 0)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "b906de4d-6d6e-527c-9c41-d1b58eb757a5")
+		(uuid "e5ed12af-fa6a-52cf-81a8-f8f825104b4c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 48.26 0)
+			(at 154.94 39.37 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
@@ -4844,53 +4877,17 @@
 			)
 		)
 	)
-	(global_label "PHONE_USB_DP"
+	(global_label "SS_TX2_N"
 		(shape passive)
-		(at 154.94 50.8 0)
+		(at 154.94 41.91 0)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "968ad993-5bdf-500f-b6f7-edf917b4c629")
+		(uuid "8f2255b7-0eed-5637-9601-e24165827a8b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 50.8 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "PHONE_USB_DN"
-		(shape passive)
-		(at 154.94 53.34 0)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify left)
-		)
-		(uuid "28a9b7dc-9762-554f-bc25-35d1060d5886")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 53.34 0)
-			(effects
-				(font (size 1.27 1.27))
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "PHONE_SBU2"
-		(shape passive)
-		(at 154.94 55.88 0)
-		(fields_autoplaced yes)
-		(effects
-			(font (size 1.27 1.27))
-			(justify left)
-		)
-		(uuid "b83b8bbd-b77d-5e91-8046-7036ca0e5833")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 55.88 0)
+			(at 154.94 41.91 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
@@ -4900,50 +4897,50 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 154.94 58.42 270)
+		(at 154.94 44.45 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
-		(uuid "738e7ae0-5013-5af0-9475-fc5965bc3759")
+		(uuid "a0722be3-d558-5b34-bced-637ab27fd8cd")
 		(property "Reference" "#PWR0134"
-			(at 154.94 58.42 0)
+			(at 154.94 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "PHONE_VBUS"
-			(at 154.94 62.865 0)
+			(at 154.94 48.895 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 154.94 58.42 0)
+			(at 154.94 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 154.94 58.42 0)
+			(at 154.94 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 154.94 58.42 0)
+			(at 154.94 44.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(pin "1"
-			(uuid "d8fa0475-c6f6-562f-97b4-783523a42add")
+			(uuid "33a68093-c106-5fe4-aacc-08d47b88bfe2")
 		)
 		(instances
 			(project "box-v1"
@@ -4956,24 +4953,24 @@
 	)
 	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 159.385 58.42 0)
+		(at 159.385 44.45 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "2f33dec0-a08d-5288-b613-1278f9754659")
+		(uuid "336d1a67-b4be-522e-aeba-e3472fc764f1")
 	)
-	(global_label "SS_RX1_N"
+	(global_label "PHONE_CC2"
 		(shape passive)
-		(at 154.94 60.96 0)
+		(at 154.94 46.99 0)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "9f14db47-8e43-507c-9f97-d5e61350789f")
+		(uuid "b906de4d-6d6e-527c-9c41-d1b58eb757a5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 60.96 0)
+			(at 154.94 46.99 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
@@ -4981,17 +4978,53 @@
 			)
 		)
 	)
-	(global_label "SS_RX1_P"
+	(global_label "PHONE_USB_DP"
 		(shape passive)
-		(at 154.94 63.5 0)
+		(at 154.94 49.53 0)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "e3294ed4-a652-5671-a3e6-0fb893cdf62f")
+		(uuid "968ad993-5bdf-500f-b6f7-edf917b4c629")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.94 63.5 0)
+			(at 154.94 49.53 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PHONE_USB_DN"
+		(shape passive)
+		(at 154.94 52.07 0)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "28a9b7dc-9762-554f-bc25-35d1060d5886")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.94 52.07 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PHONE_SBU2"
+		(shape passive)
+		(at 154.94 54.61 0)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "b83b8bbd-b77d-5e91-8046-7036ca0e5833")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.94 54.61 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
@@ -5000,51 +5033,51 @@
 		)
 	)
 	(symbol
-		(lib_id "box-v1:PWR_GND")
-		(at 154.94 66.04 90)
+		(lib_id "box-v1:PWR_PHONE_VBUS")
+		(at 154.94 57.15 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
-		(uuid "be9d609b-9ee7-5579-9541-141477d71637")
+		(uuid "738e7ae0-5013-5af0-9475-fc5965bc3759")
 		(property "Reference" "#PWR0135"
-			(at 154.94 66.04 0)
+			(at 154.94 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 154.94 70.485 0)
+		(property "Value" "PHONE_VBUS"
+			(at 154.94 61.595 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 154.94 66.04 0)
+			(at 154.94 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 154.94 66.04 0)
+			(at 154.94 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 154.94 66.04 0)
+			(at 154.94 57.15 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(pin "1"
-			(uuid "ff702fc9-7c94-5617-afc1-6aaee8bcfd53")
+			(uuid "d8fa0475-c6f6-562f-97b4-783523a42add")
 		)
 		(instances
 			(project "box-v1"
@@ -5055,61 +5088,97 @@
 			)
 		)
 	)
-	(text "GND"
+	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 159.385 66.04 0)
+		(at 159.385 57.15 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "1ba4efdf-84b6-589d-96d7-c753baa150ee")
+		(uuid "2f33dec0-a08d-5288-b613-1278f9754659")
+	)
+	(global_label "SS_RX1_N"
+		(shape passive)
+		(at 154.94 59.69 0)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "9f14db47-8e43-507c-9f97-d5e61350789f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.94 59.69 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SS_RX1_P"
+		(shape passive)
+		(at 154.94 62.23 0)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "e3294ed4-a652-5671-a3e6-0fb893cdf62f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.94 62.23 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 154.94 68.58 90)
+		(at 154.94 64.77 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
-		(uuid "497ca488-8aef-5893-b1ac-cbfa0a3b29c4")
+		(uuid "be9d609b-9ee7-5579-9541-141477d71637")
 		(property "Reference" "#PWR0136"
-			(at 154.94 68.58 0)
+			(at 154.94 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 154.94 73.025 0)
+			(at 154.94 69.215 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 154.94 68.58 0)
+			(at 154.94 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 154.94 68.58 0)
+			(at 154.94 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 154.94 68.58 0)
+			(at 154.94 64.77 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(pin "1"
-			(uuid "af3c3526-a42a-5dde-a41b-6bdd728531be")
+			(uuid "ff702fc9-7c94-5617-afc1-6aaee8bcfd53")
 		)
 		(instances
 			(project "box-v1"
@@ -5122,12 +5191,272 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 159.385 68.58 0)
+		(at 159.385 64.77 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
 		)
-		(uuid "c642a887-852b-5332-9e6c-25a3df3ee49a")
+		(uuid "1ba4efdf-84b6-589d-96d7-c753baa150ee")
+	)
+	(symbol
+		(lib_id "box-v1:PWR_GND")
+		(at 154.94 67.31 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "7568d43a-ab75-5f06-acce-73b54f082817")
+		(property "Reference" "#PWR0137"
+			(at 154.94 67.31 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 154.94 71.755 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 154.94 67.31 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 154.94 67.31 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 154.94 67.31 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9df102d5-5a79-5b9f-8306-990a608ca805")
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
+					(reference "#PWR0137")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 159.385 67.31 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "e5fe84ca-6e9e-584b-9cd6-e052883b3fbe")
+	)
+	(symbol
+		(lib_id "box-v1:PWR_GND")
+		(at 154.94 69.85 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "61b215fa-62e5-5416-bb6b-59027f25d58c")
+		(property "Reference" "#PWR0138"
+			(at 154.94 69.85 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 154.94 74.295 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 154.94 69.85 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 154.94 69.85 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 154.94 69.85 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ff8bc8b2-f07a-5ed7-b57f-157662ebbb01")
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
+					(reference "#PWR0138")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 159.385 69.85 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "1a284238-5bcb-5712-bf84-9a85d31d86bc")
+	)
+	(symbol
+		(lib_id "box-v1:PWR_GND")
+		(at 154.94 72.39 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "b056f2c9-62f6-5a63-af37-1741fa8fc182")
+		(property "Reference" "#PWR0139"
+			(at 154.94 72.39 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 154.94 76.835 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 154.94 72.39 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 154.94 72.39 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 154.94 72.39 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2eda83a9-f39b-563b-adae-556ebf5903cc")
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
+					(reference "#PWR0139")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 159.385 72.39 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "8f5127ad-431a-5784-8d02-b20506bdd534")
+	)
+	(symbol
+		(lib_id "box-v1:PWR_GND")
+		(at 154.94 74.93 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(uuid "a2a15f19-9e9d-5955-89de-aca7e04eb19d")
+		(property "Reference" "#PWR0140"
+			(at 154.94 74.93 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 154.94 79.375 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 154.94 74.93 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 154.94 74.93 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 154.94 74.93 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c0153ff1-252b-5bf6-bb98-1c26926c3235")
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
+					(reference "#PWR0140")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 159.385 74.93 0)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "9d626e79-5d60-5d48-96a9-459b1977c3f3")
 	)
 	(symbol
 		(lib_id "box-v1:TPD4E05U06DQA_dd89b8")
@@ -5285,7 +5614,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "77826cab-dd50-5cef-ae68-3716caed1582")
-		(property "Reference" "#PWR0137"
+		(property "Reference" "#PWR0141"
 			(at 190.5 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5326,7 +5655,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0137")
+					(reference "#PWR0141")
 					(unit 1)
 				)
 			)
@@ -5394,7 +5723,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "23f2cff3-a072-5ccf-8c38-3d38d1b98bac")
-		(property "Reference" "#PWR0138"
+		(property "Reference" "#PWR0142"
 			(at 215.9 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5435,7 +5764,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0138")
+					(reference "#PWR0142")
 					(unit 1)
 				)
 			)
@@ -5614,7 +5943,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "4ac7f422-8dd9-59e4-bf91-128b5acc0f64")
-		(property "Reference" "#PWR0139"
+		(property "Reference" "#PWR0143"
 			(at 243.84 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5655,7 +5984,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0139")
+					(reference "#PWR0143")
 					(unit 1)
 				)
 			)
@@ -5723,7 +6052,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "5834c739-5730-5061-9b43-4f9a527ce4e8")
-		(property "Reference" "#PWR0140"
+		(property "Reference" "#PWR0144"
 			(at 269.24 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5764,7 +6093,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0140")
+					(reference "#PWR0144")
 					(unit 1)
 				)
 			)
@@ -5943,7 +6272,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "6a84e24e-0a75-5357-a4ba-14356a85680c")
-		(property "Reference" "#PWR0141"
+		(property "Reference" "#PWR0145"
 			(at 299.72 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -5984,7 +6313,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0141")
+					(reference "#PWR0145")
 					(unit 1)
 				)
 			)
@@ -6052,7 +6381,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "af40f26e-d0ef-51a1-8018-08d541bd77c0")
-		(property "Reference" "#PWR0142"
+		(property "Reference" "#PWR0146"
 			(at 325.12 43.18 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6093,7 +6422,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0142")
+					(reference "#PWR0146")
 					(unit 1)
 				)
 			)
@@ -6242,7 +6571,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "34de3b9d-928f-5ac4-b6a6-3ac14f888c62")
-		(property "Reference" "#PWR0143"
+		(property "Reference" "#PWR0147"
 			(at 355.6 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6283,7 +6612,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0143")
+					(reference "#PWR0147")
 					(unit 1)
 				)
 			)
@@ -6343,7 +6672,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "0ebec621-9553-53eb-986d-7455b3914014")
-		(property "Reference" "#PWR0144"
+		(property "Reference" "#PWR0148"
 			(at 381 40.64 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6384,7 +6713,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0144")
+					(reference "#PWR0148")
 					(unit 1)
 				)
 			)
@@ -6537,7 +6866,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "c9c8102b-cdf9-5933-8076-60a6dfa41676")
-		(property "Reference" "#PWR0145"
+		(property "Reference" "#PWR0149"
 			(at 30.48 127 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6577,7 +6906,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0145")
+					(reference "#PWR0149")
 					(unit 1)
 				)
 			)
@@ -6610,7 +6939,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "8d8a71ad-e5ec-553f-9202-790a1bcf36ed")
-		(property "Reference" "#PWR0146"
+		(property "Reference" "#PWR0150"
 			(at 35.56 127 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6650,7 +6979,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0146")
+					(reference "#PWR0150")
 					(unit 1)
 				)
 			)
@@ -6768,7 +7097,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "154b060c-580f-5532-91d6-9606dc551b12")
-		(property "Reference" "#PWR0147"
+		(property "Reference" "#PWR0151"
 			(at 43.18 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6809,7 +7138,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0147")
+					(reference "#PWR0151")
 					(unit 1)
 				)
 			)
@@ -6936,7 +7265,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "badb8e88-6528-5ee0-90c4-8d71f9c7cf71")
-		(property "Reference" "#PWR0148"
+		(property "Reference" "#PWR0152"
 			(at 43.18 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -6977,7 +7306,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0148")
+					(reference "#PWR0152")
 					(unit 1)
 				)
 			)
@@ -7086,7 +7415,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "83b92f53-91ca-523a-af59-585b541f11fe")
-		(property "Reference" "#PWR0149"
+		(property "Reference" "#PWR0153"
 			(at 33.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7127,7 +7456,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0149")
+					(reference "#PWR0153")
 					(unit 1)
 				)
 			)
@@ -7151,7 +7480,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "59770f78-3d99-5e0f-ada5-72325fc74876")
-		(property "Reference" "#PWR0150"
+		(property "Reference" "#PWR0154"
 			(at 43.18 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7192,7 +7521,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0150")
+					(reference "#PWR0154")
 					(unit 1)
 				)
 			)
@@ -7301,7 +7630,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "89de5993-4166-59c0-a23d-433c7557f268")
-		(property "Reference" "#PWR0151"
+		(property "Reference" "#PWR0155"
 			(at 33.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7342,7 +7671,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0151")
+					(reference "#PWR0155")
 					(unit 1)
 				)
 			)
@@ -7366,7 +7695,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "ef500021-fa34-5e88-a2ec-5874ea077550")
-		(property "Reference" "#PWR0152"
+		(property "Reference" "#PWR0156"
 			(at 43.18 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7407,7 +7736,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0152")
+					(reference "#PWR0156")
 					(unit 1)
 				)
 			)
@@ -7516,7 +7845,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "2e86c06b-f11a-5355-b667-835c757a9621")
-		(property "Reference" "#PWR0153"
+		(property "Reference" "#PWR0157"
 			(at 33.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7557,7 +7886,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0153")
+					(reference "#PWR0157")
 					(unit 1)
 				)
 			)
@@ -7581,7 +7910,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "9ddaa5ec-5be0-5ab0-b91a-a726b532ac32")
-		(property "Reference" "#PWR0154"
+		(property "Reference" "#PWR0158"
 			(at 43.18 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
@@ -7622,7 +7951,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0154")
+					(reference "#PWR0158")
 					(unit 1)
 				)
 			)
@@ -7639,7 +7968,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 83.82 149.86 0)
+		(at 38.1 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7647,61 +7976,61 @@
 		(dnp no)
 		(uuid "c7bb6fd2-d1f8-53c5-a503-51949b5214cf")
 		(property "Reference" "C206"
-			(at 83.82 147.32 0)
+			(at 38.1 187.96 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 83.82 152.4 0)
+			(at 38.1 193.04 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Decoupling capacitor at LT7911D pin 10"
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 83.82 149.86 0)
+			(at 38.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -7724,43 +8053,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2_LT_A")
-		(at 78.74 149.86 90)
+		(at 33.02 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "c6556b7a-3e98-5998-97e6-682f9ed9f787")
-		(property "Reference" "#PWR0155"
-			(at 78.74 149.86 0)
+		(property "Reference" "#PWR0159"
+			(at 33.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2_LT_A"
-			(at 78.74 154.305 0)
+			(at 33.02 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 149.86 0)
+			(at 33.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 149.86 0)
+			(at 33.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 78.74 149.86 0)
+			(at 33.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -7772,7 +8101,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0155")
+					(reference "#PWR0159")
 					(unit 1)
 				)
 			)
@@ -7780,7 +8109,7 @@
 	)
 	(text "1V2_LT_A"
 		(exclude_from_sim no)
-		(at 74.295 149.86 0)
+		(at 28.575 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -7789,43 +8118,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 88.9 149.86 90)
+		(at 43.18 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "904d0a43-d84f-5843-8782-375d97e80fe1")
-		(property "Reference" "#PWR0156"
-			(at 88.9 149.86 0)
+		(property "Reference" "#PWR0160"
+			(at 43.18 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 88.9 154.305 0)
+			(at 43.18 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 149.86 0)
+			(at 43.18 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 149.86 0)
+			(at 43.18 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 88.9 149.86 0)
+			(at 43.18 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -7837,7 +8166,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0156")
+					(reference "#PWR0160")
 					(unit 1)
 				)
 			)
@@ -7845,7 +8174,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 93.345 149.86 0)
+		(at 47.625 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -7854,7 +8183,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 83.82 157.48 0)
+		(at 86.36 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7862,61 +8191,61 @@
 		(dnp no)
 		(uuid "c9fdc3e3-5d5b-5f64-964f-f62005855ff3")
 		(property "Reference" "C207"
-			(at 83.82 154.94 0)
+			(at 86.36 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 83.82 160.02 0)
+			(at 86.36 152.4 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Decoupling capacitor at LT7911D pin 13"
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 83.82 157.48 0)
+			(at 86.36 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -7939,43 +8268,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2_LT_A")
-		(at 78.74 157.48 90)
+		(at 81.28 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "5cb556bc-4b18-50ab-b854-3a3ef25e5874")
-		(property "Reference" "#PWR0157"
-			(at 78.74 157.48 0)
+		(property "Reference" "#PWR0161"
+			(at 81.28 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2_LT_A"
-			(at 78.74 161.925 0)
+			(at 81.28 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 157.48 0)
+			(at 81.28 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 157.48 0)
+			(at 81.28 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 78.74 157.48 0)
+			(at 81.28 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -7987,7 +8316,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0157")
+					(reference "#PWR0161")
 					(unit 1)
 				)
 			)
@@ -7995,7 +8324,7 @@
 	)
 	(text "1V2_LT_A"
 		(exclude_from_sim no)
-		(at 74.295 157.48 0)
+		(at 76.835 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -8004,43 +8333,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 88.9 157.48 90)
+		(at 91.44 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "8233d7e8-cf9a-58e4-8260-dc4703c4d299")
-		(property "Reference" "#PWR0158"
-			(at 88.9 157.48 0)
+		(property "Reference" "#PWR0162"
+			(at 91.44 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 88.9 161.925 0)
+			(at 91.44 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 157.48 0)
+			(at 91.44 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 157.48 0)
+			(at 91.44 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 88.9 157.48 0)
+			(at 91.44 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8052,7 +8381,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0158")
+					(reference "#PWR0162")
 					(unit 1)
 				)
 			)
@@ -8060,7 +8389,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 93.345 157.48 0)
+		(at 95.885 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -8069,7 +8398,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 83.82 165.1 0)
+		(at 86.36 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8077,61 +8406,61 @@
 		(dnp no)
 		(uuid "8f93b489-0e76-5257-ad2a-f9a82649ea13")
 		(property "Reference" "C208"
-			(at 83.82 162.56 0)
+			(at 86.36 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 83.82 167.64 0)
+			(at 86.36 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Decoupling capacitor at LT7911D pin 16"
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 83.82 165.1 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8154,43 +8483,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3_LT")
-		(at 78.74 165.1 90)
+		(at 81.28 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "25121276-94d2-56a5-b8e0-62f406cedf60")
-		(property "Reference" "#PWR0159"
-			(at 78.74 165.1 0)
+		(property "Reference" "#PWR0163"
+			(at 81.28 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3_LT"
-			(at 78.74 169.545 0)
+			(at 81.28 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 165.1 0)
+			(at 81.28 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 165.1 0)
+			(at 81.28 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 78.74 165.1 0)
+			(at 81.28 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8202,7 +8531,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0159")
+					(reference "#PWR0163")
 					(unit 1)
 				)
 			)
@@ -8210,7 +8539,7 @@
 	)
 	(text "3V3_LT"
 		(exclude_from_sim no)
-		(at 74.295 165.1 0)
+		(at 76.835 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -8219,43 +8548,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 88.9 165.1 90)
+		(at 91.44 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "6dba17b0-8b0e-5791-9ae1-e0abc733611d")
-		(property "Reference" "#PWR0160"
-			(at 88.9 165.1 0)
+		(property "Reference" "#PWR0164"
+			(at 91.44 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 88.9 169.545 0)
+			(at 91.44 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 165.1 0)
+			(at 91.44 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 165.1 0)
+			(at 91.44 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 88.9 165.1 0)
+			(at 91.44 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8267,7 +8596,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0160")
+					(reference "#PWR0164")
 					(unit 1)
 				)
 			)
@@ -8275,7 +8604,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 93.345 165.1 0)
+		(at 95.885 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -8284,7 +8613,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 83.82 172.72 0)
+		(at 86.36 165.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8292,61 +8621,61 @@
 		(dnp no)
 		(uuid "7eafb837-b899-52bb-9fb4-5b8a03a25fa6")
 		(property "Reference" "C209"
-			(at 83.82 170.18 0)
+			(at 86.36 162.56 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 83.82 175.26 0)
+			(at 86.36 167.64 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Decoupling capacitor at LT7911D VDD"
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 83.82 172.72 0)
+			(at 86.36 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8369,43 +8698,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2")
-		(at 78.74 172.72 90)
+		(at 81.28 165.1 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "f25ef276-af4d-5d18-b3c8-714682ffaed8")
-		(property "Reference" "#PWR0161"
-			(at 78.74 172.72 0)
+		(property "Reference" "#PWR0165"
+			(at 81.28 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2"
-			(at 78.74 177.165 0)
+			(at 81.28 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 172.72 0)
+			(at 81.28 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 172.72 0)
+			(at 81.28 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 78.74 172.72 0)
+			(at 81.28 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8417,7 +8746,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0161")
+					(reference "#PWR0165")
 					(unit 1)
 				)
 			)
@@ -8425,7 +8754,7 @@
 	)
 	(text "1V2"
 		(exclude_from_sim no)
-		(at 74.295 172.72 0)
+		(at 76.835 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -8434,43 +8763,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 88.9 172.72 90)
+		(at 91.44 165.1 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "02e2c46e-4230-5f49-bc98-c70853716d5c")
-		(property "Reference" "#PWR0162"
-			(at 88.9 172.72 0)
+		(property "Reference" "#PWR0166"
+			(at 91.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 88.9 177.165 0)
+			(at 91.44 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 172.72 0)
+			(at 91.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 172.72 0)
+			(at 91.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 88.9 172.72 0)
+			(at 91.44 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8482,7 +8811,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0162")
+					(reference "#PWR0166")
 					(unit 1)
 				)
 			)
@@ -8490,7 +8819,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 93.345 172.72 0)
+		(at 95.885 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -8499,7 +8828,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 83.82 180.34 0)
+		(at 86.36 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8507,61 +8836,61 @@
 		(dnp no)
 		(uuid "a9803566-6903-59fa-9539-e93a1231d3da")
 		(property "Reference" "C210"
-			(at 83.82 177.8 0)
+			(at 86.36 170.18 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 83.82 182.88 0)
+			(at 86.36 175.26 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Decoupling capacitor at LT7911D VCC33_TX"
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 83.82 180.34 0)
+			(at 86.36 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8584,43 +8913,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3_LT")
-		(at 78.74 180.34 90)
+		(at 81.28 172.72 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "081025a9-b2e0-5627-a9bc-6430a0ff0c6a")
-		(property "Reference" "#PWR0163"
-			(at 78.74 180.34 0)
+		(property "Reference" "#PWR0167"
+			(at 81.28 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3_LT"
-			(at 78.74 184.785 0)
+			(at 81.28 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 180.34 0)
+			(at 81.28 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 180.34 0)
+			(at 81.28 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 78.74 180.34 0)
+			(at 81.28 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8632,7 +8961,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0163")
+					(reference "#PWR0167")
 					(unit 1)
 				)
 			)
@@ -8640,7 +8969,7 @@
 	)
 	(text "3V3_LT"
 		(exclude_from_sim no)
-		(at 74.295 180.34 0)
+		(at 76.835 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -8649,43 +8978,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 88.9 180.34 90)
+		(at 91.44 172.72 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "d988b789-5514-58d5-b788-35b9ac2a7c5a")
-		(property "Reference" "#PWR0164"
-			(at 88.9 180.34 0)
+		(property "Reference" "#PWR0168"
+			(at 91.44 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 88.9 184.785 0)
+			(at 91.44 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 180.34 0)
+			(at 91.44 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 180.34 0)
+			(at 91.44 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 88.9 180.34 0)
+			(at 91.44 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8697,7 +9026,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0164")
+					(reference "#PWR0168")
 					(unit 1)
 				)
 			)
@@ -8705,7 +9034,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 93.345 180.34 0)
+		(at 95.885 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -8714,7 +9043,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 129.54 149.86 0)
+		(at 86.36 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8722,61 +9051,61 @@
 		(dnp no)
 		(uuid "84b96574-ada5-5c32-bd8c-6db259ca1fd8")
 		(property "Reference" "C211"
-			(at 129.54 147.32 0)
+			(at 86.36 177.8 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 129.54 152.4 0)
+			(at 86.36 182.88 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Decoupling capacitor at LT7911D VCC12_TX"
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 129.54 149.86 0)
+			(at 86.36 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8799,43 +9128,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2")
-		(at 124.46 149.86 90)
+		(at 81.28 180.34 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "500aaab6-c595-5fe3-bd8e-25d6a9ee33eb")
-		(property "Reference" "#PWR0165"
-			(at 124.46 149.86 0)
+		(property "Reference" "#PWR0169"
+			(at 81.28 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2"
-			(at 124.46 154.305 0)
+			(at 81.28 184.785 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 149.86 0)
+			(at 81.28 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 149.86 0)
+			(at 81.28 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 149.86 0)
+			(at 81.28 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8847,7 +9176,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0165")
+					(reference "#PWR0169")
 					(unit 1)
 				)
 			)
@@ -8855,7 +9184,7 @@
 	)
 	(text "1V2"
 		(exclude_from_sim no)
-		(at 120.015 149.86 0)
+		(at 76.835 180.34 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -8864,43 +9193,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 134.62 149.86 90)
+		(at 91.44 180.34 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "f2c70f3b-a3b8-5473-8eb3-fad9ce4d2cec")
-		(property "Reference" "#PWR0166"
-			(at 134.62 149.86 0)
+		(property "Reference" "#PWR0170"
+			(at 91.44 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 134.62 154.305 0)
+			(at 91.44 184.785 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 134.62 149.86 0)
+			(at 91.44 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 134.62 149.86 0)
+			(at 91.44 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 134.62 149.86 0)
+			(at 91.44 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -8912,7 +9241,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0166")
+					(reference "#PWR0170")
 					(unit 1)
 				)
 			)
@@ -8920,7 +9249,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 139.065 149.86 0)
+		(at 95.885 180.34 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -8929,7 +9258,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 129.54 157.48 0)
+		(at 86.36 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8937,61 +9266,61 @@
 		(dnp no)
 		(uuid "3b4dd975-9d82-5742-95eb-d23ab0820307")
 		(property "Reference" "C212"
-			(at 129.54 154.94 0)
+			(at 86.36 187.96 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10uF 10V"
-			(at 129.54 160.02 0)
+			(at 86.36 193.04 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "1V2 bulk capacitor at the LT7911D"
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL10A106KP8NNNC"
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C19702"
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 129.54 157.48 0)
+			(at 86.36 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9014,43 +9343,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2")
-		(at 124.46 157.48 90)
+		(at 81.28 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "37938e90-5949-5ea8-850a-797f2eeb9460")
-		(property "Reference" "#PWR0167"
-			(at 124.46 157.48 0)
+		(property "Reference" "#PWR0171"
+			(at 81.28 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2"
-			(at 124.46 161.925 0)
+			(at 81.28 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 157.48 0)
+			(at 81.28 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 157.48 0)
+			(at 81.28 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 157.48 0)
+			(at 81.28 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9062,7 +9391,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0167")
+					(reference "#PWR0171")
 					(unit 1)
 				)
 			)
@@ -9070,7 +9399,7 @@
 	)
 	(text "1V2"
 		(exclude_from_sim no)
-		(at 120.015 157.48 0)
+		(at 76.835 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -9079,43 +9408,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 134.62 157.48 90)
+		(at 91.44 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "2903d4e4-69e3-529e-a1e3-1afaeafae775")
-		(property "Reference" "#PWR0168"
-			(at 134.62 157.48 0)
+		(property "Reference" "#PWR0172"
+			(at 91.44 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 134.62 161.925 0)
+			(at 91.44 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 134.62 157.48 0)
+			(at 91.44 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 134.62 157.48 0)
+			(at 91.44 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 134.62 157.48 0)
+			(at 91.44 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9127,7 +9456,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0168")
+					(reference "#PWR0172")
 					(unit 1)
 				)
 			)
@@ -9135,7 +9464,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 139.065 157.48 0)
+		(at 95.885 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -9144,7 +9473,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 129.54 165.1 0)
+		(at 137.16 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9152,61 +9481,61 @@
 		(dnp no)
 		(uuid "c27b55d1-c4d6-5f52-aba1-c2db4d974688")
 		(property "Reference" "C213"
-			(at 129.54 162.56 0)
+			(at 137.16 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10uF 10V"
-			(at 129.54 167.64 0)
+			(at 137.16 152.4 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "1V2_LT_A bulk capacitor"
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL10A106KP8NNNC"
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C19702"
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 129.54 165.1 0)
+			(at 137.16 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9229,43 +9558,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2_LT_A")
-		(at 124.46 165.1 90)
+		(at 132.08 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "c5cecdb8-dd69-5704-83e1-832d22491afb")
-		(property "Reference" "#PWR0169"
-			(at 124.46 165.1 0)
+		(property "Reference" "#PWR0173"
+			(at 132.08 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2_LT_A"
-			(at 124.46 169.545 0)
+			(at 132.08 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 165.1 0)
+			(at 132.08 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 165.1 0)
+			(at 132.08 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 165.1 0)
+			(at 132.08 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9277,7 +9606,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0169")
+					(reference "#PWR0173")
 					(unit 1)
 				)
 			)
@@ -9285,7 +9614,7 @@
 	)
 	(text "1V2_LT_A"
 		(exclude_from_sim no)
-		(at 120.015 165.1 0)
+		(at 127.635 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -9294,43 +9623,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 134.62 165.1 90)
+		(at 142.24 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "7bf0b154-d60d-5e5c-92ac-71c9615e946d")
-		(property "Reference" "#PWR0170"
-			(at 134.62 165.1 0)
+		(property "Reference" "#PWR0174"
+			(at 142.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 134.62 169.545 0)
+			(at 142.24 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 134.62 165.1 0)
+			(at 142.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 134.62 165.1 0)
+			(at 142.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 134.62 165.1 0)
+			(at 142.24 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9342,7 +9671,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0170")
+					(reference "#PWR0174")
 					(unit 1)
 				)
 			)
@@ -9350,7 +9679,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 139.065 165.1 0)
+		(at 146.685 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -9359,7 +9688,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 129.54 172.72 0)
+		(at 137.16 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9367,61 +9696,61 @@
 		(dnp no)
 		(uuid "41b62d6b-726e-532c-9508-c446949e75cd")
 		(property "Reference" "C214"
-			(at 129.54 170.18 0)
+			(at 137.16 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10uF 10V"
-			(at 129.54 175.26 0)
+			(at 137.16 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "3V3_LT bulk capacitor"
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL10A106KP8NNNC"
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C19702"
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 129.54 172.72 0)
+			(at 137.16 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9444,43 +9773,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3_LT")
-		(at 124.46 172.72 90)
+		(at 132.08 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "382e455e-5b1b-5bda-921a-f9f0f2e3e36d")
-		(property "Reference" "#PWR0171"
-			(at 124.46 172.72 0)
+		(property "Reference" "#PWR0175"
+			(at 132.08 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3_LT"
-			(at 124.46 177.165 0)
+			(at 132.08 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 172.72 0)
+			(at 132.08 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 172.72 0)
+			(at 132.08 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 172.72 0)
+			(at 132.08 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9492,7 +9821,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0171")
+					(reference "#PWR0175")
 					(unit 1)
 				)
 			)
@@ -9500,7 +9829,7 @@
 	)
 	(text "3V3_LT"
 		(exclude_from_sim no)
-		(at 120.015 172.72 0)
+		(at 127.635 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -9509,43 +9838,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 134.62 172.72 90)
+		(at 142.24 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "28b66de4-91e0-5662-998a-2680e4cc18be")
-		(property "Reference" "#PWR0172"
-			(at 134.62 172.72 0)
+		(property "Reference" "#PWR0176"
+			(at 142.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 134.62 177.165 0)
+			(at 142.24 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 134.62 172.72 0)
+			(at 142.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 134.62 172.72 0)
+			(at 142.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 134.62 172.72 0)
+			(at 142.24 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9557,7 +9886,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0172")
+					(reference "#PWR0176")
 					(unit 1)
 				)
 			)
@@ -9565,7 +9894,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 139.065 172.72 0)
+		(at 146.685 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -9574,7 +9903,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:FB")
-		(at 129.54 180.34 0)
+		(at 137.16 165.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9582,61 +9911,61 @@
 		(dnp no)
 		(uuid "a424d1e0-dd95-5700-855b-7cbc99525005")
 		(property "Reference" "FB201"
-			(at 129.54 177.8 0)
+			(at 137.16 162.56 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "600R@100MHz"
-			(at 129.54 182.88 0)
+			(at 137.16 167.64 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Ferrite bead isolating the LT7911D 3.3 V"
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "BLM18KG601SN1D"
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Murata"
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C85833"
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 129.54 180.34 0)
+			(at 137.16 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9659,43 +9988,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3")
-		(at 124.46 180.34 90)
+		(at 132.08 165.1 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "352aea87-961f-51cd-ac8b-745f004315a2")
-		(property "Reference" "#PWR0173"
-			(at 124.46 180.34 0)
+		(property "Reference" "#PWR0177"
+			(at 132.08 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3"
-			(at 124.46 184.785 0)
+			(at 132.08 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 124.46 180.34 0)
+			(at 132.08 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 124.46 180.34 0)
+			(at 132.08 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 124.46 180.34 0)
+			(at 132.08 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9707,7 +10036,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0173")
+					(reference "#PWR0177")
 					(unit 1)
 				)
 			)
@@ -9715,7 +10044,7 @@
 	)
 	(text "3V3"
 		(exclude_from_sim no)
-		(at 120.015 180.34 0)
+		(at 127.635 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -9724,43 +10053,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3_LT")
-		(at 134.62 180.34 270)
+		(at 142.24 165.1 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "4edace1f-42f4-5439-a7c0-f7022bd77262")
-		(property "Reference" "#PWR0174"
-			(at 134.62 180.34 0)
+		(property "Reference" "#PWR0178"
+			(at 142.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3_LT"
-			(at 134.62 184.785 0)
+			(at 142.24 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 134.62 180.34 0)
+			(at 142.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 134.62 180.34 0)
+			(at 142.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 134.62 180.34 0)
+			(at 142.24 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9772,7 +10101,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0174")
+					(reference "#PWR0178")
 					(unit 1)
 				)
 			)
@@ -9780,7 +10109,7 @@
 	)
 	(text "3V3_LT"
 		(exclude_from_sim no)
-		(at 139.065 180.34 0)
+		(at 146.685 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -9789,7 +10118,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:FB")
-		(at 177.8 149.86 0)
+		(at 137.16 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9797,61 +10126,61 @@
 		(dnp no)
 		(uuid "0720345a-b117-5337-9c2c-44028f91e9d4")
 		(property "Reference" "FB202"
-			(at 177.8 147.32 0)
+			(at 137.16 170.18 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "600R@100MHz"
-			(at 177.8 152.4 0)
+			(at 137.16 175.26 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Ferrite bead isolating the 1.2 V analog/PLL supply"
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "BLM18KG601SN1D"
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Murata"
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C85833"
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 177.8 149.86 0)
+			(at 137.16 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9874,43 +10203,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2")
-		(at 172.72 149.86 90)
+		(at 132.08 172.72 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "81cb1d40-7dcb-504c-9741-19b85cb09b09")
-		(property "Reference" "#PWR0175"
-			(at 172.72 149.86 0)
+		(property "Reference" "#PWR0179"
+			(at 132.08 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2"
-			(at 172.72 154.305 0)
+			(at 132.08 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 172.72 149.86 0)
+			(at 132.08 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 172.72 149.86 0)
+			(at 132.08 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 172.72 149.86 0)
+			(at 132.08 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9922,7 +10251,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0175")
+					(reference "#PWR0179")
 					(unit 1)
 				)
 			)
@@ -9930,7 +10259,7 @@
 	)
 	(text "1V2"
 		(exclude_from_sim no)
-		(at 168.275 149.86 0)
+		(at 127.635 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -9939,43 +10268,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_1V2_LT_A")
-		(at 182.88 149.86 270)
+		(at 142.24 172.72 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "861dcb80-3885-5ae3-b5f9-559ea6539a72")
-		(property "Reference" "#PWR0176"
-			(at 182.88 149.86 0)
+		(property "Reference" "#PWR0180"
+			(at 142.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "1V2_LT_A"
-			(at 182.88 154.305 0)
+			(at 142.24 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 149.86 0)
+			(at 142.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 149.86 0)
+			(at 142.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 182.88 149.86 0)
+			(at 142.24 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -9987,7 +10316,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0176")
+					(reference "#PWR0180")
 					(unit 1)
 				)
 			)
@@ -9995,7 +10324,7 @@
 	)
 	(text "1V2_LT_A"
 		(exclude_from_sim no)
-		(at 187.325 149.86 0)
+		(at 146.685 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -10004,7 +10333,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 177.8 157.48 0)
+		(at 137.16 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10012,61 +10341,61 @@
 		(dnp no)
 		(uuid "dca26582-e180-5297-8f3f-9a00d2e9b7ab")
 		(property "Reference" "R201"
-			(at 177.8 154.94 0)
+			(at 137.16 177.8 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "2.2k"
-			(at 177.8 160.02 0)
+			(at 137.16 182.88 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 177.8 157.48 0)
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 177.8 157.48 0)
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Description" "I2C pull-up (RV1106 bus I2C2_M0, 3.3 V)"
-			(at 177.8 157.48 0)
+		(property "Description" "I2C pull-up to the module's 3.3 V (the RV1106 IO domain), so the bus never feeds an unpowered SoC"
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF2201TCE"
-			(at 177.8 157.48 0)
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 177.8 157.48 0)
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25879"
-			(at 177.8 157.48 0)
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 177.8 157.48 0)
+			(at 137.16 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10089,7 +10418,7 @@
 	)
 	(global_label "LT_SCL"
 		(shape passive)
-		(at 172.72 157.48 180)
+		(at 132.08 180.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -10097,7 +10426,7 @@
 		)
 		(uuid "35b9b9ff-1448-519a-abc7-2b435b486c5a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 172.72 157.48 0)
+			(at 132.08 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -10106,44 +10435,44 @@
 		)
 	)
 	(symbol
-		(lib_id "box-v1:PWR_3V3")
-		(at 182.88 157.48 270)
+		(lib_id "box-v1:PWR_VCC_3V3_MOD")
+		(at 142.24 180.34 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "b17c0901-86c5-5966-8276-384d86b54a8b")
-		(property "Reference" "#PWR0177"
-			(at 182.88 157.48 0)
+		(property "Reference" "#PWR0181"
+			(at 142.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Value" "3V3"
-			(at 182.88 161.925 0)
+		(property "Value" "VCC_3V3_MOD"
+			(at 142.24 184.785 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 157.48 0)
+			(at 142.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 157.48 0)
+			(at 142.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 182.88 157.48 0)
+			(at 142.24 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10155,15 +10484,15 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0177")
+					(reference "#PWR0181")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(text "3V3"
+	(text "VCC_3V3_MOD"
 		(exclude_from_sim no)
-		(at 187.325 157.48 0)
+		(at 146.685 180.34 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -10172,7 +10501,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 177.8 165.1 0)
+		(at 137.16 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10180,61 +10509,61 @@
 		(dnp no)
 		(uuid "27c56093-8a21-5f46-bf30-d8a037c46fe3")
 		(property "Reference" "R202"
-			(at 177.8 162.56 0)
+			(at 137.16 187.96 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "2.2k"
-			(at 177.8 167.64 0)
+			(at 137.16 193.04 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 177.8 165.1 0)
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 177.8 165.1 0)
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Description" "I2C pull-up"
-			(at 177.8 165.1 0)
+		(property "Description" "I2C pull-up (as R201)"
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF2201TCE"
-			(at 177.8 165.1 0)
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 177.8 165.1 0)
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25879"
-			(at 177.8 165.1 0)
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 177.8 165.1 0)
+			(at 137.16 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10257,7 +10586,7 @@
 	)
 	(global_label "LT_SDA"
 		(shape passive)
-		(at 172.72 165.1 180)
+		(at 132.08 190.5 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -10265,7 +10594,7 @@
 		)
 		(uuid "e14e51b3-dcff-5713-bd17-31c8f72f1498")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 172.72 165.1 0)
+			(at 132.08 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -10274,44 +10603,44 @@
 		)
 	)
 	(symbol
-		(lib_id "box-v1:PWR_3V3")
-		(at 182.88 165.1 270)
+		(lib_id "box-v1:PWR_VCC_3V3_MOD")
+		(at 142.24 190.5 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "59060ba2-1d28-501a-9289-2341017ec995")
-		(property "Reference" "#PWR0178"
-			(at 182.88 165.1 0)
+		(property "Reference" "#PWR0182"
+			(at 142.24 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Value" "3V3"
-			(at 182.88 169.545 0)
+		(property "Value" "VCC_3V3_MOD"
+			(at 142.24 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 165.1 0)
+			(at 142.24 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 165.1 0)
+			(at 142.24 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 182.88 165.1 0)
+			(at 142.24 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10323,15 +10652,15 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0178")
+					(reference "#PWR0182")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(text "3V3"
+	(text "VCC_3V3_MOD"
 		(exclude_from_sim no)
-		(at 187.325 165.1 0)
+		(at 146.685 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -10340,7 +10669,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 177.8 172.72 0)
+		(at 187.96 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10348,61 +10677,61 @@
 		(dnp no)
 		(uuid "986da081-fa79-57d7-9685-240880a3f208")
 		(property "Reference" "R203"
-			(at 177.8 170.18 0)
+			(at 187.96 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10k"
-			(at 177.8 175.26 0)
+			(at 187.96 152.4 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "RST_N pull-up: the LT7911D runs as soon as it is powered"
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF1002TCE"
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25744"
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 177.8 172.72 0)
+			(at 187.96 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10425,7 +10754,7 @@
 	)
 	(global_label "LT_RST_N"
 		(shape passive)
-		(at 172.72 172.72 180)
+		(at 182.88 149.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -10433,7 +10762,7 @@
 		)
 		(uuid "afee6afc-f0a1-5abd-9696-d43b6daf024f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 172.72 172.72 0)
+			(at 182.88 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -10443,43 +10772,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3")
-		(at 182.88 172.72 270)
+		(at 193.04 149.86 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "6cffb5af-d7fb-52a3-9c7b-062648c38f31")
-		(property "Reference" "#PWR0179"
-			(at 182.88 172.72 0)
+		(property "Reference" "#PWR0183"
+			(at 193.04 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3"
-			(at 182.88 177.165 0)
+			(at 193.04 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 172.72 0)
+			(at 193.04 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 172.72 0)
+			(at 193.04 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 182.88 172.72 0)
+			(at 193.04 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10491,7 +10820,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0179")
+					(reference "#PWR0183")
 					(unit 1)
 				)
 			)
@@ -10499,7 +10828,7 @@
 	)
 	(text "3V3"
 		(exclude_from_sim no)
-		(at 187.325 172.72 0)
+		(at 197.485 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -10508,7 +10837,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 177.8 180.34 0)
+		(at 187.96 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10516,61 +10845,61 @@
 		(dnp no)
 		(uuid "9bd6e3af-59da-5c75-bd52-82406e3e9592")
 		(property "Reference" "C215"
-			(at 177.8 177.8 0)
+			(at 187.96 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
-		(property "Value" "1uF 25V"
-			(at 177.8 182.88 0)
+		(property "Value" "100nF"
+			(at 187.96 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 177.8 180.34 0)
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 177.8 180.34 0)
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "Description" "Power-on reset RC (τ = 10 ms)"
-			(at 177.8 180.34 0)
+		(property "Description" "Power-on reset RC (τ = 1 ms)"
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL05A105KA5NQNC"
-			(at 177.8 180.34 0)
+		(property "MPN" "CL05B104KO5NNNC"
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 177.8 180.34 0)
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C52923"
-			(at 177.8 180.34 0)
+		(property "LCSC" "C1525"
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 177.8 180.34 0)
+			(at 187.96 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10593,7 +10922,7 @@
 	)
 	(global_label "LT_RST_N"
 		(shape passive)
-		(at 172.72 180.34 180)
+		(at 182.88 157.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -10601,7 +10930,7 @@
 		)
 		(uuid "9e167ad8-412c-5e45-aa56-d064f887d00f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 172.72 180.34 0)
+			(at 182.88 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -10611,43 +10940,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 182.88 180.34 90)
+		(at 193.04 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "15ef6029-948c-57ea-a5f8-b3e4197571ff")
-		(property "Reference" "#PWR0180"
-			(at 182.88 180.34 0)
+		(property "Reference" "#PWR0184"
+			(at 193.04 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 182.88 184.785 0)
+			(at 193.04 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 180.34 0)
+			(at 193.04 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 180.34 0)
+			(at 193.04 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 182.88 180.34 0)
+			(at 193.04 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10659,7 +10988,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0180")
+					(reference "#PWR0184")
 					(unit 1)
 				)
 			)
@@ -10667,7 +10996,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 187.325 180.34 0)
+		(at 197.485 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -10676,7 +11005,128 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 223.52 149.86 0)
+		(at 187.96 165.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "39eb9283-2e77-5ae3-a47c-7155f3f0e254")
+		(property "Reference" "R213"
+			(at 187.96 162.56 0)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Value" "1k"
+			(at 187.96 167.64 0)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Description" "Series resistor: the RV1106 GPIO no longer discharges C215 directly"
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "MPN" "0402WGF1001TCE"
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C11702"
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(property "Confidence" "Confirmed"
+			(at 187.96 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1f66cadf-9067-5c14-be1f-2f16b735b9dc")
+		)
+		(pin "2"
+			(uuid "c5cdc518-c3a5-5256-af69-8b324de46536")
+		)
+		(instances
+			(project "box-v1"
+				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
+					(reference "R213")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "SOC_LT_RST"
+		(shape passive)
+		(at 182.88 165.1 180)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify right)
+		)
+		(uuid "1ab02397-2c18-588e-acf3-ce49d53dca86")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "LT_RST_N"
+		(shape passive)
+		(at 193.04 165.1 0)
+		(fields_autoplaced yes)
+		(effects
+			(font (size 1.27 1.27))
+			(justify left)
+		)
+		(uuid "c52bff1c-e10c-581e-8eed-f22743cda7bd")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 193.04 165.1 0)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "box-v1:R")
+		(at 187.96 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10684,61 +11134,61 @@
 		(dnp yes)
 		(uuid "75a173c3-81f8-569e-b8cd-5fb15582020a")
 		(property "Reference" "R204"
-			(at 223.52 147.32 0)
+			(at 187.96 170.18 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10k"
-			(at 223.52 152.4 0)
+			(at 187.96 175.26 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Optional level for SLEEP_33 (unclear)"
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF1002TCE"
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25744"
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Unknown"
-			(at 223.52 149.86 0)
+			(at 187.96 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10761,7 +11211,7 @@
 	)
 	(global_label "LT_SLEEP"
 		(shape passive)
-		(at 218.44 149.86 180)
+		(at 182.88 172.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -10769,7 +11219,7 @@
 		)
 		(uuid "fbcb2b11-40c0-54f3-940b-967e9b152b35")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 218.44 149.86 0)
+			(at 182.88 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -10779,43 +11229,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 228.6 149.86 90)
+		(at 193.04 172.72 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "4ad21ae3-82b4-5a9f-85d1-3d8c433aea47")
-		(property "Reference" "#PWR0181"
-			(at 228.6 149.86 0)
+		(property "Reference" "#PWR0185"
+			(at 193.04 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 228.6 154.305 0)
+			(at 193.04 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 149.86 0)
+			(at 193.04 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 149.86 0)
+			(at 193.04 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 228.6 149.86 0)
+			(at 193.04 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10827,7 +11277,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0181")
+					(reference "#PWR0185")
 					(unit 1)
 				)
 			)
@@ -10835,7 +11285,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 233.045 149.86 0)
+		(at 197.485 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -10844,7 +11294,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 223.52 157.48 0)
+		(at 187.96 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10852,61 +11302,61 @@
 		(dnp no)
 		(uuid "de52f8b8-7054-5043-8bdc-c7a0291a9064")
 		(property "Reference" "R205"
-			(at 223.52 154.94 0)
+			(at 187.96 177.8 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100k"
-			(at 223.52 160.02 0)
+			(at 187.96 182.88 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Holds LT_INT low while the LT7911D is in reset"
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF1003TCE"
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25741"
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 223.52 157.48 0)
+			(at 187.96 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10929,7 +11379,7 @@
 	)
 	(global_label "LT_INT"
 		(shape passive)
-		(at 218.44 157.48 180)
+		(at 182.88 180.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -10937,7 +11387,7 @@
 		)
 		(uuid "88456bf7-f47f-5ad9-a5a4-9758c9a86152")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 218.44 157.48 0)
+			(at 182.88 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -10947,43 +11397,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 228.6 157.48 90)
+		(at 193.04 180.34 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "3c2f8f68-7928-5507-be19-ab7d4d9c9039")
-		(property "Reference" "#PWR0182"
-			(at 228.6 157.48 0)
+		(property "Reference" "#PWR0186"
+			(at 193.04 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 228.6 161.925 0)
+			(at 193.04 184.785 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 157.48 0)
+			(at 193.04 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 157.48 0)
+			(at 193.04 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 228.6 157.48 0)
+			(at 193.04 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -10995,7 +11445,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0182")
+					(reference "#PWR0186")
 					(unit 1)
 				)
 			)
@@ -11003,7 +11453,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 233.045 157.48 0)
+		(at 197.485 180.34 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -11012,7 +11462,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 223.52 165.1 0)
+		(at 187.96 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11020,61 +11470,61 @@
 		(dnp no)
 		(uuid "7315d409-cd32-517d-b55a-4112a96b7fba")
 		(property "Reference" "C216"
-			(at 223.52 162.56 0)
+			(at 187.96 187.96 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 223.52 167.64 0)
+			(at 187.96 193.04 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "AUX AC capacitor (direction/bias unclear, per the Lontium reference design)"
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Unknown"
-			(at 223.52 165.1 0)
+			(at 187.96 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11097,7 +11547,7 @@
 	)
 	(global_label "PHONE_SBU1"
 		(shape passive)
-		(at 218.44 165.1 180)
+		(at 182.88 190.5 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11105,7 +11555,7 @@
 		)
 		(uuid "665df5ea-0d8b-56eb-b76d-d9db64a4754e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 218.44 165.1 0)
+			(at 182.88 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -11115,7 +11565,7 @@
 	)
 	(global_label "LT_AUX_P"
 		(shape passive)
-		(at 228.6 165.1 0)
+		(at 193.04 190.5 0)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11123,7 +11573,7 @@
 		)
 		(uuid "02475f8a-7083-5377-96c3-f8173b776e68")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 228.6 165.1 0)
+			(at 193.04 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
@@ -11133,7 +11583,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 223.52 172.72 0)
+		(at 238.76 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11141,61 +11591,61 @@
 		(dnp no)
 		(uuid "2d926127-99b2-5303-b170-75eafe887599")
 		(property "Reference" "C217"
-			(at 223.52 170.18 0)
+			(at 238.76 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 223.52 175.26 0)
+			(at 238.76 152.4 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "AUX AC capacitor"
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Unknown"
-			(at 223.52 172.72 0)
+			(at 238.76 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11218,7 +11668,7 @@
 	)
 	(global_label "PHONE_SBU2"
 		(shape passive)
-		(at 218.44 172.72 180)
+		(at 233.68 149.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11226,7 +11676,7 @@
 		)
 		(uuid "97d20796-ab71-51d6-8e47-13fd20daa02f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 218.44 172.72 0)
+			(at 233.68 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -11236,7 +11686,7 @@
 	)
 	(global_label "LT_AUX_N"
 		(shape passive)
-		(at 228.6 172.72 0)
+		(at 243.84 149.86 0)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11244,7 +11694,7 @@
 		)
 		(uuid "06b1180c-cfc8-595f-9668-526d8f7cbc44")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 228.6 172.72 0)
+			(at 243.84 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
@@ -11254,7 +11704,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 223.52 180.34 0)
+		(at 238.76 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11262,61 +11712,61 @@
 		(dnp yes)
 		(uuid "9114a1da-1815-5a11-bc1f-78da19f09757")
 		(property "Reference" "R206"
-			(at 223.52 177.8 0)
+			(at 238.76 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "1M"
-			(at 223.52 182.88 0)
+			(at 238.76 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Sink-side AUX bias (unclear)"
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF1004TCE"
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C26083"
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Unknown"
-			(at 223.52 180.34 0)
+			(at 238.76 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11339,7 +11789,7 @@
 	)
 	(global_label "LT_AUX_P"
 		(shape passive)
-		(at 218.44 180.34 180)
+		(at 233.68 157.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11347,7 +11797,7 @@
 		)
 		(uuid "d0809001-e50f-5ed0-acdc-33382fd6e0d9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 218.44 180.34 0)
+			(at 233.68 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -11357,43 +11807,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 228.6 180.34 90)
+		(at 243.84 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "621744eb-0dd7-5b4e-9184-579bbff1a00d")
-		(property "Reference" "#PWR0183"
-			(at 228.6 180.34 0)
+		(property "Reference" "#PWR0187"
+			(at 243.84 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 228.6 184.785 0)
+			(at 243.84 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 180.34 0)
+			(at 243.84 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 180.34 0)
+			(at 243.84 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 228.6 180.34 0)
+			(at 243.84 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11405,7 +11855,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0183")
+					(reference "#PWR0187")
 					(unit 1)
 				)
 			)
@@ -11413,7 +11863,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 233.045 180.34 0)
+		(at 248.285 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -11422,7 +11872,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 269.24 149.86 0)
+		(at 238.76 165.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11430,61 +11880,61 @@
 		(dnp yes)
 		(uuid "06b49c93-0743-5d6e-8a50-1b53d1166d7f")
 		(property "Reference" "R207"
-			(at 269.24 147.32 0)
+			(at 238.76 162.56 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "1M"
-			(at 269.24 152.4 0)
+			(at 238.76 167.64 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Sink-side AUX bias (unclear)"
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF1004TCE"
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C26083"
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Unknown"
-			(at 269.24 149.86 0)
+			(at 238.76 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11507,7 +11957,7 @@
 	)
 	(global_label "LT_AUX_N"
 		(shape passive)
-		(at 264.16 149.86 180)
+		(at 233.68 165.1 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11515,7 +11965,7 @@
 		)
 		(uuid "625de147-3201-54a0-b54e-1ddd8fad64ab")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 264.16 149.86 0)
+			(at 233.68 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -11525,43 +11975,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3_LT")
-		(at 274.32 149.86 270)
+		(at 243.84 165.1 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "b4d97227-cfd5-5226-8870-aa90904b4030")
-		(property "Reference" "#PWR0184"
-			(at 274.32 149.86 0)
+		(property "Reference" "#PWR0188"
+			(at 243.84 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3_LT"
-			(at 274.32 154.305 0)
+			(at 243.84 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 274.32 149.86 0)
+			(at 243.84 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 274.32 149.86 0)
+			(at 243.84 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 274.32 149.86 0)
+			(at 243.84 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11573,7 +12023,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0184")
+					(reference "#PWR0188")
 					(unit 1)
 				)
 			)
@@ -11581,7 +12031,7 @@
 	)
 	(text "3V3_LT"
 		(exclude_from_sim no)
-		(at 278.765 149.86 0)
+		(at 248.285 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -11590,7 +12040,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:TP")
-		(at 269.24 157.48 0)
+		(at 238.76 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11598,63 +12048,63 @@
 		(dnp no)
 		(uuid "28afe969-fa2d-560f-a73f-92d223a98f9e")
 		(property "Reference" "TP201"
-			(at 270.51 156.21 0)
+			(at 240.03 171.45 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
 			)
 		)
 		(property "Value" "LT_SLEEP"
-			(at 270.51 160.02 0)
+			(at 240.03 175.26 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Measure/force SLEEP_33"
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "none (copper test pad)"
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" ""
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 269.24 157.48 0)
+			(at 238.76 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11674,7 +12124,7 @@
 	)
 	(global_label "LT_SLEEP"
 		(shape passive)
-		(at 266.7 157.48 180)
+		(at 236.22 172.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11682,7 +12132,7 @@
 		)
 		(uuid "a049dd00-98a8-58ca-9a82-c0eebbf657cd")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 266.7 157.48 0)
+			(at 236.22 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -11692,7 +12142,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:TP")
-		(at 269.24 165.1 0)
+		(at 238.76 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11700,63 +12150,63 @@
 		(dnp no)
 		(uuid "87dee030-e77f-512a-80fe-fe2724cdf311")
 		(property "Reference" "TP202"
-			(at 270.51 163.83 0)
+			(at 240.03 179.07 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
 			)
 		)
 		(property "Value" "LT_RX_HPD"
-			(at 270.51 167.64 0)
+			(at 240.03 182.88 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify left)
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Measure RX_HPD"
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "none (copper test pad)"
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" ""
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 269.24 165.1 0)
+			(at 238.76 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11776,7 +12226,7 @@
 	)
 	(global_label "LT_RX_HPD"
 		(shape passive)
-		(at 266.7 165.1 180)
+		(at 236.22 180.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -11784,7 +12234,7 @@
 		)
 		(uuid "0f636460-2c99-5d70-a446-cfe9771089b9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 266.7 165.1 0)
+			(at 236.22 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -11794,7 +12244,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 269.24 172.72 0)
+		(at 238.76 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11802,61 +12252,61 @@
 		(dnp no)
 		(uuid "6dffc395-e062-5761-9f23-11c7e92cda12")
 		(property "Reference" "C218"
-			(at 269.24 170.18 0)
+			(at 238.76 187.96 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF"
-			(at 269.24 175.26 0)
+			(at 238.76 193.04 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Capacitor at the U205 VBUS pin"
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KO5NNNC"
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 269.24 172.72 0)
+			(at 238.76 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11879,43 +12329,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_3V3")
-		(at 264.16 172.72 90)
+		(at 233.68 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "f47a3984-6d8e-59df-bfde-e032f7c8126c")
-		(property "Reference" "#PWR0185"
-			(at 264.16 172.72 0)
+		(property "Reference" "#PWR0189"
+			(at 233.68 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "3V3"
-			(at 264.16 177.165 0)
+			(at 233.68 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 264.16 172.72 0)
+			(at 233.68 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 264.16 172.72 0)
+			(at 233.68 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 264.16 172.72 0)
+			(at 233.68 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11927,7 +12377,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0185")
+					(reference "#PWR0189")
 					(unit 1)
 				)
 			)
@@ -11935,7 +12385,7 @@
 	)
 	(text "3V3"
 		(exclude_from_sim no)
-		(at 259.715 172.72 0)
+		(at 229.235 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -11944,43 +12394,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 274.32 172.72 90)
+		(at 243.84 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "c6a85dda-e339-54bf-a9d8-6be950fa2851")
-		(property "Reference" "#PWR0186"
-			(at 274.32 172.72 0)
+		(property "Reference" "#PWR0190"
+			(at 243.84 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 274.32 177.165 0)
+			(at 243.84 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 274.32 172.72 0)
+			(at 243.84 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 274.32 172.72 0)
+			(at 243.84 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 274.32 172.72 0)
+			(at 243.84 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -11992,7 +12442,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0186")
+					(reference "#PWR0190")
 					(unit 1)
 				)
 			)
@@ -12000,7 +12450,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 278.765 172.72 0)
+		(at 248.285 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -12009,7 +12459,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:D_TVS")
-		(at 269.24 180.34 0)
+		(at 287.02 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12017,61 +12467,61 @@
 		(dnp no)
 		(uuid "24d758d5-7059-536f-a228-2dee9a1d790f")
 		(property "Reference" "D201"
-			(at 269.24 177.8 0)
+			(at 287.02 147.32 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "SMF6.0A"
-			(at 269.24 182.88 0)
+			(at 287.02 152.4 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Diode_SMD:D_SOD-123F"
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "iPhone VBUS TVS (Option B with VIN up to 20 V: change to SMF22A)"
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "SMF6.0A"
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Littelfuse"
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C207260"
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 269.24 180.34 0)
+			(at 287.02 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12094,43 +12544,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 264.16 180.34 90)
+		(at 281.94 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "a04eeac2-574d-57d0-b051-961f38d1290c")
-		(property "Reference" "#PWR0187"
-			(at 264.16 180.34 0)
+		(property "Reference" "#PWR0191"
+			(at 281.94 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "PHONE_VBUS"
-			(at 264.16 184.785 0)
+			(at 281.94 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 264.16 180.34 0)
+			(at 281.94 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 264.16 180.34 0)
+			(at 281.94 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 264.16 180.34 0)
+			(at 281.94 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12142,7 +12592,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0187")
+					(reference "#PWR0191")
 					(unit 1)
 				)
 			)
@@ -12150,7 +12600,7 @@
 	)
 	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 259.715 180.34 0)
+		(at 277.495 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -12159,43 +12609,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 274.32 180.34 90)
+		(at 292.1 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "53e5e1e7-c094-5f01-8bcb-0342286e755a")
-		(property "Reference" "#PWR0188"
-			(at 274.32 180.34 0)
+		(property "Reference" "#PWR0192"
+			(at 292.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 274.32 184.785 0)
+			(at 292.1 154.305 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 274.32 180.34 0)
+			(at 292.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 274.32 180.34 0)
+			(at 292.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 274.32 180.34 0)
+			(at 292.1 149.86 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12207,7 +12657,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0188")
+					(reference "#PWR0192")
 					(unit 1)
 				)
 			)
@@ -12215,7 +12665,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 278.765 180.34 0)
+		(at 296.545 149.86 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -12224,7 +12674,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 317.5 149.86 0)
+		(at 287.02 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12232,61 +12682,61 @@
 		(dnp no)
 		(uuid "eb5ff378-1aaf-5b20-a9a9-97ad61db55e1")
 		(property "Reference" "C219"
-			(at 317.5 147.32 0)
+			(at 287.02 154.94 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10uF 25V"
-			(at 317.5 152.4 0)
+			(at 287.02 160.02 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "iPhone-side VBUS capacitor (Type-C source ≤ 120 µF)"
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL21A106KAYNNNE"
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C15850"
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 317.5 149.86 0)
+			(at 287.02 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12309,43 +12759,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 312.42 149.86 90)
+		(at 281.94 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "84a5bde1-859e-530a-91ca-2c0af14394a6")
-		(property "Reference" "#PWR0189"
-			(at 312.42 149.86 0)
+		(property "Reference" "#PWR0193"
+			(at 281.94 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "PHONE_VBUS"
-			(at 312.42 154.305 0)
+			(at 281.94 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 312.42 149.86 0)
+			(at 281.94 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 312.42 149.86 0)
+			(at 281.94 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 312.42 149.86 0)
+			(at 281.94 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12357,7 +12807,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0189")
+					(reference "#PWR0193")
 					(unit 1)
 				)
 			)
@@ -12365,7 +12815,7 @@
 	)
 	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 307.975 149.86 0)
+		(at 277.495 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -12374,43 +12824,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 322.58 149.86 90)
+		(at 292.1 157.48 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "1c2d1170-986f-52e1-b617-a71051ce988c")
-		(property "Reference" "#PWR0190"
-			(at 322.58 149.86 0)
+		(property "Reference" "#PWR0194"
+			(at 292.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 322.58 154.305 0)
+			(at 292.1 161.925 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 322.58 149.86 0)
+			(at 292.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 322.58 149.86 0)
+			(at 292.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 322.58 149.86 0)
+			(at 292.1 157.48 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12422,7 +12872,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0190")
+					(reference "#PWR0194")
 					(unit 1)
 				)
 			)
@@ -12430,7 +12880,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 327.025 149.86 0)
+		(at 296.545 157.48 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -12439,7 +12889,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:C")
-		(at 317.5 157.48 0)
+		(at 287.02 165.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12447,61 +12897,61 @@
 		(dnp no)
 		(uuid "2238afe1-ba04-52a9-8204-80125d534627")
 		(property "Reference" "C220"
-			(at 317.5 154.94 0)
+			(at 287.02 162.56 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "100nF 50V"
-			(at 317.5 160.02 0)
+			(at 287.02 167.64 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "iPhone VBUS high-frequency capacitor"
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "CL05B104KB54PNC"
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C307331"
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 317.5 157.48 0)
+			(at 287.02 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12524,43 +12974,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 312.42 157.48 90)
+		(at 281.94 165.1 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "05bf2599-59e9-5b91-98b8-a44a69749afd")
-		(property "Reference" "#PWR0191"
-			(at 312.42 157.48 0)
+		(property "Reference" "#PWR0195"
+			(at 281.94 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "PHONE_VBUS"
-			(at 312.42 161.925 0)
+			(at 281.94 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 312.42 157.48 0)
+			(at 281.94 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 312.42 157.48 0)
+			(at 281.94 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 312.42 157.48 0)
+			(at 281.94 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12572,7 +13022,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0191")
+					(reference "#PWR0195")
 					(unit 1)
 				)
 			)
@@ -12580,7 +13030,7 @@
 	)
 	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 307.975 157.48 0)
+		(at 277.495 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -12589,43 +13039,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 322.58 157.48 90)
+		(at 292.1 165.1 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "8f8efa30-63ce-5d4c-a167-ab10ff03f7cc")
-		(property "Reference" "#PWR0192"
-			(at 322.58 157.48 0)
+		(property "Reference" "#PWR0196"
+			(at 292.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 322.58 161.925 0)
+			(at 292.1 169.545 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 322.58 157.48 0)
+			(at 292.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 322.58 157.48 0)
+			(at 292.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 322.58 157.48 0)
+			(at 292.1 165.1 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12637,7 +13087,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0192")
+					(reference "#PWR0196")
 					(unit 1)
 				)
 			)
@@ -12645,7 +13095,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 327.025 157.48 0)
+		(at 296.545 165.1 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -12654,7 +13104,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 317.5 165.1 0)
+		(at 287.02 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12662,61 +13112,61 @@
 		(dnp no)
 		(uuid "66803764-4b8c-5a4f-903f-7b6ef712bbbe")
 		(property "Reference" "R210"
-			(at 317.5 162.56 0)
+			(at 287.02 170.18 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "10k"
-			(at 317.5 167.64 0)
+			(at 287.02 175.26 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Discharges VBUS to vSafe0V (< 0.8 V in ~0.4 s)"
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0603WAF1002T5E"
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25804"
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 317.5 165.1 0)
+			(at 287.02 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12739,43 +13189,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_PHONE_VBUS")
-		(at 312.42 165.1 90)
+		(at 281.94 172.72 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "9913dacc-1d3f-5eb4-aa65-522cd79b6dc1")
-		(property "Reference" "#PWR0193"
-			(at 312.42 165.1 0)
+		(property "Reference" "#PWR0197"
+			(at 281.94 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "PHONE_VBUS"
-			(at 312.42 169.545 0)
+			(at 281.94 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 312.42 165.1 0)
+			(at 281.94 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 312.42 165.1 0)
+			(at 281.94 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 312.42 165.1 0)
+			(at 281.94 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12787,7 +13237,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0193")
+					(reference "#PWR0197")
 					(unit 1)
 				)
 			)
@@ -12795,7 +13245,7 @@
 	)
 	(text "PHONE_VBUS"
 		(exclude_from_sim no)
-		(at 307.975 165.1 0)
+		(at 277.495 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify right)
@@ -12804,43 +13254,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 322.58 165.1 90)
+		(at 292.1 172.72 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "0fc18570-b0c1-56d8-9c61-78d608021754")
-		(property "Reference" "#PWR0194"
-			(at 322.58 165.1 0)
+		(property "Reference" "#PWR0198"
+			(at 292.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 322.58 169.545 0)
+			(at 292.1 177.165 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 322.58 165.1 0)
+			(at 292.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 322.58 165.1 0)
+			(at 292.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 322.58 165.1 0)
+			(at 292.1 172.72 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12852,7 +13302,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0194")
+					(reference "#PWR0198")
 					(unit 1)
 				)
 			)
@@ -12860,7 +13310,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 327.025 165.1 0)
+		(at 296.545 172.72 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -12869,7 +13319,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 317.5 172.72 0)
+		(at 287.02 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12877,61 +13327,61 @@
 		(dnp yes)
 		(uuid "778d6569-d3ff-5eaa-bb05-6ccfb6a9bc48")
 		(property "Reference" "R211"
-			(at 317.5 170.18 0)
+			(at 287.02 177.8 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "5.1k"
-			(at 317.5 175.26 0)
+			(at 287.02 182.88 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Temporary Rd for HID-only bring-up (LT7911D not fitted): the iPhone becomes source + host"
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF5101TCE"
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25905"
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 317.5 172.72 0)
+			(at 287.02 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -12954,7 +13404,7 @@
 	)
 	(global_label "PHONE_CC1"
 		(shape passive)
-		(at 312.42 172.72 180)
+		(at 281.94 180.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -12962,7 +13412,7 @@
 		)
 		(uuid "6068caa9-2f41-5084-8bc3-612945881bcb")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 312.42 172.72 0)
+			(at 281.94 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -12972,43 +13422,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 322.58 172.72 90)
+		(at 292.1 180.34 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "ce6c4893-c92b-52ec-8d56-786902797751")
-		(property "Reference" "#PWR0195"
-			(at 322.58 172.72 0)
+		(property "Reference" "#PWR0199"
+			(at 292.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 322.58 177.165 0)
+			(at 292.1 184.785 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 322.58 172.72 0)
+			(at 292.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 322.58 172.72 0)
+			(at 292.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 322.58 172.72 0)
+			(at 292.1 180.34 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -13020,7 +13470,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0195")
+					(reference "#PWR0199")
 					(unit 1)
 				)
 			)
@@ -13028,7 +13478,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 327.025 172.72 0)
+		(at 296.545 180.34 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)
@@ -13037,7 +13487,7 @@
 	)
 	(symbol
 		(lib_id "box-v1:R")
-		(at 317.5 180.34 0)
+		(at 287.02 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -13045,61 +13495,61 @@
 		(dnp yes)
 		(uuid "5c3e66f5-b58e-535d-ae79-d8121b226771")
 		(property "Reference" "R212"
-			(at 317.5 177.8 0)
+			(at 287.02 187.96 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Value" "5.1k"
-			(at 317.5 182.88 0)
+			(at 287.02 193.04 0)
 			(effects
 				(font (size 1.27 1.27))
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" "Temporary Rd for HID-only bring-up"
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "MPN" "0402WGF5101TCE"
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL (Uniroyal Elec)"
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "LCSC" "C25905"
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Confidence" "Confirmed"
-			(at 317.5 180.34 0)
+			(at 287.02 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -13122,7 +13572,7 @@
 	)
 	(global_label "PHONE_CC2"
 		(shape passive)
-		(at 312.42 180.34 180)
+		(at 281.94 190.5 180)
 		(fields_autoplaced yes)
 		(effects
 			(font (size 1.27 1.27))
@@ -13130,7 +13580,7 @@
 		)
 		(uuid "3d9d7fe7-0498-5c72-8cb7-47e3d06e51b7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 312.42 180.34 0)
+			(at 281.94 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(justify right)
@@ -13140,43 +13590,43 @@
 	)
 	(symbol
 		(lib_id "box-v1:PWR_GND")
-		(at 322.58 180.34 90)
+		(at 292.1 190.5 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board no)
 		(dnp no)
 		(uuid "66c80f9c-b72b-5926-981e-1cda769d677e")
-		(property "Reference" "#PWR0196"
-			(at 322.58 180.34 0)
+		(property "Reference" "#PWR0200"
+			(at 292.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Value" "GND"
-			(at 322.58 184.785 0)
+			(at 292.1 194.945 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 322.58 180.34 0)
+			(at 292.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 322.58 180.34 0)
+			(at 292.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
 			)
 		)
 		(property "Description" ""
-			(at 322.58 180.34 0)
+			(at 292.1 190.5 0)
 			(effects
 				(font (size 1.27 1.27))
 				(hide yes)
@@ -13188,7 +13638,7 @@
 		(instances
 			(project "box-v1"
 				(path "/3958f6c6-dbf7-51be-a7d2-7d63d3ba3dd0/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3"
-					(reference "#PWR0196")
+					(reference "#PWR0200")
 					(unit 1)
 				)
 			)
@@ -13196,7 +13646,7 @@
 	)
 	(text "GND"
 		(exclude_from_sim no)
-		(at 327.025 180.34 0)
+		(at 296.545 190.5 0)
 		(effects
 			(font (size 1.27 1.27))
 			(justify left)

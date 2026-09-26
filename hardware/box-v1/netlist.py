@@ -67,6 +67,11 @@ SOURCES = {
                       "Not downloadable from the build environment (proxy 403); pin names/numbers 1-23 "
                       "were taken from search-engine excerpts of this brief and of the LCSC datasheet "
                       "C5310990, so they are [Likely] only"),
+    "LT7911D_DS": ("https://datasheet.lcsc.com/lcsc/2212091108_LONTIUM-SEMICONDUCTOR-LT7911D_C5310990.pdf",
+                   "Lontium LT7911D datasheet R1.4 as published by LCSC for part C5310990 (also mirrored on "
+                   "gitcode.com, Open-source-documentation-tutorial/3e28d). Public, not under NDA, but blocked "
+                   "by the build environment's proxy: not read here. It holds the full 64-pin table, the "
+                   "package drawing and the reference circuit that pins 24-64 and the footprint need"),
     "CORE1106_XLS": ("https://github.com/LuckfoxTECH/Luckfox-Pico-docs/blob/main/Hardware/Schematic/Core1106-PinOut.xls",
                      "Luckfox Core1106-PinOut.xls: 112 pads, pin name, IO power domain, remarks "
                      "(eMMC / Wi-Fi variants disconnect pads 37-46, 48-54, 63-64, 68-69)"),
@@ -233,8 +238,8 @@ BUY = {
     "F1206:5A 32V": Buy("Littelfuse", "0466005.NRHF", "C57525", "WEB", "", 0.0326,
                         note="466 series very fast acting 5 A 32 V 1206 (halogen-free version of 0466005.NR)"),
     # --- diodes, LEDs ---------------------------------------------------------------------------
-    "SMAJ24A": Buy("hongjiacheng", "SMAJ24A", "C19077541", "SNAP", "Preferred", 0.038,
-                   note="400 W TVS, 24 V standoff, 38.9 V clamp"),
+    "SMBJ20A": Buy("hongjiacheng", "SMBJ20A", "C19077575", "SNAP", "Preferred", 0.035,
+                   note="600 W TVS, 20 V standoff, 32.4 V clamp at 18.5 A, SMB"),
     "BZT52C10": Buy("Diodes Incorporated", "BZT52C10-7-F", "C155227", "WEB", price=0.02, price_ev="ALLOW",
                     note="10 V 500 mW zener SOD-123"),
     "SS34": Buy("MDD (Microdiode Electronics)", "SS34", "C8678", "SNAP", "Basic", 0.031,
@@ -277,17 +282,19 @@ BUY = {
     # --- connectors, switches -------------------------------------------------------------------------------
     "TYPE-C-31-M-12": Buy("Korean Hroparts Elec", "TYPE-C-31-M-12", "C165948", "WEB", "", 0.096,
                           note="USB-C 16P USB 2.0 receptacle, SMD, 5 A"),
-    "105450-0101": Buy("Molex", "1054500101", "C134092", "WEB", "", 0.9365,
-                       note="USB-C 24P USB 3.2 Gen 2 receptacle (hybrid SMD + through-hole shell)"),
+    "TYPE-C-31-M-04": Buy("Korean Hroparts Elec", "TYPE-C-31-M-04", "C129018", "WEB", "", 0.3594,
+                          note="USB-C 24P USB 3.1 receptacle, hybrid (A row SMD, B row through-hole); replaces "
+                               "the Molex 105450-0101 of the first draft, whose all-SMD B row sits behind a "
+                               "keep-out and cannot be escaped without via-in-pad"),
     "HR911105A": Buy("HANRUN (Zhongshan HanRun Elec)", "HR911105A", "C12074", "WEB", "", 0.9082,
                      assembly=THT, note="RJ45 with 10/100 magnetics and LEDs, through-hole"),
     "HDR1x07": Buy("Würth Elektronik", "61300711121", price=0.10, price_ev="ALLOW", assembly=THT,
                    note="WR-PHD 2.54 mm 1x7 straight; any 2.54 mm 1x7 header fits"),
     "HDR1x03": Buy("Würth Elektronik", "61300311121", price=0.05, price_ev="ALLOW", assembly=THT,
                    note="WR-PHD 2.54 mm 1x3 straight; any 2.54 mm 1x3 header fits"),
-    "TL3342": Buy("E-Switch", "TL3342F160QG", "C2886898", "WEB", "", 0.6256,
-                  note="SMD tactile 160 gf; XKB TS-1187A-B-A-B (C318884, Basic) is a cheaper option but "
-                       "needs its own footprint"),
+    "TS1187A": Buy("XKB Connection", "TS-1187A-B-A-B", "C318884", "SNAP", "Basic", 0.025,
+                   note="SMD tactile 5.1 x 5.1 mm, 1.5 mm actuator, 160 gf; smaller and cheaper than the "
+                        "TL3342 of the first draft"),
     # --- PCB features (nothing to buy) ---------------------------------------------------------------------
     "PCB:TP": Buy("-", "none (copper test pad)", assembly=PCB),
     "PCB:SJ": Buy("-", "none (solder jumper on the PCB)", assembly=PCB),
@@ -469,7 +476,7 @@ RAILS = {
     "PHONE_VBUS": "iPhone port VBUS (0 or 5.2 V)",
     "PC_VBUS": "VBUS from the PC (5 V)",
     "VCC_1V8_MOD": "1.8 V output of the Core1106 (≤ 300 mA)",
-    "VCC_3V3_MOD": "3.3 V output of the Core1106 (≤ 300 mA)",
+    "VCC_3V3_MOD": "3.3 V output of the Core1106 (≤ 300 mA): I2C pull-ups, TP",
 }
 
 DIFF = [
@@ -493,6 +500,40 @@ DIFF = [
     ("ETH_TXP_J", "ETH_TXN_J", 100, "TX after the 0R, into the magnetics"),
     ("ETH_RXP_J", "ETH_RXN_J", 100, "RX after the 0R, into the magnetics"),
 ]
+
+
+# Net classes of the board (JLC04161H-7628 stack-up, README §5 and §11): widths for 100 Ω / 90 Ω on
+# L1 over the GND plane L2. name: (track, clearance, diff-pair width, diff-pair gap, via Ø, via drill),
+# in mm. Used by generate.py (project file) and pcb.py (board).
+NETCLASSES = {
+    "Default": (0.15, 0.15, 0.2, 0.15, 0.55, 0.3),
+    "DIFF_100R": (0.2, 0.15, 0.2, 0.15, 0.55, 0.3),
+    "USB_90R": (0.25, 0.15, 0.25, 0.15, 0.55, 0.3),
+    "PWR_1A": (0.5, 0.2, 0.2, 0.15, 0.8, 0.4),
+    # supplies that reach 0.5 mm-pitch pins (LQFP, QFN): no wider than the pins, pours add copper
+    "PWR_FINE": (0.3, 0.15, 0.2, 0.15, 0.55, 0.3),
+    "PWR_3A": (0.8, 0.2, 0.2, 0.15, 0.8, 0.4),
+    # the 0.3 mm VBUS pads of the iPhone receptacle: thin where it leaves the pads, a pour carries 3 A
+    "PWR_3A_FINE": (0.3, 0.15, 0.2, 0.15, 0.8, 0.4),
+}
+# (class, glob pattern), first match wins
+NETCLASS_PATTERNS = (
+    [("DIFF_100R", p) for p in ("SS_*", "CSI_*", "LT_AUX_*", "PHONE_SBU*", "ETH_TX*", "ETH_RX*")] +
+    [("USB_90R", p) for p in ("PHONE_USB_D*", "PC_USB_D*", "MCU_FS_D*")] +
+    [("PWR_3A_FINE", "PHONE_VBUS")] +
+    [("PWR_3A", p) for p in ("VBUS_IN", "VIN", "5V2_PHONE", "PSW_*", "5V_SYS", "U102_SW", "U103_SW",
+                             "PCPWR_A")] +
+    [("PWR_FINE", p) for p in ("3V3", "1V2", "3V3_LT", "1V2_LT_A", "VDDA_MCU", "VCC_3V3_MOD", "GND")] +
+    [("PWR_1A", p) for p in ("U104_SW", "U105_SW", "PC_VBUS")]
+)
+
+
+def netclass_of(net: str) -> str:
+    import fnmatch
+    for cls, pat in NETCLASS_PATTERNS:
+        if fnmatch.fnmatchcase(net, pat):
+            return cls
+    return "Default"
 
 
 def build() -> Design:
@@ -562,7 +603,8 @@ def build_power(d: Design):
         note="D+/D- left open: the CH224K runs in PD-only mode (CH224 datasheet §5.5)")
     _two(d, "F101", "5A 32V", "VBUS_IN", "VIN", "Fuse:Fuse_1206_3216Metric", b,
          "Very fast 5 A / 32 V input fuse", "F", buy="F1206:5A 32V", conf=LIKELY)
-    D(d, "D101", "SMAJ24A", "VIN", GND, b, "TVS on VIN, 24 V standoff", "Diode_SMD:D_SMA",
+    D(d, "D101", "SMBJ20A", "VIN", GND, b,
+      "TVS on VIN: 20 V standoff, 32.4 V clamp, below the 36 V input rating of the LMR33630", "Diode_SMD:D_SMB",
       symbol="D_TVS")
     _two(d, "C101", "47uF 35V", "VIN", GND, "Capacitor_SMD:CP_Elec_6.3x7.7", b,
          "VIN bulk capacitor, damps ringing when a long cable is hot-plugged", "CP",
@@ -579,15 +621,16 @@ def build_power(d: Design):
             P("5", "DM", BIDI, "CH224_DPDM", "L", "DP-DM shorted"),
             P("6", "CC2", BIDI, "CH224_CC2", "R", "through R105 0R to J101.B5", src="CH224KICAD"),
             P("7", "CC1", BIDI, "CH224_CC1", "R", "through R104 0R to J101.A5", src="CH224KICAD"),
-            P("8", "VBUS", PASSIVE, "CH224_VSNS", "R", "voltage sense through 10 kΩ"),
+            P("8", "VBUS", PASSIVE, NC, "R", "left open: PD-only mode allows it (§5.5), and the pin is "
+              "rated 13.5 V, below VIN at 15-20 V"),
             P("9", "CFG1", PASSIVE, "CH224_CFG1", "R", "6.8 kΩ to GND = request 9 V"),
             P("10", "PG", OC, "PD_PG", "R", "open drain, low = requested voltage present"),
             P("11", "GND", PWR_IN, GND, "R", "EPAD (the datasheet calls it pin 0)"),
         ], src="CH224")
     R(d, "R101", "1k", "VIN", "CH224_VDD", b, "CH224K VDD feed resistor (datasheet §6.2)",
-      fp="R1206", note="1206 (0.25 W): dissipates 0.14 W at 15 V", src="CH224")
+      fp="R1206", note="1206 (0.25 W): 0.14 W at 15 V; a 20 V request (R103 open) would need 0.28 W, so "
+      "requests stay at 9-15 V (Option B removes U101)", src="CH224")
     C(d, "C102", "1uF 50V", "CH224_VDD", GND, b, "CH224K VDD capacitor", fp="C0603", src="CH224")
-    R(d, "R102", "10k", "VIN", "CH224_VSNS", b, "Series resistor of the CH224K VBUS pin (§6.2)", src="CH224")
     R(d, "R103", "6.8k 1%", "CH224_CFG1", GND, b,
       "Requested voltage: 6.8k=9V (default), 24k=12V, 56k=15V, open=20V", src="CH224")
     R(d, "R104", "0R", "PD_CC1", "CH224_CC1", b, "Option A: charger CC to the CH224K")
@@ -596,6 +639,14 @@ def build_power(d: Design):
       "Option B: charger CC to the second PD port of the LT7911D", dnp=True, conf=UNKNOWN)
     R(d, "R107", "0R", "PD_CC2", "LT_PDCC2", b, "Option B (as R106)", dnp=True, conf=UNKNOWN)
     R(d, "R108", "10k", "PD_PG", "3V3", b, "Pull-up for PG (open drain) to MCU PB12")
+    box(d, "U107", "TPD4E05U06DQA", "TPD4E05U06DQAR", "Package_SON:USON-10_2.5x1.0mm_P0.5mm", b,
+        "ESD for the CC lines of J101 (charger) and J401 (PC), between the two rear ports (flow-through)", [
+            P("1", "D1+", PASSIVE, "PD_CC1", "L"), P("2", "D1-", PASSIVE, "PD_CC2", "L"),
+            P("3", "GND", PWR_IN, GND, "L"), P("4", "D2+", PASSIVE, "PC_CC1", "L"),
+            P("5", "D2-", PASSIVE, "PC_CC2", "L"), P("6", "NC", NCPIN, NC, "R", "flow-through pad"),
+            P("7", "NC", NCPIN, NC, "R"), P("8", "GND", PWR_IN, GND, "R"),
+            P("9", "NC", NCPIN, NC, "R"), P("10", "NC", NCPIN, NC, "R"),
+        ], src="KICAD_SYM")
 
     # U102: VIN -> 5V2_PHONE (LMR33630A, 400 kHz)
     def lmr(ref, out, fbb, en_top, en_bot, desc, cin, cvcc, cboot, lref, lval, lisat, couts,
@@ -732,12 +783,12 @@ def build_iphone(d: Design):
         P("B7", "D-", BIDI, "PHONE_USB_DN", "R"), P("B8", "SBU2", BIDI, "PHONE_SBU2", "R"),
         P("B9", "VBUS", PASSIVE, "PHONE_VBUS", "R"), P("B10", "RX1-", BIDI, "SS_RX1_N", "R"),
         P("B11", "RX1+", BIDI, "SS_RX1_P", "R"), P("B12", "GND", PASSIVE, GND, "R"),
-        P("S1", "SHIELD", PASSIVE, GND, "R"),
-    ]
-    box(d, "J201", "USB-C iPhone", "105450-0101",
-        "Connector_USB:USB_C_Receptacle_Molex_105450-0101", b,
+    ] + [P(n, "SHIELD", PASSIVE, GND, "R") for n in ("31", "32", "33", "34")]
+    box(d, "J201", "USB-C iPhone", "TYPE-C-31-M-04",
+        "box-v1:USB_C_Receptacle_HRO_TYPE-C-31-M-04", b,
         "24-pin USB-C receptacle with all SS pairs (4-lane DP Alt Mode) + USB 2.0 + CC + VBUS", usbc24,
-        src="USBC_SPEC", note="Use a 24P receptacle rated USB 3.2 Gen2; a 16P (USB 2.0) one has no SS pairs")
+        src="USBC_SPEC", note="Hybrid: A row SMD, B row through-hole, so the B row is reached from the inner "
+                             "layers; shell pads 31-34. A 16P (USB 2.0) receptacle has no SS pairs")
 
     # LT7911D. Pins 1-23: [Likely] (vendor brief via search excerpts). Others: [Unknown].
     CO, CB = LIKELY, UNKNOWN
@@ -794,7 +845,8 @@ def build_iphone(d: Design):
     box(d, "U201", "LT7911D", "LT7911D", "box-v1:LT7911D_QFN-64-1EP_7.5x7.5mm_P0.4mm", b,
         "Type-C/DP1.2 -> MIPI CSI-2, PD + DP Alt Mode sink, on-chip MCU + flash", lt,
         src="LT7911D_BRIEF", conf=LIKELY,
-        note="Datasheet under NDA: pins drawn by function only; the footprint must be redone once the datasheet is in hand")
+        note="Pins 24-64 are drawn by function only: take them and the footprint from the public datasheet R1.4 "
+             "(source LT7911D_DS) before U201 is routed")
     _two(d, "X201", "25MHz", "LT_XI", "LT_XO", "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm", b,
          "LT7911D crystal (frequency and load unknown)", "X", buy="XTAL25M", conf=UNKNOWN)
     # a 4-pad crystal: add the two GND pads
@@ -815,10 +867,13 @@ def build_iphone(d: Design):
     C(d, "C214", "10uF 10V", "3V3_LT", GND, b, "3V3_LT bulk capacitor", fp="C0603")
     FB(d, "FB201", "3V3", "3V3_LT", b, "Ferrite bead isolating the LT7911D 3.3 V")
     FB(d, "FB202", "1V2", "1V2_LT_A", b, "Ferrite bead isolating the 1.2 V analog/PLL supply")
-    R(d, "R201", "2.2k", "LT_SCL", "3V3", b, "I2C pull-up (RV1106 bus I2C2_M0, 3.3 V)")
-    R(d, "R202", "2.2k", "LT_SDA", "3V3", b, "I2C pull-up")
+    R(d, "R201", "2.2k", "LT_SCL", "VCC_3V3_MOD", b,
+      "I2C pull-up to the module's 3.3 V (the RV1106 IO domain), so the bus never feeds an unpowered SoC")
+    R(d, "R202", "2.2k", "LT_SDA", "VCC_3V3_MOD", b, "I2C pull-up (as R201)")
     R(d, "R203", "10k", "LT_RST_N", "3V3", b, "RST_N pull-up: the LT7911D runs as soon as it is powered")
-    C(d, "C215", "1uF 25V", "LT_RST_N", GND, b, "Power-on reset RC (τ = 10 ms)")
+    C(d, "C215", "100nF", "LT_RST_N", GND, b, "Power-on reset RC (τ = 1 ms)")
+    R(d, "R213", "1k", "SOC_LT_RST", "LT_RST_N", b,
+      "Series resistor: the RV1106 GPIO no longer discharges C215 directly")
     R(d, "R204", "10k", "LT_SLEEP", GND, b, "Optional level for SLEEP_33 (unclear)", dnp=True, conf=UNKNOWN)
     R(d, "R205", "100k", "LT_INT", GND, b, "Holds LT_INT low while the LT7911D is in reset")
     C(d, "C216", "100nF", "PHONE_SBU1", "LT_AUX_P", b,
@@ -1005,15 +1060,16 @@ CORE1106_USE = {
     72: ("SOC_CON_TX", OUT, "console UART2_M1 (fiq-debugger) -> J503"),
     73: ("SOC_CON_RX", IN, "console RX"),
     74: ("SOC_NPOR", IN, "RV1106 reset (button SW502)"),
-    77: ("VCC_1V8_MOD", PWR_OUT, "1.8 V output of the module"), 78: ("VCC_3V3_MOD", PWR_OUT, "3.3 V output, TP only"),
+    77: ("VCC_1V8_MOD", PWR_OUT, "1.8 V output of the module"),
+    78: ("VCC_3V3_MOD", PWR_OUT, "3.3 V output: I2C pull-ups of the LT7911D bus, TP"),
     79: ("5V_SYS", PWR_IN, "4.6-5.2 V, ≤ 1 A"), 80: ("5V_SYS", PWR_IN, ""), 81: ("5V_SYS", PWR_IN, ""),
     85: ("ETH_RX_N", BIDI, "100M PHY inside the RV1106"), 86: ("ETH_RX_P", BIDI, ""),
     87: ("ETH_TX_N", BIDI, ""), 88: ("ETH_TX_P", BIDI, ""),
     90: ("SOC_MCU_RST", OUT, "resets the CH32 through R413 1k; GPIO1_D3 defaults to a weak pull-down, R301 4.7k wins"),
     91: ("MCU_BOOT0", OUT, "pulled high to put the CH32 into its USART1 bootloader"),
     92: ("MCU_IRQ", IN, "interrupt from the CH32"),
-    61: ("LT_RST_N", OUT, "LT7911D reset (reset-gpios, active low); GPIO0_A3 defaults to pull-up: "
-                          "the LT7911D runs as soon as power is applied"),
+    61: ("SOC_LT_RST", OUT, "LT7911D reset through R213 (reset-gpios, active low); GPIO0_A3 defaults to "
+                            "pull-up: the LT7911D runs as soon as power is applied"),
     98: ("SPI_MISO", IN, "SPI0_M0 master <- CH32 SPI1"), 99: ("SPI_MOSI", OUT, ""),
     100: ("SPI_SCK", OUT, ""), 101: ("SPI_CS", OUT, ""),
 }
@@ -1133,10 +1189,10 @@ def build_debug(d: Design):
         "RV1106 console (UART2_M1, 115200 8N1, 3.3 V)", [
             P("1", "GND", PASSIVE, GND, "L"), P("2", "TX", PASSIVE, "SOC_CON_TX", "L", "RV1106 TX"),
             P("3", "RX", PASSIVE, "SOC_CON_RX", "L", "RV1106 RX")], src="RV1106_DTS")
-    sw = "Button_Switch_SMD:SW_SPST_TL3342"
+    sw = "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A"
     _two(d, "SW501", "RECOVERY", "RECOVERY_KEY", GND, sw, b,
-         "Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C", "SW", buy="TL3342")
-    _two(d, "SW502", "RESET", "SOC_NPOR", GND, sw, b, "RV1106 reset (NPOR)", "SW", buy="TL3342")
+         "Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C", "SW", buy="TS1187A")
+    _two(d, "SW502", "RESET", "SOC_NPOR", GND, sw, b, "RV1106 reset (NPOR)", "SW", buy="TS1187A")
     for ref, rref, col, rv, net in (("D501", "R501", "RED", "680R", "LED_R"),
                                     ("D502", "R502", "YELLOW", "680R", "LED_Y"),
                                     ("D503", "R503", "GREEN", "560R", "LED_G")):

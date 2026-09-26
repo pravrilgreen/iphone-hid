@@ -159,7 +159,7 @@ at `/api/openapi.json` on every box and in the [API reference](docs/dev/api.md).
 | Stage | Status |
 |---|---|
 | Orange Pi 5 Plus box: touch, keyboard, buttons, screen, API, console | Software done and tested against the simulated iPhone; the absolute pointer confirmed on an iPhone 15; the hardware check of `ihcd` pending |
-| Purpose-built box: the iPhone's USB-C straight into an LT7911D bridge, a CH32V305 USB controller, an RV1106 SoC running `ihcd` ([how it is wired](box/web/guide/box.svg)) | Schematic designed to pin level: [hardware/box-v1](hardware/box-v1/README.md) (KiCad 8, sheets, BOM, checks); the LT7911D pinout awaits the vendor datasheet. Study: [custom box](docs/research/custom-box.md) |
+| Purpose-built box: the iPhone's USB-C straight into an LT7911D bridge, a CH32V305 USB controller, an RV1106 SoC running `ihcd` ([how it is wired](box/web/guide/box.svg)) | Schematic designed to pin level and a draft 4-layer layout: [hardware/box-v1](hardware/box-v1/README.md) (KiCad, sheets, BOM, checks); the LT7911D pins and their routing wait for its datasheet to be copied in. Study: [custom box](docs/research/custom-box.md) |
 
 ## Repository
 
@@ -168,7 +168,7 @@ at `/api/openapi.json` on every box and in the [API reference](docs/dev/api.md).
 | `box/` | `ihcd`, the box software (Go): touch engine, USB gadget, video, API, console (`box/web`), simulated iPhone |
 | `src/ihc/` | Python SDK and the `ihc` command |
 | `packaging/` | systemd units, udev rules, installer, bundle header |
-| `hardware/box-v1/` | The purpose-built box's schematic: netlist as code, KiCad 8 project, sheets, BOM, design checks |
+| `hardware/box-v1/` | The purpose-built box: netlist as code, KiCad schematic and draft layout (generated), BOM, design checks |
 | `scripts/` | bundle build and smoke test, diagrams, demo recording |
 | `docs/` | guides, API, architecture, research ([index](docs/README.md)), demo videos (`docs/media`) |
 

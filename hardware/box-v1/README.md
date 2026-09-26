@@ -5,9 +5,10 @@
 > specification, mechanical drawing, acceptance tests, cost estimate, RFQ email). This README is the engineering
 > reference behind it.
 
-- **Date:** 2026-09-26. **Status:** pin-level schematic, not laid out yet. Architecture and parts come from
+- **Date:** 2026-09-26. **Status:** pin-level schematic and a **draft PCB layout** (every part placed, everything
+  routed except the LT7911D area, §15). Architecture and parts come from
   [custom-box.md](../../docs/research/custom-box.md) §4–§9 and §13.
-- **Scope:** one 4-layer PCB of about 90×60 mm with the LT7911D (USB-C DP Alt Mode → MIPI CSI-2), the CH32V305RBT6
+- **Scope:** one 4-layer PCB of 96×66 mm with the LT7911D (USB-C DP Alt Mode → MIPI CSI-2), the CH32V305RBT6
   (USB High-Speed HID to the iPhone), a Luckfox Core1106 module (RV1106G3), USB-C PD power input, 100M RJ45, USB-C to
   the PC, debug headers, status LEDs and buttons.
 - **Labels** (as in custom-box.md): **[Confirmed]** = read from the primary source (datasheet, vendor schematic,
@@ -16,7 +17,8 @@
   vendor. Net names, reference designators and pin names are in English.
 - **Single source of truth:** [`netlist.py`](netlist.py). Every other file (KiCad, SVG, BOM, netlists, the pin
   tables in this README, the generated tables in ORDERING.md) is generated from it. To change the circuit or a
-  part, edit `netlist.py`, then run `generate.py` and `check.py` again.
+  part, edit `netlist.py`, then run `generate.py` and `check.py` again. The board is generated from the same
+  netlist and from [`placement.py`](placement.py) by [`pcb.py`](pcb.py) (§15).
 - **References and licences:** only vendor datasheets and reference designs (WCH, Luckfox, Rockchip), the official
   KiCad symbol library (to cross-check pinouts) and the Rockchip BSP Linux driver (device-tree property names
   only, no code copied). No schematic or file was copied from open hardware projects under GPL/AGPL (JetKVM,
@@ -29,11 +31,15 @@
 1. **The circuit is closed at pin level** for every part with a public datasheet: CH32V305RBT6, CH224K, Core1106,
    the regulators, ESD, connectors. `check.py` reports PASS: every pin is on a net or marked no-connect, every net
    has at least two pins, every IC power pin has a decoupling capacitor, no net names collide, and every part has
-   ordering data. The connectivity read back from the KiCad files matches `netlist.py` on all 746 pins (see §13).
-2. **The LT7911D is the biggest blind spot.** Its datasheet is under NDA. Pins 1–23 have numbers from public
-   excerpts of the product brief **[Likely]**; the other 25 pins are drawn by function only, with placeholder
-   numbers such as `?XTALI` **[Unknown]**. The footprint, the DP lane mapping, the crystal, the core supply and
-   whether it can act as the power source for the iPhone must all come from Lontium before layout (§10.1).
+   ordering data. The connectivity read back from the KiCad files matches `netlist.py` on all 759 pins (see §13).
+2. **The LT7911D is the biggest blind spot.** Its datasheet R1.4 turns out to be public (LCSC publishes it for part
+   C5310990), but the build environment's network could not open it, so pins 1–23 still have numbers from public
+   excerpts of the product brief **[Likely]** and the other 25 pins are drawn by function only, with placeholder
+   numbers such as `?XTALI` **[Unknown]**. The layout places it with a provisional footprint and leaves its pins,
+   the DP lanes and the CSI-2 lanes unrouted until the pin table is filled in (§15). Whether it can act as the power
+   source for the iPhone is a firmware question for Lontium (§10.1). No other part does its job with public
+   documentation: the other USB-C DP Alt Mode receivers (ITE, Realtek, Parade) are documented under NDA only, and
+   so are Lontium's reference designs and firmware.
 3. **Power:** the CH224K requests **9 V** from the PD charger (the block diagram says 12 V, reason in §3.1). Two
    LMR33630 bucks make 5.2 V/3 A for the iPhone and 5.0 V/3 A for the system; two TLV62569 bucks make 3.3 V and
    1.2 V. The iPhone gets VBUS through two back-to-back P-MOSFETs with a current shunt.
@@ -45,6 +51,9 @@
 6. **Bill of materials:** every orderable line has a manufacturer and MPN; LCSC codes are given where they could be
    found, all marked **[Likely]** because lcsc.com and jlcpcb.com could not be opened from the build environment
    (§12). Design-review findings of 2026-09-26 are in §14.
+7. **Layout (draft):** 96×66 mm, 4 layers, all SMD parts on the top. The iPhone port is on the front edge; Ethernet,
+   the PC port and the power input on the rear. `pcb.py` places every part, routes with Freerouting and fills the
+   copper zones; KiCad's DRC is clean apart from the LT7911D connections left open on purpose (§15).
 
 ---
 
@@ -55,6 +64,11 @@
 | `ORDERING.md` | Cover sheet of the order package for a layout + fabrication + assembly house |
 | `netlist.py` | Source of truth: parts (ref, value, footprint), every pin, nets, confidence, cited sources, and the `BUY` catalogue (manufacturer, MPN, LCSC code, evidence, JLCPCB class, price estimate, assembly class) |
 | `layout.py` | Placement of the symbols on each sheet, shared by KiCad and SVG |
+| `placement.py` | Where every big part sits on the board (connectors, ICs, inductors), the board size, holes, fiducials and the routing corridors kept free; shared by `pcb.py` and `mechanical.py` |
+| `pcb.py` | Generates the board `kicad/box-v1.kicad_pcb` from `netlist.py` + `placement.py`: footprints, placement, rules, zones, routing through Freerouting, DRC (§15). Needs KiCad 7's `pcbnew` Python module |
+| `footprints/box-v1.pretty/` | Footprints the KiCad library does not have (the HRO TYPE-C-31-M-04 receptacle); the LT7911D, Core1106 and CH224K footprints are built in `pcb.py` |
+| `kicad/box-v1.kicad_pcb`, `kicad/drc.rpt` | The draft layout and its KiCad DRC report |
+| `svg/pcb-*.svg` | Views of the layout: assembly (placement), each copper layer |
 | `generate.py` | Writes `kicad/`, `svg/`, `bom.csv`, `netlist.json`, `kicad/box-v1.net`, the pin tables in this README and the generated tables in ORDERING.md; calls `mechanical.py` |
 | `mechanical.py` | Enclosure outline and connector openings → `svg/mechanical.svg` and the openings table in ORDERING.md |
 | `check.py` | Checks design rules and generated files; `--selftest` injects faults to prove that each rule catches them |
@@ -115,18 +129,24 @@ names/numbers are **[Unknown]** and teal ones **[Likely]**; DNP parts are drawn 
 
 - The CH224K is a PD sink configured by one resistor from CFG1 to GND: 6.8 kΩ = 9 V, 24 kΩ = 12 V, 56 kΩ = 15 V,
   open = 20 V. In resistor mode CFG2/CFG3 must stay open. **[Confirmed]**, CH224 datasheet §5.2.1.
-- The circuit follows WCH's reference schematic §6.2: VDD from VIN through 1 kΩ with a 1 µF capacitor; the VBUS pin
-  senses the voltage through 10 kΩ. **[Confirmed]**
+- The circuit follows WCH's reference schematic §6.2: VDD from VIN through 1 kΩ with a 1 µF capacitor.
+  **[Confirmed]** The CH224K's VBUS sense pin is left open: the datasheet allows it in PD-only mode (§5.5), and the
+  pin is rated 13.5 V (§7.2), below VIN with a 15 V or 20 V profile. The first draft fed it from VIN through 10 kΩ.
 - PD only: the CH224K DP and DM pins are shorted together, D+/D- of J101 are left open (datasheet §5.5). No QC/AFC
   protocol can therefore raise the voltage unexpectedly. **[Confirmed]**
 - **9 V instead of the 12 V of the block diagram.** Every PD charger of 18 W or more has a fixed 9 V level; 12 V is
   not among the mandatory PD 3.0 levels, so many chargers lack it. **[Likely]** For 12 V, change R103 to 24 kΩ; the
   downstream circuit tolerates up to 20 V (LMR33630 36 V bucks, 50 V input capacitors).
-- R101 (1 kΩ) is a 1206: it dissipates ~0.14 W at 15 V. Recompute for 20 V (0.28 W, above the 0.25 W rating).
+- R101 (1 kΩ) is a 1206: it dissipates ~0.14 W at 15 V. A 20 V request (R103 open) would need 0.28 W, above its
+  0.25 W rating, so the CH224K asks for 9–15 V only; Option B, which uses 20 V, removes U101 and R101 carries no
+  current.
 - **PG** (open drain, low = the requested voltage is present) is pulled up to 3V3 by R108 and goes to the
   CH32V305 (PB12). The MCU firmware only switches the iPhone VBUS on when PG is low.
-- Input protection: F101 very fast 5 A/32 V fuse (1206), D101 SMAJ24A TVS, C101 47 µF 35 V to damp ringing when a
-  long cable is hot-plugged.
+- Input protection: F101 very fast 5 A/32 V fuse (1206), D101 SMBJ20A TVS (20 V standoff, 32.4 V clamp at 18.5 A,
+  below the 36 V input rating of the LMR33630; the first draft's SMAJ24A clamped at 38.9 V), C101 47 µF 35 V to damp
+  ringing when a long cable is hot-plugged. U107 (TPD4E05U06) protects the CC lines of J101 and J401 against ESD;
+  the CH224K's CC pins are rated 8 V, so a cable that shorts CC to VBUS still needs a CC over-voltage switch
+  (§8).
 
 ### 3.2 Rails
 
@@ -240,23 +260,23 @@ the KiCad symbol say CC1 = 7, CC2 = 6; both pins are symmetric so either way wor
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| A1 | GND | GND | rail (156 pins) |  | [Confirmed] |
+| A1 | GND | GND | rail (161 pins) |  | [Confirmed] |
 | A4 | VBUS | VBUS_IN | F101.1 |  | [Confirmed] |
-| A5 | CC1 | PD_CC1 | R104.1, R106.1 |  | [Confirmed] |
+| A5 | CC1 | PD_CC1 | R104.1, R106.1, U107.1 |  | [Confirmed] |
 | A6 | D+ | NC | - |  | [Confirmed] |
 | A7 | D- | NC | - |  | [Confirmed] |
 | A8 | SBU1 | NC | - |  | [Confirmed] |
 | A9 | VBUS | VBUS_IN | F101.1 |  | [Confirmed] |
-| A12 | GND | GND | rail (156 pins) |  | [Confirmed] |
-| B1 | GND | GND | rail (156 pins) |  | [Confirmed] |
+| A12 | GND | GND | rail (161 pins) |  | [Confirmed] |
+| B1 | GND | GND | rail (161 pins) |  | [Confirmed] |
 | B4 | VBUS | VBUS_IN | F101.1 |  | [Confirmed] |
-| B5 | CC2 | PD_CC2 | R105.1, R107.1 |  | [Confirmed] |
+| B5 | CC2 | PD_CC2 | R105.1, R107.1, U107.2 |  | [Confirmed] |
 | B6 | D+ | NC | - |  | [Confirmed] |
 | B7 | D- | NC | - |  | [Confirmed] |
 | B8 | SBU2 | NC | - |  | [Confirmed] |
 | B9 | VBUS | VBUS_IN | F101.1 |  | [Confirmed] |
-| B12 | GND | GND | rail (156 pins) |  | [Confirmed] |
-| S1 | SHIELD | GND | rail (156 pins) |  | [Confirmed] |
+| B12 | GND | GND | rail (161 pins) |  | [Confirmed] |
+| S1 | SHIELD | GND | rail (161 pins) |  | [Confirmed] |
 
 **JP101 PSW_SRC** (-; footprint `Jumper:SolderJumper-3_P1.3mm_Bridged12_RoundedPad1.0x1.5mm`; source: -)
 
@@ -264,7 +284,7 @@ the KiCad symbol say CC1 = 7, CC2 = 6; both pins are symmetric so either way wor
 |---|---|---|---|---|---|
 | 1 | A | 5V2_PHONE | L101.2, C108.1, C109.1, C110.1, R109.1, TP502.1 |  | [Confirmed] |
 | 2 | C | PSW_IN | Q101.5, Q101.6, Q101.7, Q101.8 |  | [Confirmed] |
-| 3 | B | VIN | rail (17 pins) |  | [Confirmed] |
+| 3 | B | VIN | rail (16 pins) |  | [Confirmed] |
 
 **JP102 PC_PWR** (-; footprint `Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm`; source: -)
 
@@ -304,7 +324,7 @@ the KiCad symbol say CC1 = 7, CC2 = 6; both pins are symmetric so either way wor
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | G | PHONE_VBUS_EN | R125.1, R127.2, R128.2 |  | [Confirmed] |
-| 2 | S | GND | rail (160 pins) |  | [Confirmed] |
+| 2 | S | GND | rail (165 pins) |  | [Confirmed] |
 | 3 | D | PSW_GD | R124.2 |  | [Confirmed] |
 
 **U101 CH224K** (WCH (Jiangsu Qin Heng) CH224K; footprint `Package_SO:SSOP-10-1EP_3.9x4.9mm_P1mm_EP2.1x3.3mm`; source: [CH224](https://raw.githubusercontent.com/makespacemadrid/cheap-wled-controller/main/datasheet/ch224k.pdf))
@@ -318,45 +338,45 @@ the KiCad symbol say CC1 = 7, CC2 = 6; both pins are symmetric so either way wor
 | 5 | DM | CH224_DPDM |  | DP-DM shorted | [Confirmed] |
 | 6 | CC2 | CH224_CC2 | R105.2 | through R105 0R to J101.B5 | [Confirmed] |
 | 7 | CC1 | CH224_CC1 | R104.2 | through R104 0R to J101.A5 | [Confirmed] |
-| 8 | VBUS | CH224_VSNS | R102.2 | voltage sense through 10 kΩ | [Confirmed] |
+| 8 | VBUS | NC | - | left open: PD-only mode allows it (§5.5), and the pin is rated 13.5 V, below VIN at 15-20 V | [Confirmed] |
 | 9 | CFG1 | CH224_CFG1 | R103.1 | 6.8 kΩ to GND = request 9 V | [Confirmed] |
 | 10 | PG | PD_PG | R108.1, U301.33 | open drain, low = requested voltage present | [Confirmed] |
-| 11 | GND | GND | rail (160 pins) | EPAD (the datasheet calls it pin 0) | [Confirmed] |
+| 11 | GND | GND | rail (165 pins) | EPAD (the datasheet calls it pin 0) | [Confirmed] |
 
 **U102 LMR33630ADDA** (Texas Instruments LMR33630ADDAR; footprint `Package_SO:Texas_HSOP-8-1EP_3.9x4.9mm_P1.27mm_ThermalVias`; source: [KICAD_SYM](https://gitlab.com/kicad/libraries/kicad-symbols/-/tree/8.0.9))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| 1 | GND | GND | rail (159 pins) |  | [Confirmed] |
-| 2 | VIN | VIN | rail (17 pins) |  | [Confirmed] |
+| 1 | GND | GND | rail (164 pins) |  | [Confirmed] |
+| 2 | VIN | VIN | rail (16 pins) |  | [Confirmed] |
 | 3 | EN | U102_EN | R111.2, R112.1 | UVLO divider 100k/20k | [Confirmed] |
 | 4 | PG | NC | - | not used | [Confirmed] |
 | 5 | FB | U102_FB | R109.2, R110.1 |  | [Confirmed] |
 | 6 | VCC | U102_VCC | C106.1 | internal LDO, 1 µF capacitor | [Confirmed] |
 | 7 | BOOT | U102_BOOT | C107.1 |  | [Confirmed] |
 | 8 | SW | U102_SW | C107.2, L101.1 |  | [Confirmed] |
-| 9 | EP | GND | rail (159 pins) | thermal pad = GND | [Confirmed] |
+| 9 | EP | GND | rail (164 pins) | thermal pad = GND | [Confirmed] |
 
 **U103 LMR33630ADDA** (Texas Instruments LMR33630ADDAR; footprint `Package_SO:Texas_HSOP-8-1EP_3.9x4.9mm_P1.27mm_ThermalVias`; source: [KICAD_SYM](https://gitlab.com/kicad/libraries/kicad-symbols/-/tree/8.0.9))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| 1 | GND | GND | rail (159 pins) |  | [Confirmed] |
-| 2 | VIN | VIN | rail (17 pins) |  | [Confirmed] |
+| 1 | GND | GND | rail (164 pins) |  | [Confirmed] |
+| 2 | VIN | VIN | rail (16 pins) |  | [Confirmed] |
 | 3 | EN | U103_EN | R115.2, R116.1 | UVLO divider 100k/39k | [Confirmed] |
 | 4 | PG | NC | - | not used | [Confirmed] |
 | 5 | FB | U103_FB | R113.2, R114.1 |  | [Confirmed] |
 | 6 | VCC | U103_VCC | C114.1 | internal LDO, 1 µF capacitor | [Confirmed] |
 | 7 | BOOT | U103_BOOT | C115.1 |  | [Confirmed] |
 | 8 | SW | U103_SW | C115.2, L102.1 |  | [Confirmed] |
-| 9 | EP | GND | rail (159 pins) | thermal pad = GND | [Confirmed] |
+| 9 | EP | GND | rail (164 pins) | thermal pad = GND | [Confirmed] |
 
 **U104 TLV62569DBV** (Texas Instruments TLV62569DBVR; footprint `Package_TO_SOT_SMD:SOT-23-5`; source: [KICAD_SYM](https://gitlab.com/kicad/libraries/kicad-symbols/-/tree/8.0.9))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | EN | U104_EN | R117.2 |  | [Confirmed] |
-| 2 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 3 | SW | U104_SW | L103.1 |  | [Confirmed] |
 | 4 | VIN | 5V_SYS | rail (18 pins) |  | [Confirmed] |
 | 5 | FB | U104_FB | R118.2, R119.1 |  | [Confirmed] |
@@ -366,7 +386,7 @@ the KiCad symbol say CC1 = 7, CC2 = 6; both pins are symmetric so either way wor
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | EN | U105_EN | R120.2, C125.1 |  | [Confirmed] |
-| 2 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 3 | SW | U105_SW | L104.1 |  | [Confirmed] |
 | 4 | VIN | 5V_SYS | rail (18 pins) |  | [Confirmed] |
 | 5 | FB | U105_FB | R121.2, R122.1 |  | [Confirmed] |
@@ -376,10 +396,25 @@ the KiCad symbol say CC1 = 7, CC2 = 6; both pins are symmetric so either way wor
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | OUT | PHONE_ISENSE | C130.1, U301.17 |  | [Confirmed] |
-| 2 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 3 | IN+ | PSW_OUT | Q102.5, Q102.6, Q102.7, Q102.8, R126.1 | Kelvin at R126, MOSFET side | [Confirmed] |
 | 4 | IN- | PHONE_VBUS | rail (11 pins) | Kelvin at R126, iPhone side | [Confirmed] |
-| 5 | V+ | 3V3 | rail (30 pins) |  | [Confirmed] |
+| 5 | V+ | 3V3 | rail (28 pins) |  | [Confirmed] |
+
+**U107 TPD4E05U06DQA** (Texas Instruments TPD4E05U06DQAR; footprint `Package_SON:USON-10_2.5x1.0mm_P0.5mm`; source: [KICAD_SYM](https://gitlab.com/kicad/libraries/kicad-symbols/-/tree/8.0.9))
+
+| Pin | Name | Net | Connects to | Note | Confidence |
+|---|---|---|---|---|---|
+| 1 | D1+ | PD_CC1 | J101.A5, R104.1, R106.1 |  | [Confirmed] |
+| 2 | D1- | PD_CC2 | J101.B5, R105.1, R107.1 |  | [Confirmed] |
+| 3 | GND | GND | rail (164 pins) |  | [Confirmed] |
+| 4 | D2+ | PC_CC1 | J401.A5, R401.1 |  | [Confirmed] |
+| 5 | D2- | PC_CC2 | J401.B5, R402.1 |  | [Confirmed] |
+| 6 | NC | NC | - | flow-through pad | [Confirmed] |
+| 7 | NC | NC | - |  | [Confirmed] |
+| 8 | GND | GND | rail (164 pins) |  | [Confirmed] |
+| 9 | NC | NC | - |  | [Confirmed] |
+| 10 | NC | NC | - |  | [Confirmed] |
 
 Passives and test points of this block:
 
@@ -415,7 +450,7 @@ Passives and test points of this block:
 | C128 | 47nF 50V | PSW_S | PSW_G | `C_0603_1608Metric` | Soft start (~0.5 ms), limits the charging current into the iPhone |
 | C129 | 100nF | 3V3 | GND | `C_0402_1005Metric` | U106 supply capacitor |
 | C130 | 1nF | PHONE_ISENSE | GND | `C_0402_1005Metric` | U106 output filter before the ADC |
-| D101 | SMAJ24A | VIN | GND | `D_SMA` | TVS on VIN, 24 V standoff |
+| D101 | SMBJ20A | VIN | GND | `D_SMB` | TVS on VIN: 20 V standoff, 32.4 V clamp, below the 36 V input rating of the LMR33630 |
 | D102 | BZT52C10 | PSW_S | PSW_G | `D_SOD-123` | 10 V zener clamping Vgs in Option B (VIN up to 20 V) |
 | D104 | SS34 | 5V_SYS | PCPWR_A | `D_SMA` | 3 A 40 V Schottky: PC_VBUS -> 5V_SYS (development mode) |
 | F101 | 5A 32V | VBUS_IN | VIN | `Fuse_1206_3216Metric` | Very fast 5 A / 32 V input fuse [Likely] |
@@ -424,7 +459,6 @@ Passives and test points of this block:
 | L103 | 2.2uH | U104_SW | 3V3 | `L_Bourns-SRN4018` | U104 inductor, Isat ≥ 3 A, 4x4 mm [Likely] |
 | L104 | 2.2uH | U105_SW | 1V2 | `L_Bourns-SRN4018` | U105 inductor, Isat ≥ 3 A, 4x4 mm [Likely] |
 | R101 | 1k | VIN | CH224_VDD | `R_1206_3216Metric` | CH224K VDD feed resistor (datasheet §6.2) |
-| R102 | 10k | VIN | CH224_VSNS | `R_0402_1005Metric` | Series resistor of the CH224K VBUS pin (§6.2) |
 | R103 | 6.8k 1% | CH224_CFG1 | GND | `R_0402_1005Metric` | Requested voltage: 6.8k=9V (default), 24k=12V, 56k=15V, open=20V |
 | R104 | 0R | PD_CC1 | CH224_CC1 | `R_0402_1005Metric` | Option A: charger CC to the CH224K |
 | R105 | 0R | PD_CC2 | CH224_CC2 | `R_0402_1005Metric` | Option A: charger CC to the CH224K |
@@ -491,11 +525,15 @@ U205 (USBLC6-2SC6) for D+/D-. D201 TVS on VBUS. R211/R212 (5.1 kΩ, DNP) are tem
 before the LT7911D is fitted (§9, step 3).
 
 <!-- BEGIN GENERATED: pins-iphone -->
-**J201 USB-C iPhone** (Molex 1054500101; footprint `Connector_USB:USB_C_Receptacle_Molex_105450-0101`; source: [USBC_SPEC](https://www.usb.org/document-library/usb-type-cr-cable-and-connector-specification-release-24))
+**J201 USB-C iPhone** (Korean Hroparts Elec TYPE-C-31-M-04; footprint `box-v1:USB_C_Receptacle_HRO_TYPE-C-31-M-04`; source: [USBC_SPEC](https://www.usb.org/document-library/usb-type-cr-cable-and-connector-specification-release-24))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| A1 | GND | GND | rail (156 pins) |  | [Confirmed] |
+| 31 | SHIELD | GND | rail (158 pins) |  | [Confirmed] |
+| 32 | SHIELD | GND | rail (158 pins) |  | [Confirmed] |
+| 33 | SHIELD | GND | rail (158 pins) |  | [Confirmed] |
+| 34 | SHIELD | GND | rail (158 pins) |  | [Confirmed] |
+| A1 | GND | GND | rail (158 pins) |  | [Confirmed] |
 | A2 | TX1+ | SS_TX1_P | U201.11, U202.1 |  | [Confirmed] |
 | A3 | TX1- | SS_TX1_N | U201.12, U202.2 |  | [Confirmed] |
 | A4 | VBUS | PHONE_VBUS | rail (8 pins) |  | [Confirmed] |
@@ -506,8 +544,8 @@ before the LT7911D is fitted (§9, step 3).
 | A9 | VBUS | PHONE_VBUS | rail (8 pins) |  | [Confirmed] |
 | A10 | RX2- | SS_RX2_N | U201.3, U203.5 |  | [Confirmed] |
 | A11 | RX2+ | SS_RX2_P | U201.2, U203.4 |  | [Confirmed] |
-| A12 | GND | GND | rail (156 pins) |  | [Confirmed] |
-| B1 | GND | GND | rail (156 pins) |  | [Confirmed] |
+| A12 | GND | GND | rail (158 pins) |  | [Confirmed] |
+| B1 | GND | GND | rail (158 pins) |  | [Confirmed] |
 | B2 | TX2+ | SS_TX2_P | U201.5, U203.1 |  | [Confirmed] |
 | B3 | TX2- | SS_TX2_N | U201.6, U203.2 |  | [Confirmed] |
 | B4 | VBUS | PHONE_VBUS | rail (8 pins) |  | [Confirmed] |
@@ -518,8 +556,7 @@ before the LT7911D is fitted (§9, step 3).
 | B9 | VBUS | PHONE_VBUS | rail (8 pins) |  | [Confirmed] |
 | B10 | RX1- | SS_RX1_N | U201.9, U202.5 |  | [Confirmed] |
 | B11 | RX1+ | SS_RX1_P | U201.8, U202.4 |  | [Confirmed] |
-| B12 | GND | GND | rail (156 pins) |  | [Confirmed] |
-| S1 | SHIELD | GND | rail (156 pins) |  | [Confirmed] |
+| B12 | GND | GND | rail (158 pins) |  | [Confirmed] |
 
 **U201 LT7911D** (Lontium Semiconductor LT7911D; footprint `box-v1:LT7911D_QFN-64-1EP_7.5x7.5mm_P0.4mm`; source: [LT7911D_BRIEF](https://www.lontiumsemi.com/UploadFiles/2022-10/LT7911D_Brief_R1.3.pdf))
 
@@ -544,11 +581,11 @@ before the LT7911D is fitted (§9, step 3).
 | 17 | AUXP | LT_AUX_P | C216.2, R206.1 | DP AUX+ (through a 100 nF capacitor from SBU1) | [Likely] |
 | 18 | AUXN | LT_AUX_N | C217.2, R207.1 | DP AUX- (through a 100 nF capacitor from SBU2) | [Likely] |
 | 19 | SLEEP_33 | LT_SLEEP | R204.1, TP201.1 | function unclear: TP + R204 DNP | [Likely] |
-| 20 | RST_N | LT_RST_N | R203.1, C215.1, U401.61 | reset, active low | [Likely] |
+| 20 | RST_N | LT_RST_N | R203.1, C215.1, R213.2 | reset, active low | [Likely] |
 | 21 | CSCL | LT_SCL | R201.1, U401.65 | I2C slave 0x2B (7-bit) | [Likely] |
 | 22 | CSDA | LT_SDA | R202.1, U401.66 | I2C slave | [Likely] |
 | 23 | RX_HPD | LT_RX_HPD | TP202.1 | DP-side HPD; over Type-C HPD travels in PD messages: TP only | [Likely] |
-| ?EPAD | EPAD | GND | rail (160 pins) | thermal pad = GND (assumed) | [Unknown] |
+| ?EPAD | EPAD | GND | rail (165 pins) | thermal pad = GND (assumed) | [Unknown] |
 | ?IIS_D0 | IIS_D0 | NC | - | not used | [Unknown] |
 | ?IIS_MCLK | IIS_MCLK | NC | - | not used | [Unknown] |
 | ?IIS_SCLK | IIS_SCLK | NC | - | not used | [Unknown] |
@@ -580,12 +617,12 @@ before the LT7911D is fitted (§9, step 3).
 |---|---|---|---|---|---|
 | 1 | D1+ | SS_TX1_P | J201.A2, U201.11 |  | [Confirmed] |
 | 2 | D1- | SS_TX1_N | J201.A3, U201.12 |  | [Confirmed] |
-| 3 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 3 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 4 | D2+ | SS_RX1_P | J201.B11, U201.8 |  | [Confirmed] |
 | 5 | D2- | SS_RX1_N | J201.B10, U201.9 |  | [Confirmed] |
 | 6 | NC | NC | - | flow-through pad | [Confirmed] |
 | 7 | NC | NC | - |  | [Confirmed] |
-| 8 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 8 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 9 | NC | NC | - |  | [Confirmed] |
 | 10 | NC | NC | - |  | [Confirmed] |
 
@@ -595,12 +632,12 @@ before the LT7911D is fitted (§9, step 3).
 |---|---|---|---|---|---|
 | 1 | D1+ | SS_TX2_P | J201.B2, U201.5 |  | [Confirmed] |
 | 2 | D1- | SS_TX2_N | J201.B3, U201.6 |  | [Confirmed] |
-| 3 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 3 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 4 | D2+ | SS_RX2_P | J201.A11, U201.2 |  | [Confirmed] |
 | 5 | D2- | SS_RX2_N | J201.A10, U201.3 |  | [Confirmed] |
 | 6 | NC | NC | - | flow-through pad | [Confirmed] |
 | 7 | NC | NC | - |  | [Confirmed] |
-| 8 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 8 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 9 | NC | NC | - |  | [Confirmed] |
 | 10 | NC | NC | - |  | [Confirmed] |
 
@@ -610,12 +647,12 @@ before the LT7911D is fitted (§9, step 3).
 |---|---|---|---|---|---|
 | 1 | D1+ | PHONE_CC1 | J201.A5, U201.14, R211.1, R304.1 |  | [Confirmed] |
 | 2 | D1- | PHONE_CC2 | J201.B5, U201.15, R212.1, R305.1 |  | [Confirmed] |
-| 3 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 3 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 4 | D2+ | PHONE_SBU1 | J201.A8, C216.1 |  | [Confirmed] |
 | 5 | D2- | PHONE_SBU2 | J201.B8, C217.1 |  | [Confirmed] |
 | 6 | NC | NC | - | flow-through pad | [Confirmed] |
 | 7 | NC | NC | - |  | [Confirmed] |
-| 8 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 8 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 9 | NC | NC | - |  | [Confirmed] |
 | 10 | NC | NC | - |  | [Confirmed] |
 
@@ -624,10 +661,10 @@ before the LT7911D is fitted (§9, step 3).
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | I/O1 | PHONE_USB_DP | J201.A6, J201.B6, U301.59 |  | [Confirmed] |
-| 2 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 3 | I/O2 | PHONE_USB_DN | J201.A7, J201.B7, U301.58 |  | [Confirmed] |
 | 4 | I/O2 | PHONE_USB_DN | J201.A7, J201.B7, U301.58 |  | [Confirmed] |
-| 5 | VBUS | 3V3 | rail (30 pins) | tied to 3V3 (clamp reference) | [Confirmed] |
+| 5 | VBUS | 3V3 | rail (28 pins) | tied to 3V3 (clamp reference) | [Confirmed] |
 | 6 | I/O1 | PHONE_USB_DP | J201.A6, J201.B6, U301.59 |  | [Confirmed] |
 
 **X201 25MHz** (YXC (Yangxing Tech) X322525MOB4SI; footprint `Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm`; source: -)
@@ -635,9 +672,9 @@ before the LT7911D is fitted (§9, step 3).
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | ~ | LT_XI | U201.?XTALI, C201.1 |  | [Confirmed] |
-| 2 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 3 | ~ | LT_XO | U201.?XTALO, C202.1 |  | [Confirmed] |
-| 4 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 4 | GND | GND | rail (164 pins) |  | [Confirmed] |
 
 Passives and test points of this block:
 
@@ -657,7 +694,7 @@ Passives and test points of this block:
 | C212 | 10uF 10V | 1V2 | GND | `C_0603_1608Metric` | 1V2 bulk capacitor at the LT7911D |
 | C213 | 10uF 10V | 1V2_LT_A | GND | `C_0603_1608Metric` | 1V2_LT_A bulk capacitor |
 | C214 | 10uF 10V | 3V3_LT | GND | `C_0603_1608Metric` | 3V3_LT bulk capacitor |
-| C215 | 1uF 25V | LT_RST_N | GND | `C_0402_1005Metric` | Power-on reset RC (τ = 10 ms) |
+| C215 | 100nF | LT_RST_N | GND | `C_0402_1005Metric` | Power-on reset RC (τ = 1 ms) |
 | C216 | 100nF | PHONE_SBU1 | LT_AUX_P | `C_0402_1005Metric` | AUX AC capacitor (direction/bias unclear, per the Lontium reference design) [Unknown] |
 | C217 | 100nF | PHONE_SBU2 | LT_AUX_N | `C_0402_1005Metric` | AUX AC capacitor [Unknown] |
 | C218 | 100nF | 3V3 | GND | `C_0402_1005Metric` | Capacitor at the U205 VBUS pin |
@@ -666,8 +703,8 @@ Passives and test points of this block:
 | D201 | SMF6.0A | PHONE_VBUS | GND | `D_SOD-123F` | iPhone VBUS TVS (Option B with VIN up to 20 V: change to SMF22A) |
 | FB201 | 600R@100MHz | 3V3 | 3V3_LT | `L_0603_1608Metric` | Ferrite bead isolating the LT7911D 3.3 V |
 | FB202 | 600R@100MHz | 1V2 | 1V2_LT_A | `L_0603_1608Metric` | Ferrite bead isolating the 1.2 V analog/PLL supply |
-| R201 | 2.2k | LT_SCL | 3V3 | `R_0402_1005Metric` | I2C pull-up (RV1106 bus I2C2_M0, 3.3 V) |
-| R202 | 2.2k | LT_SDA | 3V3 | `R_0402_1005Metric` | I2C pull-up |
+| R201 | 2.2k | LT_SCL | VCC_3V3_MOD | `R_0402_1005Metric` | I2C pull-up to the module's 3.3 V (the RV1106 IO domain), so the bus never feeds an unpowered SoC |
+| R202 | 2.2k | LT_SDA | VCC_3V3_MOD | `R_0402_1005Metric` | I2C pull-up (as R201) |
 | R203 | 10k | LT_RST_N | 3V3 | `R_0402_1005Metric` | RST_N pull-up: the LT7911D runs as soon as it is powered |
 | R204 **DNP** | 10k | LT_SLEEP | GND | `R_0402_1005Metric` | Optional level for SLEEP_33 (unclear) [Unknown] |
 | R205 | 100k | LT_INT | GND | `R_0402_1005Metric` | Holds LT_INT low while the LT7911D is in reset |
@@ -676,6 +713,7 @@ Passives and test points of this block:
 | R210 | 10k | PHONE_VBUS | GND | `R_0603_1608Metric` | Discharges VBUS to vSafe0V (< 0.8 V in ~0.4 s) |
 | R211 **DNP** | 5.1k | PHONE_CC1 | GND | `R_0402_1005Metric` | Temporary Rd for HID-only bring-up (LT7911D not fitted): the iPhone becomes source + host |
 | R212 **DNP** | 5.1k | PHONE_CC2 | GND | `R_0402_1005Metric` | Temporary Rd for HID-only bring-up |
+| R213 | 1k | SOC_LT_RST | LT_RST_N | `R_0402_1005Metric` | Series resistor: the RV1106 GPIO no longer discharges C215 directly |
 | TP201 | LT_SLEEP | LT_SLEEP | - | `TestPoint_Pad_D1.5mm` | Measure/force SLEEP_33 |
 | TP202 | LT_RX_HPD | LT_RX_HPD | - | `TestPoint_Pad_D1.5mm` | Measure RX_HPD |
 <!-- END GENERATED: pins-iphone -->
@@ -702,7 +740,7 @@ Pin numbers per the LQFP64M column of table 3-1 and figure 3.1.2 (CH32V305RBT6) 
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| 1 | VBAT | 3V3 | rail (26 pins) | backup RTC not used | [Confirmed] |
+| 1 | VBAT | 3V3 | rail (24 pins) | backup RTC not used | [Confirmed] |
 | 2 | PC13 | NC | - |  | [Confirmed] |
 | 3 | PC14/OSC32_IN | NC | - |  | [Confirmed] |
 | 4 | PC15/OSC32_OUT | NC | - |  | [Confirmed] |
@@ -713,14 +751,14 @@ Pin numbers per the LQFP64M column of table 3-1 and figure 3.1.2 (CH32V305RBT6) 
 | 9 | PC1 | NC | - |  | [Confirmed] |
 | 10 | PC2 | NC | - |  | [Confirmed] |
 | 11 | PC3 | NC | - |  | [Confirmed] |
-| 12 | VSSA | GND | rail (156 pins) |  | [Confirmed] |
+| 12 | VSSA | GND | rail (161 pins) |  | [Confirmed] |
 | 13 | VDDA | VDDA_MCU | C308.1, C309.1, FB301.2 | must equal VIO (§2.5.3) | [Confirmed] |
 | 14 | PA0/ADC0 | CC1_SENSE | R304.2, C312.1 | ADC: iPhone-side CC1 voltage (through 100k) | [Confirmed] |
 | 15 | PA1/ADC1 | CC2_SENSE | R305.2, C313.1 | ADC: CC2 voltage | [Confirmed] |
 | 16 | PA2/ADC2 | PHONE_VBUS_SENSE | R306.2, R307.1, C314.1 | ADC: iPhone VBUS / 7.67 | [Confirmed] |
 | 17 | PA3/ADC3 | PHONE_ISENSE | U106.1, C130.1 | ADC: charging current 0.5 V/A | [Confirmed] |
-| 18 | VSS_4 | GND | rail (156 pins) |  | [Confirmed] |
-| 19 | VDD_4 | 3V3 | rail (26 pins) |  | [Confirmed] |
+| 18 | VSS_4 | GND | rail (161 pins) |  | [Confirmed] |
+| 19 | VDD_4 | 3V3 | rail (24 pins) |  | [Confirmed] |
 | 20 | PA4/SPI1_NSS | SPI_CS | U401.101 | SPI slave of the RV1106 | [Confirmed] |
 | 21 | PA5/SPI1_SCK | SPI_SCK | U401.100 |  | [Confirmed] |
 | 22 | PA6/SPI1_MISO | SPI_MISO | U401.98 |  | [Confirmed] |
@@ -732,8 +770,8 @@ Pin numbers per the LQFP64M column of table 3-1 and figure 3.1.2 (CH32V305RBT6) 
 | 28 | PB2/BOOT1 | MCU_BOOT1 | R303.1 | 10k to GND | [Confirmed] |
 | 29 | PB10/USART3_TX | MCU_DBG_TX | J501.6 | MCU debug log | [Confirmed] |
 | 30 | PB11/USART3_RX | MCU_DBG_RX | J501.7 |  | [Confirmed] |
-| 31 | VSS_1 | GND | rail (156 pins) |  | [Confirmed] |
-| 32 | VIO_1 | 3V3 | rail (26 pins) |  | [Confirmed] |
+| 31 | VSS_1 | GND | rail (161 pins) |  | [Confirmed] |
+| 32 | VIO_1 | 3V3 | rail (24 pins) |  | [Confirmed] |
 | 33 | PB12 | PD_PG | U101.10, R108.1 | CH224K PG (low = PD negotiated) | [Confirmed] |
 | 34 | PB13 | NC | - |  | [Confirmed] |
 | 35 | PB14 | NC | - |  | [Confirmed] |
@@ -748,8 +786,8 @@ Pin numbers per the LQFP64M column of table 3-1 and figure 3.1.2 (CH32V305RBT6) 
 | 44 | PA11/OTG_FS_DM | MCU_FS_DN | J502.2 |  | [Confirmed] |
 | 45 | PA12/OTG_FS_DP | MCU_FS_DP | J502.1 | second USB FS -> header J502 | [Confirmed] |
 | 46 | PA13/SWDIO | SWDIO | J501.2 | WCH-LinkE | [Confirmed] |
-| 47 | VSS_2 | GND | rail (156 pins) |  | [Confirmed] |
-| 48 | VDD_2 | 3V3 | rail (26 pins) |  | [Confirmed] |
+| 47 | VSS_2 | GND | rail (161 pins) |  | [Confirmed] |
+| 48 | VDD_2 | 3V3 | rail (24 pins) |  | [Confirmed] |
 | 49 | PA14/SWCLK | SWCLK | J501.3 | WCH-LinkE | [Confirmed] |
 | 50 | PA15 | NC | - |  | [Confirmed] |
 | 51 | PC10 | NC | - |  | [Confirmed] |
@@ -764,17 +802,17 @@ Pin numbers per the LQFP64M column of table 3-1 and figure 3.1.2 (CH32V305RBT6) 
 | 60 | BOOT0 | MCU_BOOT0 | R302.1, U401.91 | 10k to GND; the RV1106 pulls it high to enter the ISP bootloader | [Confirmed] |
 | 61 | PB8 | NC | - |  | [Confirmed] |
 | 62 | PB9 | NC | - |  | [Confirmed] |
-| 63 | VSS_3 | GND | rail (156 pins) |  | [Confirmed] |
-| 64 | VIO_3 | 3V3 | rail (26 pins) |  | [Confirmed] |
+| 63 | VSS_3 | GND | rail (161 pins) |  | [Confirmed] |
+| 64 | VIO_3 | 3V3 | rail (24 pins) |  | [Confirmed] |
 
 **X301 8MHz** (YXC (Yangxing Tech) X32258MOB4SI; footprint `Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm`; source: [CH32EVT](https://github.com/openwch/ch32v307))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | ~ | HSE_IN | U301.5, C301.1 |  | [Confirmed] |
-| 2 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (164 pins) |  | [Confirmed] |
 | 3 | ~ | HSE_OUT | U301.6, C302.1 |  | [Confirmed] |
-| 4 | GND | GND | rail (159 pins) |  | [Confirmed] |
+| 4 | GND | GND | rail (164 pins) |  | [Confirmed] |
 
 Passives and test points of this block:
 
@@ -869,23 +907,23 @@ this circuit):
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| A1 | GND | GND | rail (156 pins) |  | [Confirmed] |
+| A1 | GND | GND | rail (161 pins) |  | [Confirmed] |
 | A4 | VBUS | PC_VBUS | JP102.1, C404.1, D401.1, R403.1 |  | [Confirmed] |
-| A5 | CC1 | PC_CC1 | R401.1 |  | [Confirmed] |
+| A5 | CC1 | PC_CC1 | U107.4, R401.1 |  | [Confirmed] |
 | A6 | D+ | PC_USB_DP | U401.23, U402.1, U402.6 |  | [Confirmed] |
 | A7 | D- | PC_USB_DN | U401.22, U402.3, U402.4 |  | [Confirmed] |
 | A8 | SBU1 | NC | - |  | [Confirmed] |
 | A9 | VBUS | PC_VBUS | JP102.1, C404.1, D401.1, R403.1 |  | [Confirmed] |
-| A12 | GND | GND | rail (156 pins) |  | [Confirmed] |
-| B1 | GND | GND | rail (156 pins) |  | [Confirmed] |
+| A12 | GND | GND | rail (161 pins) |  | [Confirmed] |
+| B1 | GND | GND | rail (161 pins) |  | [Confirmed] |
 | B4 | VBUS | PC_VBUS | JP102.1, C404.1, D401.1, R403.1 |  | [Confirmed] |
-| B5 | CC2 | PC_CC2 | R402.1 |  | [Confirmed] |
+| B5 | CC2 | PC_CC2 | U107.5, R402.1 |  | [Confirmed] |
 | B6 | D+ | PC_USB_DP | U401.23, U402.1, U402.6 |  | [Confirmed] |
 | B7 | D- | PC_USB_DN | U401.22, U402.3, U402.4 |  | [Confirmed] |
 | B8 | SBU2 | NC | - |  | [Confirmed] |
 | B9 | VBUS | PC_VBUS | JP102.1, C404.1, D401.1, R403.1 |  | [Confirmed] |
-| B12 | GND | GND | rail (156 pins) |  | [Confirmed] |
-| S1 | SHIELD | GND | rail (156 pins) |  | [Confirmed] |
+| B12 | GND | GND | rail (161 pins) |  | [Confirmed] |
+| S1 | SHIELD | GND | rail (161 pins) |  | [Confirmed] |
 
 **J402 RJ45 10/100** (HANRUN (Zhongshan HanRun Elec) HR911105A; footprint `Connector_RJ:RJ45_Hanrun_HR911105A_Horizontal`; source: [KICAD_SYM](https://gitlab.com/kicad/libraries/kicad-symbols/-/tree/8.0.9))
 
@@ -903,7 +941,7 @@ this circuit):
 | 10 | LED1 | NC | - |  | [Unknown] |
 | 11 | LED2 | NC | - |  | [Unknown] |
 | 12 | LED2 | NC | - |  | [Unknown] |
-| SH | SHIELD | GND | rail (160 pins) |  | [Confirmed] |
+| SH | SHIELD | GND | rail (165 pins) |  | [Confirmed] |
 
 **U401 Luckfox Core1106** (Luckfox Core1106 (RV1106G3, 256 MB, 8 GB eMMC, Wi-Fi 6/BT 5.2 variant); footprint `box-v1:Luckfox_Core1106_Castellated_30x30mm_P1.0mm`; source: [CORE1106_XLS](https://github.com/LuckfoxTECH/Luckfox-Pico-docs/blob/main/Hardware/Schematic/Core1106-PinOut.xls))
 
@@ -929,22 +967,22 @@ this circuit):
 | 18 | VI_CIF_VSYNC/GPIO3_C5 (1V8) | NC | - | 1.8 V domain, not used | [Confirmed] |
 | 19 | MIPI_CLK0_OUT/GPIO3_C4 (1V8) | NC | - | 1.8 V domain, not used | [Confirmed] |
 | 20 | MIPI_CLK1_OUT/GPIO3_C6 (1V8) | NC | - | 1.8 V domain, not used | [Confirmed] |
-| 21 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 21 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 22 | USB_N | PC_USB_DN | J401.A7, J401.B7, U402.3, U402.4 | USB 2.0 OTG -> PC | [Confirmed] |
 | 23 | USB_P | PC_USB_DP | J401.A6, J401.B6, U402.1, U402.6 |  | [Confirmed] |
 | 24 | USB_VBUSDET | PC_VBUS_DET | R403.2, R404.1, C405.1 | PC VBUS through 10k/18k (as Luckfox Pico Ultra) | [Confirmed] |
-| 25 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 25 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 26 | SARADC_IN0/GPIO4_C0 | SOC_RECOVERY | R411.1, C410.1, R412.1 | RECOVERY key, always pulled up to 1.8 V | [Confirmed] |
 | 27 | SARADC_IN1/GPIO4_C1 | VIN_SENSE | R409.2, R410.1, C409.1 | VIN measurement (1.8 V ADC): VIN x 8.2/108.2 | [Confirmed] |
-| 28 | GND | GND | rail (146 pins) |  | [Confirmed] |
-| 29 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 28 | GND | GND | rail (151 pins) |  | [Confirmed] |
+| 29 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 30 | CODEC_LINEOUT | NC | - | codec not used | [Confirmed] |
 | 31 | CODEC_MICBIAS | NC | - | codec not used | [Confirmed] |
 | 32 | CODEC_MIC0N | NC | - | codec not used | [Confirmed] |
 | 33 | CODEC_MIC0P | NC | - | codec not used | [Confirmed] |
 | 34 | CODEC_MIC1N | NC | - | codec not used | [Confirmed] |
 | 35 | CODEC_MIC1P | NC | - | codec not used | [Confirmed] |
-| 36 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 36 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 37 | EMMC_D0/GPIO4_A4 | NC | - | eMMC variant: pad disconnected on the module | [Confirmed] |
 | 38 | EMMC_D1/GPIO4_A3 | NC | - | eMMC variant: pad disconnected on the module | [Confirmed] |
 | 39 | EMMC_D2/GPIO4_A2 | NC | - | eMMC variant: pad disconnected on the module | [Confirmed] |
@@ -955,7 +993,7 @@ this circuit):
 | 44 | EMMC_D7/GPIO4_A0 | NC | - | eMMC variant: pad disconnected on the module | [Confirmed] |
 | 45 | EMMC_CMD/GPIO4_B0 | NC | - | eMMC variant: pad disconnected on the module | [Confirmed] |
 | 46 | EMMC_CLK/GPIO4_B1 | NC | - | eMMC variant: pad disconnected on the module | [Confirmed] |
-| 47 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 47 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 48 | SDMMC_DET/GPIO3_A1 | NC | - | Wi-Fi variant: SDMMC wired to the on-module Wi-Fi | [Confirmed] |
 | 49 | SDMMC_D0/GPIO3_A3 | NC | - | Wi-Fi variant: SDMMC wired to the on-module Wi-Fi | [Confirmed] |
 | 50 | SDMMC_D1/GPIO3_A2 | NC | - | Wi-Fi variant: SDMMC wired to the on-module Wi-Fi | [Confirmed] |
@@ -963,13 +1001,13 @@ this circuit):
 | 52 | SDMMC_D3/GPIO3_A6 | NC | - | Wi-Fi variant: SDMMC wired to the on-module Wi-Fi | [Confirmed] |
 | 53 | SDMMC_CMD/GPIO3_A5 | NC | - | Wi-Fi variant: SDMMC wired to the on-module Wi-Fi | [Confirmed] |
 | 54 | SDMMC_CLK/GPIO3_A4 | NC | - | Wi-Fi variant: SDMMC wired to the on-module Wi-Fi | [Confirmed] |
-| 55 | GND | GND | rail (146 pins) |  | [Confirmed] |
-| 56 | GND | GND | rail (146 pins) |  | [Confirmed] |
-| 57 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 55 | GND | GND | rail (151 pins) |  | [Confirmed] |
+| 56 | GND | GND | rail (151 pins) |  | [Confirmed] |
+| 57 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 58 | UART0_RX_M0/GPIO0_A0 | NC | - | not used | [Confirmed] |
 | 59 | UART0_TX_M0/GPIO0_A1 | NC | - | not used | [Confirmed] |
 | 60 | PWM3_IR_M0/GPIO0_A2 | NC | - | not used | [Confirmed] |
-| 61 | PWR_CTRL_M1/GPIO0_A3 | LT_RST_N | U201.20, R203.1, C215.1 | LT7911D reset (reset-gpios, active low); GPIO0_A3 defaults to pull-up: the LT7911D runs as soon as power is applied | [Confirmed] |
+| 61 | PWR_CTRL_M1/GPIO0_A3 | SOC_LT_RST | R213.1 | LT7911D reset through R213 (reset-gpios, active low); GPIO0_A3 defaults to pull-up: the LT7911D runs as soon as power is applied | [Confirmed] |
 | 62 | PWR_CTRL_M0/GPIO0_A4 | NC | - | not used | [Confirmed] |
 | 63 | I2C1_SCL_M0/GPIO0_A5 | NC | - | Wi-Fi variant: used for the BT UART | [Confirmed] |
 | 64 | I2C1_SDA_M0/GPIO0_A6 | NC | - | Wi-Fi variant: used for the BT UART | [Confirmed] |
@@ -983,21 +1021,21 @@ this circuit):
 | 72 | UART2_TX_M1/GPIO1_B2 | SOC_CON_TX | J503.2 | console UART2_M1 (fiq-debugger) -> J503 | [Confirmed] |
 | 73 | UART2_RX_M1/GPIO1_B3 | SOC_CON_RX | J503.3 | console RX | [Confirmed] |
 | 74 | NPOR | SOC_NPOR | SW502.1 | RV1106 reset (button SW502) | [Confirmed] |
-| 75 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 75 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 76 | VCC3V3_RTC | NC | - | RTC fed from VCC_3V3 through a diode on the module; left open | [Confirmed] |
 | 77 | VCC_1V8 | VCC_1V8_MOD | R411.2 | 1.8 V output of the module | [Confirmed] |
-| 78 | VCC_3V3 | VCC_3V3_MOD | TP401.1 | 3.3 V output, TP only | [Confirmed] |
+| 78 | VCC_3V3 | VCC_3V3_MOD | R201.2, R202.2, TP401.1 | 3.3 V output: I2C pull-ups of the LT7911D bus, TP | [Confirmed] |
 | 79 | VCC5V0_SYS | 5V_SYS | rail (16 pins) | 4.6-5.2 V, ≤ 1 A | [Confirmed] |
 | 80 | VCC5V0_SYS | 5V_SYS | rail (16 pins) |  | [Confirmed] |
 | 81 | VCC5V0_SYS | 5V_SYS | rail (16 pins) |  | [Confirmed] |
-| 82 | GND | GND | rail (146 pins) |  | [Confirmed] |
-| 83 | GND | GND | rail (146 pins) |  | [Confirmed] |
-| 84 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 82 | GND | GND | rail (151 pins) |  | [Confirmed] |
+| 83 | GND | GND | rail (151 pins) |  | [Confirmed] |
+| 84 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 85 | FEPHY_RXN | ETH_RX_N | R408.1 | 100M PHY inside the RV1106 | [Confirmed] |
 | 86 | FEPHY_RXP | ETH_RX_P | R407.1 |  | [Confirmed] |
 | 87 | FEPHY_TXN | ETH_TX_N | R406.1 |  | [Confirmed] |
 | 88 | FEPHY_TXP | ETH_TX_P | R405.1 |  | [Confirmed] |
-| 89 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 89 | GND | GND | rail (151 pins) |  | [Confirmed] |
 | 90 | GPIO1_D3 | SOC_MCU_RST | R413.1 | resets the CH32 through R413 1k; GPIO1_D3 defaults to a weak pull-down, R301 4.7k wins | [Confirmed] |
 | 91 | GPIO1_D2 | MCU_BOOT0 | U301.60, R302.1 | pulled high to put the CH32 into its USART1 bootloader | [Confirmed] |
 | 92 | GPIO1_D1 | MCU_IRQ | U301.26 | interrupt from the CH32 | [Confirmed] |
@@ -1020,17 +1058,17 @@ this circuit):
 | 109 | GPIO2_A7 | NC | - | not used | [Confirmed] |
 | 110 | GPIO2_B0 | NC | - | not used | [Confirmed] |
 | 111 | GPIO2_B1 | NC | - | not used | [Confirmed] |
-| 112 | GND | GND | rail (146 pins) |  | [Confirmed] |
+| 112 | GND | GND | rail (151 pins) |  | [Confirmed] |
 
 **U402 USBLC6-2SC6** (STMicroelectronics USBLC6-2SC6; footprint `Package_TO_SOT_SMD:SOT-23-6`; source: [KICAD_SYM](https://gitlab.com/kicad/libraries/kicad-symbols/-/tree/8.0.9))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
 | 1 | I/O1 | PC_USB_DP | U401.23, J401.A6, J401.B6 |  | [Confirmed] |
-| 2 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 2 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 3 | I/O2 | PC_USB_DN | U401.22, J401.A7, J401.B7 |  | [Confirmed] |
 | 4 | I/O2 | PC_USB_DN | U401.22, J401.A7, J401.B7 |  | [Confirmed] |
-| 5 | VBUS | 3V3 | rail (30 pins) |  | [Confirmed] |
+| 5 | VBUS | 3V3 | rail (28 pins) |  | [Confirmed] |
 | 6 | I/O1 | PC_USB_DP | U401.23, J401.A6, J401.B6 |  | [Confirmed] |
 
 Passives and test points of this block:
@@ -1080,10 +1118,10 @@ Passives and test points of this block:
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| 1 | 3V3 | 3V3 | rail (30 pins) | level reference for the WCH-LinkE, not a supply input | [Confirmed] |
+| 1 | 3V3 | 3V3 | rail (28 pins) | level reference for the WCH-LinkE, not a supply input | [Confirmed] |
 | 2 | SWDIO | SWDIO | U301.46 |  | [Confirmed] |
 | 3 | SWCLK | SWCLK | U301.49 |  | [Confirmed] |
-| 4 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 4 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 5 | NRST | MCU_NRST | U301.7, R301.1, C311.1, R413.2 |  | [Confirmed] |
 | 6 | TX | MCU_DBG_TX | U301.29 | MCU TX | [Confirmed] |
 | 7 | RX | MCU_DBG_RX | U301.30 | MCU RX | [Confirmed] |
@@ -1094,13 +1132,13 @@ Passives and test points of this block:
 |---|---|---|---|---|---|
 | 1 | D+ | MCU_FS_DP | U301.45 |  | [Confirmed] |
 | 2 | D- | MCU_FS_DN | U301.44 |  | [Confirmed] |
-| 3 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 3 | GND | GND | rail (165 pins) |  | [Confirmed] |
 
 **J503 SoC UART** (Würth Elektronik 61300311121; footprint `Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical`; source: [RV1106_DTS](https://github.com/LuckfoxTECH/luckfox-pico/tree/main/sysdrv/source/kernel/arch/arm/boot/dts))
 
 | Pin | Name | Net | Connects to | Note | Confidence |
 |---|---|---|---|---|---|
-| 1 | GND | GND | rail (160 pins) |  | [Confirmed] |
+| 1 | GND | GND | rail (165 pins) |  | [Confirmed] |
 | 2 | TX | SOC_CON_TX | U401.72 | RV1106 TX | [Confirmed] |
 | 3 | RX | SOC_CON_RX | U401.73 | RV1106 RX | [Confirmed] |
 
@@ -1114,8 +1152,8 @@ Passives and test points of this block:
 | R501 | 680R | LED_R | LED_R_A | `R_0402_1005Metric` | RED LED current limit ~2 mA |
 | R502 | 680R | LED_Y | LED_Y_A | `R_0402_1005Metric` | YELLOW LED current limit ~2 mA |
 | R503 | 560R | LED_G | LED_G_A | `R_0402_1005Metric` | GREEN LED current limit ~2 mA |
-| SW501 | RECOVERY | RECOVERY_KEY | GND | `SW_SPST_TL3342` | Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C |
-| SW502 | RESET | SOC_NPOR | GND | `SW_SPST_TL3342` | RV1106 reset (NPOR) |
+| SW501 | RECOVERY | RECOVERY_KEY | GND | `SW_Push_1P1T_XKB_TS-1187A` | Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C |
+| SW502 | RESET | SOC_NPOR | GND | `SW_Push_1P1T_XKB_TS-1187A` | RV1106 reset (NPOR) |
 | TP501 | VIN | VIN | - | `TestPoint_Pad_D1.5mm` | Test point VIN |
 | TP502 | 5V2_PHONE | 5V2_PHONE | - | `TestPoint_Pad_D1.5mm` | Test point 5V2_PHONE |
 | TP503 | 5V_SYS | 5V_SYS | - | `TestPoint_Pad_D1.5mm` | Test point 5V_SYS |
@@ -1198,9 +1236,10 @@ Rules:
 - **iPhone port (J201):** TPD4E05U06 × 3 (SS, CC, SBU), USBLC6-2SC6 (D+/D-), SMF6.0A TVS on VBUS, 10 µF + 100 nF
   capacitors, R210 VBUS discharge. The back-to-back MOSFET switch blocks current in both directions.
 - **PC port (J401):** USBLC6-2SC6, SMF6.0A TVS, 1 µF capacitor (UFP ≤ 10 µF).
-- **Power port (J101):** 5 A fuse, SMAJ24A TVS, 47 µF bulk capacitor. CC goes straight to the CH224K (8 V absolute
-  maximum): no protection yet against a faulty cable shorting CC to a 20 V VBUS **[Unknown]**; consider a 6–8 V TVS
-  when 20 V chargers are used.
+- **Power port (J101):** 5 A fuse, SMBJ20A TVS, 47 µF bulk capacitor, TPD4E05U06 (U107, shared with J401) on
+  CC1/CC2. CC goes to the CH224K, whose CC pins are rated 8 V (datasheet §7.2) **[Confirmed]**: ESD is covered, but
+  a faulty cable that shorts CC to a 9–20 V VBUS is not; a CC over-voltage switch (for example TI TPD2S300 or ST
+  TCPP01-M12) is the fix if the box is sold with arbitrary cables.
 - **RJ45:** isolation by the magnetics in the jack; Bob-Smith capacitor 1 nF (the jack has a 1 nF/2 kV one inside
   **[Likely]**). The board part is rated 2 kV (1206) so that the 1500 V isolation of the magnetics is not bypassed
   by a low-voltage capacitor; the Luckfox reference uses 1 nF/100 V.
@@ -1239,6 +1278,11 @@ Assemble and test in stages; each stage uses the test points on the board.
 
 ### 10.1 To ask Lontium (or its distributor) before layout
 
+The full datasheet (item 1) is public: LCSC publishes `LT7911D_Datasheet_R1.4` for part C5310990 (source
+`LT7911D_DS`). It could not be opened from the environment these files were made in, so its pin table still has to
+be copied into `netlist.py`. Items 2–9 are about the reference design and the firmware, which only Lontium or its
+distributors provide.
+
 1. Full LT7911D datasheet: 64-pin table + EPAD, thermal pad size, recommended footprint, reflow profile.
 2. Reference schematic "Type-C DP Alt Mode sink → 4-lane MIPI CSI-2 with pass-through charging": wiring of
    UCC1/UCC2, the second charger-side CC port (whether it exists, which pins), the VBUS switch control pin, the VBUS
@@ -1261,10 +1305,10 @@ Assemble and test in stages; each stage uses the test points on the board.
 
 | ID | Risk | Level | Mitigation |
 |---|---|---|---|
-| H1 | No LT7911D pinout yet | Blocks layout | §10.1; buy an evaluation board (shopping list, §13 of custom-box.md) |
+| H1 | LT7911D pins 24–64 not filled in (the public datasheet was not readable here) | Blocks the LT7911D area of the layout (§15) | copy the pin table from datasheet R1.4 (LCSC C5310990) into `netlist.py`, re-run `generate.py`, `check.py`, `pcb.py --route`; buy an evaluation board (custom-box.md §13) |
 | H2 | The LT7911D cannot act as Source + UFP_D with the iPhone | High | Option B; if neither works: USB-C to HDMI adapter + HDMI-CSI bridge (fallback in custom-box.md §4) |
 | H3 | The RV1106 does not accept 1080p60 over 4 lanes from the LT7911D (5.10 driver, lane mapping, bandwidth) | Medium | experiment T3 on a Luckfox Pico before the PCB |
-| H4 | Heat: ~2 W of losses from the bucks + LT7911D + RV1106 in a ~95×65×24 mm aluminium case | Medium | copper pours, gap pad to the case, measure during T5 |
+| H4 | Heat: ~2 W of losses from the bucks + LT7911D + RV1106 in a ~101×71×24 mm aluminium case | Medium | copper pours, gap pad to the case, measure during T5 |
 | H5 | Wi-Fi: the Core1106 Wi-Fi variant has an IPEX antenna connector; a metal case blocks any antenna placed inside | Medium | IPEX pigtail to an RP-SMA bulkhead, or an FPC antenna behind a plastic window (ORDERING.md §7) |
 | H6 | Charger < 27 W: VIN sags when the iPhone draws 3 A | Medium | firmware limit from VIN_SENSE/PHONE_ISENSE; recommend a 30 W charger |
 | H7 | Supply of the Core1106 G3 + eMMC + Wi-Fi variant | Low–medium | the variant without Wi-Fi fits the same pins (Wi-Fi pads stay open) |
@@ -1272,7 +1316,9 @@ Assemble and test in stages; each stage uses the test points on the board.
 | H9 | LMR33630/TLV62569 VREF/EN thresholds taken indirectly | Low | read the TI datasheets, fix `check.py` if different |
 | H10 | The KiCad 8 files have not been opened in KiCad 8 itself in this environment | Low | checked with KiCad 7.0.11 (converted copy) and our own parser (§13) |
 | H11 | LCSC codes, JLCPCB classes and prices come from a parts-list snapshot (2026-04-02) and search excerpts, not from the vendor pages | Medium | the assembly house re-validates every line at quotation; `bom.csv` marks them [Likely] |
-| H12 | D101 SMAJ24A clamps at up to 38.9 V (at 10.3 A), above the 36 V operating maximum of the LMR33630 **[Likely]** | Low–medium | if only 9–15 V PD profiles are used, a lower standoff TVS protects the bucks better; decide with Option B (20 V) |
+| H12 | ~~D101 SMAJ24A clamps at 38.9 V, above the LMR33630's 36 V~~ | Closed | D101 is now an SMBJ20A (32.4 V clamp) |
+| H13 | The iPhone receptacle's B row is through-hole: four DP lanes (TX2, RX1) see a ~1.6 mm pin stub | Low | the TYPE-C-31-M-04 is sold for USB 3.1 (5 Gbit/s); 1080p60 needs HBR (2.7 Gbit/s); confirm eye margin at bring-up (T2) |
+| H14 | The layout is autorouted: USB and Ethernet pairs are not length-matched or coupled by rule, and a router makes choices a person would not | Medium | layout review before fabrication (ORDERING.md §3); re-route the USB pairs as coupled pairs in KiCad |
 
 ---
 
@@ -1284,41 +1330,50 @@ gsuberland/jlcpcb_autogenerated_stackups project, 2025-05):
 
 | Layer | Role |
 |---|---|
-| L1 (Top) | parts, every differential pair (DP, CSI, USB, ETH), bucks |
+| L1 (Top) | every part, every differential pair (DP, CSI, USB, ETH), most signals; GND pour |
 | 7628 prepreg, 0.2104 mm, εr 4.4 | |
-| L2 | solid GND, no cuts |
+| L2 | solid GND reference plane, no routing (only GND vias pass) |
 | core 1.065 mm, εr 4.43 | |
-| L3 | power pours: 5V_SYS, 3V3, 1V2 (separate areas), slow signals |
+| L3 | signals; 5V_SYS pour up the corridor between the module and the RJ45; GND pour elsewhere |
 | 7628 prepreg, 0.2104 mm, εr 4.4 | |
-| L4 (Bottom) | slow signals, GND pour, thermal vias |
+| L4 (Bottom) | signals, GND pour; no parts |
 
 If thinner traces are needed to escape between the pads of the 0.4 mm QFN, use the JLC04161H-3313 stack-up (3313
 prepreg 0.0994 mm, εr 4.1): 100 Ω ≈ 0.11/0.13 mm, 90 Ω ≈ 0.13/0.10 mm (estimates, recompute with the vendor's
 calculator).
 
-**Target size 90×60 mm**; the RJ45 HR911105A is ~13.5 mm tall, so the case is ~24 mm high outside with a 3 mm
-standoff and 2 mm walls (the earlier figure of ~20 mm assumed a thinner floor and lid; see `svg/mechanical.svg`).
+**Board 96×66 mm**, 2 mm corner radius, four M2.5 holes 3.5 mm from the corners, three fiducials. The first draft
+aimed at 90×60 mm; the layout needed room for the two 10×10 mm inductors and their capacitors along the bottom
+edge. The RJ45 HR911105A is ~13.5 mm tall, so the case is ~101×71×24 mm outside with a 3 mm standoff and 2 mm walls
+(`svg/mechanical.svg`).
 
-Suggested placement (top view):
+![Layout: placement](svg/pcb-assembly.svg)
 
-- **Left edge:** J201 (iPhone USB-C). Right behind it U202–U205, then the LT7911D (≤ 15 mm from the receptacle) and
-  the CH32V305 (≤ 30 mm).
-- **Centre:** the 30×30 mm Core1106, rotated so that the edge with pads 1–28 (CSI pads 1–12, USB pads 22–23) faces
-  the LT7911D.
-- **Right edge:** J402 RJ45 next to pads 85–88 (top-right corner of the module).
-- **Bottom edge:** J401 (PC USB-C) near pads 22–23; J101 (PD USB-C) and the power block (U101–U106, Q101–Q103) in the
-  bottom-right corner, away from the DP/CSI pairs.
-- **Wi-Fi antenna:** ANT1 on the Core1106 is an antenna connector (§4.4), located per the assembly drawing on page 2
-  of Core1106.pdf: leave room above it for the IPEX plug and route the pigtail to the case (RP-SMA bulkhead) or to an
-  FPC antenna behind a non-metal window. If a module with an on-board antenna is used instead, put that corner of the
-  module at the board edge and keep copper out of every layer within ~10 mm of the antenna.
-- **Headers and buttons:** J501/J502/J503, SW501/SW502 and the LEDs along the top edge; the LEDs and buttons are
-  reached through the lid (light pipes, pin-holes).
+Placement (top view, [`placement.py`](placement.py); x from the front edge, y from the top):
 
-Footprints to be made: `box-v1:LT7911D_QFN-64-1EP_7.5x7.5mm_P0.4mm` (waiting for the datasheet) and
-`box-v1:Luckfox_Core1106_Castellated_30x30mm_P1.0mm` (built from the dimensions in §4.4, cross-checked against
-Luckfox's `Core1106-SMT` file; check Luckfox's terms of use before copying the file directly). The L101/L102 land
-pattern (`L_Bourns_SRP1038C`) must be checked against the SRP1038A datasheet.
+- **Front edge (left):** J201, the iPhone's USB-C, at mid-height. Right behind it the ESD arrays U202/U203 (DP
+  lanes) and U204 (CC, SBU), U205 (USB 2.0), then the LT7911D ~22 mm from the front. The status LEDs D501–D503 sit
+  at the front edge under light pipes.
+- **Top-left:** the CH32V305, rotated 180° so that its USB HS pins face the iPhone port (~15 mm of trace); its
+  crystal towards the module; the SWD/UART header J501 and the MCU's second USB (J502) along the top edge.
+- **Centre-top:** the Core1106. Its left edge (CSI pads 1–12) faces the LT7911D across a corridor kept free of
+  parts; its top-right corner (Ethernet pads 85–88) faces the RJ45; its right edge (supply pads 79–81, UARTs,
+  interrupt) faces a corridor to the rear connectors that also carries the 5V_SYS pour on L3. No vias under the
+  module, no top-layer copper under it except its pads.
+- **Rear edge (right):** the RJ45 J402 at the top, then the PC USB-C J401, the CC-line ESD U107, the power USB-C
+  J101 with its fuse, TVS and bulk capacitor; the CH224K between them; RECOVERY and RESET buttons near the rear.
+- **Bottom band:** from the front: the iPhone VBUS switch (Q101/Q102, R126, U106), the 3V3 and 1V2 bucks, then the
+  5V2_PHONE and 5V_SYS bucks with their inductors above the ICs (SW pad next to the SW pin) and their capacitors
+  beside them. The switch sits next to the iPhone port, so the 3 A path to the iPhone is short on the last leg.
+- **Headers:** J501, J502 and J503 (RV1106 console) along the top edge, reached with the lid off.
+- **Wi-Fi antenna:** ANT1 on the Core1106 is an IPEX connector (§4.4); the pigtail runs to an RP-SMA bulkhead on
+  the top side wall above the RJ45 (`svg/mechanical.svg`), or to an FPC antenna behind a non-metal window.
+
+Footprints: the LT7911D QFN-64 is **provisional** (0.2×0.7 mm pads, 5.4 mm exposed pad) until the datasheet
+drawing is in; the Core1106 footprint is built from the dimensions in §4.4 (cross-check against Luckfox's
+`Core1106-SMT` file); the CH224K ESSOP-10 adds KiCad 8's exposed pad to KiCad 7's SSOP-10; the iPhone receptacle
+uses a public-domain footprint (`footprints/box-v1.pretty`). The L101/L102 land pattern (`L_Bourns_SRP1038C`) must
+be checked against the SRP1038A datasheet.
 
 ---
 
@@ -1354,9 +1409,9 @@ Coverage of the current BOM (generated):
 | LCSC code [Confirmed] (read on the LCSC/JLCPCB page itself) | 0 |
 | LCSC code [Likely] (JLCPCB parts-list snapshot or search excerpt) | 69 |
 | No LCSC code (choose at order) | 6: J501, J502 J503, R114, R119, R503, U401 |
-| Lines in JLCPCB's Basic/Preferred list (no feeder fee) | 43 |
-| Lines assumed Extended (feeder fee per line) | 31 |
-| Placements per board (fitted parts): SMT / THT / module | 166 / 4 / 1 |
+| Lines in JLCPCB's Basic/Preferred list (no feeder fee) | 44 |
+| Lines assumed Extended (feeder fee per line) | 30 |
+| Placements per board (fitted parts): SMT / THT / module | 167 / 4 / 1 |
 <!-- END GENERATED: bom-coverage -->
 
 Ceramic capacitors whose rating is not stated in the schematic follow this rule: X7R (or X5R for ≥ 10 µF), ≥ 16 V
@@ -1405,13 +1460,15 @@ caught.
 Extra check with KiCad (not needed to run `check.py`): KiCad 8 could not be installed in the build environment, so
 `generate.py --kicad7 DIR` writes a copy converted to the KiCad 7 format (20230121). `kicad-cli` 7.0.11 opens the
 whole 6-sheet tree, exports PDF/SVG, and its exported netlist matches `netlist.py` on every pin (0 differences; the
-115 NC pins are on "unconnected" nets). ERC is only available in `kicad-cli` 8: when opening in KiCad 8, run
+120 NC pins are on "unconnected" nets). ERC is only available in `kicad-cli` 8: when opening in KiCad 8, run
 `kicad-cli sch erc kicad/box-v1.kicad_sch`. Rails with power inputs but no power output have a `PWR_FLAG` on the
 power sheet.
 
 ---
 
 ## 14. Design review notes (2026-09-26)
+
+### 14.1 First review
 
 Fixed in `netlist.py`:
 
@@ -1421,16 +1478,108 @@ Fixed in `netlist.py`:
 - C408 (Bob-Smith node) 1 nF 100 V → 1 nF 2 kV 1206, so that the Ethernet isolation is not limited by a 100 V part.
 - Capacitor voltage ratings raised to the stocked parts (§12); C128 0402 → 0603.
 
+### 14.2 Second review, with the layout
+
+Fixed in `netlist.py`:
+
+- **CH224K VBUS pin (U101 pin 8) left open**, R102 removed. The pin was tied to VIN through 10 kΩ, but it is rated
+  13.5 V while VIN reaches 15 V on a 15 V request; the datasheet allows the pin to stay open in PD-only mode
+  (CH224 datasheet §5.5) **[Confirmed]**.
+- **D101 SMAJ24A → SMBJ20A** (closes risk H12): the SMAJ24A clamps at 38.9 V, above the 36 V input rating of the
+  LMR33630; the SMBJ20A clamps at 32.4 V (18.5 A) and its 22.2 V minimum breakdown stays above a 15 V request.
+- **U107 TPD4E05U06DQA added:** the CC lines of the two rear USB-C ports (J101 power, J401 PC) had no ESD
+  protection, while the iPhone side had.
+- **R213 1 kΩ + C215 1 µF → 100 nF** on the LT7911D reset: the RV1106 GPIO no longer discharges a 1 µF capacitor
+  directly (flagged in the first review).
+- **I2C pull-ups R201/R202 moved from 3V3 to VCC_3V3_MOD**, the module's own 3.3 V: the LT7911D bus can no longer
+  feed current into the RV1106's I/O pins while the module is off or in reset.
+- **J201 Molex 105450-0101 → HRO TYPE-C-31-M-04** (LCSC C129018): the Molex footprint's all-SMD B row sits behind a
+  keep-out and cannot be escaped without via-in-pad; the HRO part has its B row through-hole, is sold for USB 3.1
+  and costs ~0.36 USD instead of ~0.94 (new risk H13 on the pin stubs).
+- **SW501/SW502 TL3342 → XKB TS-1187A-B-A-B** (LCSC C318884, a Basic part): smaller and cheaper.
+- R101 note: a 20 V request would dissipate 0.28 W in the 1206 part; requests stay at 9–15 V (Option B removes
+  U101 altogether).
+
+Chips reviewed and kept (the comparison is in [custom-box.md](../../docs/research/custom-box.md) §4):
+
+- **LT7911D:** no other chip turns USB-C DP Alt Mode into CSI-2 with PD built in at this price and package. The
+  LT7911UXC is BGA-169, ~13 USD and often out of stock; the HDMI-to-CSI bridges (TC358743, LT6911C) need a USB-C to
+  HDMI adapter in front. Its datasheet R1.4 is public (LCSC C5310990); reading it is the next step (§10.1, H1).
+- **CH224K** (PD sink), **CH32V305RBT6** (USB High-Speed device whose HID descriptors the firmware defines),
+  **LMR33630 / TLV62569** bucks, **Core1106**: public datasheets, stocked at LCSC, no better-documented part for the
+  same role.
+
 Flagged, not changed (decisions for the next revision):
 
-- D101 clamp voltage versus the LMR33630 input rating (risk H12).
-- C215 (1 µF on LT_RST_N) is discharged directly by the RV1106 GPIO0_A3 when it drives the reset low; a 100 nF
-  capacitor (τ = 1 ms) or a series resistor would spare the GPIO. Keep until the LT7911D reset timing is known.
-- R101 dissipates 0.28 W at 20 V (Option B), above its 0.25 W rating: use a 2512 or two 1206 in series for Option B.
 - L103/L104 (SRN4018-2R2M) are rated 2.9 A per the LCSC excerpt, and L101/L102 (SRP1038A-100M) have ~30 mΩ DCR:
   both acceptable for the loads, to be confirmed on the Bourns datasheets.
 - X301: the CL = 12 pF of the YXC X32258MOB4SI is inferred from the part-number scheme; confirm on its datasheet.
 - The Core1106 antenna is a connector (§4.4): the enclosure must provide an antenna path (risk H5).
+- The iPhone CC lines have ESD (U204) but no over-voltage protection against a faulty cable shorting VBUS to CC; a
+  USB-C port protector with short-to-VBUS protection on CC and SBU (TI TPDxS3xx family) would add one part if the
+  box is used with unknown cables.
+
+---
+
+## 15. PCB layout (`pcb.py`)
+
+`pcb.py` generates `kicad/box-v1.kicad_pcb` from `netlist.py` (parts, footprints, nets, net classes) and
+`placement.py` (board size, holes, positions of the big parts). Nothing in the board file is edited by hand, so a
+change to the circuit is a change to `netlist.py` followed by a new run. What it does, in order:
+
+1. **Footprints** from the KiCad 7.0.11 library, plus four made for this board: the LT7911D QFN-64 (provisional,
+   see H1), the Core1106 castellated module (§4.4), the CH224K ESSOP-10 (KiCad 7's SSOP-10 plus the exposed pad)
+   and the HRO TYPE-C-31-M-04 receptacle (`footprints/box-v1.pretty`).
+2. **Placement:** the connectors, ICs, inductors and crystals at the positions of `placement.py` (§11); each
+   decoupling capacitor next to the pin it serves; every other small part near the parts it connects to, moved
+   until no two courtyards overlap and the corridors kept for the DP and CSI lanes stay empty. `--check-only`
+   stops here and reports overlaps, parts off the board and parts on holes or fiducials.
+3. **Rules** within JLCPCB's 4-layer capabilities: 0.1 mm track and space, 0.25 mm drill and 0.45 mm via pad,
+   0.25 mm between holes and from copper to the board edge. Net classes (`netlist.NETCLASSES`): 100 Ω pairs
+   0.2/0.15 mm, 90 Ω USB pairs 0.25/0.15 mm, 3 A supplies 0.8 mm, 1 A supplies 0.5 mm, supplies that reach
+   0.5 mm-pitch pins 0.3 mm (pours carry their current).
+4. **Keep-outs:** no vias under the Core1106 and no L1 copper under it except its pads, so nothing on the carrier
+   can touch the underside of a module soldered flat; rings around the mounting holes and the fiducials.
+5. **Fixed tracks:** the A6–B6 (D+) and A7–B7 (D−) links of the 16-pin PC receptacle J401, whose pads alternate in
+   one row: D+ closes on the connector side of the row, D− on the board side.
+6. **GND:** L2 is a solid GND plane. Before routing, every GND pad on L1 gets a via to the plane beside it; after
+   routing, GND stitching vias fill a 3 mm grid wherever they clear other copper, and GND pours cover L1, L3 and
+   L4. L3 also carries a 5V_SYS pour up the corridor between the module and the RJ45 (§11).
+7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself). The
+   LT7911D's pads and its nets (the DP lanes `SS_*`, AUX, SBU and the CSI lanes) are left out: they wait for the
+   pin table (H1). The DP and CSI lanes must be routed by hand anyway (§5: length and skew limits, no vias on DP).
+8. **Zone fill and DRC** with KiCad's own engine → `kicad/drc.rpt`; `--render DIR` writes SVG views with
+   `kicad-cli`.
+
+Run it (KiCad 7 with its Python module, the KiCad 7.0.11 footprint library, Java 17+):
+
+```sh
+cd hardware/box-v1
+export KICAD7_FOOTPRINT_DIR=/path/to/kicad-footprints          # the 7.0.11 library
+python3 pcb.py --check-only                                    # placement checks only
+FREEROUTING_JAR=/path/to/freerouting-1.9.0.jar python3 pcb.py --route --passes 30 --render svg
+```
+
+Freerouting 1.9 always opens a window: without a display, `pcb.py` runs it under `xvfb-run`. Freerouting 2.1
+took its pass limit from its own settings file instead of the command line and stopped with many nets unrouted on
+this board, so `pcb.py` expects 1.9.0.
+
+<!-- PCB-RESULT -->
+
+**Views** (`svg/pcb-*.svg`, from `kicad-cli`): `pcb-assembly` (placement, above in §11) and `pcb-l1` … `pcb-l4`
+(each copper layer).
+
+![Layout: L1 (top copper)](svg/pcb-l1.svg)
+
+**Still to do by a person** (ORDERING.md §3):
+
+1. Fill in the LT7911D pins from datasheet R1.4, redo its footprint from the package drawing, run `pcb.py` again.
+2. Route the LT7911D area by hand: supplies and crystal, the 4 DP lanes from J201 through U202/U203 on L1 without
+   vias, AUX and SBU, the 5 CSI pairs to the module across their corridor, with the length and skew limits of §5.
+3. Review the autorouted rest: re-route the USB (PHONE_USB, PC_USB, MCU_FS) and Ethernet pairs as coupled,
+   length-matched pairs; check the buck loops (input capacitor, IC, inductor, output capacitor) and the 3 A paths;
+   move silkscreen text off pads.
+4. Fabrication outputs (Gerber, drill, pick-and-place) from KiCad once the DRC is clean.
 
 ---
 
@@ -1460,6 +1609,9 @@ Flagged, not changed (decisions for the next revision):
   https://www.usb.org/document-library/usb-type-cr-cable-and-connector-specification-release-24
 - Core1106 Wi-Fi variant with IPEX 1.0 antenna connector (article): https://www.cnx-software.com/2025/01/21/solderable-rockchip-rv1106-system-on-module-features-112-castellated-pins-offers-wifi-6-and-bluetooth-5-2-connectivity/
 - Bourns SRP1038C series end of life, SRP1038CC replacement: https://www.bourns.com/docs/technical-documents/product-obsolescence-memos/Bourns_IC23130_SRP-C_POM.pdf
+- Footprint of the HRO TYPE-C-31-M-04 (public domain, Unlicense): https://github.com/jenschr/USB-C-Connectors
+- KiCad 7.0.11 footprint library (every other footprint of the board): https://gitlab.com/kicad/libraries/kicad-footprints/-/tree/7.0.11
+- Freerouting 1.9.0 (autorouter, run as a separate program): https://github.com/freerouting/freerouting/releases/tag/v1.9.0
 
 **Part codes and stack-up data**
 - JLCPCB Basic/Preferred parts list with LCSC codes, MPNs, stock and prices, as mirrored by
@@ -1472,7 +1624,7 @@ Flagged, not changed (decisions for the next revision):
   https://www.lcsc.com/product-detail/Current-Sense-Amplifiers_Texas-Instruments-INA180A2IDBVR_C192764.html,
   https://lcsc.com/product-detail/ESD-Protection-Devices_Texas-Instruments-TPD4E05U06DQAR_C138714.html,
   https://www.lcsc.com/product-detail/C7519.html, https://www.lcsc.com/product-detail/C165948.html,
-  https://www.lcsc.com/product-detail/USB-Type-C_MOLEX_105450-0101_105450-0101_C134092.html,
+  https://www.lcsc.com/product-detail/C129018.html (HRO TYPE-C-31-M-04),
   https://www.lcsc.com/product-detail/Ethernet-Connectors-Modular-Connectors-RJ45-RJ11_HANRUN-Zhongshan-HanRun-Elec-HR911105A_C12074.html,
   https://lcsc.com/product-detail/MOSFETs_Alpha-Omega-Semicon-AO4407A_C16072.html,
   https://www.lcsc.com/product-detail/C85833.html, https://www.lcsc.com/product-detail/C913207.html,
@@ -1483,6 +1635,5 @@ Flagged, not changed (decisions for the next revision):
   https://www.lcsc.com/product-detail/C76947.html,
   https://www.lcsc.com/product-detail/Aluminum-Electrolytic-Capacitors-SMD_KNSCHA-RVT47UF35V67RV0039_C2836440.html,
   https://www.lcsc.com/product-detail/Current-Sense-Resistors-Shunt-Resistors_YAGEO-RL1206FR-7W0R01L_C155193.html,
-  https://jlcpcb.com/partdetail/YAGEO-RC0402FR0723K7L/C327362, https://www.lcsc.com/product-detail/Light-Emitting-Diodes-LED_Yellow-green-0603_C2289.html,
-  https://lcsc.com/product-detail/Tactile-Switches_E-Switch-TL3342F160QG_C2886898.html
+  https://jlcpcb.com/partdetail/YAGEO-RC0402FR0723K7L/C327362, https://www.lcsc.com/product-detail/Light-Emitting-Diodes-LED_Yellow-green-0603_C2289.html
 - LT7911D chip price reference (Global Sources listing, $4.9): https://www.globalsources.com/product/lontium-lt7911d-type-c-dp-edp-to-dual-port-mipi-ds_1212055839f.htm

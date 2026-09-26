@@ -532,36 +532,39 @@ def build_kicad(design):
     return files, root_uuid
 
 
-def kicad_pro(root_uuid):
-    def nc(name, width, gap=0.0, dp_w=0.0, clearance=0.15):
-        return {"name": name, "bus_width": 12, "clearance": clearance, "diff_pair_gap": gap or 0.25,
-                "diff_pair_via_gap": 0.25, "diff_pair_width": dp_w or 0.2, "line_style": 0,
+def kicad_pro(root_uuid, board_section=None):
+    def nc(name, spec):
+        tw, cl, dw, dg, vd, vdr = spec
+        return {"name": name, "bus_width": 12, "clearance": cl, "diff_pair_gap": dg,
+                "diff_pair_via_gap": 0.25, "diff_pair_width": dw, "line_style": 0,
                 "microvia_diameter": 0.3, "microvia_drill": 0.1, "pcb_color": "rgba(0, 0, 0, 0.000)",
-                "schematic_color": "rgba(0, 0, 0, 0.000)", "track_width": width, "via_diameter": 0.45,
-                "via_drill": 0.2, "wire_width": 6}
-    return {
+                "schematic_color": "rgba(0, 0, 0, 0.000)", "track_width": tw, "via_diameter": vd,
+                "via_drill": vdr, "wire_width": 6}
+    pro = {
         "meta": {"filename": f"{PROJECT}.kicad_pro", "version": 1},
         "boards": [],
         "libraries": {"pinned_footprint_libs": [], "pinned_symbol_libs": []},
         "net_settings": {
             # widths for JLC04161H-7628 (L1-L2 prepreg 0.21 mm): estimates, re-check with the fab calculator
-            "classes": [nc("Default", 0.2), nc("DIFF_100R", 0.2, 0.15, 0.2),
-                        nc("USB_90R", 0.25, 0.15, 0.25), nc("PWR_3A", 1.0, clearance=0.2),
-                        nc("PWR_1A", 0.5)],
+            "classes": [nc(name, spec) for name, spec in NL.NETCLASSES.items()],
             "meta": {"version": 3},
-            "netclass_patterns": (
-                [{"netclass": "DIFF_100R", "pattern": p} for p in
-                 ("SS_*", "CSI_*", "LT_AUX_*", "PHONE_SBU*", "ETH_*")] +
-                [{"netclass": "USB_90R", "pattern": p} for p in ("PHONE_USB_D*", "PC_USB_D*", "MCU_FS_D*")] +
-                [{"netclass": "PWR_3A", "pattern": p} for p in
-                 ("VBUS_IN", "VIN", "5V2_PHONE", "PSW_*", "PHONE_VBUS", "5V_SYS", "U102_SW", "U103_SW")] +
-                [{"netclass": "PWR_1A", "pattern": p} for p in ("3V3", "1V2", "3V3_LT", "1V2_LT_A",
-                                                                "U104_SW", "U105_SW", "PC_VBUS")])},
+            "netclass_patterns": [{"netclass": c, "pattern": p} for c, p in NL.NETCLASS_PATTERNS]},
         "schematic": {"drawing": {"default_line_thickness": 6.0, "default_text_size": 50.0},
                       "legacy_lib_dir": "", "legacy_lib_list": []},
         "sheets": [[root_uuid, "Root"]] + [[uid("sheet", b), b] for b in BLOCKS],
         "text_variables": {},
     }
+    if board_section:
+        pro["board"] = board_section      # design rules of the PCB, written by pcb.py through pcbnew
+    return pro
+
+
+def existing_board_section(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f).get("board")
+    except (OSError, ValueError):
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -1039,8 +1042,10 @@ def main():
     for name, tree in files.items():
         with open(os.path.join(kdir, name), "w", encoding="utf-8") as f:
             f.write(dump(tree) + "\n")
-    with open(os.path.join(kdir, f"{PROJECT}.kicad_pro"), "w", encoding="utf-8") as f:
-        json.dump(kicad_pro(root_uuid), f, indent=2)
+    pro_path = os.path.join(kdir, f"{PROJECT}.kicad_pro")
+    board_section = existing_board_section(pro_path)
+    with open(pro_path, "w", encoding="utf-8") as f:
+        json.dump(kicad_pro(root_uuid, board_section), f, indent=2)
         f.write("\n")
     if args.kicad7:
         os.makedirs(args.kicad7, exist_ok=True)

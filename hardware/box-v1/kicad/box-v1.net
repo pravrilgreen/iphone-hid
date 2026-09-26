@@ -1460,12 +1460,12 @@
 		)
 		(comp
 			(ref "C215")
-			(value "1uF 25V")
+			(value "100nF")
 			(footprint "Capacitor_SMD:C_0402_1005Metric")
 			(fields
 				(field
 					(name "MPN")
-					"CL05A105KA5NQNC"
+					"CL05B104KO5NNNC"
 				)
 				(field
 					(name "Manufacturer")
@@ -1473,7 +1473,7 @@
 				)
 				(field
 					(name "LCSC")
-					"C52923"
+					"C1525"
 				)
 				(field
 					(name "DNP")
@@ -1483,7 +1483,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "C")
-				(description "Power-on reset RC (τ = 10 ms)")
+				(description "Power-on reset RC (τ = 1 ms)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -2450,12 +2450,12 @@
 		)
 		(comp
 			(ref "D101")
-			(value "SMAJ24A")
-			(footprint "Diode_SMD:D_SMA")
+			(value "SMBJ20A")
+			(footprint "Diode_SMD:D_SMB")
 			(fields
 				(field
 					(name "MPN")
-					"SMAJ24A"
+					"SMBJ20A"
 				)
 				(field
 					(name "Manufacturer")
@@ -2463,7 +2463,7 @@
 				)
 				(field
 					(name "LCSC")
-					"C19077541"
+					"C19077575"
 				)
 				(field
 					(name "DNP")
@@ -2473,7 +2473,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "D_TVS")
-				(description "TVS on VIN, 24 V standoff")
+				(description "TVS on VIN: 20 V standoff, 32.4 V clamp, below the 36 V input rating of the LMR33630")
 			)
 			(sheetpath
 				(names "/power/")
@@ -2880,19 +2880,19 @@
 		(comp
 			(ref "J201")
 			(value "USB-C iPhone")
-			(footprint "Connector_USB:USB_C_Receptacle_Molex_105450-0101")
+			(footprint "box-v1:USB_C_Receptacle_HRO_TYPE-C-31-M-04")
 			(fields
 				(field
 					(name "MPN")
-					"1054500101"
+					"TYPE-C-31-M-04"
 				)
 				(field
 					(name "Manufacturer")
-					"Molex"
+					"Korean Hroparts Elec"
 				)
 				(field
 					(name "LCSC")
-					"C134092"
+					"C129018"
 				)
 				(field
 					(name "DNP")
@@ -2901,7 +2901,7 @@
 			)
 			(libsource
 				(lib "box-v1")
-				(part "USB-C_iPhone_964311")
+				(part "USB-C_iPhone_595a3e")
 				(description "24-pin USB-C receptacle with all SS pairs (4-lane DP Alt Mode) + USB 2.0 + CC + VBUS")
 			)
 			(sheetpath
@@ -3404,39 +3404,6 @@
 				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
 			)
 			(tstamps "8ce4fed2-bc41-537f-92c3-26a9a3d53577")
-		)
-		(comp
-			(ref "R102")
-			(value "10k")
-			(footprint "Resistor_SMD:R_0402_1005Metric")
-			(fields
-				(field
-					(name "MPN")
-					"0402WGF1002TCE"
-				)
-				(field
-					(name "Manufacturer")
-					"UNI-ROYAL (Uniroyal Elec)"
-				)
-				(field
-					(name "LCSC")
-					"C25744"
-				)
-				(field
-					(name "DNP")
-					"no"
-				)
-			)
-			(libsource
-				(lib "box-v1")
-				(part "R")
-				(description "Series resistor of the CH224K VBUS pin (§6.2)")
-			)
-			(sheetpath
-				(names "/power/")
-				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
-			)
-			(tstamps "2e559f36-07de-52e6-9e5f-b6ba8212a7fc")
 		)
 		(comp
 			(ref "R103")
@@ -4321,7 +4288,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "I2C pull-up (RV1106 bus I2C2_M0, 3.3 V)")
+				(description "I2C pull-up to the module's 3.3 V (the RV1106 IO domain), so the bus never feeds an unpowered SoC")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4354,7 +4321,7 @@
 			(libsource
 				(lib "box-v1")
 				(part "R")
-				(description "I2C pull-up")
+				(description "I2C pull-up (as R201)")
 			)
 			(sheetpath
 				(names "/iphone/")
@@ -4625,6 +4592,39 @@
 				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
 			)
 			(tstamps "5c3e66f5-b58e-535d-ae79-d8121b226771")
+		)
+		(comp
+			(ref "R213")
+			(value "1k")
+			(footprint "Resistor_SMD:R_0402_1005Metric")
+			(fields
+				(field
+					(name "MPN")
+					"0402WGF1001TCE"
+				)
+				(field
+					(name "Manufacturer")
+					"UNI-ROYAL (Uniroyal Elec)"
+				)
+				(field
+					(name "LCSC")
+					"C11702"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "R")
+				(description "Series resistor: the RV1106 GPIO no longer discharges C215 directly")
+			)
+			(sheetpath
+				(names "/iphone/")
+				(tstamps "/fd4e7e5d-da6e-52fc-81b9-efd47bbbcee3/")
+			)
+			(tstamps "39eb9283-2e77-5ae3-a47c-7155f3f0e254")
 		)
 		(comp
 			(ref "R301")
@@ -5388,19 +5388,19 @@
 		(comp
 			(ref "SW501")
 			(value "RECOVERY")
-			(footprint "Button_Switch_SMD:SW_SPST_TL3342")
+			(footprint "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A")
 			(fields
 				(field
 					(name "MPN")
-					"TL3342F160QG"
+					"TS-1187A-B-A-B"
 				)
 				(field
 					(name "Manufacturer")
-					"E-Switch"
+					"XKB Connection"
 				)
 				(field
 					(name "LCSC")
-					"C2886898"
+					"C318884"
 				)
 				(field
 					(name "DNP")
@@ -5421,19 +5421,19 @@
 		(comp
 			(ref "SW502")
 			(value "RESET")
-			(footprint "Button_Switch_SMD:SW_SPST_TL3342")
+			(footprint "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A")
 			(fields
 				(field
 					(name "MPN")
-					"TL3342F160QG"
+					"TS-1187A-B-A-B"
 				)
 				(field
 					(name "Manufacturer")
-					"E-Switch"
+					"XKB Connection"
 				)
 				(field
 					(name "LCSC")
-					"C2886898"
+					"C318884"
 				)
 				(field
 					(name "DNP")
@@ -6079,6 +6079,39 @@
 			(tstamps "744e3613-ae6b-5a42-8847-924046841c2b")
 		)
 		(comp
+			(ref "U107")
+			(value "TPD4E05U06DQA")
+			(footprint "Package_SON:USON-10_2.5x1.0mm_P0.5mm")
+			(fields
+				(field
+					(name "MPN")
+					"TPD4E05U06DQAR"
+				)
+				(field
+					(name "Manufacturer")
+					"Texas Instruments"
+				)
+				(field
+					(name "LCSC")
+					"C138714"
+				)
+				(field
+					(name "DNP")
+					"no"
+				)
+			)
+			(libsource
+				(lib "box-v1")
+				(part "TPD4E05U06DQA_dd89b8")
+				(description "ESD for the CC lines of J101 (charger) and J401 (PC), between the two rear ports (flow-through)")
+			)
+			(sheetpath
+				(names "/power/")
+				(tstamps "/edf33a92-f845-59f1-9b4d-dbb6e9c8885b/")
+			)
+			(tstamps "7b25a7df-0f2e-5314-bc7e-c249eaac92b6")
+		)
+		(comp
 			(ref "U201")
 			(value "LT7911D")
 			(footprint "box-v1:LT7911D_QFN-64-1EP_7.5x7.5mm_P0.4mm")
@@ -6608,18 +6641,6 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "R201")
-				(pin "2")
-				(pinfunction "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R202")
-				(pin "2")
-				(pinfunction "2")
-				(pintype "passive")
-			)
-			(node
 				(ref "R203")
 				(pin "2")
 				(pinfunction "2")
@@ -7100,22 +7121,6 @@
 		)
 		(net
 			(code "14")
-			(name "CH224_VSNS")
-			(node
-				(ref "U101")
-				(pin "8")
-				(pinfunction "VBUS")
-				(pintype "passive")
-			)
-			(node
-				(ref "R102")
-				(pin "2")
-				(pinfunction "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "15")
 			(name "CSI_CLK_N")
 			(node
 				(ref "U201")
@@ -7131,7 +7136,7 @@
 			)
 		)
 		(net
-			(code "16")
+			(code "15")
 			(name "CSI_CLK_P")
 			(node
 				(ref "U201")
@@ -7147,7 +7152,7 @@
 			)
 		)
 		(net
-			(code "17")
+			(code "16")
 			(name "CSI_D0_N")
 			(node
 				(ref "U201")
@@ -7163,7 +7168,7 @@
 			)
 		)
 		(net
-			(code "18")
+			(code "17")
 			(name "CSI_D0_P")
 			(node
 				(ref "U201")
@@ -7179,7 +7184,7 @@
 			)
 		)
 		(net
-			(code "19")
+			(code "18")
 			(name "CSI_D1_N")
 			(node
 				(ref "U201")
@@ -7195,7 +7200,7 @@
 			)
 		)
 		(net
-			(code "20")
+			(code "19")
 			(name "CSI_D1_P")
 			(node
 				(ref "U201")
@@ -7211,7 +7216,7 @@
 			)
 		)
 		(net
-			(code "21")
+			(code "20")
 			(name "CSI_D2_N")
 			(node
 				(ref "U201")
@@ -7227,7 +7232,7 @@
 			)
 		)
 		(net
-			(code "22")
+			(code "21")
 			(name "CSI_D2_P")
 			(node
 				(ref "U201")
@@ -7243,7 +7248,7 @@
 			)
 		)
 		(net
-			(code "23")
+			(code "22")
 			(name "CSI_D3_N")
 			(node
 				(ref "U201")
@@ -7259,7 +7264,7 @@
 			)
 		)
 		(net
-			(code "24")
+			(code "23")
 			(name "CSI_D3_P")
 			(node
 				(ref "U201")
@@ -7275,7 +7280,7 @@
 			)
 		)
 		(net
-			(code "25")
+			(code "24")
 			(name "ETH_BS")
 			(node
 				(ref "J402")
@@ -7291,7 +7296,7 @@
 			)
 		)
 		(net
-			(code "26")
+			(code "25")
 			(name "ETH_RCT")
 			(node
 				(ref "J402")
@@ -7307,7 +7312,7 @@
 			)
 		)
 		(net
-			(code "27")
+			(code "26")
 			(name "ETH_RXN_J")
 			(node
 				(ref "J402")
@@ -7323,7 +7328,7 @@
 			)
 		)
 		(net
-			(code "28")
+			(code "27")
 			(name "ETH_RXP_J")
 			(node
 				(ref "J402")
@@ -7339,7 +7344,7 @@
 			)
 		)
 		(net
-			(code "29")
+			(code "28")
 			(name "ETH_RX_N")
 			(node
 				(ref "U401")
@@ -7355,7 +7360,7 @@
 			)
 		)
 		(net
-			(code "30")
+			(code "29")
 			(name "ETH_RX_P")
 			(node
 				(ref "U401")
@@ -7371,7 +7376,7 @@
 			)
 		)
 		(net
-			(code "31")
+			(code "30")
 			(name "ETH_TCT")
 			(node
 				(ref "J402")
@@ -7387,7 +7392,7 @@
 			)
 		)
 		(net
-			(code "32")
+			(code "31")
 			(name "ETH_TXN_J")
 			(node
 				(ref "J402")
@@ -7403,7 +7408,7 @@
 			)
 		)
 		(net
-			(code "33")
+			(code "32")
 			(name "ETH_TXP_J")
 			(node
 				(ref "J402")
@@ -7419,7 +7424,7 @@
 			)
 		)
 		(net
-			(code "34")
+			(code "33")
 			(name "ETH_TX_N")
 			(node
 				(ref "U401")
@@ -7435,7 +7440,7 @@
 			)
 		)
 		(net
-			(code "35")
+			(code "34")
 			(name "ETH_TX_P")
 			(node
 				(ref "U401")
@@ -7451,7 +7456,7 @@
 			)
 		)
 		(net
-			(code "36")
+			(code "35")
 			(name "GND")
 			(node
 				(ref "J101")
@@ -7512,6 +7517,18 @@
 				(pin "2")
 				(pinfunction "2")
 				(pintype "passive")
+			)
+			(node
+				(ref "U107")
+				(pin "3")
+				(pinfunction "GND")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U107")
+				(pin "8")
+				(pinfunction "GND")
+				(pintype "power_in")
 			)
 			(node
 				(ref "U102")
@@ -7779,7 +7796,25 @@
 			)
 			(node
 				(ref "J201")
-				(pin "S1")
+				(pin "31")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "32")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "33")
+				(pinfunction "SHIELD")
+				(pintype "passive")
+			)
+			(node
+				(ref "J201")
+				(pin "34")
 				(pinfunction "SHIELD")
 				(pintype "passive")
 			)
@@ -8421,7 +8456,7 @@
 			)
 		)
 		(net
-			(code "37")
+			(code "36")
 			(name "HSE_IN")
 			(node
 				(ref "U301")
@@ -8443,7 +8478,7 @@
 			)
 		)
 		(net
-			(code "38")
+			(code "37")
 			(name "HSE_OUT")
 			(node
 				(ref "U301")
@@ -8465,7 +8500,7 @@
 			)
 		)
 		(net
-			(code "39")
+			(code "38")
 			(name "LED_G")
 			(node
 				(ref "U301")
@@ -8481,7 +8516,7 @@
 			)
 		)
 		(net
-			(code "40")
+			(code "39")
 			(name "LED_G_A")
 			(node
 				(ref "R503")
@@ -8497,7 +8532,7 @@
 			)
 		)
 		(net
-			(code "41")
+			(code "40")
 			(name "LED_R")
 			(node
 				(ref "U301")
@@ -8513,7 +8548,7 @@
 			)
 		)
 		(net
-			(code "42")
+			(code "41")
 			(name "LED_R_A")
 			(node
 				(ref "R501")
@@ -8529,7 +8564,7 @@
 			)
 		)
 		(net
-			(code "43")
+			(code "42")
 			(name "LED_Y")
 			(node
 				(ref "U301")
@@ -8545,7 +8580,7 @@
 			)
 		)
 		(net
-			(code "44")
+			(code "43")
 			(name "LED_Y_A")
 			(node
 				(ref "R502")
@@ -8561,7 +8596,7 @@
 			)
 		)
 		(net
-			(code "45")
+			(code "44")
 			(name "LT_AUX_N")
 			(node
 				(ref "U201")
@@ -8583,7 +8618,7 @@
 			)
 		)
 		(net
-			(code "46")
+			(code "45")
 			(name "LT_AUX_P")
 			(node
 				(ref "U201")
@@ -8605,7 +8640,7 @@
 			)
 		)
 		(net
-			(code "47")
+			(code "46")
 			(name "LT_INT")
 			(node
 				(ref "U201")
@@ -8627,7 +8662,7 @@
 			)
 		)
 		(net
-			(code "48")
+			(code "47")
 			(name "LT_PDCC1")
 			(node
 				(ref "R106")
@@ -8643,7 +8678,7 @@
 			)
 		)
 		(net
-			(code "49")
+			(code "48")
 			(name "LT_PDCC2")
 			(node
 				(ref "R107")
@@ -8659,7 +8694,7 @@
 			)
 		)
 		(net
-			(code "50")
+			(code "49")
 			(name "LT_RST_N")
 			(node
 				(ref "U201")
@@ -8680,14 +8715,14 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "U401")
-				(pin "61")
-				(pinfunction "PWR_CTRL_M1/GPIO0_A3")
-				(pintype "output")
+				(ref "R213")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
 			)
 		)
 		(net
-			(code "51")
+			(code "50")
 			(name "LT_RX_HPD")
 			(node
 				(ref "U201")
@@ -8703,7 +8738,7 @@
 			)
 		)
 		(net
-			(code "52")
+			(code "51")
 			(name "LT_SCL")
 			(node
 				(ref "U201")
@@ -8725,7 +8760,7 @@
 			)
 		)
 		(net
-			(code "53")
+			(code "52")
 			(name "LT_SDA")
 			(node
 				(ref "U201")
@@ -8747,7 +8782,7 @@
 			)
 		)
 		(net
-			(code "54")
+			(code "53")
 			(name "LT_SLEEP")
 			(node
 				(ref "U201")
@@ -8769,7 +8804,7 @@
 			)
 		)
 		(net
-			(code "55")
+			(code "54")
 			(name "LT_VBUS_EN")
 			(node
 				(ref "R128")
@@ -8785,7 +8820,7 @@
 			)
 		)
 		(net
-			(code "56")
+			(code "55")
 			(name "LT_XI")
 			(node
 				(ref "U201")
@@ -8807,7 +8842,7 @@
 			)
 		)
 		(net
-			(code "57")
+			(code "56")
 			(name "LT_XO")
 			(node
 				(ref "U201")
@@ -8829,7 +8864,7 @@
 			)
 		)
 		(net
-			(code "58")
+			(code "57")
 			(name "MCU_BOOT0")
 			(node
 				(ref "U301")
@@ -8851,7 +8886,7 @@
 			)
 		)
 		(net
-			(code "59")
+			(code "58")
 			(name "MCU_BOOT1")
 			(node
 				(ref "U301")
@@ -8867,7 +8902,7 @@
 			)
 		)
 		(net
-			(code "60")
+			(code "59")
 			(name "MCU_DBG_RX")
 			(node
 				(ref "U301")
@@ -8883,7 +8918,7 @@
 			)
 		)
 		(net
-			(code "61")
+			(code "60")
 			(name "MCU_DBG_TX")
 			(node
 				(ref "U301")
@@ -8899,7 +8934,7 @@
 			)
 		)
 		(net
-			(code "62")
+			(code "61")
 			(name "MCU_FS_DN")
 			(node
 				(ref "U301")
@@ -8915,7 +8950,7 @@
 			)
 		)
 		(net
-			(code "63")
+			(code "62")
 			(name "MCU_FS_DP")
 			(node
 				(ref "U301")
@@ -8931,7 +8966,7 @@
 			)
 		)
 		(net
-			(code "64")
+			(code "63")
 			(name "MCU_IRQ")
 			(node
 				(ref "U301")
@@ -8947,7 +8982,7 @@
 			)
 		)
 		(net
-			(code "65")
+			(code "64")
 			(name "MCU_NRST")
 			(node
 				(ref "U301")
@@ -8981,7 +9016,7 @@
 			)
 		)
 		(net
-			(code "66")
+			(code "65")
 			(name "MCU_UART_RX")
 			(node
 				(ref "U301")
@@ -8997,7 +9032,7 @@
 			)
 		)
 		(net
-			(code "67")
+			(code "66")
 			(name "MCU_UART_TX")
 			(node
 				(ref "U301")
@@ -9013,7 +9048,7 @@
 			)
 		)
 		(net
-			(code "68")
+			(code "67")
 			(name "MCU_VBUS_EN")
 			(node
 				(ref "R127")
@@ -9029,7 +9064,7 @@
 			)
 		)
 		(net
-			(code "69")
+			(code "68")
 			(name "PCPWR_A")
 			(node
 				(ref "JP102")
@@ -9045,8 +9080,14 @@
 			)
 		)
 		(net
-			(code "70")
+			(code "69")
 			(name "PC_CC1")
+			(node
+				(ref "U107")
+				(pin "4")
+				(pinfunction "D2+")
+				(pintype "passive")
+			)
 			(node
 				(ref "J401")
 				(pin "A5")
@@ -9061,8 +9102,14 @@
 			)
 		)
 		(net
-			(code "71")
+			(code "70")
 			(name "PC_CC2")
+			(node
+				(ref "U107")
+				(pin "5")
+				(pinfunction "D2-")
+				(pintype "passive")
+			)
 			(node
 				(ref "J401")
 				(pin "B5")
@@ -9077,7 +9124,7 @@
 			)
 		)
 		(net
-			(code "72")
+			(code "71")
 			(name "PC_USB_DN")
 			(node
 				(ref "U401")
@@ -9111,7 +9158,7 @@
 			)
 		)
 		(net
-			(code "73")
+			(code "72")
 			(name "PC_USB_DP")
 			(node
 				(ref "U401")
@@ -9145,7 +9192,7 @@
 			)
 		)
 		(net
-			(code "74")
+			(code "73")
 			(name "PC_VBUS")
 			(node
 				(ref "JP102")
@@ -9197,7 +9244,7 @@
 			)
 		)
 		(net
-			(code "75")
+			(code "74")
 			(name "PC_VBUS_DET")
 			(node
 				(ref "U401")
@@ -9225,7 +9272,7 @@
 			)
 		)
 		(net
-			(code "76")
+			(code "75")
 			(name "PD_CC1")
 			(node
 				(ref "J101")
@@ -9245,9 +9292,15 @@
 				(pinfunction "1")
 				(pintype "passive")
 			)
+			(node
+				(ref "U107")
+				(pin "1")
+				(pinfunction "D1+")
+				(pintype "passive")
+			)
 		)
 		(net
-			(code "77")
+			(code "76")
 			(name "PD_CC2")
 			(node
 				(ref "J101")
@@ -9267,9 +9320,15 @@
 				(pinfunction "1")
 				(pintype "passive")
 			)
+			(node
+				(ref "U107")
+				(pin "2")
+				(pinfunction "D1-")
+				(pintype "passive")
+			)
 		)
 		(net
-			(code "78")
+			(code "77")
 			(name "PD_PG")
 			(node
 				(ref "U101")
@@ -9291,7 +9350,7 @@
 			)
 		)
 		(net
-			(code "79")
+			(code "78")
 			(name "PHONE_CC1")
 			(node
 				(ref "J201")
@@ -9325,7 +9384,7 @@
 			)
 		)
 		(net
-			(code "80")
+			(code "79")
 			(name "PHONE_CC2")
 			(node
 				(ref "J201")
@@ -9359,7 +9418,7 @@
 			)
 		)
 		(net
-			(code "81")
+			(code "80")
 			(name "PHONE_ISENSE")
 			(node
 				(ref "U106")
@@ -9381,7 +9440,7 @@
 			)
 		)
 		(net
-			(code "82")
+			(code "81")
 			(name "PHONE_SBU1")
 			(node
 				(ref "J201")
@@ -9403,7 +9462,7 @@
 			)
 		)
 		(net
-			(code "83")
+			(code "82")
 			(name "PHONE_SBU2")
 			(node
 				(ref "J201")
@@ -9425,7 +9484,7 @@
 			)
 		)
 		(net
-			(code "84")
+			(code "83")
 			(name "PHONE_USB_DN")
 			(node
 				(ref "J201")
@@ -9459,7 +9518,7 @@
 			)
 		)
 		(net
-			(code "85")
+			(code "84")
 			(name "PHONE_USB_DP")
 			(node
 				(ref "J201")
@@ -9493,7 +9552,7 @@
 			)
 		)
 		(net
-			(code "86")
+			(code "85")
 			(name "PHONE_VBUS")
 			(node
 				(ref "R126")
@@ -9569,7 +9628,7 @@
 			)
 		)
 		(net
-			(code "87")
+			(code "86")
 			(name "PHONE_VBUS_EN")
 			(node
 				(ref "Q103")
@@ -9597,7 +9656,7 @@
 			)
 		)
 		(net
-			(code "88")
+			(code "87")
 			(name "PHONE_VBUS_SENSE")
 			(node
 				(ref "U301")
@@ -9625,7 +9684,7 @@
 			)
 		)
 		(net
-			(code "89")
+			(code "88")
 			(name "PSW_G")
 			(node
 				(ref "Q101")
@@ -9665,7 +9724,7 @@
 			)
 		)
 		(net
-			(code "90")
+			(code "89")
 			(name "PSW_GD")
 			(node
 				(ref "R124")
@@ -9681,7 +9740,7 @@
 			)
 		)
 		(net
-			(code "91")
+			(code "90")
 			(name "PSW_IN")
 			(node
 				(ref "JP101")
@@ -9715,7 +9774,7 @@
 			)
 		)
 		(net
-			(code "92")
+			(code "91")
 			(name "PSW_OUT")
 			(node
 				(ref "Q102")
@@ -9755,7 +9814,7 @@
 			)
 		)
 		(net
-			(code "93")
+			(code "92")
 			(name "PSW_S")
 			(node
 				(ref "Q101")
@@ -9813,7 +9872,7 @@
 			)
 		)
 		(net
-			(code "94")
+			(code "93")
 			(name "RECOVERY_KEY")
 			(node
 				(ref "R412")
@@ -9829,7 +9888,7 @@
 			)
 		)
 		(net
-			(code "95")
+			(code "94")
 			(name "SOC_CON_RX")
 			(node
 				(ref "U401")
@@ -9845,7 +9904,7 @@
 			)
 		)
 		(net
-			(code "96")
+			(code "95")
 			(name "SOC_CON_TX")
 			(node
 				(ref "U401")
@@ -9858,6 +9917,22 @@
 				(pin "2")
 				(pinfunction "TX")
 				(pintype "passive")
+			)
+		)
+		(net
+			(code "96")
+			(name "SOC_LT_RST")
+			(node
+				(ref "R213")
+				(pin "1")
+				(pinfunction "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U401")
+				(pin "61")
+				(pinfunction "PWR_CTRL_M1/GPIO0_A3")
+				(pintype "output")
 			)
 		)
 		(net
@@ -10556,6 +10631,18 @@
 			(code "132")
 			(name "VCC_3V3_MOD")
 			(node
+				(ref "R201")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R202")
+				(pin "2")
+				(pinfunction "2")
+				(pintype "passive")
+			)
+			(node
 				(ref "U401")
 				(pin "78")
 				(pinfunction "VCC_3V3")
@@ -10619,12 +10706,6 @@
 			)
 			(node
 				(ref "R101")
-				(pin "1")
-				(pinfunction "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R102")
 				(pin "1")
 				(pinfunction "1")
 				(pintype "passive")

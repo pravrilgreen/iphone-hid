@@ -8,3 +8,8 @@ docs/test-logs/*.jpg
 dist/
 build/
 *.pid
+# KiCad per-user state and caches; Freerouting's log (hardware/box-v1/pcb.py --route)
+*.kicad_prl
+fp-info-cache
+*-backups/
+hardware/box-v1/logs/

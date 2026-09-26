@@ -203,23 +203,23 @@
   },
   {
    "ref": "D101",
-   "value": "SMAJ24A",
+   "value": "SMBJ20A",
    "manufacturer": "hongjiacheng",
-   "mpn": "SMAJ24A",
-   "lcsc": "C19077541",
-   "footprint": "Diode_SMD:D_SMA",
+   "mpn": "SMBJ20A",
+   "lcsc": "C19077575",
+   "footprint": "Diode_SMD:D_SMB",
    "block": "power",
    "dnp": false,
    "confidence": "Confirmed",
-   "description": "TVS on VIN, 24 V standoff",
+   "description": "TVS on VIN: 20 V standoff, 32.4 V clamp, below the 36 V input rating of the LMR33630",
    "order": {
     "lcsc_confidence": "Likely",
     "lcsc_evidence": "SNAP",
     "jlc_type": "Preferred",
     "assembly": "SMT",
-    "unit_price_usd_est": 0.038,
+    "unit_price_usd_est": 0.035,
     "price_basis": "SNAP",
-    "note": "400 W TVS, 24 V standoff, 38.9 V clamp"
+    "note": "600 W TVS, 20 V standoff, 32.4 V clamp at 18.5 A, SMB"
    },
    "pins": [
     {
@@ -360,8 +360,8 @@
      "num": "8",
      "name": "VBUS",
      "type": "passive",
-     "net": "CH224_VSNS",
-     "no_connect": false,
+     "net": null,
+     "no_connect": true,
      "confidence": "Confirmed"
     },
     {
@@ -463,45 +463,6 @@
      "name": "2",
      "type": "passive",
      "net": "GND",
-     "no_connect": false,
-     "confidence": "Confirmed"
-    }
-   ]
-  },
-  {
-   "ref": "R102",
-   "value": "10k",
-   "manufacturer": "UNI-ROYAL (Uniroyal Elec)",
-   "mpn": "0402WGF1002TCE",
-   "lcsc": "C25744",
-   "footprint": "Resistor_SMD:R_0402_1005Metric",
-   "block": "power",
-   "dnp": false,
-   "confidence": "Confirmed",
-   "description": "Series resistor of the CH224K VBUS pin (§6.2)",
-   "order": {
-    "lcsc_confidence": "Likely",
-    "lcsc_evidence": "SNAP",
-    "jlc_type": "Basic",
-    "assembly": "SMT",
-    "unit_price_usd_est": 0.005,
-    "price_basis": "SNAP",
-    "note": "thick film 1 % 62.5 mW 0402"
-   },
-   "pins": [
-    {
-     "num": "1",
-     "name": "1",
-     "type": "passive",
-     "net": "VIN",
-     "no_connect": false,
-     "confidence": "Confirmed"
-    },
-    {
-     "num": "2",
-     "name": "2",
-     "type": "passive",
-     "net": "CH224_VSNS",
      "no_connect": false,
      "confidence": "Confirmed"
     }
@@ -737,6 +698,109 @@
      "type": "passive",
      "net": "3V3",
      "no_connect": false,
+     "confidence": "Confirmed"
+    }
+   ]
+  },
+  {
+   "ref": "U107",
+   "value": "TPD4E05U06DQA",
+   "manufacturer": "Texas Instruments",
+   "mpn": "TPD4E05U06DQAR",
+   "lcsc": "C138714",
+   "footprint": "Package_SON:USON-10_2.5x1.0mm_P0.5mm",
+   "block": "power",
+   "dnp": false,
+   "confidence": "Confirmed",
+   "description": "ESD for the CC lines of J101 (charger) and J401 (PC), between the two rear ports (flow-through)",
+   "order": {
+    "lcsc_confidence": "Likely",
+    "lcsc_evidence": "WEB",
+    "jlc_type": "Extended (assumed)",
+    "assembly": "SMT",
+    "unit_price_usd_est": 0.0361,
+    "price_basis": "WEB",
+    "note": ""
+   },
+   "pins": [
+    {
+     "num": "1",
+     "name": "D1+",
+     "type": "passive",
+     "net": "PD_CC1",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "2",
+     "name": "D1-",
+     "type": "passive",
+     "net": "PD_CC2",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "3",
+     "name": "GND",
+     "type": "power_in",
+     "net": "GND",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "4",
+     "name": "D2+",
+     "type": "passive",
+     "net": "PC_CC1",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "5",
+     "name": "D2-",
+     "type": "passive",
+     "net": "PC_CC2",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "6",
+     "name": "NC",
+     "type": "no_connect",
+     "net": null,
+     "no_connect": true,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "7",
+     "name": "NC",
+     "type": "no_connect",
+     "net": null,
+     "no_connect": true,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "8",
+     "name": "GND",
+     "type": "power_in",
+     "net": "GND",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "9",
+     "name": "NC",
+     "type": "no_connect",
+     "net": null,
+     "no_connect": true,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "10",
+     "name": "NC",
+     "type": "no_connect",
+     "net": null,
+     "no_connect": true,
      "confidence": "Confirmed"
     }
    ]
@@ -3536,10 +3600,10 @@
   {
    "ref": "J201",
    "value": "USB-C iPhone",
-   "manufacturer": "Molex",
-   "mpn": "1054500101",
-   "lcsc": "C134092",
-   "footprint": "Connector_USB:USB_C_Receptacle_Molex_105450-0101",
+   "manufacturer": "Korean Hroparts Elec",
+   "mpn": "TYPE-C-31-M-04",
+   "lcsc": "C129018",
+   "footprint": "box-v1:USB_C_Receptacle_HRO_TYPE-C-31-M-04",
    "block": "iphone",
    "dnp": false,
    "confidence": "Confirmed",
@@ -3549,9 +3613,9 @@
     "lcsc_evidence": "WEB",
     "jlc_type": "Extended (assumed)",
     "assembly": "SMT",
-    "unit_price_usd_est": 0.9365,
+    "unit_price_usd_est": 0.3594,
     "price_basis": "WEB",
-    "note": "USB-C 24P USB 3.2 Gen 2 receptacle (hybrid SMD + through-hole shell)"
+    "note": "USB-C 24P USB 3.1 receptacle, hybrid (A row SMD, B row through-hole); replaces the Molex 105450-0101 of the first draft, whose all-SMD B row sits behind a keep-out and cannot be escaped without via-in-pad"
    },
    "pins": [
     {
@@ -3747,7 +3811,31 @@
      "confidence": "Confirmed"
     },
     {
-     "num": "S1",
+     "num": "31",
+     "name": "SHIELD",
+     "type": "passive",
+     "net": "GND",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "32",
+     "name": "SHIELD",
+     "type": "passive",
+     "net": "GND",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "33",
+     "name": "SHIELD",
+     "type": "passive",
+     "net": "GND",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "34",
      "name": "SHIELD",
      "type": "passive",
      "net": "GND",
@@ -4852,7 +4940,7 @@
    "block": "iphone",
    "dnp": false,
    "confidence": "Confirmed",
-   "description": "I2C pull-up (RV1106 bus I2C2_M0, 3.3 V)",
+   "description": "I2C pull-up to the module's 3.3 V (the RV1106 IO domain), so the bus never feeds an unpowered SoC",
    "order": {
     "lcsc_confidence": "Likely",
     "lcsc_evidence": "SNAP",
@@ -4875,7 +4963,7 @@
      "num": "2",
      "name": "2",
      "type": "passive",
-     "net": "3V3",
+     "net": "VCC_3V3_MOD",
      "no_connect": false,
      "confidence": "Confirmed"
     }
@@ -4891,7 +4979,7 @@
    "block": "iphone",
    "dnp": false,
    "confidence": "Confirmed",
-   "description": "I2C pull-up",
+   "description": "I2C pull-up (as R201)",
    "order": {
     "lcsc_confidence": "Likely",
     "lcsc_evidence": "SNAP",
@@ -4914,7 +5002,7 @@
      "num": "2",
      "name": "2",
      "type": "passive",
-     "net": "3V3",
+     "net": "VCC_3V3_MOD",
      "no_connect": false,
      "confidence": "Confirmed"
     }
@@ -4961,23 +5049,23 @@
   },
   {
    "ref": "C215",
-   "value": "1uF 25V",
+   "value": "100nF",
    "manufacturer": "Samsung Electro-Mechanics",
-   "mpn": "CL05A105KA5NQNC",
-   "lcsc": "C52923",
+   "mpn": "CL05B104KO5NNNC",
+   "lcsc": "C1525",
    "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "block": "iphone",
    "dnp": false,
    "confidence": "Confirmed",
-   "description": "Power-on reset RC (τ = 10 ms)",
+   "description": "Power-on reset RC (τ = 1 ms)",
    "order": {
     "lcsc_confidence": "Likely",
     "lcsc_evidence": "SNAP",
     "jlc_type": "Basic",
     "assembly": "SMT",
-    "unit_price_usd_est": 0.007,
+    "unit_price_usd_est": 0.005,
     "price_basis": "SNAP",
-    "note": "25 V X5R 0402"
+    "note": "16 V X7R 0402"
    },
    "pins": [
     {
@@ -4993,6 +5081,45 @@
      "name": "2",
      "type": "passive",
      "net": "GND",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    }
+   ]
+  },
+  {
+   "ref": "R213",
+   "value": "1k",
+   "manufacturer": "UNI-ROYAL (Uniroyal Elec)",
+   "mpn": "0402WGF1001TCE",
+   "lcsc": "C11702",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
+   "block": "iphone",
+   "dnp": false,
+   "confidence": "Confirmed",
+   "description": "Series resistor: the RV1106 GPIO no longer discharges C215 directly",
+   "order": {
+    "lcsc_confidence": "Likely",
+    "lcsc_evidence": "SNAP",
+    "jlc_type": "Basic",
+    "assembly": "SMT",
+    "unit_price_usd_est": 0.004,
+    "price_basis": "SNAP",
+    "note": "thick film 1 % 62.5 mW 0402"
+   },
+   "pins": [
+    {
+     "num": "1",
+     "name": "1",
+     "type": "passive",
+     "net": "SOC_LT_RST",
+     "no_connect": false,
+     "confidence": "Confirmed"
+    },
+    {
+     "num": "2",
+     "name": "2",
+     "type": "passive",
+     "net": "LT_RST_N",
      "no_connect": false,
      "confidence": "Confirmed"
     }
@@ -8276,7 +8403,7 @@
      "num": "61",
      "name": "PWR_CTRL_M1/GPIO0_A3",
      "type": "output",
-     "net": "LT_RST_N",
+     "net": "SOC_LT_RST",
      "no_connect": false,
      "confidence": "Confirmed"
     },
@@ -9814,22 +9941,22 @@
   {
    "ref": "SW501",
    "value": "RECOVERY",
-   "manufacturer": "E-Switch",
-   "mpn": "TL3342F160QG",
-   "lcsc": "C2886898",
-   "footprint": "Button_Switch_SMD:SW_SPST_TL3342",
+   "manufacturer": "XKB Connection",
+   "mpn": "TS-1187A-B-A-B",
+   "lcsc": "C318884",
+   "footprint": "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A",
    "block": "debug",
    "dnp": false,
    "confidence": "Confirmed",
    "description": "Hold at power-up: the RV1106 enters loader mode (rockusb) over the PC USB-C",
    "order": {
     "lcsc_confidence": "Likely",
-    "lcsc_evidence": "WEB",
-    "jlc_type": "Extended (assumed)",
+    "lcsc_evidence": "SNAP",
+    "jlc_type": "Basic",
     "assembly": "SMT",
-    "unit_price_usd_est": 0.6256,
-    "price_basis": "WEB",
-    "note": "SMD tactile 160 gf; XKB TS-1187A-B-A-B (C318884, Basic) is a cheaper option but needs its own footprint"
+    "unit_price_usd_est": 0.025,
+    "price_basis": "SNAP",
+    "note": "SMD tactile 5.1 x 5.1 mm, 1.5 mm actuator, 160 gf; smaller and cheaper than the TL3342 of the first draft"
    },
    "pins": [
     {
@@ -9853,22 +9980,22 @@
   {
    "ref": "SW502",
    "value": "RESET",
-   "manufacturer": "E-Switch",
-   "mpn": "TL3342F160QG",
-   "lcsc": "C2886898",
-   "footprint": "Button_Switch_SMD:SW_SPST_TL3342",
+   "manufacturer": "XKB Connection",
+   "mpn": "TS-1187A-B-A-B",
+   "lcsc": "C318884",
+   "footprint": "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A",
    "block": "debug",
    "dnp": false,
    "confidence": "Confirmed",
    "description": "RV1106 reset (NPOR)",
    "order": {
     "lcsc_confidence": "Likely",
-    "lcsc_evidence": "WEB",
-    "jlc_type": "Extended (assumed)",
+    "lcsc_evidence": "SNAP",
+    "jlc_type": "Basic",
     "assembly": "SMT",
-    "unit_price_usd_est": 0.6256,
-    "price_basis": "WEB",
-    "note": "SMD tactile 160 gf; XKB TS-1187A-B-A-B (C318884, Basic) is a cheaper option but needs its own footprint"
+    "unit_price_usd_est": 0.025,
+    "price_basis": "SNAP",
+    "note": "SMD tactile 5.1 x 5.1 mm, 1.5 mm actuator, 160 gf; smaller and cheaper than the TL3342 of the first draft"
    },
    "pins": [
     {
@@ -10573,14 +10700,6 @@
      "1"
     ],
     [
-     "R201",
-     "2"
-    ],
-    [
-     "R202",
-     "2"
-    ],
-    [
      "R203",
      "2"
     ],
@@ -10924,19 +11043,6 @@
     ]
    ]
   },
-  "CH224_VSNS": {
-   "class": "signal",
-   "nodes": [
-    [
-     "U101",
-     "8"
-    ],
-    [
-     "R102",
-     "2"
-    ]
-   ]
-  },
   "CSI_CLK_N": {
    "class": "diff",
    "nodes": [
@@ -11254,6 +11360,14 @@
      "2"
     ],
     [
+     "U107",
+     "3"
+    ],
+    [
+     "U107",
+     "8"
+    ],
+    [
      "U102",
      "1"
     ],
@@ -11431,7 +11545,19 @@
     ],
     [
      "J201",
-     "S1"
+     "31"
+    ],
+    [
+     "J201",
+     "32"
+    ],
+    [
+     "J201",
+     "33"
+    ],
+    [
+     "J201",
+     "34"
     ],
     [
      "U201",
@@ -12064,8 +12190,8 @@
      "1"
     ],
     [
-     "U401",
-     "61"
+     "R213",
+     "2"
     ]
    ]
   },
@@ -12356,6 +12482,10 @@
    "class": "signal",
    "nodes": [
     [
+     "U107",
+     "4"
+    ],
+    [
      "J401",
      "A5"
     ],
@@ -12368,6 +12498,10 @@
   "PC_CC2": {
    "class": "signal",
    "nodes": [
+    [
+     "U107",
+     "5"
+    ],
     [
      "J401",
      "B5"
@@ -12500,6 +12634,10 @@
     [
      "R106",
      "1"
+    ],
+    [
+     "U107",
+     "1"
     ]
    ]
   },
@@ -12517,6 +12655,10 @@
     [
      "R107",
      "1"
+    ],
+    [
+     "U107",
+     "2"
     ]
    ]
   },
@@ -12956,6 +13098,19 @@
     [
      "J503",
      "2"
+    ]
+   ]
+  },
+  "SOC_LT_RST": {
+   "class": "signal",
+   "nodes": [
+    [
+     "R213",
+     "1"
+    ],
+    [
+     "U401",
+     "61"
     ]
    ]
   },
@@ -13506,6 +13661,14 @@
    "class": "rail",
    "nodes": [
     [
+     "R201",
+     "2"
+    ],
+    [
+     "R202",
+     "2"
+    ],
+    [
      "U401",
      "78"
     ],
@@ -13553,10 +13716,6 @@
     ],
     [
      "R101",
-     "1"
-    ],
-    [
-     "R102",
      "1"
     ],
     [
