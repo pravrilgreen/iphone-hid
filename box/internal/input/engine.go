@@ -75,6 +75,7 @@ const (
 type op struct {
 	kind     opKind
 	touch    Touch
+	from     uint8 // opTouch: the buttons held before it; equal to touch.Buttons for a pure move
 	keys     hid.KeyState
 	consumer uint32
 	at       time.Time
@@ -95,6 +96,8 @@ type Engine struct {
 	signal chan struct{}
 	closed bool
 	busy   string
+
+	liveButtons uint8 // the buttons of the last live touch queued (under mu)
 
 	// as last sent to the phone (engine goroutine only)
 	ptr      hid.Pointer
@@ -151,16 +154,20 @@ func (e *Engine) Busy() string {
 	return e.busy
 }
 
-// Live queues an operator's pointer state. Consecutive states with the same buttons merge (the
-// newest position wins, wheel lines add up); a change of buttons never merges.
+// Live queues an operator's pointer state. A move merges into a waiting move with the same buttons
+// (the newest position wins, wheel lines add up); a press or a release never merges, and nothing
+// merges into one, so each lands where it was made.
 func (e *Engine) Live(t Touch) {
 	t.X, t.Y = clamp01(t.X), clamp01(t.Y)
 	t.Buttons &= 7
 	now := e.now()
 	e.mu.Lock()
-	if n := len(e.queue); n > 0 {
+	from := e.liveButtons
+	e.liveButtons = t.Buttons
+	if n := len(e.queue); n > 0 && from == t.Buttons {
 		tail := e.queue[n-1]
-		if tail.kind == opTouch && tail.touch.Buttons == t.Buttons && abs(tail.touch.Wheel+t.Wheel) <= 127 {
+		if tail.kind == opTouch && tail.from == tail.touch.Buttons && tail.touch.Buttons == t.Buttons &&
+			abs(tail.touch.Wheel+t.Wheel) <= 127 {
 			tail.touch.X, tail.touch.Y = t.X, t.Y
 			tail.touch.Wheel += t.Wheel
 			e.stats.merged++
@@ -168,7 +175,7 @@ func (e *Engine) Live(t Touch) {
 			return
 		}
 	}
-	e.queue = append(e.queue, &op{kind: opTouch, touch: t, at: now})
+	e.queue = append(e.queue, &op{kind: opTouch, touch: t, from: from, at: now})
 	e.mu.Unlock()
 	e.wakeup()
 }
@@ -182,7 +189,12 @@ func (e *Engine) LiveConsumer(bits uint32) {
 }
 
 // ReleaseAll queues a release of every button and key.
-func (e *Engine) ReleaseAll() { e.push(&op{kind: opRelease, at: e.now()}) }
+func (e *Engine) ReleaseAll() {
+	e.mu.Lock()
+	e.liveButtons = 0
+	e.mu.Unlock()
+	e.push(&op{kind: opRelease, at: e.now()})
+}
 
 // Do runs a scripted action in order with live input and waits for it. The action gets an Actor
 // that sends reports and sleeps; everything is released when it ends, even after an error.
@@ -307,7 +319,7 @@ func (e *Engine) liveTouch(o *op) {
 		return
 	}
 	since := o.at
-	if pressed != 0 && e.isJump(target) {
+	if pressed != 0 && (e.isJump(target) || e.gliding()) {
 		// move there with the buttons as they are, let the pointer glide, then press
 		move := target
 		move.Buttons, move.Wheel = e.ptr.Buttons, 0
@@ -352,8 +364,11 @@ func (e *Engine) isJump(p hid.Pointer) bool {
 	}
 	dx := float64(int(p.X)-int(e.ptr.X)) / hid.AbsMax
 	dy := float64(int(p.Y)-int(e.ptr.Y)) / hid.AbsMax
-	return math.Hypot(dx, dy) > e.cfg.JumpDist || e.now().Sub(e.jumpAt) < e.cfg.Settle
+	return math.Hypot(dx, dy) > e.cfg.JumpDist
 }
+
+// gliding tells whether iOS may still be gliding the pointer to the last jump's target.
+func (e *Engine) gliding() bool { return e.now().Sub(e.jumpAt) < e.cfg.Settle }
 
 // settle waits until the pointer finished gliding to its last position.
 func (e *Engine) settle() {
@@ -364,13 +379,13 @@ func (e *Engine) settle() {
 
 // send writes one pointer report and records it. since: when the input was made (for the stats).
 func (e *Engine) send(p hid.Pointer, since time.Time) bool {
-	jump := e.isJump(p)
+	jump := e.isJump(p) // only a real jump starts a glide: small hover moves never extend the settle
 	if err := e.sink.Pointer(p); err != nil {
 		e.fail(err)
 		e.ptrKnown = false
 		return false
 	}
-	if jump && (p.X != e.ptr.X || p.Y != e.ptr.Y || !e.ptrKnown) {
+	if jump {
 		e.jumpAt = e.now()
 	}
 	e.ptr = p
@@ -443,6 +458,10 @@ func (e *Engine) action(o *op) {
 	e.mu.Lock()
 	e.busy = o.name
 	e.mu.Unlock()
+	// a script starts from nothing held: an operator's finger left down would turn its tap into a swipe
+	if e.ptr.Buttons != 0 || e.keys.Mods != 0 || len(e.keys.Keys) > 0 || e.consumer != 0 {
+		e.releaseAll()
+	}
 	a := &Actor{e: e, ctx: o.ctx}
 	err := func() (err error) {
 		defer func() {

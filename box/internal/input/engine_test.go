@@ -415,3 +415,128 @@ func TestAFreshEngineNeverSendsThePointerToTheCorner(t *testing.T) {
 		t.Fatalf("no middle press: %+v", ps)
 	}
 }
+
+// blockingSink blocks the first pointer write until released, so live input queues up.
+type blockingSink struct {
+	fakeSink
+	once sync.Once
+	gate chan struct{}
+}
+
+func (s *blockingSink) Pointer(p hid.Pointer) error {
+	s.once.Do(func() { <-s.gate })
+	return s.fakeSink.Pointer(p)
+}
+
+// A drag made while the engine is behind: the press goes out where it was made, not where the drag
+// moved to while it waited.
+func TestAPressIsNotMovedByTheMovesAfterIt(t *testing.T) {
+	sink := &blockingSink{gate: make(chan struct{})}
+	cfg := testConfig()
+	cfg.Settle = 0
+	e := New(sink, cfg)
+	defer e.Close()
+	e.Live(Touch{X: 0.2, Y: 0.2})             // hover (in flight, blocked)
+	time.Sleep(10 * time.Millisecond)         // the engine took it
+	e.Live(Touch{X: 0.2, Y: 0.2})             // hover, queued
+	e.Live(Touch{X: 0.2, Y: 0.2, Buttons: 1}) // press at 0.2
+	for i := 1; i <= 10; i++ {                // drag to 0.8 with the button held
+		e.Live(Touch{X: 0.2 + 0.06*float64(i), Y: 0.2, Buttons: 1})
+	}
+	e.Live(Touch{X: 0.8, Y: 0.2, Buttons: 0}) // release
+	close(sink.gate)
+	waitFor(t, "release", func() bool {
+		ps := sink.pointers()
+		return len(ps) >= 3 && ps[len(ps)-1].p.Buttons == 0 && hasPress(ps)
+	})
+	for _, r := range sink.pointers() {
+		t.Logf("report buttons=%d x=%.3f", r.p.Buttons, float64(r.p.X)/hid.AbsMax)
+	}
+	for _, r := range sink.pointers() {
+		if r.p.Buttons == 1 {
+			if r.p.X != hid.AbsCoord(0.2) {
+				t.Fatalf("the press went out at x=%.3f, not at 0.2 where it was made", float64(r.p.X)/hid.AbsMax)
+			}
+			return
+		}
+	}
+}
+
+// A click then a quick hover away while the engine is behind: the release goes out where the press
+// was, so the phone sees a tap, not a drag.
+func TestAReleaseIsNotMovedByTheHoverAfterIt(t *testing.T) {
+	sink := &blockingSink{gate: make(chan struct{})}
+	cfg := testConfig()
+	cfg.Settle = 0
+	e := New(sink, cfg)
+	defer e.Close()
+	e.Live(Touch{X: 0.5, Y: 0.5})
+	time.Sleep(10 * time.Millisecond)
+	e.Live(Touch{X: 0.5, Y: 0.5, Buttons: 1})
+	e.Live(Touch{X: 0.5, Y: 0.5, Buttons: 0})
+	e.Live(Touch{X: 0.9, Y: 0.9, Buttons: 0}) // hover away
+	close(sink.gate)
+	waitFor(t, "release", func() bool {
+		ps := sink.pointers()
+		return len(ps) >= 3 && ps[len(ps)-1].p.Buttons == 0 && hasPress(ps)
+	})
+	ps := sink.pointers()
+	for _, r := range ps {
+		t.Logf("report buttons=%d x=%.3f", r.p.Buttons, float64(r.p.X)/hid.AbsMax)
+	}
+	for i, r := range ps {
+		if r.p.Buttons == 1 && i+1 < len(ps) && ps[i+1].p.X != r.p.X {
+			t.Fatalf("pressed at x=%.3f, released at x=%.3f in the same report", float64(r.p.X)/hid.AbsMax,
+				float64(ps[i+1].p.X)/hid.AbsMax)
+		}
+	}
+}
+
+// Hover after a jump: small moves do not start a glide, so a click long after the jump goes out at
+// once.
+func TestHoverDoesNotExtendTheSettle(t *testing.T) {
+	sink := &fakeSink{}
+	cfg := testConfig()
+	cfg.Settle = 80 * time.Millisecond
+	e := New(sink, cfg)
+	defer e.Close()
+	e.Live(Touch{X: 0.1, Y: 0.1}) // first report: a jump
+	// hover small moves every 10 ms for 300 ms
+	for i := 0; i < 30; i++ {
+		time.Sleep(10 * time.Millisecond)
+		e.Live(Touch{X: 0.1 + float64(i)*0.0005, Y: 0.1})
+	}
+	x := 0.1 + 29*0.0005
+	start := time.Now()
+	e.Live(Touch{X: x, Y: 0.1, Buttons: 1})
+	waitFor(t, "press", func() bool { return hasPress(sink.pointers()) })
+	if d := time.Since(start); d > 40*time.Millisecond {
+		t.Fatalf("a hover click (no jump for 300 ms, moves of 0.05%%) waited %v", d)
+	}
+}
+
+func TestAScriptStartsWithTheOperatorsFingerLifted(t *testing.T) {
+	sink := &fakeSink{}
+	cfg := testConfig()
+	e := New(sink, cfg)
+	defer e.Close()
+	e.Live(Touch{X: 0.9, Y: 0.5, Buttons: 1}) // an operator's finger down
+	waitFor(t, "the live press", func() bool { return hasPress(sink.pointers()) })
+	if err := e.Do(context.Background(), "tap", func(a *Actor) error { a.Tap(0.1, 0.5, 0); return a.Err() }); err != nil {
+		t.Fatal(err)
+	}
+	down, lifted := false, false
+	for _, r := range sink.pointers() {
+		switch {
+		case !down:
+			down = r.p.Buttons != 0 // from the operator's press on
+		case r.p.Buttons == 0:
+			lifted = true
+		case r.p.X != hid.AbsCoord(0.9) && !lifted:
+			t.Fatalf("the finger moved to x=%.2f without lifting: the tap became a swipe", float64(r.p.X)/hid.AbsMax)
+		}
+	}
+	if !lifted {
+		t.Fatal("no release")
+	}
+}
