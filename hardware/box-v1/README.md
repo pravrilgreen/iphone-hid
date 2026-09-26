@@ -1531,20 +1531,23 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    see H1), the Core1106 castellated module (§4.4), the CH224K ESSOP-10 (KiCad 7's SSOP-10 plus the exposed pad)
    and the HRO TYPE-C-31-M-04 receptacle (`footprints/box-v1.pretty`).
 2. **Placement:** the connectors, ICs, inductors and crystals at the positions of `placement.py` (§11); each
-   decoupling capacitor next to the pin it serves; every other small part near the parts it connects to, moved
+   decoupling capacitor next to the pin it serves, its supply pad towards the pin; every other small part near the parts it connects to, moved
    until no two courtyards overlap and the corridors kept for the DP and CSI lanes stay empty. `--check-only`
    stops here and reports overlaps, parts off the board and parts on holes or fiducials.
 3. **Rules** within JLCPCB's 4-layer capabilities: 0.1 mm track and space, 0.25 mm drill and 0.45 mm via pad,
    0.25 mm between holes and from copper to the board edge. Net classes (`netlist.NETCLASSES`): 100 Ω pairs
    0.2/0.15 mm, 90 Ω USB pairs 0.25/0.15 mm, 3 A supplies 0.8 mm, 1 A supplies 0.5 mm, supplies that reach
-   0.5 mm-pitch pins 0.3 mm (pours carry their current).
+   0.5 mm-pitch pins 0.3 mm (pours carry their current). The VBUS nets of the USB-C receptacles leave their pads
+   at 0.3 mm too: a wider track cannot pass between the 0.5 mm-pitch pads.
 4. **Keep-outs:** no vias under the Core1106 and no L1 copper under it except its pads, so nothing on the carrier
    can touch the underside of a module soldered flat; rings around the mounting holes and the fiducials.
 5. **Fixed tracks:** the A6–B6 (D+) and A7–B7 (D−) links of the 16-pin PC receptacle J401, whose pads alternate in
    one row: D+ closes on the connector side of the row, D− on the board side.
-6. **GND:** L2 is a solid GND plane. Before routing, every GND pad on L1 gets a via to the plane beside it; after
-   routing, GND stitching vias fill a 3 mm grid wherever they clear other copper, and GND pours cover L1, L3 and
-   L4. L3 also carries a 5V_SYS pour up the corridor between the module and the RJ45 (§11).
+6. **GND and pours:** L2 is a solid GND plane. Before routing, every GND pad on L1 gets a via to the plane beside
+   it, or a short track to a through-hole GND pad of the same part; these are fixed, so the router cannot remove
+   them. After routing, GND stitching vias fill a 3 mm grid wherever they clear other copper, and GND pours cover
+   L1, L3 and L4. L3 also carries a 5V_SYS pour up the corridor between the module and the RJ45 (§11), and L1 a
+   VBUS_IN pour from the power receptacle J101 to the fuse F101.
 7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself). The
    LT7911D's pads and its nets (the DP lanes `SS_*`, AUX, SBU and the CSI lanes) are left out: they wait for the
    pin table (H1). The DP and CSI lanes must be routed by hand anyway (§5: length and skew limits, no vias on DP).

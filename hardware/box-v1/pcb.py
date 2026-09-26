@@ -273,7 +273,9 @@ def legalize(occ, fp, box0, tx, ty, rots, max_r=14.0, step=0.2):
     return False
 
 
-RADIAL_ROT = {(1, 0): 180, (-1, 0): 0, (0, -1): 270, (0, 1): 90}   # pad 1 towards the IC pad
+# rotation that puts pad 1 of a two-pad part towards the IC pin, by the direction from the pin to
+# the part (KiCad: pad 1 of R/C footprints at -x, rotation counter-clockwise on screen, y down)
+RADIAL_ROT = {(1, 0): 0, (-1, 0): 180, (0, -1): 90, (0, 1): 270}
 
 
 def _pad_outward(ic, padnum):
@@ -354,13 +356,15 @@ def place_parts(board, design, nets):
         for pin in part.pins:
             for c in pin.decap:
                 if c not in placed and pin.num in {p.GetNumber() for p in fps[part.ref].Pads()}:
-                    decaps.append((c, part.ref, pin.num))
-    for c, ic, pad in decaps:
+                    decaps.append((c, part.ref, pin.num, pin.net))
+    for c, ic, pad, net in decaps:
         if c in placed:
             continue
         px, py, ux, uy = _pad_outward(fps[ic], pad)
         d = 1.2 + (boxes0[c][2] - boxes0[c][0]) / 2
         rot = RADIAL_ROT[(ux, uy)]
+        if fps[c].FindPadByNumber("1").GetNetname() != net:       # supply on pad 2: turn it round
+            rot = (rot + 180) % 360
         if legalize(occ, fps[c], boxes0[c], px + ux * d, py + uy * d, [rot, (rot + 90) % 360], max_r=6):
             placed.add(c)
 
@@ -768,8 +772,15 @@ def _zone(board, layer, net, pts, prio=0, name=""):
 
 
 def zones(board):
-    """After routing: GND pours on L1, L3 and L4; 5V_SYS pour on L3 up the module's right side."""
+    """After routing: GND pours on L1, L3 and L4; 5V_SYS pour on L3 up the module's right side;
+    VBUS_IN pour on L1 from the power receptacle to the fuse (its tracks leave the pads at 0.3 mm)."""
     nets = _nets(board)
+    fp = {f.GetReference(): f for f in board.GetFootprints()}
+    vb = [board_xy(p.GetPosition()) for p in fp["J101"].Pads() if p.GetNetname() == "VBUS_IN"]
+    fx, fy = board_xy(fp["F101"].FindPadByNumber("1").GetPosition())
+    y0, y1 = min(fy, max(y for _, y in vb)) - 0.6, max(fy, max(y for _, y in vb)) + 0.6
+    x1 = min(x for x, _ in vb) + 0.3
+    _zone(board, pcbnew.F_Cu, nets["VBUS_IN"], [(fx - 0.8, y0), (x1, y0), (x1, y1), (fx - 0.8, y1)], 2, "VBUS_IN")
     _zone(board, pcbnew.F_Cu, nets["GND"], FULL, 0, "GND top")
     _zone(board, pcbnew.B_Cu, nets["GND"], FULL, 0, "GND bottom")
     _zone(board, pcbnew.In2_Cu, nets["GND"], FULL, 0, "GND inner")
@@ -900,6 +911,21 @@ def fanout_gnd(board):
                    pcbnew.ToMM(bb.GetRight()) - OX, pcbnew.ToMM(bb.GetBottom()) - OY)
             px, py = board_xy(pad.GetPosition())
             hw, hh = (own[2] - own[0]) / 2, (own[3] - own[1]) / 2
+            # a drilled GND pad of the same part close by already reaches the plane: join it on L1
+            near = sorted((math.hypot(qx - px, qy - py), qx, qy) for qx, qy in
+                          (board_xy(q.GetPosition()) for q in fp.Pads()
+                           if q.GetNetCode() == gnd.GetNetCode() and q.GetAttribute() == pcbnew.PAD_ATTRIB_PTH))
+            if near and near[0][0] < 2.5 and track_free(px, py, near[0][1], near[0][2], own):
+                t = pcbnew.PCB_TRACK(board)
+                t.SetStart(pad.GetPosition())
+                t.SetEnd(pt(near[0][1], near[0][2]))
+                t.SetWidth(mm(tw))
+                t.SetLayer(pcbnew.F_Cu)
+                t.SetNet(gnd)
+                t.SetLocked(True)
+                board.Add(t)
+                added += 1
+                continue
             if hw > 1.2 and hh > 1.2:          # large exposed pads: vias inside the pad
                 if any(x0 >= own[0] and x1 <= own[2] and y0 >= own[1] and y1 <= own[3] and drilled
                        for x0, y0, x1, y1, net, drilled in boxes if net == gnd.GetNetCode()):
@@ -925,6 +951,7 @@ def fanout_gnd(board):
                     v.SetWidth(mm(via_d))
                     v.SetDrill(mm(via_drill))
                     v.SetNet(gnd)
+                    v.SetLocked(True)          # exported as fixed: the router cannot rip it up
                     board.Add(v)
                     vias.append((x, y))
                     if not inside:
@@ -934,6 +961,7 @@ def fanout_gnd(board):
                         t.SetWidth(mm(tw))
                         t.SetLayer(pcbnew.F_Cu)
                         t.SetNet(gnd)
+                        t.SetLocked(True)
                         board.Add(t)
                     added += 1
                     break

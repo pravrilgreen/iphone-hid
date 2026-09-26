@@ -513,18 +513,19 @@ NETCLASSES = {
     # supplies that reach 0.5 mm-pitch pins (LQFP, QFN): no wider than the pins, pours add copper
     "PWR_FINE": (0.3, 0.15, 0.2, 0.15, 0.55, 0.3),
     "PWR_3A": (0.8, 0.2, 0.2, 0.15, 0.8, 0.4),
-    # the 0.3 mm VBUS pads of the iPhone receptacle: thin where it leaves the pads, a pour carries 3 A
+    # the VBUS pads of the USB-C receptacles (0.3 mm on the 24-pin one, 0.6 mm between 0.5 mm-pitch
+    # pads on the 16-pin ones): thin where it leaves the pads, a pour carries the current
     "PWR_3A_FINE": (0.3, 0.15, 0.2, 0.15, 0.8, 0.4),
 }
 # (class, glob pattern), first match wins
 NETCLASS_PATTERNS = (
     [("DIFF_100R", p) for p in ("SS_*", "CSI_*", "LT_AUX_*", "PHONE_SBU*", "ETH_TX*", "ETH_RX*")] +
     [("USB_90R", p) for p in ("PHONE_USB_D*", "PC_USB_D*", "MCU_FS_D*")] +
-    [("PWR_3A_FINE", "PHONE_VBUS")] +
-    [("PWR_3A", p) for p in ("VBUS_IN", "VIN", "5V2_PHONE", "PSW_*", "5V_SYS", "U102_SW", "U103_SW",
-                             "PCPWR_A")] +
-    [("PWR_FINE", p) for p in ("3V3", "1V2", "3V3_LT", "1V2_LT_A", "VDDA_MCU", "VCC_3V3_MOD", "GND")] +
-    [("PWR_1A", p) for p in ("U104_SW", "U105_SW", "PC_VBUS")]
+    [("PWR_3A_FINE", p) for p in ("PHONE_VBUS", "VBUS_IN")] +
+    [("PWR_3A", p) for p in ("VIN", "5V2_PHONE", "PSW_*", "5V_SYS", "U102_SW", "U103_SW", "PCPWR_A")] +
+    [("PWR_FINE", p) for p in ("3V3", "1V2", "3V3_LT", "1V2_LT_A", "VDDA_MCU", "VCC_3V3_MOD", "GND",
+                               "PC_VBUS")] +
+    [("PWR_1A", p) for p in ("U104_SW", "U105_SW")]
 )
 
 

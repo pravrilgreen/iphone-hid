@@ -175,7 +175,7 @@
         "pattern": "PHONE_VBUS"
       },
       {
-        "netclass": "PWR_3A",
+        "netclass": "PWR_3A_FINE",
         "pattern": "VBUS_IN"
       },
       {
@@ -235,16 +235,16 @@
         "pattern": "GND"
       },
       {
+        "netclass": "PWR_FINE",
+        "pattern": "PC_VBUS"
+      },
+      {
         "netclass": "PWR_1A",
         "pattern": "U104_SW"
       },
       {
         "netclass": "PWR_1A",
         "pattern": "U105_SW"
-      },
-      {
-        "netclass": "PWR_1A",
-        "pattern": "PC_VBUS"
       }
     ]
   },
