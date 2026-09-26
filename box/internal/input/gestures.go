@@ -88,9 +88,13 @@ func (a *Actor) MoveSettled(x, y float64) {
 	}
 }
 
-// Buttons sets the pointer buttons held, where the pointer is.
+// Buttons sets the pointer buttons held, where the pointer is (the centre of the screen when the box
+// does not know where that is).
 func (a *Actor) Buttons(b uint8) {
-	p := a.e.ptr
+	if !a.e.ptrKnown && b != 0 {
+		a.MoveSettled(0.5, 0.5)
+	}
+	p := a.e.here()
 	p.Buttons, p.Wheel = b&7, 0
 	a.pointer(p)
 }
@@ -269,10 +273,10 @@ func (a *Actor) Sync() {
 func (a *Actor) releaseEverything() {
 	e := a.e
 	if e.ptr.Buttons != 0 || !e.ptrKnown {
-		p := e.ptr
+		p := e.here()
 		p.Buttons, p.Wheel = 0, 0
 		if err := e.sink.Pointer(p); err == nil {
-			e.ptr.Buttons = 0
+			e.placed(p)
 		} else if a.err == nil {
 			a.err = err
 		}

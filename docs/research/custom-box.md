@@ -83,7 +83,7 @@
 | Server → chip | ~1.7 ms: 13-byte frame + 7-byte ack on the wire [Confirmed, calculated] | tens of µs (`write()` to `/dev/hidgN`) | < 0.1 ms over USB/SPI (estimate) |
 | Wait for the iPhone to fetch (poll) | unclear: Full-Speed chip, bInterval not published [Unknown] | ≤ 1 ms (HS, bInterval 4); measured on the Orange Pi board: 2.6 ms from write to iPhone fetch [Confirmed] | ≤ 0.125 ms if iOS honours bInterval=1 [Unknown, must measure] |
 | Confirmation | "chip received" | "iPhone fetched" (POLLOUT) | "iPhone fetched" + µs timestamp (IN-complete interrupt) |
-| iOS glides the pointer to the target | 80–250 ms (Aiden waits 80 ms, glassbox proved 250 ms is safe) [Confirmed, see absolute-pointer.md] | same as left | same as left |
+| iOS glides the pointer to the target | 80–250 ms (Aiden waits 80 ms, glassbox proved 250 ms is safe) [Likely, see absolute-pointer.md] | same as left | same as left |
 | Press, hold, release (release sent 3 times) | 60–100 ms + ~30 ms | same as left | same as left, but timed to the µs on the MCU |
 
 A tap takes about 150–350 ms, and nearly all of it is iOS time. The best HID chip saves only 1–10 ms. To be

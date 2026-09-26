@@ -389,15 +389,33 @@ func (e *Engine) record(d time.Duration) {
 	e.mu.Unlock()
 }
 
+// here is where a report that does not move the pointer puts it: where it is, or the centre of the
+// screen when the box does not know (after a start or an error), rather than the corner at 0, 0.
+func (e *Engine) here() hid.Pointer {
+	p := e.ptr
+	if !e.ptrKnown {
+		p.X, p.Y = hid.AbsCoord(0.5), hid.AbsCoord(0.5)
+	}
+	return p
+}
+
+// placed records a pointer report the phone took.
+func (e *Engine) placed(p hid.Pointer) {
+	if !e.ptrKnown || p.X != e.ptr.X || p.Y != e.ptr.Y {
+		e.jumpAt = e.now()
+	}
+	e.ptr, e.ptr.Wheel, e.ptrKnown = p, 0, true
+}
+
 func (e *Engine) releaseAll() {
 	var first error
 	if e.ptr.Buttons != 0 || !e.ptrKnown {
-		p := e.ptr
+		p := e.here()
 		p.Buttons, p.Wheel = 0, 0
 		if err := e.sink.Pointer(p); err != nil {
 			first = err
 		} else {
-			e.ptr.Buttons = 0
+			e.placed(p)
 		}
 	}
 	if err := e.sink.Keyboard(hid.KeyState{}); err != nil && first == nil {

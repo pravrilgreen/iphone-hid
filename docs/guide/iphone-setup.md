@@ -33,6 +33,8 @@ Once per phone. Menu names may differ slightly between iOS versions.
 - **Automatic iOS updates off**, so the phone does not restart in the middle of a run.
 - **Optimized charging** on: the phone stays on the charger all day.
 - Screen brightness low: a bright static picture for months can mark an OLED screen.
+- **AssistiveTouch Dwell off and Zoom off** (Settings > Accessibility > Zoom): Dwell clicks when the
+  pointer rests, and Zoom moves the picture under the pointer, so touches would land elsewhere.
 
 ## Check
 

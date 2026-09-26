@@ -1,17 +1,22 @@
 # Cheap Chinese iPhone-control hardware: how it works and what to adopt
 
-- **Date:** 2026-09-24. **Scope:** hardware and near-hardware ways to drive iPhones without a jailbreak, from the
-  Chinese market (群控 / 中控 / 连点器 / 键鼠转换器 / 投屏) and English sources, compared with `iphone-hid`.
+- **Date:** 2026-09-24; updated 2026-09-25; revised 2026-09-26 to match the current box
+  ([ADR 0002](../dev/adr/0002-box-in-go.md)).
+- **Scope:** hardware and near-hardware ways to drive iPhones without a jailbreak, from the Chinese market (群控 /
+  中控 / 连点器 / 键鼠转换器 / 投屏) and English sources, compared with `iphone-hid`.
 - **Method:** web search in Chinese and English, plus direct reading of code and docs where they could be reached:
   - the **iMouse XP Python SDK** (`imouse-xp` 0.0.7 wheel from PyPI, unpacked and read);
   - **VKCOM/devicehub** ESP32 firmware and host code (GitHub raw);
   - **Sipeed NanoKVM-Go** wiki pages (GitHub raw);
   - the UxPlay and quicktime_video_hack READMEs, Apple developer forum 699205, and Apple's MDM docs JSON.
-- **Updated 2026-09-25** for the project's current scope: USB-C iPhones only, one Orange Pi 5 Plus box per phone
-  (its USB-C port is the phone's keyboard and mouse as a Linux USB gadget, its HDMI input takes the video), with a
-  CH9329 cable as the fallback. The project does not use Bluetooth or support Lightning phones. Vendor facts about
-  those stay below as market evidence; the recommendations are reworded for the box. Risk IDs (R…) refer to
-  `docs/research/feasibility.md`, test IDs (B1–B8, D1–D3, X2) to `docs/research/phase0-checklist.md`.
+- **The project today:** USB-C iPhones only, one Orange Pi 5 Plus box per phone running `ihcd`. Its USB-C port runs
+  a Linux USB gadget that is the phone's absolute pointer, keyboard and media keys; its HDMI input takes the video. The
+  box drives the absolute pointer only, confirmed on an iPhone 15. The project has no CH9329 backend, no
+  Bluetooth, no Lightning support and no computer vision. Vendor facts about those stay below as market evidence;
+  the recommendations are reworded for the box. Earlier versions cited risk IDs (R…) from the feasibility study
+  and test IDs (B1–B8, D1–D3, X2) from the phase-0 checklist. Both documents were removed with the Python box
+  software in commit `efe4582` and are in the git history. The checks now are the
+  [hardware check](../guide/hardware-check.md), `ihcd hid ...` and `ihcd doctor`.
 - **Access limits:** the egress proxy blocked most Chinese sites (CSDN, Zhihu, Juejin, ieasyclick, iosautot,
   doc.some3c.com, gamesir.com, doc.xiaoji.com) and several English ones. For those, only the search snippet was
   seen, and they are marked **(snippet)**. Re-open them before relying on exact wording.
@@ -34,16 +39,17 @@
    - **Sipeed NanoKVM-Go**: its "Follow Mouse" (absolute) mode is documented for iPhone 15/16/17, with 4-point
      calibration.
 
-   R2 (absolute pointer) is very likely to resolve in our favour.
+   The project's own result agrees: an iPhone 15 follows the box's absolute pointer.
 3. **A vendor claims absolute also works over BLE on iOS 17+** (EasyClick, snippet). The project is wired only, so
    this is just more evidence that iOS follows absolute pointers.
 4. **The Chinese "box" vendors (iMouse, SOME 3C, EasyClick) use AirPlay mirroring, not HDMI, for video.** For
    Lightning phones they often add a wired OTG/Ethernet link. They also use **iOS Shortcuts** as a side channel for
    clipboard, file transfer, restart and toggles, and **Full Keyboard Access "Tab+key" chords** for system actions.
-5. **Relative-mode vendors do what `iphone-hid` does:** fixed step sizes, fixed cadence, corner or edge reset.
-   devicehub's open code adds two concrete refinements: a measured table of step sizes and **edge anchoring that
-   avoids the rounded corner**. iMouse and SOME 3C keep a **shared calibration library keyed by (model, iOS
-   version)**, which is indirect evidence that pointer acceleration is reproducible between phones.
+5. **Relative-mode vendors use fixed step sizes, a fixed cadence and a corner or edge reset.** `iphone-hid` uses
+   the absolute pointer only (ADR 0002); its earlier relative model worked the same way and is gone. devicehub's
+   open code adds two concrete refinements: a measured table of step sizes and **edge anchoring that avoids the
+   rounded corner**. iMouse and SOME 3C keep a **shared calibration library keyed by (model, iOS version)**, which
+   is indirect evidence that pointer acceleration is reproducible between phones.
 6. **Touch-digitizer HID died in iOS 13.4.** BLE digitizer and stylus devices worked up to iOS 13.3.1 and were
    closed in 13.4. That is why game-controller "G-Touch" and converter products moved to mouse clicks through
    AssistiveTouch, to game-integrated SDKs, or to physical capacitive tapping.
@@ -85,14 +91,18 @@
 - **Confidence:** **[Likely]**, strong: absolute over USB works on iOS 17+ iPhones. **[Unknown]**: whether the
   CH9329's mixed rel+abs descriptor (report ID 2, 0..4095) is accepted. Neither vendor uses a CH9329 for absolute.
   EasyClick uses an ESP32-S3; Sipeed uses its own SoC gadget, which is the approach the box takes.
-- **Adopt:**
-  1. Keep the absolute test first (B4). The box's gadget exposes its own absolute-pointer interface, so the CH9329
-     question only matters for the fallback (D3).
-  2. Release everything right after enumeration, mirroring NanoKVM's "Repair iPhone drag" (done in the host
-     software). It is cheap insurance against a stuck button on connect.
-  3. Require Orientation Lock (portrait) in `docs/guide/iphone-setup.md` (done).
-  4. Keep the 6-parameter affine fit; NanoKVM's 4-point calibration shows a pure linear map is not enough (the
-     crop and offset matter).
+- **Where the box stands:**
+  1. Absolute pointer: done. The box's gadget has its own absolute-pointer interface, confirmed on an iPhone 15.
+     The CH9329 question no longer matters to the project, which has no CH9329 fallback.
+  2. Stuck button on connect: `ihcd` ends every action with everything released, releases when the console's
+     control connection closes, and has a `release_all` action. It has no release tied to the phone's
+     enumeration, which is what NanoKVM's "Repair iPhone drag" does. Such a release would be cheap insurance.
+  3. Orientation Lock: the phone setup does not require it. The box takes a landscape mirror with `--landscape`
+     (or the console's switch); whether the absolute axes turn with the screen is untested
+     ([absolute-pointer.md](absolute-pointer.md) §5).
+  4. Calibration: the box has none. Its pointer range 0..32767 covers the whole screen, and the video is cut to
+     the phone's aspect ratio. NanoKVM's 4-point calibration corrects the crop and offset between its video and
+     its pointer; the box relies on that crop being exact instead.
 - **Sources:**
   - [EasyClick 3-way comparison (snippet)](https://juejin.cn/post/7677077660527525934)
   - [EasyClick OTG HID tutorial (snippet)](https://ieasyclick.com/iostjdocs/zh-cn/advance/tj-otg-starter/)
@@ -116,14 +126,14 @@
   - The iMouse SDK has per-device AirPlay settings (`air_ratio`, `air_fps`, `air_refresh`), auto-connect, a
     receiver name, an mDNS rule and port 17000.
 - **Cost compared with HDMI:**
-  - an AirPlay receiver, a new component that would need the owner's approval;
+  - an AirPlay receiver, a new component on the box;
   - H.264 decode, or passthrough;
   - about 100–200 ms latency (AirServer about 150 ms (snippet); the Airplay-SDK vendor claims about 120 ms
     (snippet));
   - mirroring must be started on the phone (Control Center → Screen Mirroring, done with the HID).
 - **UxPlay facts** [Confirmed, README]:
   - one client per instance; run one instance per phone with distinct `-m` (MAC/deviceID) and `-p` ports;
-  - `-vrtp` forwards the **decrypted H.264 as RTP without decoding**, a passthrough like MJPEG today;
+  - `-vrtp` forwards the **decrypted H.264 as RTP without decoding**, a passthrough;
   - `-nohold`; `-restrict/-allow <deviceID>` to bind each phone to its instance;
   - `-pin/-reg` so the phone pairs once;
   - `-fps` below 30 "useful to reduce latency" with several instances;
@@ -156,19 +166,23 @@
   - The iMouse author documented emulating Apple's **Fn** key (vendor usage page 0xFF, usage 0x03, "Top Case
     KeyboardFn") in a USB HID descriptor for iOS 15+.
 - **Why it matters:**
-  - Tab is an ordinary key, not a HID modifier. Tab+key chords therefore likely avoid the Aiden Cmd/Shift/Option bug
-    (R6), which is a hypothesis to test.
+  - Tab is an ordinary key, not a HID modifier. Tab+key chords therefore likely avoid the Aiden Cmd/Shift/Option
+    bug, which is a hypothesis to test.
   - They need no pointer position.
   - The CH9329 cannot send Fn. The box's gadget could, with the vendor usage added to its keyboard descriptor (not
     done; whether iOS accepts it from a non-Apple device is [Unknown]).
 - **Confidence:** [Confirmed] the Apple command list (snippet of Apple's page) and the iMouse traffic (devicehub
   code). **[Unknown]** whether FKA interferes with the AssistiveTouch pointer; the vendors run both together, so it
   probably does not.
-- **Adopt:**
+- **Where the box stands:** it presses Home with Cmd+H (or the secondary pointer button), App Switcher with the
+  middle pointer button, and Search with Cmd+Space (hardware check 4–7). FKA is not part of the phone setup.
+- **Options, if Cmd chords prove unreliable:**
   1. Add FKA to the phone setup.
   2. Remap FKA commands to Tab+letter chords for Home, App Switcher, Control Center, Spotlight and Lock.
-  3. If Tab chords are not enough, try an Apple Fn usage in the gadget keyboard descriptor, under its own serial.
-  4. Test Tab chords against Cmd chords (B4).
+  3. If Tab chords are not enough, try an Apple Fn usage in the gadget keyboard descriptor, as a new profile with
+     its own serial.
+  4. Test Tab chords against Cmd chords. `ihcd hid key tab+l` sends Tab and L in one report; whether FKA accepts
+     that is untested.
 - **Sources:**
   - [devicehub imouse.js](https://github.com/VKCOM/devicehub/blob/master/lib/units/ios-device/plugins/touch/imouse.js)
   - [Apple FKA (snippet)](https://support.apple.com/guide/iphone/control-iphone-with-an-external-keyboard-ipha4375873f/ios)
@@ -177,7 +191,11 @@
   - [iMouse author on the Fn key (snippet)](https://blog.csdn.net/qq_41057894/article/details/127928033)
   - [Apple Fn usage 0xFF/0x03 (snippet)](https://github.com/qmk/qmk_firmware/issues/2179)
 
-### 2.5 Relative-mode refinements from devicehub and iMouse (only if absolute fails)
+### 2.5 Relative-mode techniques from devicehub and iMouse (evidence only)
+
+The box uses the absolute pointer only (ADR 0002), so nothing in this section is planned. It records how
+relative-mode vendors work.
+
 - **Edge anchoring that avoids the rounded corner** [Confirmed, code]. The firmware reset (`'0'`) runs these steps,
   after which the host sets the position to `(14 × single_step, 0)`:
   1. `move(-127,-127)` into the corner;
@@ -187,47 +205,42 @@
   5. `move(0,-127)` to the top edge.
 
   The anchor is defined by two **straight edges**, not by the curved corner, where the pointer's clamp point is
-  ambiguous. **Adopt this instead of a pure corner slam** if relative mode is ever needed. It addresses A4 directly
-  (tested in B5).
+  ambiguous. For a relative design, it is better than a pure corner slam.
 - **A discrete step table at a fixed cadence** [Confirmed, code]:
   - only ±1, ±4, ±8-count reports, one axis per report, at 15–20 ms intervals, max Tracking Speed;
   - measured displacements 13/3, 70/3 and 178/3 units, a **1 : 5.4 : 13.7** ratio;
   - so the per-count gain rises about 1.0 → 1.35 → 1.7 from 1 to 8 counts: acceleration is present but
     tabulated.
 
-  This matches the `iphone-hid` "same-size reports at fixed pace" design and suggests keeping 2–3 step sizes
-  rather than one.
+  The removed relative model of `iphone-hid` also sent same-size reports at a fixed pace.
 - **Tracking-speed setting: the vendors disagree.**
   - devicehub, SOME 3C and iMouse set **max** Tracking Speed and max AssistiveTouch Tracking Sensitivity.
   - EasyClick's BLE guide sets AssistiveTouch Tracking Sensitivity to **slowest**.
 
-  Test both extremes in B5. Max means fewer reports and faster anchoring; min probably means finer resolution.
+  In relative mode, max means fewer reports and faster anchoring; min probably means finer resolution. Whether the
+  sliders affect the absolute pointer is checked in [absolute-pointer.md](absolute-pointer.md) §7.2 check 6.
 - **Swipe "brake"** [Confirmed, SDK parameter]: `mouse_swipe(..., step_sleep, steping, brake)`, where brake means
   "stop immediately when the swipe ends". This is presumably a pause before release to kill fling, which fits
-  Aiden's fling-velocity observation. Adopt a hold-still-before-release option for precise scrolls.
+  Aiden's fling-velocity observation. The box has both kinds: its `drag` action stays still for `rest_ms` (200 ms)
+  before lifting, and its `swipe` lifts while moving so lists keep their speed.
 - **Sources:**
   - [ESP32Mouse.ino](https://github.com/VKCOM/devicehub/blob/master/lib/units/ios-device/plugins/touch/ESP32Mouse/ESP32Mouse.ino), [esp32touch.js](https://github.com/VKCOM/devicehub/blob/master/lib/units/ios-device/plugins/touch/esp32touch.js), [esp32.md](https://github.com/VKCOM/devicehub/blob/master/doc/ios-docs/esp32.md)
   - iMouse SDK `api/mouse_api.py`
   - [EasyClick BLE (snippet)](https://ieasyclick.com/en/iosdocs/advance/ios-usb-ble/)
 
-### 2.6 Shared calibration profiles per (model, iOS version, settings), collected with a Home-Screen web app
-- **Evidence:**
-  - iMouse and SOME 3C: "each device needs mouse parameters for accurate positioning; by default they are
-    auto-matched from a general library; if not, collect once".
-  - Collection: open a page served by the PC kernel (`http://{kernel}:9911/api?fun=collection`), **add it to the
-    Home Screen and run it full-screen**, press start, then save to the public library.
-  - "For the same model and system version, collect only once."
-  - The SDK has `/config/devicemodel/get`, which returns, per `device_name / model / scale`, a `ver_list[].cfg_list[]`
-    with `location`, `crc`, uploader and time; `/device/collection/mouse` (start, stop, status); and
-    `.../save`.
-- **Meaning:**
-  - The iMouse and SOME 3C calibration page is the same design as the `iphone-hid` Safari calibration and the
-    feasibility §3.3 web-app advice.
-  - More importantly, the vendor ships tables shared **between different phones**. That is indirect evidence that
-    iOS acceleration is deterministic per model and iOS version at fixed settings, which bears on R4.
-- **Confidence:** [Confirmed] the API. [Likely] reproducibility; theirs may be coarser than 4 pt.
-- **Adopt:** a profile cache keyed by `(ProductType, iOS build, Tracking Speed, Sensitivity, orientation)`. A new
-  phone then runs only a short validation (a few taps) instead of the full relative calibration.
+### 2.6 Shared calibration profiles per (model, iOS version, settings) (historical note)
+
+iMouse and SOME 3C say "each device needs mouse parameters for accurate positioning; by default they are
+auto-matched from a general library; if not, collect once" and "for the same model and system version, collect
+only once". Collection runs a page served by the PC kernel (`http://{kernel}:9911/api?fun=collection`), **added to
+the Home Screen and run full-screen**, then saves to a public library. The SDK has `/config/devicemodel/get`, which
+returns, per `device_name / model / scale`, a `ver_list[].cfg_list[]` with `location`, `crc`, uploader and time;
+`/device/collection/mouse` (start, stop, status); and `.../save`. [Confirmed] the API. Tables shared **between
+different phones** are indirect evidence that iOS pointer acceleration is deterministic per model and iOS version at
+fixed settings; [Likely], and theirs may be coarser than 4 pt. The page matched the design of the Safari calibration
+page `iphone-hid` used for its relative pointer. Both the page and the relative pointer are gone (ADR 0002); the
+absolute pointer needs no calibration, so a profile cache is not planned.
+
 - **Sources:**
   - iMouse SDK `models/config_model.py`, `api/device_api.py`
   - [iMouse collection doc (snippet)](https://www.imouse.cc/%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3/%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D/%E9%BC%A0%E6%A0%87%E5%8F%82%E6%95%B0%E9%87%87%E9%9B%86/)
@@ -246,34 +259,41 @@
   Their docs say Chinese text input "must bind a Shortcut": set the clipboard, then paste. AssistiveTouch lets any
   pointer-device button run a Shortcut. Since iOS 17, personal automations (for example "When app X is opened")
   can run immediately, with a notification banner.
-- **Uses for `iphone-hid`:**
-  - non-ASCII typing: clipboard, then paste;
+- **Possible uses for `iphone-hid` (none implemented):**
+  - non-ASCII typing: clipboard, then paste (the box types printable ASCII only today);
   - reading state such as clipboard or IP;
   - an **independent phone-side acknowledgement**: an automation "App opened → Get Contents of URL
     `http://box/...`" confirms that an app launch really happened;
   - a recovery restart.
 - **Trigger:** map a spare HID mouse button (4 or 5) to a Shortcut in AssistiveTouch › Devices. No pointer
-  positioning is needed.
+  positioning is needed. The box's absolute pointer has three buttons, and buttons 2 and 3 are mapped to Home and
+  App Switcher, so this needs more buttons in the descriptor (a new profile with its own serial).
 - **Confidence:** [Confirmed] that iMouse does this (API). [Likely] mechanism and trigger. **[Unknown]** Shortcuts
-  local-network permission prompts, and whether the owner treats user-made Shortcuts as "no app installed".
+  local-network permission prompts, and whether user-made Shortcuts fit the project's scope, which installs nothing
+  on the phone.
 - **Sources:**
   - iMouse SDK `api/shortcut_api.py`
   - [iMouse (snippet)](https://www.iosautot.cn/python-xp/)
   - [iDownloadBlog mouse buttons (snippet)](https://www.idownloadblog.com/2023/10/10/how-to-use-mouse-with-iphone/)
   - [Cassinelli: automations run immediately (snippet)](https://matthewcassinelli.com/automations-run-immediately-shortcuts-notifications/)
 
-### 2.8 Confirming that a command reached iOS (cheap, no vision)
-- **Caps Lock LED round trip.** Send a Caps Lock tap, then watch the keyboard LED state: the output report the
-  box's gadget reads from its keyboard node (`src/ihc/hid/gadget.py`), or the LED byte in CH9329 `GET_INFO`
-  (`src/ihc/hid/ch9329.py`). Then toggle it back. `hidtest capscheck` does this.
-  - It proves that the iOS HID stack processed a keyboard report end to end, which is stronger than a chip ack.
+### 2.8 Confirming that a command reached iOS
+- **What the box does:** each action returns once the phone has taken its last report over USB
+  ([API](../dev/api.md)). That proves USB delivery, not that iOS acted on it.
+- **Caps Lock LED round trip.** Send a Caps Lock tap, then read the keyboard LED output report the phone sends
+  back, then toggle it back. The CH9329 reports the same LED byte in `GET_INFO`.
+  - It would prove that the iOS HID stack processed a keyboard report end to end, which is stronger than a USB
+    or chip ack.
   - iPad keyboards' Caps Lock LEDs do light, except when "Caps Lock switches language" is on. Turn that off.
-  - **[Unknown]** on iPhone; test in B4. Sources: [Apple Community (snippet)](https://discussions.apple.com/thread/251390352),
-    `docs/dev/ch9329-protocol.md`.
-- **Frame-difference "something changed"** in a region after a tap. This is not recognition. NanoKVM-Go ships frame
-  difference detection with about 0.2 s reaction and about 2.5 % CPU. The vendors all verify through video. [Likely]
+  - The box's keyboard interface declares the LED output report, but `ihcd` does not read it. The earlier
+    `hidtest capscheck` probe was removed with that tool.
+  - **[Unknown]** on iPhone. Sources: [Apple Community (snippet)](https://discussions.apple.com/thread/251390352);
+    the CH9329 `GET_INFO` layout was in `docs/dev/ch9329-protocol.md`, removed in commit `efe4582`.
+- **Frame difference** in a region after a tap. NanoKVM-Go ships frame difference detection with about 0.2 s
+  reaction and about 2.5 % CPU. The vendors all verify through video. [Likely]
   ([CNX (snippet)](https://www.cnx-software.com/2026/07/01/sipeed-nanokvm-go-an-4k-usb-c-kvm-with-recall-like-function-ai-integration/)).
-- **Shortcuts automation callbacks** (2.7), and the existing calibration-page heartbeat.
+  The box does no image analysis.
+- **Shortcuts automation callbacks** (2.7).
 
 ### 2.9 Off-the-shelf per-phone unit for USB-C phones (a benchmark for the box)
 - **NanoKVM-Go:**
@@ -282,10 +302,10 @@
   - **about 60 ms at 1080p60**, Wi-Fi 6, Tailscale, an MCP server, about 1.6 W;
   - US$59–89.
 - It is the same idea as the `iphone-hid` box (one board per phone, DP Alt Mode video plus USB HID), smaller and
-  with on-board H.264. Use it as a **benchmark**: buy one and compare its absolute accuracy and latency with the
-  Orange Pi 5 Plus box on the same iPhone (X2).
-- Openterface Mini-KVM (MS2109 + CH9329 + hubs, under 140 ms (snippet)) is the parts of the `iphone-hid` fallback,
-  pre-packaged.
+  with on-board H.264. It would make a **benchmark** (optional): compare its absolute accuracy and latency with
+  the Orange Pi 5 Plus box on the same iPhone.
+- Openterface Mini-KVM (MS2109 + CH9329 + hubs, under 140 ms (snippet)) is, pre-packaged, the capture card and
+  CH9329 fallback that `iphone-hid` planned before its own gadget was confirmed. That fallback is dropped.
 - **Confidence:** [Confirmed] vendor specs; [Unknown] programmatic API depth and long-run robustness.
 - **Sources:** NanoKVM-Go wiki (above);
   [Openterface hardware (snippet)](https://github.com/TechxArtisanStudio/Openterface_Mini-KVM_Hardware).
@@ -298,9 +318,9 @@
   - EasyClick's own marketing calls Bluetooth boards "一机一板，还要刷固件、配对" (one board per phone, plus
     flashing and pairing).
 - The box follows the same pattern: one Orange Pi 5 Plus per phone.
-- **Video scales by receiver instances** (AirPlay) or, with HDMI, by capture inputs: one HDMI input per box, or one
-  USB capture card per USB 2 bus on a multi-phone fallback host. The iMouse config also shows the image-analysis
-  worker pools (`opencv_num`, `ocr_num`).
+- **Video scales by receiver instances** (AirPlay) or, with HDMI, by capture inputs: one HDMI input per box. A
+  multi-phone host with USB capture cards, a design the project dropped, would need one card per USB 2 bus. The
+  iMouse config also shows the image-analysis worker pools (`opencv_num`, `ocr_num`).
 
 ---
 
@@ -308,13 +328,13 @@
 
 | Idea | Why not | Evidence |
 |---|---|---|
-| **HID digitizer / touchscreen** (real touches) | BLE digitizer and stylus descriptors worked up to **iOS 13.3.1** and stopped in **13.4**. GameSir and Flydigi "Bluetooth touch mapping" broke at the same time (Apple "closed the touch-screen interface while optimizing CarPlay"). USB digitizer on current iOS: Aiden says it is not converted to a cursor, and whether it produces touches is untested. NanoKVM's "Multi-touch Screen" mode is documented for controlling from phones, not for iPhone targets. Low prior; only worth a 1-hour test with a separate gadget (its own identity) if everything else fails | [Confirmed] [forum 699205](https://developer.apple.com/forums/thread/699205); [Apple Community (snippet)](https://discussions.apple.com/thread/251260646); [GameSir G6 13.4 guide (snippet)](https://doc.xiaoji.com/en/g6/detail/544.html) |
+| **HID digitizer / touchscreen** (real touches) | BLE digitizer and stylus descriptors worked up to **iOS 13.3.1** and stopped in **13.4**. GameSir and Flydigi "Bluetooth touch mapping" broke at the same time (Apple "closed the touch-screen interface while optimizing CarPlay"). USB digitizer on current iOS: Aiden says it is not converted to a cursor, and whether it produces touches is untested. NanoKVM's "Multi-touch Screen" mode is documented for controlling from phones, not for iPhone targets. Low prior, and not needed now that the absolute pointer works; at most a 1-hour test with a separate gadget (its own identity) | [Confirmed] [forum 699205](https://developer.apple.com/forums/thread/699205); [Apple Community (snippet)](https://discussions.apple.com/thread/251260646); [GameSir G6 13.4 guide (snippet)](https://doc.xiaoji.com/en/g6/detail/544.html) |
 | **Game converters' "exact taps"** | After iOS 13.4 they use mouse clicks through AssistiveTouch (GameSir fw 1.25; **broken again from iOS 14.2**, cause unknown), game-integrated SDKs (Flydigi 智联, only in partner games), modified IPAs (改包), or physical capacitive emitters | [GameSir (snippet)](https://gamesir.com/pages/g6-solution); [Flydigi 智联 (snippet)](https://zhuanlan.zhihu.com/p/57406933); [Flydigi capacitive (snippet)](http://www.gamelook.com.cn/2018/06/333423/) |
 | **Disabling pointer acceleration** | No setting exists (iPadOS 26 still has none); vendors either go absolute or tabulate it | [Apple Community (snippet)](https://discussions.apple.com/thread/256143470) |
 | **Voice Control grid** ("Show grid", "Tap 22", recursive sub-grid) | Deterministic positions, but needs spoken audio into the mic: slow and fragile. Only as a manual fallback | [BBC a11y (snippet)](https://bbc.github.io/accessibility-news-and-you/assistive-technology/testing-steps/voice-control-ios.html) |
 | **Switch Control point scanning** | Timing-based gliding crosshair; slow, and accuracy depends on the scan speed | [Apple 119835 (snippet)](https://support.apple.com/en-us/119835) |
 | **Physical capacitive tappers / robot arms** | Fixed positions or expensive; at most about 10 taps/s; no keyboard | See table rows 8–9 |
-| **QuickTime USB capture (qvh, 3uAirPlayer USB)** | Needs host iPhone tooling and Trust pairing (forbidden by the project rules); status bar forced to demo mode. Low latency, so revisit only if the rules change | [qvh README](https://github.com/danielpaulus/quicktime_video_hack); [3uAirPlayer (snippet)](https://www.3u.com/tutorial/articles/14739/3uairplayer-ios-device-user-guide-dual-wireless-and-usb-cable-solution) |
+| **QuickTime USB capture (qvh, 3uAirPlayer USB)** | Needs host iPhone tooling and Trust pairing, both outside the project's scope; status bar forced to demo mode. Low latency, so revisit only if the scope changes | [qvh README](https://github.com/danielpaulus/quicktime_video_hack); [3uAirPlayer (snippet)](https://www.3u.com/tutorial/articles/14739/3uairplayer-ios-device-user-guide-dual-wireless-and-usb-cable-solution) |
 | **Cloud phones / proxy IPA / EasyClick "USB_HID 免硬件"** | Install a signed app, a runner or WDA, or need Developer Mode | [testerhome (snippet)](https://testerhome.com/topics/20866); [EasyClick (snippet)](https://juejin.cn/post/7683016577462288419) |
 | **Host Bluetooth as the HID** (Wormhole style) | One radio identity per host; the project is wired USB only | [sspai (snippet)](https://sspai.com/post/60970) |
 
@@ -332,28 +352,30 @@
   - UxPlay supports one phone per instance and H.264 passthrough (`-vrtp`) [Confirmed].
   - It needs a network per phone (Wi-Fi, or USB Ethernet through OTG) and a HID tap to start mirroring.
 - **Neutralising acceleration or snapping.** There is no OS switch.
-  - Absolute mode (2.1, 2.2) is the real fix.
+  - Absolute mode (2.1, 2.2) is the real fix, and what the box uses.
   - Otherwise: a fixed step table at a fixed cadence with max tracking speed (devicehub), edge anchoring away from
     the rounded corner, and per-(model, iOS) shared tables (iMouse).
   - EasyClick's relative firmware applies a single "compensation rate" (gain) and still drifts on long swipes.
-- **Confirming delivery.** The vendors check through video. Cheap additions: the Caps Lock LED round trip, frame
-  difference, and Shortcuts callbacks (2.8).
+- **Confirming delivery.** The vendors check through video. The box confirms USB delivery: each action returns once
+  the phone has taken its last report. Further options (Caps Lock LED round trip, Shortcuts callbacks) are in 2.8.
 - **Several phones per box.** The vendors use one HID board per phone behind USB hubs or backplanes (Bluetooth
   boards each get a unique name and MAC); video through one AirPlay receiver per phone, or one capture card per USB 2
   bus. Nobody multiplexes one HID device across phones. `iphone-hid` uses one box per phone.
 
 ---
 
-## 5. Suggested test-plan deltas
+## 5. Suggested checks
 
-All of these are in `docs/research/phase0-checklist.md`, except where noted.
+These add to the [hardware check](../guide/hardware-check.md) and the checks in
+[absolute-pointer.md](absolute-pointer.md) §7.2.
 
-- **B4:** check where the pointer sits right after enumeration (the host already releases everything on connect,
-  like NanoKVM's repair). Orientation Lock on. Record whether the absolute grid maps to the full panel or to a
-  cropped area; EasyClick hints at notch-dependent scale.
-- **B4:** the Caps Lock LED round trip as an end-to-end delivery probe (`capscheck`).
-- **B4:** Tab+letter FKA chords (remapped commands) against Cmd chords.
-- **B5 (only if relative mode is needed):** run Tracking Speed/Sensitivity at **max and min**. Not yet in the
-  checklist: compare corner-slam anchoring with **devicehub edge anchoring**, and a 3-size step table (1/4/8
-  counts) at 15–20 ms.
-- **X2 (optional):** buy one NanoKVM-Go (about US$60–90) as a reference for accuracy and latency on the same iPhone.
+- **Pointer on connect and full-panel mapping:** note where the pointer sits right after the phone enumerates the
+  gadget (the box sends no release then; see 2.1). `ihcd hid corners` must reach the physical corners of the
+  panel, not a cropped area; EasyClick hints at notch-dependent scale.
+- **Tab+letter FKA chords** (remapped commands) against the Cmd chords of hardware check 4 and 7, with
+  `ihcd hid key`.
+- **Tracking Speed/Sensitivity at max and min** for the absolute pointer: absolute-pointer.md §7.2 check 6.
+- **Dropped:** the Caps Lock LED probe (`capscheck` went with `hidtest`, and `ihcd` does not read the LED report),
+  and the relative-mode comparisons (corner slam against devicehub edge anchoring, a 1/4/8-count step table),
+  because the box uses the absolute pointer only.
+- **Optional:** one NanoKVM-Go (about US$60–90) as a reference for accuracy and latency on the same iPhone.

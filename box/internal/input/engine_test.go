@@ -383,3 +383,35 @@ func TestStatsLeaveOutTheSettleWait(t *testing.T) {
 		t.Fatalf("the deliberate settle counted as latency: %+v", s)
 	}
 }
+
+func TestAFreshEngineNeverSendsThePointerToTheCorner(t *testing.T) {
+	sink := &fakeSink{}
+	e := New(sink, testConfig())
+	defer e.Close()
+	ctx := context.Background()
+	if err := e.Do(ctx, "key", func(a *Actor) error { a.Key(hid.KeyState{Keys: []uint8{0x04}}, 0); return a.Err() }); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Do(ctx, "click", func(a *Actor) error { a.PointerButton(hid.ButtonMiddle); return a.Err() }); err != nil {
+		t.Fatal(err)
+	}
+	ps := sink.pointers()
+	if len(ps) == 0 {
+		t.Fatal("no pointer report: a button left down by an earlier run would stay down")
+	}
+	pressed := false
+	for _, r := range ps {
+		if r.p.X == 0 && r.p.Y == 0 {
+			t.Fatalf("a report at the corner: %+v", ps)
+		}
+		if r.p.Buttons&hid.ButtonMiddle != 0 {
+			pressed = true
+			if r.p.X != hid.AbsCoord(0.5) || r.p.Y != hid.AbsCoord(0.5) {
+				t.Fatalf("the middle button went down away from the centre: %+v", r.p)
+			}
+		}
+	}
+	if !pressed {
+		t.Fatalf("no middle press: %+v", ps)
+	}
+}
