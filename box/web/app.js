@@ -150,16 +150,30 @@ const phone = {
     }
     const u = st.usb || {}, v = st.video || {}, i = st.input || {};
     if (v.state && v.state !== "ok" && v.state !== "starting") screenNote("No picture from the phone");
-    $("f-usb").textContent = u.connected ? `connected (${u.profile || "gadget"})` : (u.state || "–");
-    $("f-video").textContent = v.state === "ok"
-      ? `${v.width}×${v.height} ${v.format || ""} at ${v.fps} fps`
-      : (v.error || v.state || "–");
-    $("f-picture").textContent = st.screen && st.screen.width ? `${st.screen.width}×${st.screen.height}, JPEG by ${st.encoder}` : "–";
+    const usbWords = { suspended: "iPhone asleep", "not attached": "nothing plugged in", "no gadget": "not set up" };
+    fact("f-usb", u.connected ? "iPhone connected" : (usbWords[u.state] || "iPhone not connected"),
+      `USB ${u.state || "?"}${u.profile ? ", profile " + u.profile : ""}${u.udc ? ", controller " + u.udc : ""}`);
+    fact("f-video", v.state === "ok" ? `${v.width}×${v.height} at ${Math.round(v.fps)} fps` : "no picture",
+      v.state === "ok" ? `${v.format || ""} from ${v.source || "HDMI"}` : (v.error || v.state || ""));
+    fact("f-picture", st.screen && st.screen.width ? `${st.screen.width}×${st.screen.height}` : "–", `JPEG by ${st.encoder}`);
+    if (control.locked && st.live === false) control.open(); // the other operator left: control is free
     $("f-touch").textContent = i.reports ? `${fmtMs(i.latency_p50_ms)} typical, ${fmtMs(i.latency_p95_ms)} at worst` : "idle";
     $("f-box").textContent = `${st.version}, up ${fmtUptime(st.uptime_s)}`;
     if (i.latency_p50_ms) $("m-touch").textContent = fmtMs(i.latency_p50_ms);
   },
 };
+
+// fact sets a Connection line in plain words, with the technical detail in its tooltip.
+function fact(id, text, detail) {
+  $(id).textContent = text;
+  $(id).title = detail || "";
+}
+
+// blank clears what the box last reported, once it stopped answering.
+function blank() {
+  for (const id of ["m-touch", "m-video", "m-rtt"]) $(id).textContent = "–";
+  for (const id of ["f-usb", "f-video", "f-picture", "f-touch"]) fact(id, "–", "");
+}
 
 function fmtMs(v) {
   if (v === undefined || v === null) return "–";
@@ -202,7 +216,7 @@ function layout() {
 /* ---------------------------------------------------------------- video ---------------------------------- */
 
 const video = {
-  ws: null, width: 0, height: 0, times: [], age: 0, timer: null,
+  ws: null, width: 0, height: 0, times: [], age: 0, timer: null, drawn: 0,
 
   open() {
     const ws = (this.ws = new WebSocket(wsURL(phone.path("/stream"), { quality: "80" })));
@@ -215,10 +229,13 @@ const video = {
         return;
       }
       const head = new DataView(ev.data, 0, 12);
+      const seq = head.getUint32(4, true);
       const ageBox = head.getUint32(8, true) / 1000;
       const t0 = performance.now();
       try {
         const bmp = await createImageBitmap(new Blob([new Uint8Array(ev.data, 12)], { type: "image/jpeg" }));
+        if (seq < this.drawn && this.drawn - seq < 1 << 30) { bmp.close(); throw new Error("an older frame"); }
+        this.drawn = seq;
         if (canvas.width !== bmp.width || canvas.height !== bmp.height) {
           canvas.width = bmp.width;
           canvas.height = bmp.height;
@@ -230,7 +247,7 @@ const video = {
         bmp.close();
         screenNote(null);
       } catch (e) { /* a damaged frame: skip it */ }
-      if (ws.readyState === WebSocket.OPEN) ws.send("ack");
+      if (ws.readyState === WebSocket.OPEN) ws.send("ack " + seq);
       const now = performance.now();
       this.age = ageBox + (now - t0);
       this.times.push(now);
@@ -239,11 +256,15 @@ const video = {
     };
     ws.onclose = (ev) => {
       if (ev.code === 1008 || ev.code === 4401) { auth.ask().then(() => this.open()); return; }
+      this.drawn = 0;
       if (ev.code === 4429) {
         screenNote("Too many viewers on this box");
       } else {
         screenNote("Reconnecting to the picture");
         phone.setState("offline", "reconnecting");
+        blank();
+        // a refused token shows up as an abnormal close: ask the box, which asks for the token on 401
+        if (ev.code === 1006) api("GET", "/api/health").then(() => api("GET", phone.path())).catch(() => {});
       }
       setTimeout(() => this.open(), ev.code === 4429 ? 5000 : 1000);
     };
@@ -265,12 +286,13 @@ const video = {
 const MSG = { touch: 1, keys: 2, consumer: 3, release: 4, ping: 5 };
 
 const control = {
-  ws: null, ready: false, pending: new Map(), nextId: 1, pingSeq: 0, pingAt: new Map(), retry: null,
+  ws: null, ready: false, locked: false, pending: new Map(), nextId: 1, pingSeq: 0, pingAt: new Map(), retry: null,
 
   open(takeover = false) {
+    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) return;
     const ws = (this.ws = new WebSocket(wsURL(phone.path("/control"), takeover ? { takeover: "true" } : {})));
     ws.binaryType = "arraybuffer";
-    ws.onopen = () => { this.ready = true; banner(null); };
+    ws.onopen = () => { this.ready = true; this.locked = false; banner(null); };
     ws.onmessage = (ev) => {
       if (typeof ev.data !== "string") {
         const b = new DataView(ev.data);
@@ -302,6 +324,7 @@ const control = {
       this.pending.clear();
       if (this.ws !== ws) return;
       if (ev.code === 4409) {
+        this.locked = true; // another operator has the phone: this console only watches
         const taken = (ev.reason || "").includes("taken over");
         banner(taken ? "Another operator took over this phone." : "Another operator is controlling this phone.",
           "Take over", () => this.open(true));
@@ -348,8 +371,10 @@ const control = {
     for (const [k, t] of this.pingAt) if (performance.now() - t > 5000) this.pingAt.delete(k);
   },
 
-  // an action in order with the live input (REST when the socket is down)
+  // an action in order with the live input (REST while the socket is still opening)
   action(name, params = {}) {
+    if (this.locked) return Promise.reject(new Error("Another operator is controlling this phone: Take over first."));
+    if (phone.status && $("state").dataset.state === "offline") return Promise.reject(new Error("The box is unreachable."));
     if (!this.ready) return api("POST", phone.path("/" + name), params).then((r) => r.result);
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
@@ -475,8 +500,11 @@ const keyboard = {
     if (!mod && !usage) return;
     ev.preventDefault();
     if (ev.repeat) return;
-    if (mod) this.mods = down ? this.mods | mod : this.mods & ~mod;
-    else {
+    if (mod) {
+      this.mods = down ? this.mods | mod : this.mods & ~mod;
+      // macOS sends no keyup for keys released while Cmd was down: let them go with Cmd
+      if (!down && (ev.code === "MetaLeft" || ev.code === "MetaRight")) this.held = [];
+    } else {
       const i = this.held.indexOf(usage);
       if (down && i < 0 && this.held.length < 6) this.held.push(usage);
       if (!down && i >= 0) this.held.splice(i, 1);

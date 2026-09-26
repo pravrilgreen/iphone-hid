@@ -98,14 +98,21 @@ var modifiers = map[string]uint8{
 	"rctrl": 0x10, "rshift": 0x20, "ralt": 0x40, "roption": 0x40, "rcmd": 0x80,
 }
 
+// KeyNamesHelp lists the names ParseCombo takes.
+const KeyNamesHelp = "modifiers cmd, ctrl, alt (option), shift; keys a-z, 0-9, f1-f12, enter, esc, tab, space, " +
+	"delete (backspace), forwarddelete, up, down, left, right, home, end, pageup, pagedown, capslock, " +
+	"and printable characters such as - = [ ] ; ' , . /"
+
 // Keys maps key names to keyboard usages (page 0x07).
 var Keys = func() map[string]uint8 {
 	k := map[string]uint8{
-		"enter": 0x28, "return": 0x28, "esc": 0x29, "escape": 0x29, "backspace": 0x2A, "tab": 0x2B,
+		// delete is the key a Mac and an iPhone keyboard call delete (backspace); forwarddelete (del)
+		// deletes forwards
+		"enter": 0x28, "return": 0x28, "esc": 0x29, "escape": 0x29, "backspace": 0x2A, "delete": 0x2A, "tab": 0x2B,
 		"space": 0x2C, "minus": 0x2D, "equal": 0x2E, "lbracket": 0x2F, "rbracket": 0x30,
 		"backslash": 0x31, "semicolon": 0x33, "quote": 0x34, "grave": 0x35, "comma": 0x36,
 		"period": 0x37, "slash": 0x38, "capslock": 0x39, "printscreen": 0x46, "scrolllock": 0x47,
-		"pause": 0x48, "insert": 0x49, "home": 0x4A, "pageup": 0x4B, "delete": 0x4C, "end": 0x4D,
+		"pause": 0x48, "insert": 0x49, "home": 0x4A, "pageup": 0x4B, "forwarddelete": 0x4C, "del": 0x4C, "end": 0x4D,
 		"pagedown": 0x4E, "right": 0x4F, "left": 0x50, "down": 0x51, "up": 0x52, "0": 0x27,
 	}
 	for i := 0; i < 26; i++ {
@@ -196,7 +203,7 @@ func ParseCombo(combo string) (KeyState, error) {
 				continue
 			}
 		}
-		return KeyState{}, fmt.Errorf("unknown key %q in %q", tok, combo)
+		return KeyState{}, fmt.Errorf("unknown key %q in %q (%s)", tok, combo, KeyNamesHelp)
 	}
 	if len(ks.Keys) == 0 && ks.Mods == 0 {
 		return KeyState{}, fmt.Errorf("no key in %q", combo)

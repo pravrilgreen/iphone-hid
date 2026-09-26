@@ -75,6 +75,15 @@
         <input id="combo" spellcheck="false" placeholder="Shortcut, e.g. cmd+space" aria-label="Keyboard shortcut">
         <button type="submit">Press</button>
       </form>
+      <details class="note">
+        <summary>Key names</summary>
+        Modifiers <code>cmd</code>, <code>ctrl</code>, <code>alt</code>, <code>shift</code>, joined with <code>+</code>.
+        Keys <code>a</code>–<code>z</code>, <code>0</code>–<code>9</code>, <code>f1</code>–<code>f12</code>,
+        <code>enter</code>, <code>esc</code>, <code>tab</code>, <code>space</code>, <code>delete</code> (backspace),
+        <code>forwarddelete</code>, <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>,
+        <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, and characters such as
+        <code>-</code> <code>/</code> <code>.</code>
+      </details>
     </section>
 
     <section>
@@ -89,10 +98,12 @@
 
     <section>
       <h2>Screen</h2>
-      <div class="seg" role="radiogroup" aria-label="Orientation">
+      <p class="note">The phone mirrors in:</p>
+      <div class="seg" role="radiogroup" aria-label="The phone mirrors in">
         <button role="radio" data-landscape="false" aria-checked="true">Portrait</button>
         <button role="radio" data-landscape="true" aria-checked="false">Landscape</button>
       </div>
+      <p class="note">Switch to Landscape when an app turns the phone's picture sideways.</p>
       <button id="shot" class="wide">Save screenshot</button>
     </section>
 
@@ -118,7 +129,7 @@
 <dialog id="token-dialog">
   <form id="token-form" method="dialog" autocomplete="off">
     <h2>Box token</h2>
-    <p>This box needs its API token. It is in <code>/var/lib/ihc/token</code> on the box. This browser keeps it.</p>
+    <p>This box needs its API token. On the box: <code>sudo cat /var/lib/ihc/token</code>. This browser keeps it.</p>
     <p class="error" id="token-error"></p>
     <input id="token-input" type="password" spellcheck="false" aria-label="Token">
     <button type="submit" class="primary">Connect</button>

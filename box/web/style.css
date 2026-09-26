@@ -318,3 +318,5 @@ dialog code { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+details.note summary { cursor: pointer; color: var(--ink-dim); }
+details.note code { font-size: 12px; }
