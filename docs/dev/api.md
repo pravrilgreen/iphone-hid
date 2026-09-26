@@ -7,6 +7,8 @@ Every box serves one phone. The machine-readable description is at `/api/openapi
 - **Token:** every call except `/api/health` needs the box's token: `Authorization: Bearer <token>`,
   or `?token=` where headers cannot be set (WebSockets, image URLs). The token is in
   `/var/lib/ihc/token` on the box.
+- **HTTPS** when the box runs with `--tls-cert` and `--tls-key`; its mDNS record says `scheme=https`.
+- **Errors** are JSON: `{"ok": false, "code": "...", "error": "..."}`, with the codes below.
 - **Browsers:** requests from pages of another origin are refused, and so are host names the box does
   not answer to (IP addresses, `localhost`, `*.local`, its host name, and `--allow-host` names are
   accepted).
@@ -20,6 +22,7 @@ Every box serves one phone. The machine-readable description is at `/api/openapi
 ```json
 {
   "id": "iphone-b40d9e",
+  "version": "0.4.0",
   "state": "ready",
   "message": "",
   "usb": {"udc": "fc000000.usb", "state": "configured", "connected": true, "profile": "RA"},
@@ -33,14 +36,15 @@ Every box serves one phone. The machine-readable description is at `/api/openapi
 ```
 
 `state` is `ready`, `busy` (a scripted action runs), `starting` (no picture yet since the box
-started), `no_usb` (the phone has not taken the gadget:
-unplugged, locked, or the accessory not allowed), `asleep` (the phone suspended the USB bus) or
-`no_video`. `message` says what to do.
+started), `no_usb` (the phone has not taken the gadget: unplugged, locked, or the accessory not
+allowed), `asleep` (the phone suspended the USB bus) or `no_video`. `message` says what to do (empty
+when ready); `last_action` is `null` until the first action.
 
 ## Actions
 
 `POST /api/devices/{id}/<action>` with a JSON body. Each call returns once the phone has taken the
-action's last report: `{"ok": true, "result": {"action": "tap", "ok": true, "ms": 262.4}}`.
+action's last report: `{"ok": true, "result": {"action": "tap", "ok": true, "ms": 262.4, "at": "..."}}`.
+`ms` counts from when the action started, after any input ahead of it.
 
 | Action | Body | What it does |
 |---|---|---|
@@ -48,9 +52,9 @@ action's last report: `{"ok": true, "result": {"action": "tap", "ok": true, "ms"
 | `long_press` | `x`, `y`, `duration_ms` (1500) | Touch and hold |
 | `swipe` | `x1`, `y1`, `x2`, `y2`, `duration_ms` (250) | Lift while moving: lists keep the swipe's speed |
 | `drag` | `x1`, `y1`, `x2`, `y2`, `hold_ms` (600), `duration_ms` (600), `rest_ms` (200) | Hold (lifts an icon), move, stay still, lift |
-| `scroll` | `x`, `y`, `lines` | Wheel lines; positive scrolls towards the top |
-| `type` | `text` | Printable ASCII, newline, tab; the U.S. keyboard layout |
-| `key` | `combo` | E.g. `cmd+space`, `esc`, `cmd+shift+3` |
+| `scroll` | `x`, `y`, `lines` | Wheel lines, -100 to 100 but not 0; positive scrolls towards the top |
+| `type` | `text` | Up to 4000 characters of printable ASCII, newline, tab; the U.S. keyboard layout |
+| `key` | `combo` | E.g. `cmd+space`, `esc`, `cmd+shift+3` (key names below) |
 | `button` | `name` | `home`, `app_switcher`, `spotlight`, `volume_up`, `volume_down`, `mute`, `play_pause` |
 | `home`, `app_switcher`, `spotlight`, `volume_up`, ... | none | The same buttons, one action each |
 | `media` | `key` | Any consumer key: `volume_up`, `next_track`, ... |
@@ -58,17 +62,40 @@ action's last report: `{"ok": true, "result": {"action": "tap", "ok": true, "ms"
 | `wake` | none | USB remote wakeup of a sleeping phone, then a key |
 | `release_all` | none | Release every key and button |
 
-Errors: `400 bad_request` (nothing was sent to the phone), `401 unauthorized`, `404 no_device`,
-`503 no_usb` or `asleep`, `500 failed`. The body is `{"ok": false, "code": "...", "error": "..."}`.
+- Durations are milliseconds, 0 to 10000; 0 or absent is the default in brackets.
+- An action takes only its own fields: any other one, data after the JSON body, or a value of the
+  wrong type is a 400, and nothing is sent to the phone.
+- An action may take a minute plus its own length (typing: 100 ms a character), its wait behind
+  other input included; past that it is a 504 `timeout`.
+- A script starts with nothing held: an operator's finger or keys held live are released first.
+- Key names: modifiers `cmd`, `ctrl`, `alt` (`option`), `shift`; keys `a`–`z`, `0`–`9`,
+  `f1`–`f12`, `enter`, `esc`, `tab`, `space`, `delete` (backspace, as on a Mac), `forwarddelete`
+  (`del`), `up`, `down`, `left`, `right`, `home`, `end`, `pageup`, `pagedown`, `capslock`, and
+  printable characters such as `-`, `/`, `.`.
 
-`POST /api/devices/{id}/orientation` with `{"landscape": true}` takes the screen from a landscape
-mirror.
+| Status | Code | Meaning |
+|---|---|---|
+| 400 | `bad_request` | Bad parameters; nothing was sent to the phone |
+| 401 | `unauthorized` | No token, or a wrong one |
+| 403 | `bad_host`, `bad_origin` | A host name the box does not answer to, or a page of another origin |
+| 404 | `no_device`, `unknown_action`, `not_found` | No such phone, action or endpoint |
+| 405 | `method_not_allowed` | The endpoint takes another method (`Allow` says which) |
+| 429 | `too_many` | The box streams to 4 viewers at most |
+| 500 | `failed` | The action failed on the box |
+| 503 | `no_usb`, `asleep` | The phone is not taking input (actions) |
+| 503 | `no_video` | No picture (screenshots, MJPEG) |
+| 504 | `timeout` | The action did not finish in time |
+
+A failed action's body also has its `result`. `POST /api/devices/{id}/orientation` with
+`{"landscape": true}` takes the screen from a landscape mirror.
 
 ## Screen
 
-- `GET /api/devices/{id}/screenshot`: JPEG (`quality=`, default 90) or PNG (`format=png`); with
-  `wait=true` a frame captured after the request. The header `X-Frame-Age-Ms` gives the frame's age.
-- `GET /api/devices/{id}/mjpeg`: a multipart MJPEG stream (`fps=`, `quality=`, `frames=`).
+- `GET /api/devices/{id}/screenshot`: JPEG (`quality=` 30 to 100, default 90) or PNG (`format=png`,
+  8 bits a channel); with `wait=true` a frame captured after the request (up to 3 s). The header
+  `X-Frame-Age-Ms` gives the frame's age. Without a picture it answers 503 `no_video` at once.
+- `GET /api/devices/{id}/mjpeg`: a multipart MJPEG stream (`fps=` 1 to 60, default 30; `quality=`
+  30 to 95; `frames=` to stop after that many).
 - `GET /api/devices/{id}/stream` (WebSocket): binary messages are frames, a 12-byte header then the
   JPEG:
 
@@ -78,15 +105,20 @@ mirror.
   | 4–7 | frame number, u32 little endian |
   | 8–11 | microseconds from capture to sending, u32 little endian |
 
-  Answer the text message `ack` after drawing each frame: the box sends the next frame only then
-  (`ack=false` turns this off). Text messages are the status JSON, at connection and every second.
+  Answer the text message `ack <frame number>` (or `ack`) after drawing each frame: the box sends
+  the next frame only then, or after a second without an answer (`ack=false` turns this off). Text
+  messages from the box are `{"t": "status", "status": {...}}`, at connection and every second.
   Query: `quality` (75), `fps` (60).
+- The stream and MJPEG together serve 4 viewers per box; one more gets 429 `too_many` (MJPEG) or the
+  close code 4429 (stream).
 
 ## Live control
 
 `GET /api/devices/{id}/control` (WebSocket). One client controls a phone at a time; another one is
 refused with close code 4409 unless it connects with `?takeover=true`, which closes the first with
-4409. Binary messages, little endian:
+4409. The box pings every 2 s and drops a client that has answered nothing for 6 s (WebSocket
+libraries and browsers answer pings on their own), so a client that vanished does not keep the
+phone. Binary messages, little endian:
 
 | Message | Bytes | Meaning |
 |---|---|---|
@@ -96,16 +128,17 @@ refused with close code 4409 unless it connects with `?takeover=true`, which clo
 | release | `0x04` | Release everything |
 | ping | `0x05` seq:u32 | Echoed back at once, for the round-trip time |
 
-Send a touch message for every pointer event: the box keeps only the newest position while a report
-waits for the phone, and never merges a press or a release. A press that follows a jump waits
+Send a touch message for every pointer event: while a report waits for the phone, a move replaces
+the waiting move; a press or a release is never merged or moved. A press that follows a jump waits
 until iOS has glided the pointer there (80 ms, `--settle`). Input older than 0.5 s when its turn
 comes (a scripted action held the phone) is dropped, except releases.
 
-Text messages run actions in order with the live input:
-`{"t": "action", "id": 1, "action": "tap", "x": 0.5, "y": 0.5}` is answered by
-`{"t": "result", "id": 1, "ok": true, "result": {...}}`. The box sends `{"t": "hello"}`,
-`{"t": "stats", "input": {...}}` every second, and `{"t": "error"}` or `{"t": "dropped"}` when input
-could not reach the phone.
+Text messages run actions: `{"t": "action", "id": 1, "action": "tap", "x": 0.5, "y": 0.5}` is
+answered by `{"t": "result", "id": 1, "ok": true, "result": {...}}`, or on failure `"ok": false`
+with `code` and `error` as in the table above. A connection's actions run one after the other, in
+the order sent, and end when the connection ends; 64 may wait (more: `code` `busy`). The box sends
+`{"t": "hello"}`, `{"t": "stats", "input": {...}}` every second, and `{"t": "error"}` or
+`{"t": "dropped"}` when live input could not reach the phone.
 
 ## Python SDK
 
@@ -116,6 +149,7 @@ with Farm("http://box-a.local:8000", "http://box-b.local:8000", token="...") as 
     for phone in farm.devices():
         print(phone.id, phone.state)
     phone = farm.device("iphone-b40d9e")
+    phone.wait_ready(timeout=30)
     phone.tap(0.5, 0.5)
     phone.long_press(0.2, 0.3)
     phone.swipe(0.5, 0.8, 0.5, 0.2, duration_ms=300)
@@ -123,16 +157,21 @@ with Farm("http://box-a.local:8000", "http://box-b.local:8000", token="...") as 
     phone.scroll(0.5, 0.5, -3)
     phone.type("hello")
     phone.key("cmd+space")
-    phone.button("volume_up")
-    phone.home(); phone.app_switcher(); phone.spotlight(); phone.wake()
+    phone.home(); phone.app_switcher(); phone.spotlight(); phone.volume_up(); phone.wake()
+    phone.media("next_track")
     png = phone.screenshot("screen.png")
 ```
 
 `Farm.discover()` finds the boxes on the local network (the `discovery` extra:
 `pip install "iphone-hid[discovery] @ git+https://github.com/pravrilgreen/iphone-hid"`), with the scheme
-each box announces (`http` or `https`).
-The token defaults to `$IHC_TOKEN`. Failed calls raise `IhcError` with `status_code` and `code`.
+each box announces (`http` or `https`). The token defaults to `$IHC_TOKEN`.
+
+Failed calls raise `IhcError` with `status_code`, `code` (the table above, or `unreachable` and
+`timeout` when the box did not answer) and `retryable` (the same call may work later: `unreachable`,
+`timeout`, `no_usb`, `asleep`, `no_video`, `too_many`, `busy`).
 
 The `ihc` command does the same from a shell: `ihc devices`, `ihc tap 0.5 0.5`,
-`ihc swipe 0.5 0.8 0.5 0.2`, `ihc type hello`, `ihc button home`, `ihc screenshot shot.png`
-(`--url`, `--token`, `--device`).
+`ihc swipe 0.5 0.8 0.5 0.2`, `ihc type hello`, `ihc button home`, `ihc screenshot shot.png`. Options
+(`--url`, `--token`, `--token-file`, `--device`) go before or after the command; `$IHC_URL`
+(comma-separated) and `$IHC_TOKEN` are the defaults. Exit status: 0 done, 1 refused or failed, 2 bad
+usage, 3 no box reachable.
