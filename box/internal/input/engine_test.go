@@ -371,3 +371,15 @@ func TestHomeCanUseTheSecondaryButton(t *testing.T) {
 		t.Fatal("an unknown method must be refused")
 	}
 }
+
+func TestStatsLeaveOutTheSettleWait(t *testing.T) {
+	sink := &fakeSink{}
+	cfg := testConfig()
+	e := New(sink, cfg)
+	defer e.Close()
+	e.Live(Touch{X: 0.9, Y: 0.9, Buttons: 1}) // a jump, then a press: the press waits cfg.Settle
+	waitFor(t, "the press", func() bool { return hasPress(sink.pointers()) })
+	if s := e.Stats(); s.LatencyMax >= float64(cfg.Settle.Milliseconds()) {
+		t.Fatalf("the deliberate settle counted as latency: %+v", s)
+	}
+}

@@ -431,13 +431,13 @@ const keyboard = {
   mods: 0, held: [],
 
   wire() {
-    const s = $("screen"), bezel = $("bezel");
+    const s = $("screen"), device = $("device");
     s.addEventListener("focus", () => {
-      bezel.classList.add("keyboard");
+      device.classList.add("keyboard");
       $("hint").textContent = "The keyboard goes to the phone. Click outside the phone to stop.";
     });
     s.addEventListener("blur", () => {
-      bezel.classList.remove("keyboard");
+      device.classList.remove("keyboard");
       $("hint").textContent = HINT;
       if (this.mods || this.held.length) { this.mods = 0; this.held = []; control.keys(0, []); }
       if (touch.buttons) { touch.buttons = 0; control.release(); }

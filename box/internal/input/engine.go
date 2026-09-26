@@ -306,15 +306,17 @@ func (e *Engine) liveTouch(o *op) {
 		}
 		return
 	}
+	since := o.at
 	if pressed != 0 && e.isJump(target) {
 		// move there with the buttons as they are, let the pointer glide, then press
 		move := target
 		move.Buttons, move.Wheel = e.ptr.Buttons, 0
 		if e.send(move, o.at) {
 			e.settle()
+			since = e.now() // the stats measure the box, not this deliberate wait
 		}
 	}
-	e.send(target, o.at)
+	e.send(target, since)
 }
 
 func (e *Engine) liveKeys(o *op) {
@@ -477,7 +479,7 @@ type Stats struct {
 	Rate       float64 `json:"rate"`           // reports per second
 	Merged     int     `json:"merged"`         // moves replaced by a newer one before they went out (in all)
 	Dropped    int     `json:"dropped"`        // live input dropped because it was stale (in all)
-	LatencyP50 float64 `json:"latency_p50_ms"` // from the input reaching the box to its report queued on USB
+	LatencyP50 float64 `json:"latency_p50_ms"` // from the input reaching the box to its report queued on USB, not counting the settle after a jump
 	LatencyP95 float64 `json:"latency_p95_ms"`
 	LatencyMax float64 `json:"latency_max_ms"`
 	Errors     int     `json:"errors"`
