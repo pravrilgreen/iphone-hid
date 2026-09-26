@@ -1548,9 +1548,11 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    it, or a short track to a through-hole GND pad of the same part; these are fixed, so the router cannot remove
    them. After routing, GND stitching vias fill a 3 mm grid wherever they clear other copper (and stay out of the
    other nets' pours), GND pours cover L1, L3 and L4, and every GND pour island without a via gets one where it
-   fits. L3 also carries a 5V_SYS pour, present during routing so that the router uses it: from the
-   U103 side along the module's bottom edge and up the corridor between the module and the RJ45 to the module's
-   supply pads (§11). L1 has a VBUS_IN pour from the power receptacle J101 to the fuse F101.
+   fits. Two supply pours exist during routing, so that the router uses them, each under a keep-out for other
+   nets' tracks: on L3, 5V_SYS from the U103 side along the module's bottom edge and up the corridor between the
+   module and the RJ45 to the module's supply pads (§11); on L4, VBUS_IN under the power receptacle J101 and the
+   fuse F101, reached by a via from each VBUS pad (the CC lines leave J101 between the two). L1 adds a VBUS_IN
+   pour from J101 to F101.
 7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself), in two
    stages. The second stage starts from the first one's result: the nets KiCad still finds unconnected keep
    their tracks and get their missing connections at 0.3 mm, and the router may move other nets' tracks to make

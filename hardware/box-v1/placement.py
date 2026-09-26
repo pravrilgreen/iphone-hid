@@ -70,6 +70,8 @@ HINTS = {
     # decoupling of LT7911D pins that have no pad yet (placeholders): beside U201 until the pin table is in
     "C209": (31.2, 31.4), "C210": (31.2, 32.6), "C211": (31.2, 33.8),
     "TP507": (2.4, 25.0), "TP508": (86.0, 27.2), "TP501": (86.2, 56.0),
+    # U103's bootstrap capacitor beside its BOOT and SW pins, the feedback divider's low side by FB
+    "C115": (64.0, 59.6), "R114": (64.2, 63.6),
     "R409": (68.0, 40.0), "R410": (68.0, 41.2), "C409": (68.0, 42.4),
     "JP102": (84.2, 45.4),
 }

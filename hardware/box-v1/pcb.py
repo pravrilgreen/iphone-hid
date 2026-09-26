@@ -823,17 +823,23 @@ def stitch_islands(board, via_r=0.275, clearance=0.2):
 
 def plane(board):
     """Zones present during routing (the router sees them as planes of their net): L2, the solid GND
-    reference plane; on L3, the 5V_SYS pour from the U103 output side, under the module's bottom
-    edge and up the corridor between the module and the RJ45 to the module's supply pads."""
+    reference plane, and the supply pours of POURS, each under a keep-out for tracks so that no
+    other net's track cuts it up (vias may pass)."""
     nets = _nets(board)
     _zone(board, pcbnew.In1_Cu, nets["GND"], FULL, 0, "GND reference plane")
-    _zone(board, pcbnew.In2_Cu, nets["5V_SYS"], FIVE_V_POUR, 1, "5V_SYS")
+    for net, layer, pts in POURS:
+        _zone(board, layer, nets[net], pts, 1, net)
+        _keepout(board, pts, f"{net} pour: no tracks", tracks=True, vias=False, pour=False, layers=(layer,))
 
 
 FULL = [(0.3, 0.3), (W - 0.3, 0.3), (W - 0.3, H - 0.3), (0.3, H - 0.3)]
 # L3 5V_SYS pour: a band along the module's bottom edge from the U103 side, and the corridor up to
 # the module's supply pads between the module and the RJ45
 FIVE_V_POUR = [(57.0, 40.4), (73.4, 40.4), (73.4, 9.0), (70.4, 9.0), (70.4, 38.0), (57.0, 38.0)]
+# L4 VBUS_IN pour under the power receptacle J101 and the fuse F101: the CC lines leave J101 between
+# its two VBUS pads, so the pads meet through vias to this pour rather than on L1
+VBUS_POUR = [(82.7, 45.9), (88.5, 45.9), (88.5, 52.1), (82.7, 52.1)]
+POURS = [("5V_SYS", pcbnew.In2_Cu, FIVE_V_POUR), ("VBUS_IN", pcbnew.B_Cu, VBUS_POUR)]
 
 
 def _zone(board, layer, net, pts, prio=0, name=""):
@@ -924,13 +930,13 @@ def strip_nets_for_routing(board, fps=None):
     return saved
 
 
-def fanout(board, netname="GND", region=None):
+def fanout(board, netname="GND", region=None, via_d=0.55, via_drill=0.3):
     """A via to the plane of `netname` next to each of its pads on the top layer (only the pads inside
     `region`, a polygon in board mm, when given), joined by a short track, so the router only has the
     other connections left. Vias keep 0.2 mm from other copper, stay out of the board edge margin and
     never go under the castellated module. Everything placed here is fixed for the router."""
-    via_d, via_drill, gap, tw = 0.55, 0.3, 0.2, 0.3
-    gnd = board.GetNetsByName()[netname]             # the plane's net (GND or 5V_SYS)
+    gap, tw = 0.2, 0.3
+    gnd = board.GetNetsByName()[netname]             # the plane's net (GND, or a supply over its pour)
     items = []            # (x, y, r, netcode) of every pad and via, board mm, as circles/boxes
     boxes = []            # (x0, y0, x1, y1, netcode) of top-layer pads and every drilled pad
     for fp in board.GetFootprints():
@@ -943,6 +949,9 @@ def fanout(board, netname="GND", region=None):
     keepouts = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
     for fp in board.GetFootprints():
         keepouts += [z for z in fp.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
+    # and the supply pours of other nets (the full-board GND plane has priority 0)
+    keepouts += [z for z in board.Zones() if not z.GetIsRuleArea() and z.GetAssignedPriority() > 0
+                 and z.GetNetCode() != gnd.GetNetCode()]
     vias = [board_xy(t.GetPosition()) for t in board.GetTracks() if t.GetClass() == "PCB_VIA"]
     segs = [(*board_xy(t.GetStart()), *board_xy(t.GetEnd()), pcbnew.ToMM(t.GetWidth()) / 2)
             for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() != gnd.GetNetCode()]
@@ -1202,7 +1211,8 @@ def autoroute(board, fps, passes: int):
     room. Work files go to $ROUTE_DIR (default: a temporary directory)."""
     if not JAR or not os.path.exists(JAR):
         sys.exit("--route needs FREEROUTING_JAR pointing at a Freerouting jar")
-    print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR), flush=True)
+    print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR),
+          "VBUS_IN", fanout(board, "VBUS_IN", VBUS_POUR, 0.8, 0.4), flush=True)
     saved = strip_nets_for_routing(board, fps)
     work = os.environ.get("ROUTE_DIR") or tempfile.mkdtemp(prefix="box-v1-route-")
     os.makedirs(work, exist_ok=True)
@@ -1492,7 +1502,8 @@ def main():
         autoroute(board, fps, args.passes)
     elif args.ses:
         # the fan-out is fixed in the DSN, so the session does not carry it: make it again (same result)
-        print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR), flush=True)
+        print("fan-out vias: GND", fanout(board), "5V_SYS", fanout(board, "5V_SYS", FIVE_V_POUR),
+              "VBUS_IN", fanout(board, "VBUS_IN", VBUS_POUR, 0.8, 0.4), flush=True)
         replay(board, fps, args.ses, tempfile.mkdtemp(prefix="box-v1-replay-"))
     zones(board)
     if args.route or args.ses:
