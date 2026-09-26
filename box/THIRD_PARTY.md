@@ -5,7 +5,7 @@ redistribution in binary form with this notice.
 
 | Component | Use | Licence |
 |---|---|---|
-| [libjpeg-turbo](https://libjpeg-turbo.org/) 3.0 | JPEG encoding of the screen | IJG licence, modified BSD licence, zlib licence |
+| [libjpeg-turbo](https://libjpeg-turbo.org/) 3.1 | JPEG encoding of the screen | IJG licence, modified BSD licence, zlib licence |
 | [Go standard library](https://go.dev/) | everything | BSD 3-Clause |
 | [gorilla/websocket](https://github.com/gorilla/websocket) | WebSockets | BSD 2-Clause |
 | [hashicorp/mdns](https://github.com/hashicorp/mdns) | network announcement | MIT |

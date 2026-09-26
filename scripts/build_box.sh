@@ -9,7 +9,7 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ARCH="${ARCH:-arm64}"
 ZIG="${ZIG:-python3 -m ziglang}"
-LJT_VERSION=3.0.4
+LJT_VERSION=3.1.2
 VERSION="$(cat "$ROOT/VERSION")"
 case "$ARCH" in
     arm64) TARGET=aarch64-linux-musl; CPU=aarch64 ;;
@@ -19,14 +19,21 @@ esac
 BUILD="$ROOT/build/$ARCH"
 mkdir -p "$BUILD" "$ROOT/dist"
 
-# a C compiler for the target: zig's clang with musl, so the binary is fully static
-for tool in cc ar ranlib; do
-    cat > "$BUILD/zig-$tool" <<SH
+# a C compiler for the target: zig's clang with musl, so the binary is fully static. zig's linker
+# refuses -v and --dependency-file, which CMake 4 passes to linkers: leave them out.
+cat > "$BUILD/zig-cc" <<SH
 #!/bin/sh
-exec $ZIG $tool $( [ "$tool" = cc ] && echo "-target $TARGET" ) "\$@"
-SH
-    chmod +x "$BUILD/zig-$tool"
+for a do
+    shift
+    case "\$a" in -Wl,-v|-Wl,--dependency-file=*) continue ;; esac
+    set -- "\$@" "\$a"
 done
+exec $ZIG cc -target $TARGET "\$@"
+SH
+for tool in ar ranlib; do
+    printf '#!/bin/sh\nexec %s %s "$@"\n' "$ZIG" "$tool" > "$BUILD/zig-$tool"
+done
+chmod +x "$BUILD/zig-cc" "$BUILD/zig-ar" "$BUILD/zig-ranlib"
 
 # libjpeg-turbo, static
 LJT="$BUILD/libjpeg-turbo"
@@ -45,11 +52,13 @@ if [ ! -f "$LJT/lib/libturbojpeg.a" ]; then
             -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR="$CPU" \
             -DCMAKE_C_COMPILER="$BUILD/zig-cc" -DCMAKE_AR="$BUILD/zig-ar" -DCMAKE_RANLIB="$BUILD/zig-ranlib" \
             -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DWITH_TURBOJPEG=ON \
-            -DREQUIRE_SIMD=OFF -DCMAKE_INSTALL_PREFIX="$LJT" -DCMAKE_INSTALL_LIBDIR=lib > cmake.log
-        make -j"$(nproc)" > make.log
-        make install > install.log
+            -DREQUIRE_SIMD=OFF > cmake.log
+        make -j"$(nproc)" turbojpeg-static > make.log   # the library only: no programs to link
     ) || { echo "libjpeg-turbo did not build: see $BUILD/ljt-build/*.log" >&2; exit 1; }
-    grep -q "SIMD extensions" "$BUILD/ljt-build/cmake.log" && grep "SIMD extensions" "$BUILD/ljt-build/cmake.log"
+    grep "SIMD extensions" "$BUILD/ljt-build/cmake.log" || true
+    mkdir -p "$LJT/lib" "$LJT/include"
+    cp "$BUILD/ljt-build/libturbojpeg.a" "$LJT/lib/"
+    cp "$SRC/src/turbojpeg.h" "$LJT/include/" 2>/dev/null || cp "$SRC/turbojpeg.h" "$LJT/include/"
 fi
 
 # ihcd
