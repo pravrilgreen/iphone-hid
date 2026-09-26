@@ -5,5 +5,5 @@ import "embed"
 
 // Files are the console: index.html and what it loads.
 //
-//go:embed index.html app.js style.css
+//go:embed index.html app.js style.css fonts/*.woff2 fonts/OFL.txt
 var Files embed.FS

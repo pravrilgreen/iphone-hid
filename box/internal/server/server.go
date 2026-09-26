@@ -184,11 +184,11 @@ type Status struct {
 
 // ScreenInfo describes the picture of the phone screen the box sends.
 type ScreenInfo struct {
-	Width       int  `json:"width"`
-	Height      int  `json:"height"`
-	Landscape   bool `json:"landscape"`
-	PointsWide  int  `json:"points_wide"` // iPhone 15 sizes, for converting to points
-	PointsHigh  int  `json:"points_high"`
+	Width      int  `json:"width"`
+	Height     int  `json:"height"`
+	Landscape  bool `json:"landscape"`
+	PointsWide int  `json:"points_wide"` // iPhone 15 sizes, for converting to points
+	PointsHigh int  `json:"points_high"`
 }
 
 // Snapshot returns the phone's status.

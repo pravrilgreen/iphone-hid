@@ -1,0 +1,301 @@
+/* iPhone console. The phone lies on a bench mat; everything else stays out of its way. */
+
+@font-face { font-family: "Barlow"; font-weight: 400; font-display: swap; src: url("fonts/barlow-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; font-display: swap; src: url("fonts/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; font-display: swap; src: url("fonts/barlow-latin-600-normal.woff2") format("woff2"); }
+
+:root {
+  --mat: #2e3f46;          /* anti-static bench mat */
+  --mat-line: #36494f;     /* its printed grid */
+  --mat-line-major: #3d535a;
+  --surface: #25343a;      /* the side panel */
+  --control: #33474e;      /* buttons on the mat */
+  --control-hover: #3c535a;
+  --ink: #f4f1ec;
+  --ink-dim: #a7b4b8;
+  --ink-faint: #7d8e93;
+  --titanium: #bdb6aa;
+  --titanium-hi: #d8d2c7;
+  --titanium-lo: #8f887d;
+  --ready: #7ccf95;
+  --warn: #e8c168;
+  --fault: #f08a7e;
+  --radius: 10px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  font: 400 15px/1.45 "Barlow", system-ui, sans-serif;
+  color: var(--ink);
+  background-color: var(--mat);
+  background-image:
+    linear-gradient(var(--mat-line-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mat-line-major) 1px, transparent 1px),
+    linear-gradient(var(--mat-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mat-line) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  display: flex;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  background: var(--control);
+  color: var(--ink);
+  font-weight: 500;
+}
+button:hover { background: var(--control-hover); }
+button:active { transform: translateY(1px); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+input, textarea {
+  width: 100%;
+  border: 1px solid #44585f;
+  border-radius: 8px;
+  background: #1e2b30;
+  padding: 8px 10px;
+  resize: vertical;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+
+/* -- top bar ---------------------------------------------------------------------------------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 28px;
+  flex-wrap: wrap;
+}
+.ident { display: flex; align-items: baseline; gap: 14px; min-width: 0; flex-wrap: wrap; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+.state {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.state::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+.state[data-state="ready"]::before { background: var(--ready); box-shadow: 0 0 0 3px rgba(124, 207, 149, 0.18); }
+.state[data-state="busy"]::before,
+.state[data-state="asleep"]::before { background: var(--warn); }
+.state[data-state="no_usb"]::before,
+.state[data-state="no_video"]::before,
+.state[data-state="offline"]::before { background: var(--fault); }
+.state-msg { margin: 0; color: var(--ink-dim); max-width: 60ch; }
+.state-msg button { margin-left: 8px; padding: 3px 10px; }
+
+.meters { display: flex; gap: 28px; margin: 0; }
+.meters div { display: flex; flex-direction: column; align-items: flex-end; }
+.meters dt { color: var(--ink-dim); font-size: 13px; }
+.meters dd { margin: 0; font-size: 20px; font-weight: 500; }
+
+/* -- the bench ---------------------------------------------------------------------------------- */
+
+.bench {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 24px;
+  padding: 0 28px 24px;
+}
+.stage {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* The phone: a titanium frame, a black bezel, the live screen. JS sets --w, --h and the short side
+   --s to fit; the frame's proportions follow the short side, as on the real phone. */
+.device {
+  --w: 360px;
+  --h: 760px;
+  --s: 360px;
+  position: relative;
+  flex: none;
+  width: var(--w);
+  height: var(--h);
+  padding: calc(var(--s) * 0.028);
+  border-radius: calc(var(--s) * 0.155);
+  background: linear-gradient(140deg, var(--titanium-hi) 0%, var(--titanium) 38%, var(--titanium-lo) 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 24px 48px rgba(0, 0, 0, 0.38), 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+.bezel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: calc(var(--s) * 0.03);
+  border-radius: calc(var(--s) * 0.13);
+  background: #050505;
+  transition: box-shadow 120ms ease-out;
+}
+.bezel.keyboard { box-shadow: 0 0 0 2px var(--ink), 0 0 22px rgba(244, 241, 236, 0.25); }
+#screen {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--s) * 0.105);
+  background: #000;
+  touch-action: none;
+  cursor: crosshair;
+  outline: none;
+}
+.screen-note {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 20%;
+  text-align: center;
+  color: var(--ink-dim);
+  pointer-events: none;
+}
+
+/* hardware buttons where they are on the phone */
+.hw {
+  position: absolute;
+  width: calc(var(--s) * 0.018);
+  padding: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--titanium-lo), var(--titanium-hi));
+}
+.hw:hover { background: var(--titanium-hi); }
+.hw-vol-up { left: calc(var(--s) * -0.016); top: 23%; height: 7.5%; border-radius: 3px 0 0 3px; }
+.hw-vol-down { left: calc(var(--s) * -0.016); top: 32%; height: 7.5%; border-radius: 3px 0 0 3px; }
+.hw-side { right: calc(var(--s) * -0.016); top: 27%; height: 11%; border-radius: 0 3px 3px 0;
+           background: linear-gradient(90deg, var(--titanium-hi), var(--titanium-lo)); }
+.hw-vol-up:active, .hw-vol-down:active { transform: translateX(2px); }
+.hw-side:active { transform: translateX(-2px); }
+.device.landscape .hw-vol-up { left: auto; top: calc(var(--s) * -0.016); right: 23%; width: 7.5%; height: calc(var(--s) * 0.018); border-radius: 3px 3px 0 0; }
+.device.landscape .hw-vol-down { left: auto; top: calc(var(--s) * -0.016); right: 32%; width: 7.5%; height: calc(var(--s) * 0.018); border-radius: 3px 3px 0 0; }
+.device.landscape .hw-side { right: 27%; top: auto; bottom: calc(var(--s) * -0.016); width: 11%; height: calc(var(--s) * 0.018); border-radius: 0 0 3px 3px; }
+
+.nav-keys { display: flex; gap: 10px; }
+.nav-keys button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px 9px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.nav-keys svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.hint { margin: 0; color: var(--ink-dim); font-size: 14px; text-align: center; min-height: 1.45em; }
+
+/* -- side panel ------------------------------------------------------------------------------------ */
+
+.panel {
+  align-self: start;
+  max-height: 100%;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 6px 20px 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+.panel section { padding: 12px 0 2px; }
+.panel section + section { margin-top: 4px; }
+h2 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+.note { color: var(--ink-faint); font-size: 13px; margin: 8px 0 0; }
+#type-form { display: grid; gap: 8px; }
+button.primary { background: var(--ink); color: #1d2a2f; }
+button.primary:hover { background: #fffdf9; }
+.keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.keys-3 { grid-template-columns: repeat(2, 1fr); }
+.keys button { padding: 7px 4px; }
+form.inline { display: flex; gap: 6px; margin-top: 8px; }
+form.inline input { flex: 1; }
+.seg { display: flex; background: #1e2b30; border-radius: 9px; padding: 3px; gap: 3px; }
+.seg button { flex: 1; background: transparent; }
+.seg button[aria-checked="true"] { background: var(--control-hover); }
+button.wide { width: 100%; margin-top: 8px; }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 14px; }
+.facts dt { color: var(--ink-dim); }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+
+/* -- messages ---------------------------------------------------------------------------------------- */
+
+.banner {
+  position: fixed;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px 10px 18px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #1d2a2f;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+.banner button { background: #1d2a2f; color: var(--ink); }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  margin: 0;
+  max-width: min(90vw, 560px);
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #1a2529;
+  border: 1px solid #4a3a38;
+  color: var(--ink);
+  z-index: 10;
+}
+.toast[data-kind="error"] { border-color: var(--fault); }
+
+dialog {
+  border: 0;
+  border-radius: 14px;
+  padding: 22px;
+  width: min(92vw, 420px);
+  background: var(--surface);
+  color: var(--ink);
+}
+dialog::backdrop { background: rgba(16, 22, 25, 0.7); }
+dialog form { display: grid; gap: 10px; }
+dialog p { margin: 0; color: var(--ink-dim); }
+dialog code { color: var(--ink); }
+.error { color: var(--fault); min-height: 0; }
+.error:empty { display: none; }
+
+/* -- narrow screens: the phone first, the panel under it ------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .bar { padding: 12px 16px; }
+  .meters { gap: 22px; }
+  .meters div { align-items: flex-start; }
+  .meters dd { font-size: 17px; }
+  .nav-keys { gap: 6px; }
+  .nav-keys button { padding: 8px 12px 8px 10px; gap: 6px; font-size: 14px; }
+  .bench { grid-template-columns: 1fr; padding: 0 16px 16px; }
+  .stage { min-height: 70vh; }
+  .panel { max-height: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

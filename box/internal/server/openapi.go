@@ -37,9 +37,9 @@ var actionSchemas = map[string]struct {
 		map[string]any{"text": map[string]any{"type": "string", "maxLength": 4000}}, []string{"text"}},
 	"key": {"Press a key combination", map[string]any{"combo": map[string]any{"type": "string", "examples": []string{"cmd+space", "esc", "cmd+shift+3"}}},
 		[]string{"combo"}},
-	"button": {"Press a phone button", map[string]any{"name": map[string]any{"type": "string", "enum": buttonNames()}}, []string{"name"}},
-	"media":  {"Press a media key", map[string]any{"key": map[string]any{"type": "string", "examples": []string{"volume_up", "volume_down", "mute", "play_pause"}}}, []string{"key"}},
-	"open_url": {"Open a URL through Search", map[string]any{"url": map[string]any{"type": "string"}}, []string{"url"}},
+	"button":      {"Press a phone button", map[string]any{"name": map[string]any{"type": "string", "enum": buttonNames()}}, []string{"name"}},
+	"media":       {"Press a media key", map[string]any{"key": map[string]any{"type": "string", "examples": []string{"volume_up", "volume_down", "mute", "play_pause"}}}, []string{"key"}},
+	"open_url":    {"Open a URL through Search", map[string]any{"url": map[string]any{"type": "string"}}, []string{"url"}},
 	"release_all": {"Release every key and button", map[string]any{}, nil},
 	"wake":        {"Wake a sleeping phone (USB remote wakeup, then a key)", map[string]any{}, nil},
 }
@@ -70,12 +70,12 @@ func (s *Server) openapi(w http.ResponseWriter, _ *http.Request) {
 		"/api/devices/{id}/mjpeg": map[string]any{"get": map[string]any{"summary": "The screen as a multipart MJPEG stream",
 			"parameters": []any{id}, "responses": map[string]any{"200": map[string]any{"description": "multipart/x-mixed-replace"}}}},
 		"/api/devices/{id}/stream": map[string]any{"get": map[string]any{
-			"summary": "WebSocket: JPEG frames (12-byte header: 'F' 1 0 0, seq u32, age_us u32), status JSON every second; answer \"ack\" per frame",
+			"summary":    "WebSocket: JPEG frames (12-byte header: 'F' 1 0 0, seq u32, age_us u32), status JSON every second; answer \"ack\" per frame",
 			"parameters": []any{id}, "responses": map[string]any{"101": map[string]any{"description": "switching protocols"}}}},
 		"/api/devices/{id}/control": map[string]any{"get": map[string]any{
-			"summary": "WebSocket: live touch, keys and actions (see the binary protocol in the documentation)",
+			"summary":    "WebSocket: live touch, keys and actions (see the binary protocol in the documentation)",
 			"parameters": []any{id, map[string]any{"name": "takeover", "in": "query", "schema": map[string]any{"type": "boolean"}}},
-			"responses": map[string]any{"101": map[string]any{"description": "switching protocols"}}}},
+			"responses":  map[string]any{"101": map[string]any{"description": "switching protocols"}}}},
 		"/api/devices/{id}/orientation": map[string]any{"post": map[string]any{"summary": "Whether the phone mirrors in landscape",
 			"parameters": []any{id}, "requestBody": map[string]any{"content": map[string]any{"application/json": map[string]any{
 				"schema": map[string]any{"type": "object", "properties": map[string]any{"landscape": map[string]any{"type": "boolean"}},

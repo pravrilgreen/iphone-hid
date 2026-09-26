@@ -103,7 +103,9 @@ func (g *Gadget) Link() Link {
 }
 
 // Wake signals USB remote wakeup.
-func (g *Gadget) Wake(timeout time.Duration) (string, string, error) { return g.paths.Wake(g.udc, timeout) }
+func (g *Gadget) Wake(timeout time.Duration) (string, string, error) {
+	return g.paths.Wake(g.udc, timeout)
+}
 
 // Close closes the nodes.
 func (g *Gadget) Close() error {

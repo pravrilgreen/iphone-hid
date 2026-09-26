@@ -177,7 +177,9 @@ func (e *Engine) Live(t Touch) {
 func (e *Engine) LiveKeys(ks hid.KeyState) { e.push(&op{kind: opKeys, keys: ks, at: e.now()}) }
 
 // LiveConsumer queues the consumer controls held (volume, mute...).
-func (e *Engine) LiveConsumer(bits uint32) { e.push(&op{kind: opConsumer, consumer: bits, at: e.now()}) }
+func (e *Engine) LiveConsumer(bits uint32) {
+	e.push(&op{kind: opConsumer, consumer: bits, at: e.now()})
+}
 
 // ReleaseAll queues a release of every button and key.
 func (e *Engine) ReleaseAll() { e.push(&op{kind: opRelease, at: e.now()}) }

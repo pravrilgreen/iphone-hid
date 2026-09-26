@@ -1,1 +1,129 @@
-<!doctype html><title>iphone-hid</title><p>console
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>iPhone console</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="ident">
+    <h1 id="device-name">iPhone</h1>
+    <span class="state" id="state" data-state="connecting">Connecting</span>
+    <p class="state-msg" id="state-msg"></p>
+  </div>
+  <dl class="meters" aria-label="Performance">
+    <div><dt>Touch</dt><dd id="m-touch">–</dd></div>
+    <div><dt>Picture</dt><dd id="m-video">–</dd></div>
+    <div><dt>Round trip</dt><dd id="m-rtt">–</dd></div>
+  </dl>
+</header>
+
+<main class="bench">
+  <section class="stage" id="stage" aria-label="Phone">
+    <div class="device" id="device">
+      <button class="hw hw-vol-up" data-button="volume_up" title="Volume up" aria-label="Volume up"></button>
+      <button class="hw hw-vol-down" data-button="volume_down" title="Volume down" aria-label="Volume down"></button>
+      <button class="hw hw-side" data-act="wake" title="Wake the phone" aria-label="Wake the phone"></button>
+      <div class="bezel" id="bezel">
+        <canvas id="screen" tabindex="0" aria-label="Phone screen. Click or drag to touch, scroll to scroll, type while it is focused."></canvas>
+        <p class="screen-note" id="screen-note">Waiting for the picture</p>
+      </div>
+    </div>
+    <div class="nav-keys" role="group" aria-label="Phone buttons">
+      <button data-button="home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="4" width="10" height="16" rx="3"/><path d="M10.5 17h3"/></svg>
+        Home
+      </button>
+      <button data-button="app_switcher">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="9" height="13" rx="2"/><path d="M16 6.5h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1"/></svg>
+        App Switcher
+      </button>
+      <button data-button="spotlight">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="M15 15l4.5 4.5"/></svg>
+        Search
+      </button>
+    </div>
+    <p class="hint" id="hint">Click to tap, drag to swipe, scroll to scroll. Click the screen, then type.</p>
+  </section>
+
+  <aside class="panel">
+    <section>
+      <h2>Type</h2>
+      <form id="type-form" autocomplete="off">
+        <textarea id="type-text" rows="2" spellcheck="false" placeholder="Text for the phone"></textarea>
+        <button type="submit" class="primary">Type on phone</button>
+      </form>
+      <p class="note">Plain ASCII. The phone needs the U.S. hardware keyboard layout.</p>
+    </section>
+
+    <section>
+      <h2>Keys</h2>
+      <div class="keys">
+        <button data-combo="esc">Esc</button>
+        <button data-combo="tab">Tab</button>
+        <button data-combo="backspace" aria-label="Delete">Delete</button>
+        <button data-combo="enter">Return</button>
+        <button data-combo="left" aria-label="Left arrow">←</button>
+        <button data-combo="up" aria-label="Up arrow">↑</button>
+        <button data-combo="down" aria-label="Down arrow">↓</button>
+        <button data-combo="right" aria-label="Right arrow">→</button>
+      </div>
+      <form id="combo-form" class="inline" autocomplete="off">
+        <input id="combo" spellcheck="false" placeholder="Shortcut, e.g. cmd+space" aria-label="Keyboard shortcut">
+        <button type="submit">Press</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Media</h2>
+      <div class="keys keys-3">
+        <button data-button="volume_down">Volume −</button>
+        <button data-button="volume_up">Volume +</button>
+        <button data-button="mute">Mute</button>
+        <button data-button="play_pause">Play/Pause</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Screen</h2>
+      <div class="seg" role="radiogroup" aria-label="Orientation">
+        <button role="radio" data-landscape="false" aria-checked="true">Portrait</button>
+        <button role="radio" data-landscape="true" aria-checked="false">Landscape</button>
+      </div>
+      <button id="shot" class="wide">Save screenshot</button>
+    </section>
+
+    <section>
+      <h2>Connection</h2>
+      <dl class="facts">
+        <dt>USB</dt><dd id="f-usb">–</dd>
+        <dt>Video</dt><dd id="f-video">–</dd>
+        <dt>Picture</dt><dd id="f-picture">–</dd>
+        <dt>Touch</dt><dd id="f-touch">–</dd>
+        <dt>Box</dt><dd id="f-box">–</dd>
+      </dl>
+    </section>
+  </aside>
+</main>
+
+<div class="banner" id="banner" role="alert" hidden>
+  <span id="banner-text"></span>
+  <button id="banner-action"></button>
+</div>
+<p class="toast" id="toast" role="status" hidden></p>
+
+<dialog id="token-dialog">
+  <form id="token-form" method="dialog" autocomplete="off">
+    <h2>Box token</h2>
+    <p>This box needs its API token. It is in <code>/var/lib/ihc/token</code> on the box. This browser keeps it.</p>
+    <p class="error" id="token-error"></p>
+    <input id="token-input" type="password" spellcheck="false" aria-label="Token">
+    <button type="submit" class="primary">Connect</button>
+  </form>
+</dialog>
+<script src="app.js"></script>
+</body>
+</html>

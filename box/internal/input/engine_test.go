@@ -40,7 +40,7 @@ func (s *fakeSink) add(r rec) error {
 	return nil
 }
 
-func (s *fakeSink) Pointer(p hid.Pointer) error  { return s.add(rec{kind: "ptr", p: p}) }
+func (s *fakeSink) Pointer(p hid.Pointer) error   { return s.add(rec{kind: "ptr", p: p}) }
 func (s *fakeSink) Keyboard(k hid.KeyState) error { return s.add(rec{kind: "kbd", ks: copyKeys(k)}) }
 func (s *fakeSink) Consumer(b uint32) error       { return s.add(rec{kind: "cons", bits: b}) }
 func (s *fakeSink) Sync(time.Duration) error      { return nil }

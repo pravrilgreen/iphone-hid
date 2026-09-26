@@ -52,7 +52,12 @@ func NewPlanar(w, h int, sub Subsampling) *Image {
 }
 
 // Rect is a pixel rectangle in a frame.
-type Rect struct{ X, Y, W, H int }
+type Rect struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+	W int `json:"w"`
+	H int `json:"h"`
+}
 
 // Align shrinks r so that it starts and ends on the chroma grid of sub, inside a w x h frame.
 func (r Rect) Align(sub Subsampling, w, h int) Rect {
