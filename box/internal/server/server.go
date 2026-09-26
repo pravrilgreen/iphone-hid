@@ -9,6 +9,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/fs"
 	"log"
 	"net"
@@ -34,6 +35,8 @@ type Config struct {
 	SimState   func() any // with a simulated phone: what it shows, served at /api/devices/{id}/sim
 	// with a simulated phone: POST /api/devices/{id}/sim {"usb": ..., "video": ...} sets what its cables report
 	SimSet func(usb, video string) error
+	// how many viewers the stream and MJPEG serve at once (0: 4)
+	MaxViewers int
 }
 
 // Server is the box's API.
@@ -45,10 +48,11 @@ type Server struct {
 	started time.Time
 	log     *log.Logger
 
-	mu         sync.Mutex
-	last       *ActionResult
-	controller *controlConn // the live control connection, if any
-	viewers    int          // open screen streams
+	mu                   sync.Mutex
+	last                 *ActionResult
+	controller           *controlConn  // the live control connection, if any
+	viewers              int           // open screen streams
+	pingEvery, silentFor time.Duration // control connection liveness
 }
 
 // New builds the server around an input engine and a video hub.
@@ -56,7 +60,8 @@ func New(cfg Config, engine *input.Engine, hub *video.Hub) *Server {
 	if cfg.Log == nil {
 		cfg.Log = log.New(os.Stderr, "", log.LstdFlags)
 	}
-	s := &Server{cfg: cfg, engine: engine, hub: hub, mux: http.NewServeMux(), started: time.Now(), log: cfg.Log}
+	s := &Server{cfg: cfg, engine: engine, hub: hub, mux: http.NewServeMux(), started: time.Now(), log: cfg.Log,
+		pingEvery: pingEvery, silentFor: silentFor}
 	s.routes()
 	return s
 }
@@ -98,6 +103,25 @@ func (s *Server) routes() {
 		})))
 	}
 	m.Handle("POST /api/devices/{id}/{action}", s.auth(s.device(s.action)))
+	// the API's other paths answer in JSON too: a wrong method, or no such endpoint
+	fallback := func(w http.ResponseWriter, r *http.Request) {
+		for _, method := range []string{http.MethodGet, http.MethodPost} {
+			if method == r.Method {
+				continue
+			}
+			other := r.Clone(r.Context())
+			other.Method = method
+			if _, pattern := m.Handler(other); !strings.HasSuffix(pattern, " /api/") && pattern != "" {
+				w.Header().Set("Allow", method)
+				writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", r.URL.Path+" takes "+method)
+				return
+			}
+		}
+		writeError(w, http.StatusNotFound, "not_found", "no such endpoint: "+r.URL.Path+" (the API is described at /api/openapi.json)")
+	}
+	for _, method := range []string{"GET", "POST", "PUT", "PATCH", "DELETE"} {
+		m.HandleFunc(method+" /api/", fallback)
+	}
 	if s.cfg.Web != nil {
 		files := http.FileServer(http.FS(s.cfg.Web))
 		m.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -162,8 +186,11 @@ func sameOrigin(origin, host string) bool {
 func (s *Server) auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.cfg.Token != "" {
-			got := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-			if got == "" || got == r.Header.Get("Authorization") {
+			got := ""
+			if scheme, tok, ok := strings.Cut(r.Header.Get("Authorization"), " "); ok && strings.EqualFold(scheme, "Bearer") {
+				got = strings.TrimSpace(tok)
+			}
+			if got == "" {
 				got = r.URL.Query().Get("token")
 			}
 			if subtle.ConstantTimeCompare([]byte(got), []byte(s.cfg.Token)) != 1 {
@@ -236,14 +263,14 @@ func (s *Server) Snapshot() Status {
 	s.mu.Unlock()
 	switch {
 	case !link.Connected && link.State == "suspended":
-		st.State, st.Message = "asleep", "the iPhone is asleep: wake it (Wake) or set Auto-Lock to Never"
+		st.State, st.Message = "asleep", "the iPhone is asleep: wake it, and set Auto-Lock to Never"
 	case !link.Connected:
 		st.State, st.Message = "no_usb", "the iPhone has not connected as a keyboard and pointer ("+orNone(link.State)+
 			"): check the USB cable and allow the accessory on the phone"
 	case vs.State == "starting":
 		st.State, st.Message = "starting", "waiting for the first picture"
 	case vs.State != "ok":
-		st.State, st.Message = "no_video", "no picture from the phone: "+orNone(vs.Error)
+		st.State, st.Message = "no_video", noPicture(vs)
 	case s.engine.Busy() != "":
 		st.State, st.Message = "busy", "running "+s.engine.Busy()
 	default:
@@ -308,8 +335,14 @@ func decode(r *http.Request, v any) error {
 	}
 	dec := json.NewDecoder(http.MaxBytesReader(nil, r.Body, 64<<10))
 	dec.DisallowUnknownFields()
-	if err := dec.Decode(v); err != nil && err.Error() != "EOF" {
-		return err
+	if err := dec.Decode(v); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		return errors.New(jsonError(err))
+	}
+	if _, err := dec.Token(); !errors.Is(err, io.EOF) {
+		return errors.New("the body has more after its JSON value")
 	}
 	return nil
 }

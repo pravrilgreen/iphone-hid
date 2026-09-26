@@ -429,3 +429,151 @@ func TestUnpluggedAsleepAndNoPicture(t *testing.T) {
 	f.do(t, "POST", f.base+"/sim", `{"video": "ok"}`, true)
 	waitStatus(t, f, "ready")
 }
+
+func (f *fixture) dial(t *testing.T, path string) *websocket.Conn {
+	t.Helper()
+	url := "ws" + strings.TrimPrefix(f.base, "http") + path
+	sep := "?"
+	if strings.Contains(path, "?") {
+		sep = "&"
+	}
+	c, _, err := websocket.DefaultDialer.Dial(url+sep+"token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { c.Close() })
+	return c
+}
+
+// results reads the control socket until it has n results, by id.
+func results(t *testing.T, c *websocket.Conn, n int) map[float64]map[string]any {
+	t.Helper()
+	out := map[float64]map[string]any{}
+	_ = c.SetReadDeadline(time.Now().Add(20 * time.Second))
+	for len(out) < n {
+		kind, data, err := c.ReadMessage()
+		if err != nil {
+			t.Fatalf("after %d results: %v", len(out), err)
+		}
+		var m map[string]any
+		if kind != websocket.TextMessage || json.Unmarshal(data, &m) != nil || m["t"] != "result" {
+			continue
+		}
+		id, _ := m["id"].(float64)
+		out[id] = m
+	}
+	return out
+}
+
+func TestControlActionsRunInTheOrderSent(t *testing.T) {
+	f := newFixture(t)
+	waitStatus(t, f, "ready")
+	f.do(t, "POST", f.base+"/tap", `{"x": 0.374, "y": 0.142}`, true) // Notes
+	waitState(t, f, func(s sim.State) bool { return s.App == "Notes" })
+	c := f.dial(t, "/control")
+	for i, ch := range "abcdefgh" {
+		msg := map[string]any{"t": "action", "id": i, "action": "type", "text": string(ch)}
+		if err := c.WriteJSON(msg); err != nil {
+			t.Fatal(err)
+		}
+	}
+	res := results(t, c, 8)
+	for i := 0; i < 8; i++ {
+		if res[float64(i)]["ok"] != true {
+			t.Fatalf("action %d: %v", i, res[float64(i)])
+		}
+	}
+	if st := waitState(t, f, func(s sim.State) bool { return len(s.Notes) >= 8 }); !strings.HasSuffix(st.Notes, "abcdefgh") {
+		t.Fatalf("typed out of order: %q", st.Notes)
+	}
+}
+
+func TestParametersAreCheckedPerAction(t *testing.T) {
+	f := newFixture(t)
+	waitStatus(t, f, "ready")
+	for _, c := range []struct{ path, body, code string }{
+		{"/tap", `{"x": 0.5, "y": 0.5, "duration_ms": 2000}`, "bad_request"},
+		{"/swipe", `{"x1": 0.1, "y1": 0.5, "x2": 0.9, "y2": 0.5, "hold_ms": 900}`, "bad_request"},
+		{"/tap", `{"x": 0.5, "y": 0.5} garbage`, "bad_request"},
+		{"/tap", `{"x": "left", "y": 0.5}`, "bad_request"},
+		{"/home", `{"x": 0.5}`, "bad_request"},
+		{"/teleport", `{}`, "unknown_action"},
+	} {
+		r, body := f.do(t, "POST", f.base+c.path, c.body, true)
+		if body["code"] != c.code || r.StatusCode == 200 {
+			t.Errorf("%s %s: %d %v", c.path, c.body, r.StatusCode, body)
+		}
+		if msg, _ := body["error"].(string); strings.Contains(msg, "Params") || strings.Contains(msg, "float64") {
+			t.Errorf("%s: Go names in %q", c.path, msg)
+		}
+	}
+	if r, body := f.do(t, "GET", f.base+"/tap", "", true); r.StatusCode != 405 || body["code"] != "method_not_allowed" {
+		t.Fatalf("GET on an action: %d %v", r.StatusCode, body)
+	}
+	if r, body := f.do(t, "GET", f.srv.URL+"/api/nothing", "", true); r.StatusCode != 404 || body["code"] != "not_found" {
+		t.Fatalf("no such endpoint: %d %v", r.StatusCode, body)
+	}
+	req, _ := http.NewRequest("GET", f.base, nil)
+	req.Header.Set("Authorization", "bearer "+token)
+	if r, err := http.DefaultClient.Do(req); err != nil || r.StatusCode != 200 {
+		t.Fatalf("a lowercase bearer: %v %v", r, err)
+	}
+	c := f.dial(t, "/control")
+	_ = c.WriteJSON(map[string]any{"t": "action", "id": 1, "action": "tap", "x": 0.5, "y": 0.5, "rest_ms": 5})
+	if res := results(t, c, 1)[1]; res["ok"] != false || res["code"] != "bad_request" || res["result"] != nil {
+		t.Fatalf("control socket: %v", res)
+	}
+	if d := Timeout("type", Params{Text: ptr(strings.Repeat("a", 1300))}); d < 2*time.Minute {
+		t.Fatalf("1300 characters get %v", d)
+	}
+}
+
+func ptr[T any](v T) *T { return &v }
+
+func TestScreenshotsArePlainPNGAndFailAtOnceWithoutPicture(t *testing.T) {
+	f := newFixture(t)
+	waitStatus(t, f, "ready")
+	req, _ := http.NewRequest("GET", f.base+"/screenshot?format=png&wait=1", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	r, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(r.Body)
+	r.Body.Close()
+	if len(b) < 25 || string(b[1:4]) != "PNG" || b[24] != 8 {
+		t.Fatalf("PNG bit depth %d, want 8", b[24])
+	}
+	if r, body := f.do(t, "GET", f.base+"/screenshot?format=webp", "", true); r.StatusCode != 400 {
+		t.Fatalf("format=webp: %d %v", r.StatusCode, body)
+	}
+	f.do(t, "POST", f.base+"/sim", `{"video": "no_signal"}`, true)
+	waitStatus(t, f, "no_video")
+	start := time.Now()
+	if r, body := f.do(t, "GET", f.base+"/screenshot?wait=true", "", true); r.StatusCode != 503 || body["code"] != "no_video" {
+		t.Fatalf("no picture: %d %v", r.StatusCode, body)
+	}
+	if d := time.Since(start); d > 500*time.Millisecond {
+		t.Fatalf("the 503 took %v", d)
+	}
+}
+
+func TestASilentControllerLosesThePhone(t *testing.T) {
+	pingEvery, silentFor = 50*time.Millisecond, 300*time.Millisecond
+	defer func() { pingEvery, silentFor = 2*time.Second, 6*time.Second }()
+	f := newFixture(t)
+	waitStatus(t, f, "ready")
+	f.dial(t, "/control") // never reads, so never answers the pings
+	time.Sleep(silentFor + 400*time.Millisecond)
+	c := f.dial(t, "/control")
+	_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
+	for {
+		kind, data, err := c.ReadMessage()
+		if err != nil {
+			t.Fatalf("the second controller was refused: %v", err)
+		}
+		if kind == websocket.TextMessage && strings.Contains(string(data), `"hello"`) {
+			return
+		}
+	}
+}

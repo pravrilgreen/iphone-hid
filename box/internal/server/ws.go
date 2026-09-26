@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -25,8 +27,10 @@ import (
 //	0x05 seq:u32                        ping: echoed at once, for the round-trip time
 //
 // Text messages are JSON: {"t": "action", "id": 1, "action": "tap", "x": 0.5, "y": 0.5} runs an
-// action and answers {"t": "result", "id": 1, "ok": true, "result": {...}}. The box sends
-// {"t": "hello"}, {"t": "stats"} every second, and {"t": "error"} or {"t": "dropped"}.
+// action and answers {"t": "result", "id": 1, "ok": true, "result": {...}}. The actions of one
+// connection run one after the other, in the order sent. The box sends {"t": "hello"}, {"t": "stats"}
+// every second, and {"t": "error"} or {"t": "dropped"}. It pings the client every 2 s and drops a
+// connection that has answered nothing (pong or message) for 6 s.
 const (
 	msgTouch    = 0x01
 	msgKeys     = 0x02
@@ -35,13 +39,17 @@ const (
 	msgPing     = 0x05
 )
 
-// Close codes.
+// Close codes and timings.
 const (
 	closeInUse    = 4409
 	closeTooMany  = 4429
-	maxViewers    = 4
+	maxViewers    = 4 // default for Config.MaxViewers
 	writeDeadline = 5 * time.Second
+	queuedActions = 64 // actions a control connection may have waiting
 )
+
+// A control client is pinged every pingEvery and dropped after silentFor without an answer.
+var pingEvery, silentFor = 2 * time.Second, 6 * time.Second
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -141,45 +149,95 @@ func (s *Server) control(w http.ResponseWriter, r *http.Request) {
 	}()
 	c.sendJSON(map[string]any{"t": "hello", "device": s.cfg.DeviceID, "version": s.cfg.Version})
 
+	// the connection's actions run in order on one worker; they end when the connection does
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	type job struct {
+		id   json.RawMessage
+		name string
+		p    Params
+	}
+	jobs := make(chan job, queuedActions)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case j := <-jobs:
+				actx, acancel := context.WithTimeout(ctx, Timeout(j.name, j.p))
+				res, err := s.Run(actx, j.name, j.p)
+				acancel()
+				c.sendJSON(resultMessage(j.id, j.name, res, err))
+			}
+		}
+	}()
+
+	// liveness: a client that went away without closing (a sleeping laptop, a dropped network)
+	// must not keep the phone and its held buttons
+	alive := func() { _ = ws.SetReadDeadline(time.Now().Add(s.silentFor)) }
+	alive()
+	ws.SetPongHandler(func(string) error { alive(); return nil })
+	go func() {
+		tick := time.NewTicker(s.pingEvery)
+		defer tick.Stop()
+		for {
+			select {
+			case <-c.done:
+				return
+			case <-tick.C:
+				if ws.WriteControl(websocket.PingMessage, nil, time.Now().Add(writeDeadline)) != nil {
+					return
+				}
+			}
+		}
+	}()
+
 	for {
 		kind, data, err := ws.ReadMessage()
 		if err != nil {
 			return
 		}
+		alive()
 		if kind == websocket.BinaryMessage {
 			s.liveMessage(c, data)
 			continue
 		}
-		var msg struct {
-			T      string          `json:"t"`
-			ID     json.RawMessage `json:"id"`
-			Action string          `json:"action"`
-		}
-		if json.Unmarshal(data, &msg) != nil || msg.T != "action" {
-			c.sendJSON(map[string]any{"t": "error", "error": "unknown message"})
+		var raw map[string]json.RawMessage
+		if json.Unmarshal(data, &raw) != nil || string(raw["t"]) != `"action"` {
+			c.sendJSON(map[string]any{"t": "error", "code": "bad_request", "error": "unknown message: send {\"t\": \"action\", \"action\": ...}"})
 			continue
 		}
-		var p Params
-		if err := json.Unmarshal(data, &struct {
-			*Params
-			T      string          `json:"t"`
-			ID     json.RawMessage `json:"id"`
-			Action string          `json:"action"`
-		}{Params: &p}); err != nil {
-			c.sendJSON(map[string]any{"t": "result", "id": msg.ID, "ok": false, "error": err.Error()})
+		id := raw["id"]
+		var name string
+		_ = json.Unmarshal(raw["action"], &name)
+		delete(raw, "t")
+		delete(raw, "id")
+		delete(raw, "action")
+		p, err := ParseParams(name, raw)
+		if err != nil {
+			c.sendJSON(resultMessage(id, name, ActionResult{}, err))
 			continue
 		}
-		go func(id json.RawMessage, name string, p Params) {
-			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-			defer cancel()
-			res, err := s.Run(ctx, name, p)
-			reply := map[string]any{"t": "result", "id": id, "action": name, "ok": err == nil, "result": res}
-			if err != nil {
-				reply["error"] = err.Error()
-			}
-			c.sendJSON(reply)
-		}(msg.ID, msg.Action, p)
+		select {
+		case jobs <- job{id, name, p}:
+		default:
+			c.sendJSON(map[string]any{"t": "result", "id": id, "action": name, "ok": false, "code": "busy",
+				"error": fmt.Sprintf("%d actions are waiting already", queuedActions)})
+		}
 	}
+}
+
+// resultMessage is the answer to an action sent over the control socket.
+func resultMessage(id json.RawMessage, name string, res ActionResult, err error) map[string]any {
+	reply := map[string]any{"t": "result", "id": id, "action": name, "ok": err == nil}
+	if res.Action != "" {
+		reply["result"] = res
+	}
+	if err != nil {
+		_, code := errorCode(err)
+		reply["code"], reply["error"] = code, err.Error()
+	}
+	return reply
 }
 
 func (s *Server) liveMessage(c *controlConn, b []byte) {
@@ -237,40 +295,40 @@ func (c *controlConn) writer() {
 //
 //	'F' 1 0 0  seq:u32  age_us:u32   (age: from capture to sending)
 //
-// With ack=true (the default) the box sends the next frame only once the client answered "ack"
-// for the previous one, so a slow browser skips frames instead of falling behind. Text messages
-// are the status JSON, at connection and every second.
+// With ack=true (the default) the box sends the next frame only once the client answered
+// "ack <frame number>" (or "ack") for the previous one, or after a second without an answer, so a
+// slow browser skips frames instead of falling behind. Text messages are {"t": "status", "status":
+// {...}}, at connection and every second.
 func (s *Server) stream(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	quality := clampQuery(q.Get("quality"), 75, 30, 95)
 	fps := clampQuery(q.Get("fps"), 60, 1, 60)
-	ack := q.Get("ack") != "false"
-	s.mu.Lock()
-	if s.viewers >= maxViewers {
-		s.mu.Unlock()
+	ack, err := queryBool(q, "ack", true)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	release, ok := s.viewer()
+	if !ok {
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err == nil {
-			_ = ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(closeTooMany, "too many viewers"),
-				time.Now().Add(time.Second))
+			_ = ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(closeTooMany,
+				fmt.Sprintf("this box streams to %d viewers at most", s.maxViewers())), time.Now().Add(time.Second))
 			_ = ws.Close()
 		}
 		return
 	}
-	s.viewers++
-	s.mu.Unlock()
-	defer func() {
-		s.mu.Lock()
-		s.viewers--
-		s.mu.Unlock()
-	}()
+	defer release()
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
 	defer ws.Close()
+	ws.SetReadLimit(4096)
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	acks := make(chan struct{}, 1)
+	// acks carry the frame number they answer ("ack 42"); a bare "ack" answers the frame in flight
+	acks := make(chan uint64, 4)
 	go func() {
 		defer cancel()
 		for {
@@ -278,11 +336,19 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				return
 			}
-			if string(data) == "ack" || string(data) == `{"t":"ack"}` {
-				select {
-				case acks <- struct{}{}:
-				default:
+			var n uint64
+			switch msg := string(data); {
+			case msg == "ack" || msg == `{"t":"ack"}`:
+			case strings.HasPrefix(msg, "ack "):
+				if n, err = strconv.ParseUint(msg[4:], 10, 32); err != nil {
+					continue
 				}
+			default:
+				continue
+			}
+			select {
+			case acks <- n:
+			default:
 			}
 		}
 	}()
@@ -348,11 +414,19 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if ack {
-			select {
-			case <-acks:
-			case <-time.After(time.Second): // the client stopped answering: do not stall forever
-			case <-ctx.Done():
-				return
+			timeout := time.After(time.Second) // the client stopped answering: do not stall forever
+		wait:
+			for {
+				select {
+				case n := <-acks:
+					if n == 0 || n == uint64(uint32(f.Seq)) {
+						break wait
+					} // a late answer to an earlier frame: keep waiting for this one
+				case <-timeout:
+					break wait
+				case <-ctx.Done():
+					return
+				}
 			}
 		}
 	}

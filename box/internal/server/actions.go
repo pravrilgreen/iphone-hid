@@ -2,10 +2,14 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"net/http"
+	"slices"
+	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/pravrilgreen/iphone-hid/box/internal/hid"
@@ -45,6 +49,93 @@ type Params struct {
 type badRequest struct{ msg string }
 
 func (e badRequest) Error() string { return e.msg }
+
+type unknownAction struct{ name string }
+
+func (e unknownAction) Error() string {
+	names := ActionNames()
+	slices.Sort(names)
+	return fmt.Sprintf("no action %q (the actions: %s)", e.name, strings.Join(names, ", "))
+}
+
+// fields lists the parameters of each action; any other field is refused, so a misspelt or
+// misplaced one (duration_ms on a tap) is not silently ignored.
+var fields = map[string][]string{
+	"tap":         {"x", "y", "hold_ms"},
+	"long_press":  {"x", "y", "duration_ms"},
+	"swipe":       {"x1", "y1", "x2", "y2", "duration_ms"},
+	"drag":        {"x1", "y1", "x2", "y2", "hold_ms", "duration_ms", "rest_ms"},
+	"scroll":      {"x", "y", "lines", "amount"},
+	"type":        {"text"},
+	"key":         {"combo"},
+	"button":      {"name"},
+	"media":       {"key"},
+	"open_url":    {"url"},
+	"release_all": nil,
+	"wake":        nil,
+}
+
+// ParseParams checks an action's JSON fields and decodes them. The error is unknownAction or
+// badRequest.
+func ParseParams(action string, raw map[string]json.RawMessage) (Params, error) {
+	var p Params
+	allowed, ok := fields[action]
+	if !ok {
+		return p, unknownAction{action}
+	}
+	for k := range raw {
+		if slices.Contains(allowed, k) {
+			continue
+		}
+		if len(allowed) == 0 {
+			return p, badRequest{fmt.Sprintf("%s takes no parameters, not %s", action, k)}
+		}
+		return p, badRequest{fmt.Sprintf("%s takes %s, not %s", action, strings.Join(allowed, ", "), k)}
+	}
+	b, _ := json.Marshal(raw)
+	if err := json.Unmarshal(b, &p); err != nil {
+		return p, badRequest{jsonError(err)}
+	}
+	return p, nil
+}
+
+// jsonError says what is wrong with a field in words, without Go's type names.
+func jsonError(err error) string {
+	var te *json.UnmarshalTypeError
+	if errors.As(err, &te) {
+		field := te.Field[strings.LastIndex(te.Field, ".")+1:]
+		want := map[string]string{"float64": "a number", "int": "a whole number", "string": "a string", "bool": "true or false"}[te.Type.String()]
+		if want == "" {
+			want = "of another type"
+		}
+		return fmt.Sprintf("%s must be %s, not %s", field, want, te.Value)
+	}
+	return "the body is not valid JSON: " + err.Error()
+}
+
+// Timeout is how long an action may take, its wait behind other input included: a minute, plus
+// what the action itself lasts (typing takes about 50 ms a character).
+func Timeout(name string, p Params) time.Duration {
+	d := time.Minute
+	chars := 0
+	switch name {
+	case "type":
+		if p.Text != nil {
+			chars = len(*p.Text)
+		}
+	case "open_url":
+		if p.URL != nil {
+			chars = len(*p.URL)
+		}
+	}
+	d += time.Duration(chars) * 100 * time.Millisecond
+	for _, v := range []*int{p.HoldMs, p.DurationMs, p.RestMs} {
+		if v != nil && *v > 0 {
+			d += time.Duration(*v) * time.Millisecond
+		}
+	}
+	return d
+}
 
 func need(v *float64, name string) float64 {
 	if v == nil {
@@ -164,12 +255,13 @@ func init() {
 	for _, b := range input.Buttons {
 		name := b.Name
 		actions[name] = func(Params) func(*input.Actor) { return func(a *input.Actor) { a.PressButton(name) } }
+		fields[name] = nil
 	}
 }
 
 // ActionNames lists the actions of the API.
 func ActionNames() []string {
-	var out []string
+	out := []string{"wake"}
 	for n := range actions {
 		out = append(out, n)
 	}
@@ -184,7 +276,7 @@ func (s *Server) Run(ctx context.Context, name string, p Params) (res ActionResu
 		return s.wake(ctx)
 	}
 	if !ok {
-		return ActionResult{}, badRequest{"unknown action " + name}
+		return ActionResult{}, unknownAction{name}
 	}
 	var run func(*input.Actor)
 	func() {
@@ -202,8 +294,20 @@ func (s *Server) Run(ctx context.Context, name string, p Params) (res ActionResu
 	if err != nil {
 		return ActionResult{}, err
 	}
-	start := time.Now()
-	err = s.engine.Do(ctx, name, func(a *input.Actor) error { run(a); return a.Err() })
+	var started atomic.Int64 // when the engine began the action (after any input ahead of it)
+	err = s.engine.Do(ctx, name, func(a *input.Actor) error {
+		started.Store(time.Now().UnixNano())
+		run(a)
+		return a.Err()
+	})
+	if started.Load() == 0 { // never ran: cancelled or timed out while waiting
+		res = ActionResult{Action: name}
+		if err != nil {
+			res.Error = err.Error()
+		}
+		return res, err
+	}
+	start := time.Unix(0, started.Load())
 	res = ActionResult{Action: name, OK: err == nil, Ms: float64(time.Since(start).Microseconds()) / 1000, At: start}
 	if err != nil {
 		res.Error = err.Error()
@@ -236,29 +340,50 @@ func (s *Server) wake(ctx context.Context) (ActionResult, error) {
 }
 
 func (s *Server) action(w http.ResponseWriter, r *http.Request) {
-	var p Params
-	if err := decode(r, &p); err != nil {
+	name := r.PathValue("action")
+	var raw map[string]json.RawMessage
+	if err := decode(r, &raw); err != nil {
 		writeError(w, http.StatusBadRequest, "bad_request", err.Error())
 		return
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
-	defer cancel()
-	res, err := s.Run(ctx, r.PathValue("action"), p)
-	var br badRequest
-	switch {
-	case errors.As(err, &br):
-		code := http.StatusBadRequest
-		if res.Action == "" && actions[r.PathValue("action")] == nil && r.PathValue("action") != "wake" {
-			code = http.StatusNotFound
-		}
-		writeError(w, code, "bad_request", br.msg)
-	case errors.Is(err, hid.ErrNotConnected):
-		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"ok": false, "code": "no_usb", "error": err.Error(), "result": res})
-	case errors.Is(err, hid.ErrNotTaken):
-		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"ok": false, "code": "asleep", "error": err.Error(), "result": res})
-	case err != nil:
-		writeJSON(w, http.StatusInternalServerError, map[string]any{"ok": false, "code": "failed", "error": err.Error(), "result": res})
-	default:
-		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "result": res})
+	p, err := ParseParams(name, raw)
+	if err != nil {
+		status, code := errorCode(err)
+		writeError(w, status, code, err.Error())
+		return
 	}
+	ctx, cancel := context.WithTimeout(r.Context(), Timeout(name, p))
+	defer cancel()
+	res, err := s.Run(ctx, name, p)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "result": res})
+		return
+	}
+	status, code := errorCode(err)
+	body := map[string]any{"ok": false, "code": code, "error": err.Error()}
+	if res.Action != "" {
+		body["result"] = res
+	}
+	writeJSON(w, status, body)
+}
+
+// errorCode maps an action's error to its HTTP status and API code.
+func errorCode(err error) (int, string) {
+	var br badRequest
+	var ua unknownAction
+	switch {
+	case errors.As(err, &ua):
+		return http.StatusNotFound, "unknown_action"
+	case errors.As(err, &br):
+		return http.StatusBadRequest, "bad_request"
+	case errors.Is(err, hid.ErrNotConnected):
+		return http.StatusServiceUnavailable, "no_usb"
+	case errors.Is(err, hid.ErrNotTaken):
+		return http.StatusServiceUnavailable, "asleep"
+	case errors.Is(err, context.DeadlineExceeded):
+		return http.StatusGatewayTimeout, "timeout"
+	case errors.Is(err, context.Canceled):
+		return 499, "cancelled"
+	}
+	return http.StatusInternalServerError, "failed"
 }
