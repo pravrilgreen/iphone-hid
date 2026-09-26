@@ -85,7 +85,7 @@ const HINT = COARSE ? "Touch to tap, drag to swipe. Use Type for text."
   : "Click to tap, drag to swipe, scroll to scroll. Click the screen, then type.";
 
 const STATES = {
-  connecting: "Connecting", ready: "Ready", busy: "Busy", asleep: "Asleep", no_usb: "Not connected",
+  connecting: "Connecting", starting: "Starting", ready: "Ready", busy: "Busy", asleep: "Asleep", no_usb: "Not connected",
   no_video: "No picture", offline: "Box unreachable",
 };
 

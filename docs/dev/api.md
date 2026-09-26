@@ -32,7 +32,8 @@ Every box serves one phone. The machine-readable description is at `/api/openapi
 }
 ```
 
-`state` is `ready`, `busy` (a scripted action runs), `no_usb` (the phone has not taken the gadget:
+`state` is `ready`, `busy` (a scripted action runs), `starting` (no picture yet since the box
+started), `no_usb` (the phone has not taken the gadget:
 unplugged, locked, or the accessory not allowed), `asleep` (the phone suspended the USB bus) or
 `no_video`. `message` says what to do.
 

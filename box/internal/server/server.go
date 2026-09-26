@@ -174,7 +174,7 @@ func (s *Server) device(h http.HandlerFunc) http.Handler {
 type Status struct {
 	ID       string          `json:"id"`
 	Version  string          `json:"version"`
-	State    string          `json:"state"` // ready, busy, no_usb, asleep, no_video
+	State    string          `json:"state"` // ready, busy, starting, no_usb, asleep, no_video
 	Message  string          `json:"message,omitempty"`
 	USB      hid.Link        `json:"usb"`
 	Video    video.Status    `json:"video"`
@@ -221,6 +221,8 @@ func (s *Server) Snapshot() Status {
 	case !link.Connected:
 		st.State, st.Message = "no_usb", "the iPhone has not connected as a keyboard and pointer ("+orNone(link.State)+
 			"): check the USB cable and allow the accessory on the phone"
+	case vs.State == "starting":
+		st.State, st.Message = "starting", "waiting for the first picture"
 	case vs.State != "ok":
 		st.State, st.Message = "no_video", "no picture from the phone: "+orNone(vs.Error)
 	case s.engine.Busy() != "":

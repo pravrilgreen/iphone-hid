@@ -359,3 +359,21 @@ func TestOpenAPIDescribesTheActions(t *testing.T) {
 		}
 	}
 }
+
+type silentSource struct{}
+
+func (silentSource) Describe() string { return "silent" }
+func (silentSource) Run(ctx context.Context, _ func(*video.Raw)) error {
+	<-ctx.Done()
+	return nil
+}
+
+func TestStatusSaysStartingUntilTheFirstPicture(t *testing.T) {
+	phone := sim.New()
+	engine := input.New(phone, input.DefaultConfig)
+	defer engine.Close()
+	s := New(Config{DeviceID: "d"}, engine, video.NewHub(silentSource{}, video.Layout{}))
+	if st := s.Snapshot(); st.State != "starting" {
+		t.Fatalf("state %q before any frame", st.State)
+	}
+}

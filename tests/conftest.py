@@ -73,6 +73,12 @@ def box(tmp_path_factory):
             proc.kill()
             raise AssertionError(f"ihcd did not start: {proc.stderr.read().decode()}")
         time.sleep(0.05)
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    while httpx.get(f"{url}/api/devices/iphone-sim", headers=headers).json()["state"] != "ready":
+        if time.monotonic() > deadline:  # the first picture takes a moment after the API is up
+            proc.kill()
+            raise AssertionError("the simulated box did not become ready")
+        time.sleep(0.05)
     try:
         yield Box(url, TOKEN, binary)
     finally:
