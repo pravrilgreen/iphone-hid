@@ -1557,7 +1557,8 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    stages. The second stage starts from the first one's result: the nets KiCad still finds unconnected keep
    their tracks and get their missing connections at 0.3 mm, and the router may move other nets' tracks to make
    room. Typically these are the enable and sense branches of a supply (microamps, but in the supply's wide
-   class) that cannot reach an 0402 pad at full width. The
+   class) that cannot reach an 0402 pad at full width. The second stage is kept only when KiCad's DRC finds
+   no new error and fewer open connections than after the first. The
    LT7911D's pads and its nets (the DP lanes `SS_*`, AUX, SBU and the CSI lanes) are left out: they wait for the
    pin table (H1). The DP and CSI lanes must be routed by hand anyway (§5: length and skew limits, no vias on DP).
    `--ses FILE [FILE2]` rebuilds the board from the saved sessions of the two stages without routing again.

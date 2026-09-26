@@ -1226,6 +1226,7 @@ def autoroute(board, fps, passes: int):
     _freeroute(dsn, ses, log, passes)
     sessions = [ses]
     left = _unrouted_nets(board, ses, os.path.join(work, "stage1.rpt"))
+    score1 = _drc_score(os.path.join(work, "stage1.rpt"))
     if left:
         print(f"second stage at 0.3 mm for {len(left)} nets: {' '.join(left)}", flush=True)
         dsn2, ses2, log2 = (os.path.join(work, "box-v1-2." + e) for e in ("dsn", "ses", "log"))
@@ -1238,7 +1239,19 @@ def autoroute(board, fps, passes: int):
             f.write(text)
         _freeroute(dsn2, ses2, log2, max(10, passes // 2))
         _import_stage2(board, ses2, fixed)
-        sessions.append(ses2)
+        board.BuildConnectivity()
+        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+        pcbnew.WriteDRCReport(board, os.path.join(work, "stage2.rpt"), pcbnew.EDA_UNITS_MILLIMETRES, False)
+        score2 = _drc_score(os.path.join(work, "stage2.rpt"))
+        print(f"stage 1: {score1[1]} unconnected, {score1[0]} errors; stage 2: {score2[1]} unconnected, "
+              f"{score2[0]} errors", flush=True)
+        if score2 < score1:
+            sessions.append(ses2)
+        else:                                  # keep the first stage's routing
+            for t in board.GetTracks():
+                if t.m_Uuid.AsString() not in fixed:
+                    t.SetLocked(False)
+            import_ses(board, ses)
     restore_nets(saved)
     print("sessions:", " ".join(sessions), flush=True)
 
@@ -1300,6 +1313,18 @@ def replay(board, fps, sessions, work):
     if len(sessions) > 1:
         _import_stage2(board, sessions[1], _fix_nets(board, left))
     restore_nets(saved)
+
+
+def _drc_score(report):
+    """(errors other than unconnected items, unconnected items) of a KiCad DRC report."""
+    errors = unconnected = 0
+    with open(report, encoding="utf-8") as f:
+        for blk in re.split(r"\n(?=\[)", f.read()):
+            if blk.startswith("[unconnected_items]"):
+                unconnected += 1
+            elif blk.startswith("[") and "Severity: error" in blk:
+                errors += 1
+    return errors, unconnected
 
 
 def _dsn_narrow(text, nets, width_um=300, clearance_um=200):
