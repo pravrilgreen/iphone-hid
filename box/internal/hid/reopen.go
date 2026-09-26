@@ -46,9 +46,10 @@ func (r *Reopening) get() (*Gadget, error) {
 	return g, nil
 }
 
-// drop closes the nodes after an error that means they are gone.
+// check closes the nodes after an error that means they are gone or were replaced, so the next
+// report opens the gadget's current ones.
 func (r *Reopening) check(g *Gadget, err error) error {
-	if err != nil && NodeError(err) {
+	if err != nil && (NodeError(err) || g.Stale()) {
 		r.mu.Lock()
 		if r.g == g {
 			_ = g.Close()

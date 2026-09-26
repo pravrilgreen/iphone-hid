@@ -221,13 +221,13 @@ type Status struct {
 	ID       string          `json:"id"`
 	Version  string          `json:"version"`
 	State    string          `json:"state"` // ready, busy, starting, no_usb, asleep, no_video
-	Message  string          `json:"message,omitempty"`
+	Message  string          `json:"message"`
 	USB      hid.Link        `json:"usb"`
 	Video    video.Status    `json:"video"`
 	Input    input.Stats     `json:"input"`
 	Screen   ScreenInfo      `json:"screen"`
 	Buttons  []input.Button  `json:"buttons"`
-	Last     *ActionResult   `json:"last_action,omitempty"`
+	Last     *ActionResult   `json:"last_action"`
 	Live     bool            `json:"live"` // an operator controls the phone live now
 	Uptime   float64         `json:"uptime_s"`
 	Encoder  string          `json:"encoder"`

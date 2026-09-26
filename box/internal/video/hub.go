@@ -214,6 +214,14 @@ func (h *Hub) Next(ctx context.Context, seq uint64) (*Frame, error) {
 		select {
 		case <-ch:
 		case <-ctx.Done():
+			h.mu.Lock()
+			for i, w := range h.waiters {
+				if w == ch {
+					h.waiters = append(h.waiters[:i], h.waiters[i+1:]...)
+					break
+				}
+			}
+			h.mu.Unlock()
 			return nil, ctx.Err()
 		}
 	}

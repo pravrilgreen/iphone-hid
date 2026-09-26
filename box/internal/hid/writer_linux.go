@@ -65,6 +65,25 @@ func OpenGadget(p Paths, name string, timeout time.Duration) (*Gadget, error) {
 	return g, nil
 }
 
+// Stale tells whether the open nodes are no longer the gadget's (it was set up again: new nodes, or
+// the same names made anew), so writes to them can never reach the phone.
+func (g *Gadget) Stale() bool {
+	cur := g.paths.Nodes(g.name)
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if len(cur) != len(g.nodes) {
+		return true
+	}
+	for fn, n := range g.nodes {
+		var open, now unix.Stat_t
+		if cur[fn] != n.path || unix.Fstat(n.fd, &open) != nil || unix.Stat(n.path, &now) != nil ||
+			open.Ino != now.Ino || open.Rdev != now.Rdev {
+			return true
+		}
+	}
+	return g.paths.BoundUDC(g.name) != g.udc
+}
+
 // Pointer sends the absolute pointer state.
 func (g *Gadget) Pointer(p Pointer) error { return g.write("absolute", p.Report()) }
 
