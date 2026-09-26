@@ -66,7 +66,8 @@ HINTS = {
     # corridor between the module and the RJ45 free for the module's right-edge signals
     "R201": (31.4, 38.6), "R202": (31.4, 39.8), "R205": (33.8, 36.6),
     "C406": (73.0, 18.0), "C407": (73.0, 16.2), "C408": (72.4, 25.0),
-    "R411": (36.0, 35.0),
+    # SARADC pull-up: at the module's VCC_1V8 pad 77 on its right edge, towards the RECOVERY button
+    "R411": (71.9, 19.6),
     # decoupling of LT7911D pins that have no pad yet (placeholders): beside U201 until the pin table is in
     "C209": (31.2, 31.4), "C210": (31.2, 32.6), "C211": (31.2, 33.8),
     "TP507": (2.4, 25.0), "TP508": (86.0, 27.2), "TP501": (86.2, 56.0),

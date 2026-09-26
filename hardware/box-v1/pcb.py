@@ -833,9 +833,9 @@ def plane(board):
 
 
 FULL = [(0.3, 0.3), (W - 0.3, 0.3), (W - 0.3, H - 0.3), (0.3, H - 0.3)]
-# L3 5V_SYS pour: a band along the module's bottom edge from the U103 side, and the corridor up to
-# the module's supply pads between the module and the RJ45
-FIVE_V_POUR = [(57.0, 40.4), (73.4, 40.4), (73.4, 9.0), (70.4, 9.0), (70.4, 38.0), (57.0, 38.0)]
+# L3 5V_SYS pour: the corridor between the module and the RJ45, from below the module up to its
+# supply pads (a band along the module's bottom edge would take the room its GND pads need for vias)
+FIVE_V_POUR = [(70.4, 40.4), (73.4, 40.4), (73.4, 9.0), (70.4, 9.0)]
 # L4 VBUS_IN pour under the power receptacle J101 and the fuse F101: the CC lines leave J101 between
 # its two VBUS pads, so the pads meet through vias to this pour rather than on L1
 VBUS_POUR = [(82.7, 45.9), (88.5, 45.9), (88.5, 52.1), (82.7, 52.1)]
