@@ -5,6 +5,7 @@ from __future__ import annotations
 import subprocess
 import sys
 
+import httpx
 import pytest
 
 from ihc import Farm, IhcError, __version__
@@ -103,3 +104,46 @@ def test_cli(box, capsys):
     assert "cannot type" in capsys.readouterr().err
     r = subprocess.run([sys.executable, "-m", "ihc.cli", "--version"], capture_output=True, text=True)
     assert __version__ in r.stdout
+
+
+def test_errors_say_whether_to_retry(box, phone):
+    httpx.post(f"{box.url}/api/devices/iphone-sim/sim", json={"usb": "asleep"},
+               headers={"Authorization": f"Bearer {box.token}"})
+    try:
+        with pytest.raises(IhcError) as e:
+            phone.tap(0.5, 0.5)
+        assert e.value.status_code == 503 and e.value.code == "asleep" and e.value.retryable
+        with pytest.raises(IhcError) as e:
+            phone.wait_ready(timeout=0.3, interval=0.1)
+        assert e.value.code == "asleep"
+    finally:
+        httpx.post(f"{box.url}/api/devices/iphone-sim/sim", json={"usb": "connected"},
+                   headers={"Authorization": f"Bearer {box.token}"})
+    assert phone.wait_ready(timeout=5)["state"] in ("ready", "busy")
+    with pytest.raises(IhcError) as e:
+        Farm("http://127.0.0.1:9", token="x").devices()
+    assert e.value.code == "unreachable" and e.value.status_code is None and e.value.retryable
+    with pytest.raises(IhcError) as e:
+        phone.tap(0.5, 1.5)
+    assert e.value.code == "bad_request" and not e.value.retryable
+
+
+def test_media_keys_and_orientation(box, phone):
+    volume = box.sim()["volume"]
+    phone.volume_up()
+    box.wait_sim(lambda s: s["volume"] > volume, "louder")
+    phone.media("volume_down")
+    box.wait_sim(lambda s: s["volume"] <= volume, "quieter")
+    assert phone.set_landscape(True)["landscape"] is True
+    assert phone.set_landscape(False)["landscape"] is False
+
+
+def test_cli_options_after_the_command_and_exit_codes(box, capsys, monkeypatch):
+    assert cli(["tap", "0.5", "0.5", "--url", box.url, "--token", box.token]) == 0
+    monkeypatch.setenv("IHC_URL", box.url)
+    monkeypatch.setenv("IHC_TOKEN", box.token)
+    assert cli(["devices"]) == 0
+    assert "iphone-sim" in capsys.readouterr().out
+    assert cli(["screenshot", "/nonexistent-dir/shot.png"]) == 1
+    assert "cannot write" in capsys.readouterr().err
+    assert cli(["--url", "http://127.0.0.1:9", "devices"]) == 3

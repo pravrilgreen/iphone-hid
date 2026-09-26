@@ -9,8 +9,10 @@
     ihc screenshot shot.png
     ihc --url http://box-01.local:8000 status
 
-Boxes: --url (repeatable), else every box found on the LAN. Token: --token, --token-file or
-$IHC_TOKEN.
+Boxes: --url (repeatable) or $IHC_URL (comma-separated), else every box found on the LAN. Token:
+--token, --token-file or $IHC_TOKEN. The options go before or after the command.
+
+Exit status: 0 done, 1 the box refused or failed the call, 2 bad usage, 3 no box could be reached.
 """
 
 from __future__ import annotations
@@ -40,8 +42,9 @@ def _token(args: argparse.Namespace) -> str | None:
 
 
 def _farm(args: argparse.Namespace) -> Farm:
-    if args.url:
-        return Farm(*args.url, token=_token(args))
+    urls = args.url or [u.strip() for u in os.environ.get("IHC_URL", "").split(",") if u.strip()]
+    if urls:
+        return Farm(*urls, token=_token(args))
     return Farm.discover(token=_token(args))
 
 
@@ -56,14 +59,24 @@ def _phone(args: argparse.Namespace):
     return phones[0]
 
 
+def _common(p: argparse.ArgumentParser, default) -> None:
+    p.add_argument("--url", action="append", default=default,
+                   help="a box's base URL, e.g. http://box-01.local:8000 (repeatable; default $IHC_URL)")
+    p.add_argument("--token", default=default, help="API token (default $IHC_TOKEN)")
+    p.add_argument("--token-file", default=default, help="file holding the API token")
+    p.add_argument("--device", default=default, help="phone id (needed when there are several)")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="ihc", description="Drive iphone-hid boxes.")
     ap.add_argument("--version", action="version", version=f"iphone-hid {__version__}")
-    ap.add_argument("--url", action="append", help="a box's base URL, e.g. http://box-01.local:8000 (repeatable)")
-    ap.add_argument("--token", help="API token (default $IHC_TOKEN)")
-    ap.add_argument("--token-file", help="file holding the API token")
-    ap.add_argument("--device", help="phone id (needed when there are several)")
+    _common(ap, None)
+    # the same options after the command; SUPPRESS keeps a value given before it
+    common = argparse.ArgumentParser(add_help=False)
+    _common(common, argparse.SUPPRESS)
     sub = ap.add_subparsers(dest="command", required=True)
+    add_parser = sub.add_parser
+    sub.add_parser = lambda *a, **k: add_parser(*a, parents=[common], **k)
     sub.add_parser("discover", help="boxes announcing themselves on the local network")
     sub.add_parser("devices", help="phones and their states")
     sub.add_parser("status", help="full status of the phone, as JSON")
@@ -114,7 +127,11 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if c == "screenshot":
             fmt = "jpeg" if args.file.lower().endswith((".jpg", ".jpeg")) else "png"
-            phone.screenshot(args.file, format=fmt)
+            try:
+                phone.screenshot(args.file, format=fmt)
+            except OSError as e:
+                print(f"ihc: cannot write {args.file}: {e.strerror}", file=sys.stderr)
+                return 1
             return 0
         result = {
             "tap": lambda: phone.tap(args.x, args.y),
@@ -132,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     except IhcError as e:
         print(f"ihc: {e}", file=sys.stderr)
-        return 1
+        return 3 if e.code == "unreachable" or "no box answered" in e.message else 1
 
 
 if __name__ == "__main__":

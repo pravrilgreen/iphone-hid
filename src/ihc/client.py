@@ -15,13 +15,20 @@
     phone.screenshot("shot.png")
 
 Each action returns once the phone has taken its last report. A refused or failed call raises
-IhcError with the HTTP status and the box's error code: 400 bad_request (nothing was sent),
-401 unauthorized, 404 no_device, 503 no_usb, asleep or no_video.
+IhcError with the HTTP status and the box's error code:
+
+    400 bad_request (nothing was sent)      404 no_device, unknown_action
+    401 unauthorized (the token)            429 too_many (viewers)
+    403 bad_host, bad_origin                503 no_usb, asleep (actions); no_video (screenshots)
+    500 failed                              504 timeout (the action did not finish in time)
+
+and without an HTTP status: unreachable (no connection to the box) or timeout (no answer in time).
 """
 
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -31,8 +38,11 @@ __all__ = ["Farm", "IhcError", "Phone"]
 
 
 class IhcError(Exception):
-    """An API call failed. `status_code` is None when the box could not be reached; `code` is the
-    box's error code (bad_request, unauthorized, no_device, no_usb, asleep, no_video, failed)."""
+    """An API call failed. `code` is the box's error code (see the module help), or unreachable or
+    timeout when the box did not answer; `status_code` is the HTTP status (None without an answer).
+    `retryable` says whether the same call may work later (the box or the phone was not ready)."""
+
+    RETRYABLE = frozenset({"unreachable", "timeout", "no_usb", "asleep", "no_video", "too_many", "busy"})
 
     def __init__(self, message: str, status_code: int | None = None, payload: Any = None):
         super().__init__(message)
@@ -43,6 +53,10 @@ class IhcError(Exception):
     @property
     def code(self) -> str | None:
         return self.payload.get("code") if isinstance(self.payload, dict) else None
+
+    @property
+    def retryable(self) -> bool:
+        return self.code in self.RETRYABLE
 
     def __str__(self) -> str:
         return f"{self.message} (HTTP {self.status_code})" if self.status_code else self.message
@@ -60,8 +74,10 @@ class Box:
     def request(self, method: str, path: str, **kwargs) -> httpx.Response:
         try:
             r = self.http.request(method, path, **kwargs)
+        except httpx.TimeoutException as e:
+            raise IhcError(f"{self.base_url}: no answer in time ({e})", None, {"code": "timeout"}) from e
         except httpx.HTTPError as e:
-            raise IhcError(f"{self.base_url}: {e}") from e
+            raise IhcError(f"{self.base_url}: cannot reach the box ({e})", None, {"code": "unreachable"}) from e
         if r.status_code >= 400:
             try:
                 payload = r.json()
@@ -69,7 +85,7 @@ class Box:
             except (ValueError, AttributeError):
                 payload, message = None, r.text or r.reason_phrase
             if r.status_code == 401:
-                message = f"{self.base_url}: {message} (pass token= or set IHC_TOKEN)"
+                message = f"{self.base_url}: {message} (the token: Farm(token=...), ihc --token, or $IHC_TOKEN)"
             raise IhcError(message, r.status_code, payload)
         return r
 
@@ -102,8 +118,26 @@ class Phone:
 
     @property
     def state(self) -> str:
-        """ready, busy, no_usb (not connected), asleep or no_video, fetched now."""
+        """ready, busy, starting, no_usb (not connected), asleep or no_video: asks the box now."""
         return self.status()["state"]
+
+    def wait_ready(self, timeout: float = 30, interval: float = 0.5) -> dict:
+        """Wait until the phone is ready (or busy with another action) and return its status.
+        IhcError with the last state's code when it is not ready within `timeout` seconds."""
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                st = self.status()
+                if st["state"] in ("ready", "busy"):
+                    return st
+                last = IhcError(f"{self.id} is {st['state']}: {st.get('message', '')}", None, {"code": st["state"]})
+            except IhcError as e:
+                if not e.retryable:
+                    raise
+                last = e
+            if time.monotonic() >= deadline:
+                raise last
+            time.sleep(interval)
 
     def _path(self, tail: str = "") -> str:
         return f"/api/devices/{self.id}{tail}"
@@ -165,6 +199,26 @@ class Phone:
     def button(self, name: str) -> dict:
         """Press a phone button: home, app_switcher, spotlight, volume_up, volume_down, mute, play_pause."""
         return self._action("button", name=name)
+
+    def media(self, key: str) -> dict:
+        """Press a media key: volume_up, volume_down, mute, play_pause, next_track, ..."""
+        return self._action("media", key=key)
+
+    def set_landscape(self, landscape: bool) -> dict:
+        """Tell the box the phone mirrors in landscape (True) or portrait (False)."""
+        return self._box.json("POST", self._path("/orientation"), json={"landscape": landscape})
+
+    def volume_up(self) -> dict:
+        return self.button("volume_up")
+
+    def volume_down(self) -> dict:
+        return self.button("volume_down")
+
+    def mute(self) -> dict:
+        return self.button("mute")
+
+    def play_pause(self) -> dict:
+        return self.button("play_pause")
 
     def home(self) -> dict:
         return self.button("home")
