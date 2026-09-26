@@ -1,6 +1,7 @@
 # Architecture
 
-The box runs `ihcd`, one static Go binary (`box/`). It has four parts.
+The box runs `ihcd`, one static Go binary (`box/`). It has four parts, and a doctor that examines the
+board.
 
 ## Touch engine (`box/internal/input`)
 
@@ -58,6 +59,22 @@ to 250 ms, so a phone that stopped polling shows up as an error instead of a han
 The REST actions, the status, screenshots, MJPEG, the stream and control WebSockets, the OpenAPI
 description and the console (`box/web`, built into the binary). Token authentication, host and
 origin checks, mDNS announcement. See [API](api.md).
+
+## Doctor (`box/internal/doctor`, `box/internal/board`)
+
+`ihcd doctor` runs one check per part, in the order the parts depend on each other: the board, the
+kernel's gadget framework and HID function, the USB device port (device tree `dr_mode`, USB role
+switches), other gadgets holding the controller, the box's gadget, its `/dev/hidg` nodes, the link
+to the iPhone (the controller's state), the HDMI input (why it is missing: device tree, driver,
+kernel config, boot overlays), its signal, the services, the API and the token. Each result says
+what was found and either a fix doctor can make or advice for a person.
+
+`--fix` applies the run-time fixes (mount configfs, load `libcomposite`, switch a role switch to
+device, unbind another gadget, restart `ihcd-gadget` or `ihcd`, node and token permissions), then
+checks again. `--fix-boot` also adds the HDMI receiver's overlay to `/boot/armbianEnv.txt` (or
+`orangepiEnv.txt`), copying it to `/boot/overlay-user` when the boot script cannot load it by name,
+and keeps the old file as `<file>.ihc-<time>`. The checks read a root directory, so the tests run
+them on fake board trees.
 
 ## Simulated iPhone (`box/internal/sim`)
 

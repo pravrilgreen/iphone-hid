@@ -22,7 +22,7 @@ again for the console part (`sudo systemctl start ihcd`).
 | 9 | Volume | `ihcd hid button volume_up`, then `volume_down` | The volume indicator moves up, then down |
 | 10 | Mute | `ihcd hid button mute` | The volume indicator goes to zero |
 | 11 | Media | `ihcd hid button play_pause` with music playing | The music pauses |
-| 12 | Video | `ihcd check` | The HDMI input receives 1920x1080 at about 60 Hz |
+| 12 | Video | `ihcd doctor` | Picture: receiving 1920x1080 at about 60 Hz |
 
 If 4 fails and 5 works, start the service with `IHCD_ARGS="--home button"` in `/etc/default/ihc`.
 

@@ -3,7 +3,7 @@ PY ?= .venv/bin/python
 GO ?= go
 export GOTOOLCHAIN = local
 
-.PHONY: help dev test test-go test-sdk lint box check-box sim console
+.PHONY: help dev test test-go test-sdk lint box check-box sim console demo
 
 help:
 	@echo "make dev        Python SDK in .venv (editable) with the test tools"
@@ -13,6 +13,7 @@ help:
 	@echo "make check-box  smoke-test the bundle (under qemu-aarch64 on other machines)"
 	@echo "make sim        run the box with a simulated iPhone on http://localhost:8000"
 	@echo "make console    the same, serving the console from box/web (edit and reload)"
+	@echo "make demo       record the console demo videos into docs/media (pip install -e \".[demo]\")"
 
 dev:
 	python3 -m venv .venv
@@ -42,3 +43,6 @@ sim:
 
 console:
 	cd box && $(GO) run ./cmd/ihcd serve --sim --no-mdns --web web
+
+demo:
+	$(PY) scripts/record_demo.py

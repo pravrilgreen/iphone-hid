@@ -3,7 +3,12 @@
 **Remote touch, keyboard and screen for real iPhones.** One small box per phone. People use it from
 a browser; test frameworks use its HTTP API or the Python SDK.
 
-![The console: the phone's live screen in a device frame, its buttons, and the typing and media panels](docs/images/console.png)
+[![The console: dragging swipes the iPhone's home screen pages and flings a list, as it happens](docs/media/console-demo.gif)](docs/media/console-demo.mp4)
+
+**Demo videos:** [the console through every state](docs/media/console-demo.mp4) (2 min: touch, typing, the
+phone's buttons, a test script running, the cable unplugged, the phone asleep, the picture lost, a
+second operator, the box going away) and [on a phone](docs/media/console-demo-mobile.mp4) (20 s).
+Recorded against the simulated iPhone with `make demo`.
 
 ## What it does
 
@@ -65,9 +70,9 @@ Phones: iPhone 15 and later with USB-C, except iPhone 16e and 17e, which have no
    starts them. The API token is in `/var/lib/ihc/token`.
 3. Open `http://<board address>:8000`.
 
-`ihcd check` shows what the board offers: its USB device port, the gadget, and the HDMI input.
-The [install guide](docs/guide/install.md) covers the board image, the HDMI input and
-troubleshooting.
+`ihcd doctor` examines the board and the box, part by part, and says how to fix each problem;
+`sudo ihcd doctor --fix` fixes what it can (the installer runs it). The
+[install guide](docs/guide/install.md) covers the board image, the HDMI input and troubleshooting.
 
 ## Set up the iPhone
 
@@ -120,8 +125,8 @@ at `/api/openapi.json` on every box and in the [API reference](docs/dev/api.md).
 | `src/ihc/` | Python SDK and the `ihc` command |
 | `packaging/` | systemd units, udev rules, installer, bundle header |
 | `hardware/box-v1/` | The purpose-built box's schematic: netlist as code, KiCad 8 project, sheets, BOM, design checks |
-| `scripts/` | bundle build and smoke test, diagrams |
-| `docs/` | guides, API, architecture, research ([index](docs/README.md)) |
+| `scripts/` | bundle build and smoke test, diagrams, demo recording |
+| `docs/` | guides, API, architecture, research ([index](docs/README.md)), demo videos (`docs/media`) |
 
 ## Development
 
@@ -131,6 +136,7 @@ make sim          # the box with a simulated iPhone on http://localhost:8000
 make test         # gofmt, go vet, the Go tests, the SDK tests against a simulated box
 make box          # dist/ihc-box-<version>-linux-arm64.run (Go, cmake, zig 0.13)
 make check-box    # smoke-test the bundle (under qemu-aarch64 elsewhere)
+make demo         # record docs/media/console-demo*.mp4 against a simulated box (pip install -e ".[demo]")
 ```
 
 Changes are listed in the [changelog](CHANGELOG.md).

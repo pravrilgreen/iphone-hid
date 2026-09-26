@@ -4,7 +4,7 @@
 //	ihcd serve                 run the box (the systemd service)
 //	ihcd serve --sim           run with a simulated iPhone, no hardware needed
 //	ihcd gadget up|down|status|wake
-//	ihcd check                 what the board offers: USB device port, gadget, HDMI input
+//	ihcd doctor [--fix]        examine the board and the box, fix what it can, say how to fix the rest
 //	ihcd hid corners|tap|key|type|button   drive the phone directly, without the service
 //	ihcd version
 package main
@@ -30,9 +30,8 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/sys/unix"
-
 	"github.com/pravrilgreen/iphone-hid/box/internal/board"
+	"github.com/pravrilgreen/iphone-hid/box/internal/doctor"
 	"github.com/pravrilgreen/iphone-hid/box/internal/hid"
 	"github.com/pravrilgreen/iphone-hid/box/internal/input"
 	"github.com/pravrilgreen/iphone-hid/box/internal/server"
@@ -57,8 +56,8 @@ func main() {
 		err = serve(args)
 	case "gadget":
 		err = gadget(args)
-	case "check":
-		err = check(args)
+	case "doctor", "check":
+		err = doctorCmd(args)
 	case "hid":
 		err = hidCmd(args)
 	case "version", "--version", "-v":
@@ -80,7 +79,8 @@ func usage() {
 
   serve     run the box: API and web console (--sim: a simulated iPhone)
   gadget    up | down | status | wake: the USB touch pointer and keyboard gadget
-  check     what the board offers: USB device port, gadget, HDMI input
+  doctor    examine the board and the box: USB device port, gadget, iPhone, HDMI input, service;
+            --fix fixes what it can, --fix-boot also turns the HDMI input on in the boot configuration
   hid       drive the phone directly: corners | tap X Y | key COMBO | type TEXT | button NAME |
             click secondary|middle
   version   print the version
@@ -145,7 +145,7 @@ func serve(args []string) error {
 			dev = board.HDMIInput("/")
 			if dev == "" {
 				dev = "/dev/video0"
-				logger.Printf("no HDMI receiver found (ihcd check says why): trying %s", dev)
+				logger.Printf("no HDMI receiver found (ihcd doctor says why): trying %s", dev)
 			}
 		}
 		vs := &video.V4L2Source{Path: dev}
@@ -325,64 +325,33 @@ func chownNodes(p hid.Paths, owner string) error {
 	return nil
 }
 
-// -- check --------------------------------------------------------------------------------------------------
+// -- doctor -------------------------------------------------------------------------------------------------
 
-func check(args []string) error {
-	fl := flag.NewFlagSet("check", flag.ExitOnError)
+func doctorCmd(args []string) error {
+	fl := flag.NewFlagSet("doctor", flag.ExitOnError)
+	fix := fl.Bool("fix", false, "fix what can be fixed at run time (modules, USB role, gadget, permissions, services)")
+	boot := fl.Bool("fix-boot", false, "also change the boot configuration to turn the HDMI input on (keeps a backup; reboot after)")
+	asJSON := fl.Bool("json", false, "print the results as JSON")
 	_ = fl.Parse(args)
-	p := hid.SystemPaths
-	fmt.Println("USB (the iPhone's touch pointer and keyboard)")
-	udcs := p.ListUDCs()
-	if len(udcs) == 0 {
-		fmt.Println("  no USB device controller: the board's USB-C port is in host mode")
+	opts := doctor.Options{Fix: *fix || *boot, Boot: *boot}
+	if opts.Fix && os.Geteuid() != 0 {
+		return doctor.ErrNotRoot
 	}
-	for _, u := range udcs {
-		fmt.Printf("  controller %s: %s\n", u, p.UDCState(u))
+	sys := doctor.Local()
+	if !*asJSON {
+		fmt.Printf("ihcd doctor %s\n\n", version)
 	}
-	st := p.Status(hid.GadgetName)
-	if st.Exists {
-		fmt.Printf("  gadget %s: profile %s on %s, state %s, nodes %v\n", st.Name, orDash(st.Profile), orDash(st.UDC),
-			orDash(st.State), st.Nodes)
+	rs := doctor.Run(sys, opts)
+	if *asJSON {
+		b, _ := json.MarshalIndent(rs, "", "  ")
+		fmt.Println(string(b))
 	} else {
-		fmt.Println("  no gadget yet: sudo ihcd gadget up")
+		doctor.Report(os.Stdout, rs, opts)
 	}
-	for u, g := range st.UDCUsers {
-		if g != hid.GadgetName {
-			fmt.Printf("  controller %s is used by another gadget: %s\n", u, g)
-		}
-	}
-	fmt.Println("HDMI input (the iPhone's screen)")
-	nodes := board.VideoNodes("/")
-	hdmi := board.HDMIInput("/")
-	for _, n := range nodes {
-		mark := " "
-		if n.Path == hdmi {
-			mark = "*"
-		}
-		fmt.Printf(" %s %s  %s  %s\n", mark, n.Path, n.Name, n.Driver)
-	}
-	if hdmi == "" {
-		var u unix.Utsname
-		_ = unix.Uname(&u)
-		for _, l := range board.DiagnoseHDMI("/", unix.ByteSliceToString(u.Release[:])) {
-			fmt.Println("  " + l)
-		}
-		return nil
-	}
-	t, err := video.QuerySignal(hdmi)
-	if err != nil {
-		fmt.Printf("  %s: %v\n", hdmi, err)
-	} else {
-		fmt.Printf("  %s receives %s\n", hdmi, t)
+	if doctor.Worst(rs) == doctor.Fail {
+		os.Exit(1)
 	}
 	return nil
-}
-
-func orDash(s string) string {
-	if s == "" {
-		return "-"
-	}
-	return s
 }
 
 // -- hid ------------------------------------------------------------------------------------------------------

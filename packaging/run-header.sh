@@ -31,7 +31,7 @@ if [ "${1:-}" = "--extract" ]; then
     dest="${2:?usage: $0 --extract DIR}"
     mkdir -p "$dest"
     payload "$dest"
-    echo "unpacked into $dest: try $dest/bin/ihcd check"
+    echo "unpacked into $dest: try $dest/bin/ihcd doctor"
     exit 0
 fi
 if [ "$(id -u)" != 0 ]; then

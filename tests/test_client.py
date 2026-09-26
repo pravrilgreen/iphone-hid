@@ -50,8 +50,8 @@ def test_tap_type_and_home(box, phone):
 def test_untypeable_text_is_refused_before_anything_is_sent(box, phone):
     before = box.sim()["reports"]
     with pytest.raises(IhcError) as e:
-        phone.type("xin chào")
-    assert e.value.status_code == 400 and "à" in e.value.message
+        phone.type("naïve")
+    assert e.value.status_code == 400 and "ï" in e.value.message
     assert box.sim()["reports"] == before
 
 

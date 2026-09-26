@@ -79,4 +79,11 @@ echo
 echo "iphone-hid box $(cat "$PREFIX/VERSION") installed"
 [ "$START" = 1 ] && echo "console: http://${ip:-<board address>}:8000     logs: journalctl -u ihcd -f"
 echo "API token (the console asks for it once): sudo cat $TOKEN"
-echo "check the board: ihcd check"
+
+# examine the board; once started, fix what can be fixed at run time (never the boot configuration)
+echo
+if [ "$START" = 1 ]; then
+    "$PREFIX/bin/ihcd" doctor --fix || true
+else
+    "$PREFIX/bin/ihcd" doctor || true
+fi

@@ -81,7 +81,7 @@ func TestCombosAndText(t *testing.T) {
 			t.Fatalf("press %d: %+v, want %+v", i, p, want[i])
 		}
 	}
-	if _, err := TextPresses("xin chào"); err == nil || !strings.Contains(err.Error(), "à") {
+	if _, err := TextPresses("naïve"); err == nil || !strings.Contains(err.Error(), "ï") {
 		t.Fatalf("non-ASCII text must be refused, naming the character: %v", err)
 	}
 }

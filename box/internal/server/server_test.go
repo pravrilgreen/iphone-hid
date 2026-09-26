@@ -161,7 +161,7 @@ func TestBadRequestsAreRefusedBeforeAnythingIsSent(t *testing.T) {
 	cases := map[string]string{
 		"/tap":    `{"x": 1.5, "y": 0.5}`,
 		"/tap2":   `{"x": 0.5, "y": 0.5}`,
-		"/type":   `{"text": "chào"}`,
+		"/type":   `{"text": "café"}`,
 		"/key":    `{"combo": "cmd+nope"}`,
 		"/button": `{"name": "power"}`,
 		"/swipe":  `{"x1": 0.5}`,

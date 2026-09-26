@@ -1,477 +1,523 @@
-# Box tự thiết kế: tính khả thi, giá thành, thiết kế tổng thể
+# Custom box: feasibility, cost, overall design
 
-- **Ngày:** 2026-09-25. **Phạm vi:** thay Orange Pi 5 Plus + hub bằng một box tự làm, nhỏ gọn, cắm là chạy. Box vừa là
-  bàn phím/chuột của iPhone, vừa nhận hình từ cổng USB-C của iPhone, vừa sạc iPhone. Box được điều khiển từ xa qua
-  Ethernet, Wi-Fi và USB. Tài liệu này cũng trả lời câu hỏi CH9329 có đủ nhanh không.
-- **Cách làm:** ba lượt tra cứu song song.
-  - Datasheet đọc trực tiếp từ bản lưu trên GitHub: WCH CH32V20x/30x, Rockchip RV1106, Sophgo SG200x.
-  - Mã và tài liệu của các sản phẩm KVM mã nguồn mở: JetKVM, NanoKVM, PiKVM, Luckfox PicoKVM, GL.iNet Comet, Aiden.
-  - Driver Linux của các chip cầu nối (Rockchip BSP, InES), TinyUSB, Chromium EC.
-  - Kết quả tìm kiếm cho giá LCSC và các trang bị proxy chặn: cnx-software, orangepi.org, lcsc.com, wch.cn.
-- **Nhãn:** **[Chắc]** = đã đọc nguồn gốc (mã, datasheet, tài liệu hãng). **[Có thể]** = lời hãng, đoạn trích tìm
-  kiếm, hoặc nhiều nguồn gián tiếp khớp nhau. **[Chưa biết]** = chưa có dữ liệu, phải tự đo. Giá lấy từ đoạn trích LCSC
-  là **[Có thể]**; số nào là ước tính thì ghi rõ "ước tính".
-- **Sơ đồ mạch:** thiết kế mức chân của phương án B nằm ở [hardware/box-v1](../../hardware/box-v1/README.md).
-- **Giấy phép:** JetKVM (GPL-2.0), Luckfox PicoKVM (GPL) và Aiden (AGPL-3.0) chỉ dùng để tham khảo kiến trúc. Không
-  chép mã của các dự án này; firmware và phần mềm của box tự viết.
-
----
-
-## 0. Kết luận
-
-1. **Khả thi, và kiến trúc đã được chứng minh ngoài thị trường.**
-   - JetKVM, Luckfox PicoKVM và GL.iNet Comet đều là SoC Rockchip nhỏ, có chip cầu nối hình và cổng USB làm bàn
-     phím/chuột. [Chắc]
-   - Aiden dùng đúng SoC RV1106 để điều khiển **iPhone** qua hub USB-C. [Chắc]
-   - Box của mình là mẫu đó, chuyên cho iPhone. Điểm khác: một chip nhận thẳng hình từ cổng USB-C của iPhone, bỏ hub.
-2. **CH9329 đủ cho tap thường, nhưng không đạt mức "siêu tối ưu".** Ba giới hạn chính:
-   - descriptor cố định, nên không dùng được bố cục chuột tuyệt đối đã chạy trên iPhone của bạn;
-   - lệnh ack chỉ có nghĩa là chip đã nhận, không phải iPhone đã lấy báo cáo;
-   - UART 115200 baud gây trễ và lệch nhịp.
-
-   Thay bằng **CH32V305RBT6**: MCU RISC-V của WCH, USB 2.0 High-Speed có PHY sẵn cộng một cổng Full-Speed thứ hai,
-   vỏ LQFP64 hàn mỏ được, giá khoảng $1,33. **CH9329F** (bản High-Speed mới) là phương án cắm thay thế nhanh, nhưng
-   descriptor vẫn cố định. (§3)
-3. **Tốc độ thật sự nằm ở đường hình và ở iOS, không nằm ở chip HID.**
-   - Chip HID tốt nhất chỉ tiết kiệm được vài mili giây.
-   - iOS mất 80–250 ms để con trỏ lướt tới đích trước mỗi cú tap.
-   - Đường hình quyết định độ trễ nhìn thấy. H.264 phần cứng chế độ low-delay qua WebRTC cho 35–60 ms từ màn hình tới
-     màn hình (glass-to-glass), MJPEG thì chậm hơn nhiều. (§2)
-4. **Box đề xuất (phương án B):**
-   - iPhone ↔ **LT7911D**: một chip lo cả PD, DP Alt Mode, và chuyển DP sang MIPI CSI;
-   - **CH32V305**: bàn phím/chuột High-Speed, chạy chuỗi lệnh có định thời ngay trên chip;
-   - **RV1106** trên module hàn được **Luckfox Core1106**: nhận hình, mã hoá H.264 low-delay, chạy API;
-   - cổng ngoài: Ethernet, Wi-Fi, và USB-C tới PC (hình qua UVC, mạng qua USB).
-
-   Linh kiện khoảng **$35–55 mỗi box** (ước tính, lô 10–50). Bản **dock cho PC** (phương án A, không có Linux trên
-   box) khoảng **$17–27**. (§6, §9)
-5. **Đi từng bước, rủi ro thấp trước.**
-   - Làm board HID CH32V305 trước: 1–2 tuần, dưới $10 linh kiện. Board này dùng ngay được với Orange Pi hiện tại.
-   - Sau đó ghép box thử từ module có sẵn.
-   - Cuối cùng mới làm PCB riêng. (§12)
+- **Date:** 2026-09-25 (translated to English 2026-09-26). **Scope:** replace the Orange Pi 5 Plus + hub with a
+  self-built box that is small and plug-and-play. The box is the iPhone's keyboard and mouse, takes video from the
+  iPhone's USB-C port, and charges the iPhone. It is controlled remotely over Ethernet, Wi-Fi and USB. This document
+  also answers whether the CH9329 is fast enough.
+- **Current software:** the box software is `ihcd`, one static Go binary (`box/`, ADR 0002). It drives the
+  absolute pointer only; the relative mouse mode, the per-phone calibration, the CH9329 backend and the Python server
+  are gone, and Python remains only as the SDK and the `ihc` command. Passages below that compare the CH9329 or
+  discuss relative mode are kept as the reasoning behind the MCU choice, not as a description of the current box.
+- **Method:** four research passes in parallel.
+  - Datasheets read directly from copies on GitHub: WCH CH32V20x/30x, Rockchip RV1106, Sophgo SG200x.
+  - Code and docs of open-source KVM products: JetKVM, NanoKVM, PiKVM, Luckfox PicoKVM, GL.iNet Comet, Aiden.
+  - Linux drivers for the bridge chips (Rockchip BSP, InES), TinyUSB, Chromium EC.
+  - Search results for LCSC prices and for pages the proxy blocked: cnx-software, orangepi.org, lcsc.com, wch.cn.
+- **Labels:** **[Confirmed]** means the primary source was read (code, datasheet, vendor documentation).
+  **[Likely]** means a vendor claim, a search snippet, or several indirect sources that agree. **[Unknown]** means
+  there is no data yet, so it must be measured. Prices taken from LCSC snippets are **[Likely]**; estimated numbers
+  are marked "estimate".
+- **Schematic:** the pin-level design of Option B is in [hardware/box-v1](../../hardware/box-v1/README.md).
+- **Licensing:** JetKVM (GPL-2.0), Luckfox PicoKVM (GPL) and Aiden (AGPL-3.0) are used for architecture reference
+  only. No code from these projects is copied; the box firmware and software are written from scratch.
 
 ---
 
-## 1. Yêu cầu
+## 0. Conclusions
 
-| Yêu cầu | Cách đáp ứng trong thiết kế |
+1. **Feasible, and the architecture is already proven on the market.**
+   - JetKVM, Luckfox PicoKVM and GL.iNet Comet are all small Rockchip SoCs with a video bridge chip and a USB port
+     that acts as keyboard and mouse. [Confirmed]
+   - Aiden uses the same RV1106 SoC to control an **iPhone** through a USB-C hub. [Confirmed]
+   - This box follows the same pattern, specialised for the iPhone. The difference: one chip takes video straight
+     from the iPhone's USB-C port, so there is no hub.
+2. **The CH9329 is enough for ordinary taps, but not for maximum performance.** The box no longer uses it (ADR 0002
+   removed the CH9329 backend); the comparison stays because it explains the MCU choice. Three main limits:
+   - its descriptor is fixed, so it cannot use the absolute-mouse layout already proven on the test iPhone;
+   - its ack only means the chip received the command, not that the iPhone fetched the report;
+   - the 115200-baud UART adds latency and jitter.
+
+   Replace it with the **CH32V305RBT6**: a WCH RISC-V MCU with USB 2.0 High-Speed and a built-in PHY, plus a
+   second Full-Speed port, in an LQFP64 package that can be soldered with an iron, at about $1.33. The **CH9329F**
+   (the new High-Speed version) is a quick drop-in alternative, but its descriptor is still fixed. (§3)
+3. **The real speed is decided by the video path and by iOS, not by the HID chip.**
+   - The best HID chip saves only a few milliseconds.
+   - iOS takes 80–250 ms to glide the pointer to the target before each tap.
+   - The video path decides the visible latency. Hardware H.264 in low-delay mode over WebRTC gives 35–60 ms
+     glass-to-glass; MJPEG is much slower. (§2)
+4. **Proposed box (Option B):**
+   - iPhone ↔ **LT7911D**: one chip handles PD, DP Alt Mode, and DP-to-MIPI CSI conversion;
+   - **CH32V305**: High-Speed keyboard and mouse, runs timed command sequences on the chip;
+   - **RV1106** on the solderable **Luckfox Core1106** module: captures video, encodes low-delay H.264, runs the API;
+   - external ports: Ethernet, Wi-Fi, and USB-C to a PC (video over UVC, network over USB).
+
+   Parts cost about **$35–58 per box** (estimate, batches of 10–50). The **PC dock** version (Option A, no Linux on
+   the box) costs about **$17–25**. (§6, §9)
+5. **Go step by step, low risk first.**
+   - Start with the HID MCU: firmware on the CH32V307V-EVT-R1 evaluation board (same USB block as the CH32V305),
+     1–2 weeks, under $10 per board. With an `mcu` HID sink added to `ihcd`, it works with the current Orange Pi.
+   - Then assemble a trial box from off-the-shelf modules.
+   - Only then make a custom PCB. (§12)
+
+---
+
+## 1. Requirements
+
+| Requirement | How the design meets it |
 |---|---|
-| Hiệu năng tối đa: ít trễ, không mất lệnh | HID High-Speed 125 µs, chuỗi lệnh chạy bằng timer trên MCU, xác nhận khi iPhone đã lấy báo cáo; H.264 low-delay + WebRTC, cắt bỏ phần viền đen trước khi mã hoá |
-| Một cổng USB-C cắm vào iPhone: nhận hình, làm bàn phím/chuột, sạc | LT7911D (PD + Alt Mode sink + sạc pass-through) và CH32V305 trên chân D+/D- |
-| Xuất hình qua HDMI hoặc USB | USB: SoC làm webcam UVC cho PC. HDMI: chỉ có ở bản dock (MS2131 có cổng HDMI loop-out), vì RV1106 không có cổng xuất HDMI |
-| Điều khiển từ xa qua Wi-Fi, Ethernet, USB | Ethernet 100M (PHY nằm trong RV1106), module Wi-Fi SDIO, USB-C tới PC (mạng qua USB + UVC + điều khiển) |
-| Cắm là chạy, nhỏ gọn | DHCP + mDNS, EDID và chế độ con trỏ tự đặt, cập nhật OTA, vỏ nhôm cỡ hub USB-C (§8) |
-| Hàn tay được | LQFP cho MCU, module có chân hàn cạnh (castellated) cho SoC. QFN cho chip hình thì cần máy khò, hoặc đặt JLCPCB lắp sẵn (§10) |
+| Maximum performance: low latency, no lost commands | High-Speed HID at 125 µs, command sequences run by a timer on the MCU, confirmation once the iPhone has fetched the report; low-delay H.264 + WebRTC, black borders cropped before encoding |
+| One USB-C connection to the iPhone: video, keyboard and mouse, charging | LT7911D (PD + Alt Mode sink + pass-through charging) and CH32V305 on the D+/D- pins |
+| Video out over HDMI or USB | USB: the SoC acts as a UVC webcam for the PC. HDMI: only on the dock version (the MS2131 has an HDMI loop-out port), because the RV1106 has no HDMI output |
+| Remote control over Wi-Fi, Ethernet, USB | 100M Ethernet (PHY inside the RV1106), SDIO Wi-Fi module, USB-C to the PC (network over USB + UVC + control) |
+| Plug and play, compact | DHCP + mDNS, EDID and pointer mode set automatically, OTA updates, aluminium case the size of a USB-C hub (§8) |
+| Hand-solderable | LQFP for the MCU, a module with castellated edge pads for the SoC. The QFN video chip needs a hot-air station, or JLCPCB assembly (§10) |
 
 ---
 
-## 2. Thời gian đi đâu
+## 2. Where the time goes
 
-### 2.1 Một cú tap (chuột tuyệt đối)
+### 2.1 One tap (absolute pointer)
 
-| Chặng | CH9329 @115200 | Linux gadget (Orange Pi, hiện tại) | CH32V305 HS (đề xuất) |
+| Stage | CH9329 @115200 (no longer used) | Linux gadget (Orange Pi, current) | CH32V305 HS (proposed) |
 |---|---|---|---|
-| Server → chip | ~1,7 ms: khung 13 byte + ack 7 byte trên dây [Chắc, tính toán] | vài chục µs (`write()` vào `/dev/hidgN`) | < 0,1 ms qua USB/SPI (ước tính) |
-| Chờ iPhone đến lấy (poll) | chưa rõ: chip Full-Speed, bInterval không công bố [Chưa biết] | ≤ 1 ms (HS, bInterval 4); đo trên board của bạn: 2,6 ms từ lúc ghi tới lúc iPhone lấy [Chắc] | ≤ 0,125 ms nếu iOS tôn trọng bInterval=1 [Chưa biết, phải đo] |
-| Xác nhận | "chip đã nhận" | "iPhone đã lấy" (POLLOUT) | "iPhone đã lấy" + mốc thời gian µs (ngắt IN-complete) |
-| iOS cho con trỏ lướt tới đích | 80–250 ms (Aiden chờ 80 ms, glassbox chứng minh 250 ms an toàn) [Chắc, xem absolute-pointer.md] | như bên trái | như bên trái |
-| Nhấn, giữ, nhả (nhả gửi 3 lần) | 60–100 ms + ~30 ms | như bên trái | như bên trái, nhưng định thời chính xác tới µs trên MCU |
+| Server → chip | ~1.7 ms: 13-byte frame + 7-byte ack on the wire [Confirmed, calculated] | tens of µs (`write()` to `/dev/hidgN`) | < 0.1 ms over USB/SPI (estimate) |
+| Wait for the iPhone to fetch (poll) | unclear: Full-Speed chip, bInterval not published [Unknown] | ≤ 1 ms (HS, bInterval 4); measured on the Orange Pi board: 2.6 ms from write to iPhone fetch [Confirmed] | ≤ 0.125 ms if iOS honours bInterval=1 [Unknown, must measure] |
+| Confirmation | "chip received" | "iPhone fetched" (POLLOUT) | "iPhone fetched" + µs timestamp (IN-complete interrupt) |
+| iOS glides the pointer to the target | 80–250 ms (Aiden waits 80 ms, glassbox proved 250 ms is safe) [Confirmed, see absolute-pointer.md] | same as left | same as left |
+| Press, hold, release (release sent 3 times) | 60–100 ms + ~30 ms | same as left | same as left, but timed to the µs on the MCU |
 
-Tap mất khoảng 150–350 ms, và gần hết là thời gian của iOS. Chip HID tốt nhất chỉ bớt được 1–10 ms. Muốn nhanh hơn
-thật sự thì phải rút ngắn thời gian chờ con trỏ lướt:
+A tap takes about 150–350 ms, and nearly all of it is iOS time. The best HID chip saves only 1–10 ms. To be
+really faster, the wait for the pointer glide must be shortened:
 
-- **Đo độ trễ lướt cho từng iPhone** (bước calibration đã đo được `abs_settle`). Thay giá trị cố định 250 ms bằng số
-  đo thật.
-- **Thử tắt hiệu ứng** (Reduce Motion, và Pointer Animations nếu iOS có mục này cho con trỏ AssistiveTouch). Nếu con
-  trỏ nhảy thẳng tới đích thì thời gian chờ có thể xuống vài chục ms. [Chưa biết, phải thử]
+- **Measure the glide delay.** The `ihcd` touch engine waits a fixed settle time after a jump before it presses
+  (`Config.Settle` in `box/internal/input`, 80 ms by default), and does not wait when the pointer is already in place
+  (a hover in the live view). There is no per-phone calibration. Measuring the real glide on the iPhone models in use
+  (T6) shows whether the fixed value is right.
+- **Try turning off animations** (Reduce Motion, and Pointer Animations if iOS has that option for the
+  AssistiveTouch pointer). If the pointer jumps straight to the target, the wait could drop to a few tens of ms.
+  [Unknown, must test]
 
-Chip HID quan trọng ở bốn chỗ khác:
+The HID chip matters in four other places:
 
-1. **Chế độ tương đối.** iOS tăng tốc con trỏ theo vận tốc, nên báo cáo gửi lệch nhịp vài ms là con trỏ đi sai quãng.
-   Python trên Linux lệch nhịp 0,5–5 ms. Timer phần cứng trên MCU lệch dưới 1 µs, nên chế độ tương đối trở nên tất định.
-   Điều này quan trọng khi một bản iOS nào đó (vd iOS 27, xem absolute-pointer.md) bỏ qua chuột tuyệt đối.
-2. **Điều khiển trực tiếp mượt hơn:** 1000–8000 báo cáo/s, so với tối đa khoảng 580/s khi CH9329 phải chờ ack.
-3. **Xác nhận đúng nghĩa:** chỉ gadget và MCU biết chắc iPhone đã lấy báo cáo. CH9329 thì không.
-4. **Descriptor tự do:** dùng được bố cục đã chạy trên iPhone (mỗi loại báo cáo một interface, chuột tuyệt đối
-   0..32767). Bố cục ID 1/2 dùng chung một interface của CH9329 vẫn chưa ai thử trên iOS (absolute-pointer.md, V7).
+1. **Relative mode, as a fallback only.** The box drives the absolute pointer only and has no relative mode today.
+   If some iOS release (for example iOS 27, see absolute-pointer.md) ignored the absolute mouse, a relative mode
+   would be needed again. iOS accelerates the relative pointer by velocity, so reports sent a few ms off rhythm move
+   it the wrong distance. User-space timing on Linux (the earlier Python server) jittered by 0.5–5 ms. A hardware
+   timer on the MCU jitters by under 1 µs, which would make relative mode deterministic.
+2. **Smoother live control:** 1000–8000 reports/s, against at most about 580/s when the CH9329 had to wait for an
+   ack.
+3. **Real confirmation:** only the gadget and the MCU know for sure that the iPhone fetched the report. The CH9329
+   does not.
+4. **Free descriptor:** the layout already proven on the iPhone can be used (one interface per report type, absolute
+   mouse 0..32767). The CH9329's layout, with report IDs 1/2 sharing one interface, has not been tried on iOS by
+   anyone (absolute-pointer.md, V7).
 
-### 2.2 Đường hình (glass-to-glass)
+### 2.2 Video path (glass-to-glass)
 
-| Hệ | Độ trễ | Nguồn |
+| System | Latency | Source |
 |---|---|---|
-| PiKVM V4 (TC358743 → CM4, H.264 qua WebRTC) | 35–50 ms (thu 17 ms + mã hoá 13 ms) | tài liệu PiKVM [Chắc] |
-| JetKVM (RV1106 + TC358743, H.264 qua WebRTC) | hãng nói 30–60 ms; Jeff Geerling đo ~40 ms; một đối thủ đo ~98 ms từ click tới hình | [Có thể] |
-| NanoKVM (SG2002 + LT6911) | 100–150 ms | README NanoKVM [Chắc] |
-| Dongle MS2130 vào PC, 1080p60 | ~66 ms, tính cả màn hình PC | thảo luận HyperHDR [Có thể] |
-| Orange Pi 5 Plus + bộ mã hoá JPEG CPU (hiện tại) | chưa đo; dự đoán 80–150 ms | [Chưa biết] |
+| PiKVM V4 (TC358743 → CM4, H.264 over WebRTC) | 35–50 ms (capture 17 ms + encode 13 ms) | PiKVM docs [Confirmed] |
+| JetKVM (RV1106 + TC358743, H.264 over WebRTC) | vendor says 30–60 ms; Jeff Geerling measured ~40 ms; a competitor measured ~98 ms from click to image | [Likely] |
+| NanoKVM (SG2002 + LT6911) | 100–150 ms | NanoKVM README [Confirmed] |
+| MS2130 dongle into a PC, 1080p60 | ~66 ms, including the PC monitor | HyperHDR discussion [Likely] |
+| Orange Pi 5 Plus + CPU JPEG encoder (current) | not measured; predicted 80–150 ms | [Unknown] |
 
-Những cải tiến dùng được cho mọi phần cứng, kể cả Orange Pi hiện tại:
+Improvements that work on any hardware, including the current Orange Pi:
 
-- **Cắt bỏ viền đen trước khi mã hoá.** Màn hình dọc của iPhone chỉ chiếm khoảng 500×1080 trong khung 1920×1080, tức
-  khoảng 26% số điểm ảnh. Cắt ra trước (RGA của Rockchip) thì bộ mã hoá và đường mạng nhẹ khoảng 4 lần.
-- **Dùng H.264 phần cứng, chế độ low-delay:** không B-frame, chia slice, gửi IDR khi có yêu cầu. Truyền qua
-  WebRTC/WebCodecs; giữ MJPEG làm phương án dự phòng.
-- **Băng thông:** MJPEG 1080p60 cần 50–150 Mbit/s nên chỉ chạy được trên LAN. H.264 chỉ cần 2–8 Mbit/s, đủ chạy qua
-  Wi-Fi và qua Ethernet 100M.
-- **Thử EDID dọc.** Nếu box khai báo một độ phân giải dọc, có thể iPhone xuất hình không viền. [Chưa biết, phải thử]
+- **Crop the black borders before encoding.** The iPhone's portrait screen fills only about 500×1080 of the
+  1920×1080 frame, about 26% of the pixels. Cropping first (Rockchip RGA) makes the load on the encoder and the
+  network about 4 times lighter.
+- **Use hardware H.264 in low-delay mode:** no B-frames, sliced frames, IDR on request. Send it over
+  WebRTC/WebCodecs; keep MJPEG as the fallback.
+- **Bandwidth:** MJPEG 1080p60 needs 50–150 Mbit/s, so it only works on a LAN. H.264 needs only 2–8 Mbit/s, which
+  fits over Wi-Fi and over 100M Ethernet.
+- **Try a portrait EDID.** If the box advertises a portrait resolution, the iPhone may output video without
+  borders. [Unknown, must test]
 
 ---
 
-## 3. CH9329 có đủ không, và chọn gì thay
+## 3. Is the CH9329 enough, and what to use instead
 
-| | CH9329 (đang hỗ trợ) | CH9329F (mới) | Linux gadget trên SoC | **CH32V305RBT6 (đề xuất)** |
+The CH9329 cable was the earlier fallback HID path; `ihcd` no longer supports it. The comparison is kept as the
+reason for the CH32V305.
+
+| | CH9329 (earlier fallback, no longer used) | CH9329F (new) | Linux gadget on the SoC | **CH32V305RBT6 (proposed)** |
 |---|---|---|---|---|
-| USB tới iPhone | Full-Speed [Có thể] | High-Speed, bInterval chỉnh được [Có thể] | High-Speed | High-Speed, PHY sẵn trên chip [Chắc] |
-| Kênh từ host | UART ≤ 115200 (không đạt 115200 khi chạy 3,3 V) [Có thể] | UART tới 15 Mbit/s [Có thể] | ghi thẳng vào file thiết bị | USB Full-Speed thứ hai, hoặc SPI/UART tốc độ Mbit [Chắc] |
-| Descriptor | cố định; chỉ chỉnh VID/PID, chuỗi, chế độ [Chắc] | bàn phím/chuột vẫn cố định; có chế độ touchscreen và báo cáo HID tuỳ ý 510 byte [Có thể] | tự do | tự do |
-| Ack khi iPhone đã lấy | không | có (tuỳ chọn) [Có thể] | có (POLLOUT) | có, kèm mốc thời gian µs |
-| Chuỗi lệnh có định thời trên chip | không | không | không (Linux lo lịch) | có |
-| Vỏ, giá | SOP16, rẻ | QFN32, giá chưa rõ | nằm sẵn trong SoC | LQFP64M 10×10, 0,5 mm, ~$1,33 [Có thể] |
+| USB to the iPhone | Full-Speed [Likely] | High-Speed, adjustable bInterval [Likely] | High-Speed | High-Speed, PHY on the chip [Confirmed] |
+| Link from the host | UART ≤ 115200 (does not reach 115200 at 3.3 V) [Likely] | UART up to 15 Mbit/s [Likely] | direct writes to the device file | a second Full-Speed USB port, or SPI/UART at Mbit rates [Confirmed] |
+| Descriptor | fixed; only VID/PID, strings and mode can be changed [Confirmed] | keyboard and mouse still fixed; has a touchscreen mode and custom 510-byte HID reports [Likely] | free | free |
+| Ack once the iPhone has fetched | no | yes (optional) [Likely] | yes (POLLOUT) | yes, with a µs timestamp |
+| Timed command sequences on the chip | no | no | no (Linux does the scheduling) | yes |
+| Package, price | SOP16, cheap | QFN32, price unknown | built into the SoC | LQFP64M 10×10, 0.5 mm, ~$1.33 [Likely] |
 
-**Ghi chú về CH32V305** [Chắc, datasheet V3.9]:
+**Notes on the CH32V305** [Confirmed, datasheet V3.9]:
 
-- Vỏ TSSOP20 (V305FBP6) và QFN28 (V305GBU6) chỉ đưa ra chân của cổng High-Speed. Muốn cả hai cổng USB thì chọn một
-  trong ba:
+- The TSSOP20 (V305FBP6) and QFN28 (V305GBU6) packages only bring out the pins of the High-Speed port. For both
+  USB ports, pick one of three:
   - V305RBT6 (LQFP64M);
   - V305CCT6 (LQFP48);
-  - V307RCT6/VCT6 (LQFP64M/100, khoảng $2,2).
-- TinyUSB có driver HS/FS cho CH32V30x, nhưng mỗi lúc chỉ chạy một cổng. Cổng thứ hai dùng driver của WCH; repo
-  `openwch/ch32v307` có ví dụ HID trên cả hai cổng.
-- RP2040/RP2350 chỉ có Full-Speed. NXP LPC55S16 và STM32F723 cũng làm được nhưng đắt hơn hoặc cần thêm linh kiện.
+  - V307RCT6/VCT6 (LQFP64M/100, about $2.2).
+- TinyUSB has HS/FS drivers for the CH32V30x, but runs only one port at a time. The second port uses WCH's driver;
+  the `openwch/ch32v307` repo has HID examples on both ports.
+- The RP2040/RP2350 have Full-Speed only. The NXP LPC55S16 and STM32F723 also work, but cost more or need extra
+  parts.
 
-**iPhone có poll ở 125 µs không?** Chưa có số đo công khai [Chưa biết].
+**Does the iPhone poll at 125 µs?** There is no public measurement yet [Unknown].
 
-- Tính theo chuẩn: Full-Speed tối thiểu 1 ms. High-Speed với bInterval=1 là 125 µs.
-- Dấu hiệu gần nhất từ Apple: TinyUSB issue #1705. Một thiết bị HID Full-Speed đặt bInterval=1 chỉ được poll 500 Hz
-  trên Mac Apple Silicon, trong khi Mac Intel và Windows cho 1000 Hz.
-- Vì vậy phải đo trên iPhone thật bằng board thử nanoCH32V305 **trước khi** vẽ PCB. Đây là thí nghiệm T1 ở §11.
+- By the spec: Full-Speed is at least 1 ms. High-Speed with bInterval=1 is 125 µs.
+- The closest hint from Apple: TinyUSB issue #1705. A Full-Speed HID device with bInterval=1 was polled at only
+  500 Hz on Apple Silicon Macs, while Intel Macs and Windows gave 1000 Hz.
+- So it must be measured on a real iPhone with the CH32V307V-EVT-R1 evaluation board (§13; same USB block as the
+  CH32V305) **before** the PCB is drawn. This is experiment T1 in §11.
 
 ---
 
-## 4. Đường hình: từ cổng USB-C của iPhone tới khung hình
+## 4. Video path: from the iPhone's USB-C port to a frame
 
-**Những gì đã biết về iPhone** [Chắc, trừ chỗ ghi khác]:
+**What is known about the iPhone** [Confirmed, unless noted otherwise]:
 
-- DP Alt Mode xuất tối đa 4K60, cắm adapter USB-C sang HDMI thường là chạy, không cần MFi.
-- Chỉ phản chiếu màn hình: màn hình chính dọc bị thêm viền hai bên (pillarbox).
-- Có DP: 15, 16 và 17, gồm các bản Plus, Pro, Pro Max. **Không có DP: 16e, 17e, Air.**
-- Bản thường chạy USB 2.0; bản Pro chạy USB 3 10 Gbit/s. Ở chế độ DP 4 lane, cặp D+/D- (USB 2.0) vẫn trống cho HID.
-- App có bảo vệ bản quyền (phim) hiện màn đen trên đường hình không có HDCP. [Có thể]
-- Adapter USB-C Digital AV Multiport của Apple chạy cùng lúc hình, USB và sạc. Tức là tổ hợp vai trò mà box cần đã
-  được chứng minh là chạy được.
+- DP Alt Mode outputs up to 4K60. A plain USB-C to HDMI adapter works; no MFi is needed.
+- Screen mirroring only: the portrait home screen gets borders on both sides (pillarbox).
+- DP on: 15, 16 and 17, including the Plus, Pro and Pro Max models. **No DP: 16e, 17e, Air.**
+- Standard models run USB 2.0; Pro models run USB 3 at 10 Gbit/s. In 4-lane DP mode, the D+/D- pair (USB 2.0)
+  stays free for HID.
+- Copy-protected apps (movies) show a black screen on a video path without HDCP. [Likely]
+- Apple's USB-C Digital AV Multiport Adapter runs video, USB and charging at the same time. So the combination of
+  roles the box needs is proven to work.
 
-| Chip | Vào → ra | Có sẵn PD/Alt Mode | Vỏ | Giá | Ghi chú |
+| Chip | In → out | PD/Alt Mode built in | Package | Price | Notes |
 |---|---|---|---|---|---|
-| **LT7911D** | USB-C/DP1.2 (4 lane) → MIPI CSI | có (PD 2.0, CC kép để sạc pass-through) | QFN-64 | ~$4,9 | driver `lt7911d.c` trong Rockchip BSP; 1080p60/4K30 [Có thể/Chắc] |
-| LT7911UXC | USB-C/DP1.4a → MIPI 4 lane | có (PD 3.0) | BGA-169 | ~$13, hay hết hàng | chỉ cần khi muốn 4K60 |
-| **LT8711HE** | USB-C/DP → HDMI 2.0 | có (CC kép, pass-through, có MCU và flash) | QFN-64 | ~$3,2 | dùng cho bản dock |
-| LT6911C / LT6911UXC | HDMI → CSI | không | QFN-64 | ~$3,6 / ~$5,9 | NanoKVM dùng; cần firmware của Lontium |
-| TC358743 | HDMI 1.4 → CSI-2 | không | BGA-64 | chưa rõ | driver chính thức trong Linux; JetKVM, PiKVM dùng |
-| RK628D | HDMI → CSI | không | chưa rõ | chưa rõ | Aiden dùng |
-| **MS2131** / MS2130 | HDMI → USB 3 UVC 1080p60 (MS2131 có thêm HDMI loop-out) | không | QFN-64 | MS2130 ~$3,1 | UVC chuẩn, không cần driver; firmware nằm ở flash ngoài |
-| VL102/VL103, CYPD3125 | chỉ PD + Alt Mode (vai UFP_D, nguồn cấp điện) | có | QFN-48/40 | ~$1,4–2,4 | firmware đóng; nếu muốn PD mở thì Chromium EC servo_v4 là tham chiếu mã mở đúng vai này |
+| **LT7911D** | USB-C/DP1.2 (4 lanes) → MIPI CSI | yes (PD 2.0, dual CC for pass-through charging) | QFN-64 | ~$4.9 | `lt7911d.c` driver in the Rockchip BSP; 1080p60/4K30 [Likely/Confirmed] |
+| LT7911UXC | USB-C/DP1.4a → 4-lane MIPI | yes (PD 3.0) | BGA-169 | ~$13, often out of stock | only needed for 4K60 |
+| **LT8711HE** | USB-C/DP → HDMI 2.0 | yes (dual CC, pass-through, with MCU and flash) | QFN-64 | ~$3.2 | for the dock version |
+| LT6911C / LT6911UXC | HDMI → CSI | no | QFN-64 | ~$3.6 / ~$5.9 | used by NanoKVM; needs Lontium firmware |
+| TC358743 | HDMI 1.4 → CSI-2 | no | BGA-64 | unknown | official driver in Linux; used by JetKVM and PiKVM |
+| RK628D | HDMI → CSI | no | unknown | unknown | used by Aiden |
+| **MS2131** / MS2130 | HDMI → USB 3 UVC 1080p60 (the MS2131 adds HDMI loop-out) | no | QFN-64 | MS2130 ~$3.1 | standard UVC, no driver needed; firmware in external flash |
+| VL102/VL103, CYPD3125 | PD + Alt Mode only (UFP_D role, power source) | yes | QFN-48/40 | ~$1.4–2.4 | closed firmware; for open PD, Chromium EC servo_v4 is the open-source reference for exactly this role |
 
-Chuỗi đề xuất:
+Proposed chains:
 
-- **Box độc lập (B):** iPhone → LT7911D → CSI 4 lane → RV1106. Một chip lo cả PD, Alt Mode và chuyển hình. Không cần
-  hub, không có HDMI ở giữa.
-- **Dự phòng rủi ro thấp:** adapter USB-C sang HDMI có PD pass-through → module HDMI-sang-CSI (TC358743 hoặc
-  LT6911C) → RV1106. Đây đúng là cách Aiden và JetKVM làm.
-- **Dock cho PC (A):** iPhone → LT8711HE → HDMI → MS2131 → USB 3 → PC.
+- **Standalone box (B):** iPhone → LT7911D → 4-lane CSI → RV1106. One chip handles PD, Alt Mode and video
+  conversion. No hub, and no HDMI in between.
+- **Low-risk fallback:** USB-C to HDMI adapter with PD pass-through → HDMI-to-CSI module (TC358743 or LT6911C) →
+  RV1106. This is exactly how Aiden and JetKVM do it.
+- **PC dock (A):** iPhone → LT8711HE → HDMI → MS2131 → USB 3 → PC.
 
 ---
 
 ## 5. SoC
 
-| SoC | CPU / RAM | H.264 | CSI | Cổng USB làm thiết bị | Ethernet | Vỏ, module |
+| SoC | CPU / RAM | H.264 | CSI | USB device ports | Ethernet | Package, module |
 |---|---|---|---|---|---|---|
-| **RV1106G3** | 1× A7, RAM 256 MB nằm trong chip | 5 MP@30, có chế độ "ultra-low delay" | 1×4 hoặc 2×2 lane | 1 | 100M, PHY trong chip | QFN128 0,35 mm; module Luckfox Core1106 chân hàn cạnh, $16–27 |
-| SG2002 | C906/A53 1 GHz, 256 MB trong chip | 1080p60 (thực tế) | datasheet và board ghi khác nhau | 1 | 100M, PHY trong chip | LicheeRV Nano $9–14; độ trễ cao hơn (NanoKVM 100–150 ms) |
-| RV1126B | 4× A53, RAM ngoài | 4K30, low-delay | 2×4 | 1 (USB3) | GbE | BGA; Luckfox Aura từ $49 |
-| RK3576 | 4×A72 + 4×A53 | 4K60 | 2×4 + C/D-PHY | **2** | 2× GbE | BGA; Core3576 từ $105 |
-| RK3566/3568 | 4× A55 | 1080p60 | 1×4 | 1 | GbE | BGA, cần module |
+| **RV1106G3** | 1× A7, 256 MB RAM inside the chip | 5 MP@30, has an "ultra-low delay" mode | 1×4 or 2×2 lanes | 1 | 100M, PHY in the chip | QFN128 0.35 mm; Luckfox Core1106 module with castellated pads, $16–27 |
+| SG2002 | C906/A53 1 GHz, 256 MB in the chip | 1080p60 (in practice) | datasheet and boards disagree | 1 | 100M, PHY in the chip | LicheeRV Nano $9–14; higher latency (NanoKVM 100–150 ms) |
+| RV1126B | 4× A53, external RAM | 4K30, low-delay | 2×4 | 1 (USB3) | GbE | BGA; Luckfox Aura from $49 |
+| RK3576 | 4×A72 + 4×A53 | 4K60 | 2×4 + C/D-PHY | **2** | 2× GbE | BGA; Core3576 from $105 |
+| RK3566/3568 | 4× A55 | 1080p60 | 1×4 | 1 | GbE | BGA, needs a module |
 
-[Chắc với số liệu datasheet; giá module là Có thể]
+[Confirmed for datasheet figures; module prices are Likely]
 
-**Chọn RV1106G3 trên Luckfox Core1106.**
+**Choice: the RV1106G3 on the Luckfox Core1106.**
 
-- JetKVM (1080p60), Luckfox PicoKVM và Aiden (điều khiển iPhone) đều chạy trên chip này.
-- RAM và PHY Ethernet nằm sẵn trong chip, nên board đơn giản.
-- Bộ mã hoá có chế độ low-delay. SDK `luckfox-pico` mở trên GitHub.
-- Hạn chế duy nhất: chỉ có một cổng USB. Thiết kế dành cổng đó cho PC, còn HID giao cho MCU.
+- JetKVM (1080p60), Luckfox PicoKVM and Aiden (iPhone control) all run on this chip.
+- The RAM and the Ethernet PHY are built into the chip, so the board is simple.
+- The encoder has a low-delay mode. The `luckfox-pico` SDK is open on GitHub.
+- The only limit: there is just one USB port. The design gives that port to the PC and hands HID to the MCU.
 
-**Khi nào lên RK3576:** khi muốn 4K60, GbE, hoặc **2 iPhone trên một box** (hai CSI, hai cổng USB thiết bị). Module
-đắt khoảng 5 lần, nhưng chia cho hai iPhone thì giá mỗi máy gần tương đương.
+**When to move to the RK3576:** for 4K60, GbE, or **2 iPhones per box** (two CSI inputs, two USB device ports). The
+module costs about 4–6.5 times as much (from $105, against $16–27 for the Core1106). Split across two iPhones it is
+still about $53 per phone, 2–3 times the Core1106, so the module cost per phone is higher; the RK3576 is chosen for
+those features, not to save money.
 
 ---
 
-## 6. Hai phương án box
+## 6. Two box options
 
-### Phương án B: box độc lập (đề xuất)
+### Option B: standalone box (proposed)
 
-![Box độc lập](../images/box-architecture.png)
+![Standalone box](../images/box-architecture.png)
 
-- **Phía iPhone.** Một cáp USB-C:
-  - CC và cặp DP vào LT7911D;
-  - D+/D- vào cổng High-Speed của CH32V305;
-  - VBUS lấy từ bộ sạc qua mạch pass-through.
-- **Trong box.**
-  - LT7911D đẩy CSI-2 4 lane vào RV1106. RV1106 cắt vùng màn hình, mã hoá H.264 low-delay, rồi chạy API và web console.
-  - CH32V305 nối với RV1106 qua SPI hoặc UART vài Mbit/s. Nó nhận lệnh cấp cao (tap, vuốt, gõ) và tự chạy theo timer.
-- **Phía ngoài.**
-  - Ethernet 100M và module Wi-Fi SDIO.
-  - Cổng USB của RV1106 đưa ra một USB-C tới PC. PC thấy box là card mạng USB (gọi đúng REST API như qua LAN), một
-    webcam UVC (màn hình iPhone), và một kênh điều khiển. Cả ba chạy trên một dây, không cần driver.
-- **Không có HDMI out**, vì RV1106 không có bộ phát HDMI. Nếu cần HDMI out thì dùng phương án A, hoặc thêm LT8711HE
-  với bộ chia (tốn thêm tiền và độ phức tạp).
+- **iPhone side.** One USB-C cable:
+  - CC and the DP pairs go to the LT7911D;
+  - D+/D- go to the High-Speed port of the CH32V305;
+  - VBUS comes from the charger through the pass-through circuit.
+- **Inside the box.**
+  - The LT7911D sends 4-lane CSI-2 into the RV1106. The RV1106 crops the screen area, encodes low-delay H.264, and
+    runs the API and the web console.
+  - The CH32V305 connects to the RV1106 over SPI or UART at a few Mbit/s. It takes high-level commands (tap, swipe,
+    type) and runs them on its own timer.
+- **Outside.**
+  - 100M Ethernet and an SDIO Wi-Fi module.
+  - The RV1106's USB port goes out to a USB-C port for the PC. The PC sees the box as a USB network card (calling
+    the same REST API as over the LAN), a UVC webcam (the iPhone screen), and a control channel. All three run on one
+    cable, with no driver.
+- **No HDMI out**, because the RV1106 has no HDMI transmitter. If HDMI out is needed, use Option A, or add an
+  LT8711HE with a splitter (more cost and complexity).
 
-### Phương án A: dock cho PC, không chạy Linux
+### Option A: PC dock, no Linux
 
-![Dock cho PC](../images/box-dock.png)
+![PC dock](../images/box-dock.png)
 
-- Gồm LT8711HE (USB-C sang HDMI, có PD), MS2131 (HDMI sang USB 3 UVC, có HDMI loop-out), CH32V305 (HID) và một chip
-  hub USB 3.
-- PC thấy dock là một webcam (màn hình iPhone) cộng một thiết bị điều khiển, không cần driver trên Linux, Windows hay
-  macOS.
-- Server `ihc` chạy trên PC. Nó đã đọc được webcam UVC ở chế độ MJPEG passthrough; chỉ cần thêm một backend HID
-  mới cho MCU.
-- **Hợp khi:** trại máy có sẵn PC/mini PC, cần HDMI out, hoặc muốn box không có hệ điều hành phải cập nhật.
-- **Không hợp khi:** cần điều khiển qua Wi-Fi/Ethernet mà không có PC, hoặc một PC phải gánh nhiều iPhone. Mỗi dongle
-  MS2130 truyền YUY2 1080p60 tốn khoảng 250 MB/s trên USB 3, nên phải dùng MJPEG.
+- Made of an LT8711HE (USB-C to HDMI, with PD), an MS2131 (HDMI to USB 3 UVC, with HDMI loop-out), a CH32V305
+  (HID) and a USB 3 hub chip.
+- The PC sees the dock as a webcam (the iPhone screen) plus a control device, with no driver needed on Linux,
+  Windows or macOS.
+- `ihcd` runs on the PC (there is a Linux amd64 build; `ihcd` runs on Linux only). Two additions are needed: UVC
+  capture from the dock (today `ihcd` reads only uncompressed V4L2 input from an HDMI receiver and rejects MJPEG),
+  and an `mcu` HID sink for the MCU.
+- **Fits when:** the phone farm already has PCs or mini PCs, HDMI out is needed, or the box should have no operating
+  system that needs updating.
+- **Does not fit when:** control over Wi-Fi/Ethernet without a PC is needed, or one PC must carry many iPhones. Each
+  MS2130 dongle sending YUY2 1080p60 uses about 250 MB/s of USB 3, so MJPEG must be used.
 
-| | B: box độc lập | A: dock cho PC | Orange Pi 5 Plus + hub (hiện tại) |
+| | B: standalone box | A: PC dock | Orange Pi 5 Plus + hub (current) |
 |---|---|---|---|
-| Cần máy host | không | có (PC) | không |
-| Độ trễ hình (mục tiêu) | 35–60 ms (H.264 WebRTC) | ~50–70 ms (MS213x + PC) | chưa đo; JPEG chạy trên CPU |
-| HID | CH32V305 HS, chuỗi lệnh có định thời | CH32V305 HS | Linux gadget HS |
-| Wi-Fi / Ethernet / USB | có / có / có | qua PC / qua PC / có | có / có / không |
-| HDMI out | không | có | hub có |
-| Linh kiện (ước tính) | $35–55 | $17–27 | board đắt hơn nhiều lần, thêm hub |
-| Kích thước | cỡ hộp 90×60×20 mm | cỡ hub USB-C | board + hub + dây |
+| Needs a host machine | no | yes (PC) | no |
+| Video latency (target) | 35–60 ms (H.264 WebRTC) | ~50–70 ms (MS213x + PC) | not measured; JPEG runs on the CPU |
+| HID | CH32V305 HS, timed command sequences | CH32V305 HS | Linux gadget HS |
+| Wi-Fi / Ethernet / USB | yes / yes / yes | via PC / via PC / yes | yes / yes / no |
+| HDMI out | no | yes | the hub has it |
+| Parts (estimate) | $35–58 | $17–25 | the board costs many times more, plus a hub |
+| Size | a box of about 90×60×20 mm | USB-C hub size | board + hub + cables |
 
 ---
 
-## 7. Firmware và phần mềm
+## 7. Firmware and software
 
-### 7.1 Firmware MCU (CH32V305), viết C bare-metal
+### 7.1 MCU firmware (CH32V305), bare-metal C
 
-| Khối | Việc |
+| Block | Job |
 |---|---|
-| `usb_phone` (cổng HS) | HID composite: bàn phím, phím media, chuột tương đối, chuột tuyệt đối. Mỗi loại một interface, không report ID, bInterval=1. Hồ sơ RA/AR/A/R/K giống `ihc gadget`, mỗi hồ sơ một số serial. Đổi hồ sơ lúc đang chạy bằng cách enumerate lại mềm. |
-| `link` | Kênh với host: USB Full-Speed (vendor bulk, hoặc CDC có descriptor WinUSB/MS OS 2.0 để Windows không cần driver) hoặc SPI slave dùng DMA. Khung COBS + CRC16 + số thứ tự. Mỗi lệnh nhận ack, lệnh lỗi nhận nack. Có luồng sự kiện gửi ngược về host. |
-| `sched` | Timer phần cứng 1 µs và hàng đợi báo cáo có hạn giờ. Lệnh cấp cao chạy ngay trên chip, không phụ thuộc Linux hay mạng: `tap(x, y, settle, hold, release×3)`, `swipe(điểm, thời gian, tần số)`, `rel_run(n, nhịp)`, `type(chuỗi, nhịp phím)`, `key`, `media`. |
-| `telemetry` | Mốc thời gian µs lúc iPhone lấy từng báo cáo (ngắt IN-complete). Đếm SOF để đo tần số poll thật. Trạng thái USB (configured / suspend / reset). Đèn Caps Lock từ báo cáo OUT. |
-| `safety` | Watchdog. Tự nhả mọi phím và nút khi mất kênh host quá 200 ms, khi USB reset hoặc khi iPhone vào suspend. Không bao giờ để nút bị giữ. |
-| `update` | Bootloader ISP qua USB của WCH (công cụ mở `wchisp`), gọi được từ phần mềm `ihc`. |
+| `usb_phone` (HS port) | Composite HID with the same interface layouts (profiles) as the `ihcd` USB gadget (`box/internal/hid`): keyboard, media keys (consumer control) and absolute pointer, one interface per type, no report IDs, bInterval=1. One serial number per profile. Profiles are switched at runtime by a soft re-enumeration. |
+| `link` | Channel to the host: Full-Speed USB (vendor bulk, or CDC with a WinUSB/MS OS 2.0 descriptor so Windows needs no driver) or SPI slave with DMA. COBS framing + CRC16 + sequence number. Every command gets an ack; a failed command gets a nack. An event stream goes back to the host. |
+| `sched` | 1 µs hardware timer and a queue of timed reports. High-level commands run on the chip, independent of Linux or the network: `tap(x, y, settle, hold, release×3)`, `swipe(points, duration, rate)`, `type(text, key_interval)`, `key`, `media`. The first plan also had `rel_run(n, interval)` for relative mode; it is dropped with relative mode. |
+| `telemetry` | µs timestamp when the iPhone fetches each report (IN-complete interrupt). SOF counting to measure the real poll rate. USB state (configured / suspend / reset). Caps Lock LED from OUT reports. |
+| `safety` | Watchdog. Releases every key and button when the host link is lost for more than 200 ms, on a USB reset, or when the iPhone suspends. A button is never left held. |
+| `update` | WCH USB ISP bootloader (open-source tool `wchisp`), callable from `ihcd`. |
 
-Server `ihc` thêm backend `mcu`. Backend này nói giao thức trên, dùng cho cả Orange Pi, PC và box B. Mô hình con trỏ
-(`PointerModel`) giao phần định thời cho MCU thay vì tự `sleep()`.
+`ihcd` gains an `mcu` HID sink next to the USB gadget sink (`box/internal/hid`). It speaks the protocol above and is
+used on the Orange Pi, a Linux PC and box B alike. The touch engine (`box/internal/input`) then hands timed gestures
+to the MCU instead of timing each report itself. Neither the sink nor the firmware exists yet.
 
-### 7.2 Phần mềm trên RV1106
+### 7.2 Software on the RV1106
 
-- Image Buildroot tối giản (SDK luckfox-pico), rootfs chỉ đọc, cập nhật A/B, khởi động dưới 5 giây.
-- **Dịch vụ hình (C/C++):** nhận khung từ LT7911D (V4L2) → RGA cắt vùng màn hình → bộ mã hoá H.264 phần cứng chế độ
-  low-delay → WebRTC (thư viện có giấy phép mở dễ dùng, không lấy mã GPL của JetKVM), dự phòng MJPEG, và UVC gadget
-  trên cổng USB-C tới PC.
-- **Dịch vụ điều khiển:** giữ nguyên hợp đồng REST/WebSocket của `ihc`, để SDK và client hiện có chạy không đổi. Có
-  thể viết lại bằng Go hoặc Rust cho gọn RAM; bản đầu có thể giữ Python nếu vừa 256 MB.
-- **Mạng:** DHCP, mDNS `_ihc._tcp` (đã có trong `ihc`), phát Wi-Fi AP kèm trang cấu hình khi chưa có mạng, CDC-NCM
-  qua cổng USB-C.
-
----
-
-## 8. Cắm là chạy, kiểu các sản phẩm Trung Quốc
-
-1. **Cắm ba dây:** iPhone, sạc PD, LAN (hoặc Wi-Fi). Đèn trạng thái: đỏ là chưa có iPhone, vàng là có HID nhưng chưa
-   có hình, xanh là sẵn sàng.
-2. **Tự vào mạng:** DHCP, rồi tự quảng bá mDNS. Máy điều khiển thấy box ngay (`ihc` đã tự tìm box qua mDNS).
-3. **Không phải chỉnh gì:**
-   - EDID 1080p60 và chuột tuyệt đối được đặt sẵn;
-   - hồ sơ HID mặc định là bố cục đã chạy trên iPhone;
-   - trên iPhone chỉ phải bật AssistiveTouch và gán nút một lần (nếu phím Home kiểu media chạy được thì bỏ luôn
-     bước gán nút).
-4. **Cắm vào PC là chạy**, không cần driver: mạng qua USB + UVC + kênh điều khiển.
-5. **Cập nhật một chạm:** OTA cho SoC, ISP qua USB cho MCU, cả hai từ web console.
-6. **Vỏ:** nhôm, cỡ hub USB-C. Cáp USB-C ngắn hoặc đầu đực vuông góc cắm thẳng vào iPhone; có giá kẹp cho dàn máy.
+- Minimal Buildroot image (luckfox-pico SDK), read-only rootfs, A/B updates, boot in under 5 seconds.
+- **Box software:** the same `ihcd` binary as on the Orange Pi (ADR 0002), with the same REST/WebSocket API, so the
+  Python SDK and existing clients run unchanged. Today `ihcd` is built as a static Linux binary for arm64 (and
+  amd64). The RV1106 is a 32-bit ARM Cortex-A7, so it needs a `GOOS=linux GOARCH=arm GOARM=7` build; that build
+  does not exist yet. The arm64 bundle is 3.4 MB, small next to the 256 MB of RAM.
+- **Video path:** `ihcd` today captures uncompressed V4L2 frames and encodes JPEG on the CPU (libjpeg-turbo). On the
+  RV1106 the planned path is: frames from the LT7911D (V4L2) → RGA crops the screen area → hardware H.264 encoder in
+  low-delay mode → WebRTC (a permissively licensed library, not JetKVM's GPL code), MJPEG fallback, and a UVC gadget
+  on the USB-C port to the PC. None of the RV1106-specific parts are built yet.
+- **Network:** DHCP, mDNS `_ihc._tcp` (`ihcd` already advertises it), a Wi-Fi access point with a setup page when
+  there is no network, CDC-NCM over the USB-C port.
 
 ---
 
-## 9. Giá thành (ước tính, lô 10–50, USD)
+## 8. Plug and play, like the Chinese products
 
-**Phương án B:**
+1. **Plug in three cables:** iPhone, PD charger, LAN (or use Wi-Fi). Status LED: red means no iPhone, yellow means
+   HID works but there is no video yet, green means ready.
+2. **Joins the network on its own:** DHCP, then mDNS advertising. The controlling machine sees the box right away
+   (`ihcd` already advertises `_ihc._tcp`, and the `ihc` SDK finds boxes over mDNS).
+3. **Nothing to configure:**
+   - EDID 1080p60 and the absolute pointer are preset;
+   - the default HID profile is the layout already proven on the iPhone;
+   - on the iPhone, only AssistiveTouch has to be turned on and a button assigned, once (if the media-style Home key
+     works, the button-assignment step goes away too).
+4. **Plug into a PC and it works**, with no driver: network over USB + UVC + control channel.
+5. **One-click updates:** OTA for the SoC, USB ISP for the MCU, both from the web console.
+6. **Case:** aluminium, the size of a USB-C hub. A short USB-C cable or a right-angle male plug goes straight into the
+   iPhone; a clamp mount for phone racks.
 
-| Hạng mục | Giá |
+---
+
+## 9. Cost (estimate, batches of 10–50, USD)
+
+**Option B:**
+
+| Item | Price |
 |---|---|
-| Luckfox Core1106 (RV1106G3, 256 MB) | 16–27 [Có thể] |
-| LT7911D | ~4,9 [Có thể] (firmware Lontium: chưa rõ) |
-| CH32V305RBT6 + thạch anh + ESD | ~1,7 |
-| 3× USB-C, ESD cho cổng iPhone và cổng PC | ~1,5 |
-| Nguồn: kích PD đầu vào (CH224K), buck 5 V/3 A, các nguồn 3,3/1,8/1,2 V, công tắc tải VBUS | 2–3 (ước tính) |
-| RJ45 có biến áp | ~0,8 |
-| Module Wi-Fi SDIO | 2–4 (ước tính) |
-| PCB 4 lớp có kiểm soát trở kháng | 2–5 (ước tính) |
-| Linh kiện thụ động, LED, nút | 1–2 |
-| Vỏ nhôm | 3–8 |
-| **Cộng** | **~$35–55** |
+| Luckfox Core1106 (RV1106G3, 256 MB) | 16–27 [Likely] |
+| LT7911D | ~4.9 [Likely] (Lontium firmware: unknown) |
+| CH32V305RBT6 + crystal + ESD | ~1.7 |
+| 3× USB-C, ESD for the iPhone port and the PC port | ~1.5 |
+| Power: PD input trigger (CH224K), 5 V/3 A buck, 3.3/1.8/1.2 V rails, VBUS load switch | 2–3 (estimate) |
+| RJ45 with magnetics | ~0.8 |
+| SDIO Wi-Fi module | 2–4 (estimate) |
+| 4-layer impedance-controlled PCB | 2–5 (estimate) |
+| Passives, LEDs, buttons | 1–2 |
+| Aluminium case | 3–8 |
+| **Total** (sum of the rows above) | **~$35–58** |
 
-**Phương án A:** LT8711HE ~3,2 + MS2131 (MS2130 ~3,1) + flash 0,2 + CH32V305RBT6 1,3 + chip hub USB 3 (chưa rõ, ước
-tính 1–3) + cổng và ESD ~2 + nguồn ~1,5 + PCB 2–5 + vỏ 3–6 ≈ **$17–27**.
+**Option A:** LT8711HE ~3.2 + MS2131 (MS2130 ~3.1) + flash 0.2 + CH32V305RBT6 1.3 + USB 3 hub chip (unknown,
+estimate 1–3) + ports and ESD ~2 + power ~1.5 + PCB 2–5 + case 3–6 ≈ **$17–25**.
 
-**Board HID (giai đoạn 1):** CH32V305RBT6 + thạch anh + LDO + 2 USB-C + ESD + PCB 2 lớp ≈ **$4–6**.
+**Separate HID board** (a CH32V305 board of its own; stage 1 uses the evaluation board from §13): CH32V305RBT6 +
+crystal + LDO + 2 USB-C + ESD + 2-layer PCB ≈ **$4–6**.
 
-**Giá tham khảo thị trường** [Có thể]:
+**Market reference prices** [Likely]:
 
 - JetKVM: $69–103;
 - GL.iNet Comet: $69–89;
 - Luckfox PicoKVM: $28/$56;
 - NanoKVM: Lite ~$20, Full ~$40.
 
-Box B nằm quanh giá NanoKVM Full/PicoKVM, nhưng làm riêng cho iPhone: nhận hình thẳng từ cổng USB-C, có MCU HID
-định thời chính xác, và sạc iPhone.
+Box B sits around the price of the NanoKVM Full and PicoKVM, but is built for the iPhone: video straight from the
+USB-C port, an HID MCU with precise timing, and iPhone charging.
 
 ---
 
-## 10. Hàn tay và sản xuất
+## 10. Hand soldering and manufacturing
 
-| Linh kiện | Vỏ | Cách hàn |
+| Part | Package | How to solder |
 |---|---|---|
-| CH32V305RBT6 | LQFP64 0,5 mm | mỏ hàn + flux, kéo chì: được |
-| Luckfox Core1106 | module có chân hàn cạnh | mỏ hàn: được |
-| LT7911D, LT8711HE, MS2131 | QFN-48/64, có pad nhiệt | cần stencil + máy khò hoặc bếp hàn; hoặc đặt JLCPCB lắp sẵn |
-| RV1106 trần, TC358743 | QFN128 0,35 mm, BGA | không hàn tay: dùng module |
+| CH32V305RBT6 | LQFP64 0.5 mm | iron + flux, drag soldering: OK |
+| Luckfox Core1106 | module with castellated pads | iron: OK |
+| LT7911D, LT8711HE, MS2131 | QFN-48/64, with thermal pad | needs a stencil + hot-air station or hot plate; or JLCPCB assembly |
+| Bare RV1106, TC358743 | QFN128 0.35 mm, BGA | not by hand: use a module |
 
-- **PCB:** 4 lớp, trở kháng 90 Ω cho USB và 100 Ω cho DP và MIPI. Cặp DP từ cổng USB-C tới LT7911D càng ngắn càng tốt,
-  không đi qua via nếu tránh được. Đặt JLCPCB 4 lớp có kiểm soát trở kháng thì rẻ.
-- **Bản thử đầu tiên** nên dùng board phát triển và module có sẵn (§12, giai đoạn 2), để tách rủi ro của mạch cao tần
-  ra khỏi rủi ro của firmware.
+- **PCB:** 4 layers, 90 Ω impedance for USB and 100 Ω for DP and MIPI. Keep the DP pairs from the USB-C port to the
+  LT7911D as short as possible, with no vias where they can be avoided. 4-layer impedance-controlled boards from
+  JLCPCB are cheap.
+- **The first prototype** should use off-the-shelf dev boards and modules (§12, stage 2), to keep the risk of the
+  high-frequency circuit apart from the risk of the firmware.
 
 ---
 
-## 11. Rủi ro và thí nghiệm làm trước
+## 11. Risks and experiments to run first
 
-| ID | Câu hỏi | Cách thử | Nếu không được |
+| ID | Question | How to test | If it fails |
 |---|---|---|---|
-| T1 | iPhone có poll HID High-Speed ở 125 µs không? | board nanoCH32V305, đếm khoảng cách giữa các IN-complete | vẫn dùng CH32V305 (lợi ích từ định thời và descriptor vẫn còn), chỉ đặt kỳ vọng 1 ms |
-| T2 | LT7911D có vào được DP Alt Mode với iPhone trong khi vẫn cấp nguồn (source, DR_Swap)? Lấy firmware Lontium ở đâu? EDID có ép 1080p60 được không? | mua board LT7911D có sẵn (loại USB-C sang MIPI cho màn hình), cắm iPhone + Luckfox Pico | adapter USB-C sang HDMI + TC358743/LT6911C (đường Aiden/JetKVM đã chạy) |
-| T3 | RV1106 có nhận được 1080p60 từ LT7911D không? (chuyển driver `lt7911d.c` từ BSP 5.10 sang kernel SDK) | Luckfox Pico + board LT7911D | dùng cầu HDMI như ở T2 |
-| T4 | Độ trễ H.264 low-delay trên RV1106 có ≤ 60 ms? | đo bằng đồng hồ trên màn hình iPhone, chụp cả hai màn hình | chỉnh GOP, chia slice, jitter buffer của WebRTC |
-| T5 | Nguồn: sạc iPhone trong khi phản chiếu, và dòng pass-through của LT7911D | đo dòng khi iPhone sạc + phản chiếu | mạch nguồn riêng cấp 5 V/3 A cho iPhone |
-| T6 | Tắt hiệu ứng (Reduce Motion) có làm con trỏ đến đích nhanh hơn? | `abstest` + đo `abs_settle` | giữ giá trị đo cho từng máy |
-| T7 | EDID dọc có bỏ được viền đen không? | đặt EDID dọc trên cổng HDMI IN của Orange Pi | cắt bằng RGA |
+| T1 | Does the iPhone poll High-Speed HID at 125 µs? | CH32V307V-EVT-R1 board (§13), count the gaps between IN-completes | keep the CH32V305 (the timing and descriptor benefits remain), just expect 1 ms |
+| T2 | Can the LT7911D enter DP Alt Mode with the iPhone while still supplying power (source, DR_Swap)? Where to get the Lontium firmware? Can the EDID force 1080p60? | get an LT7911D evaluation board with CSI firmware from Lontium or an official distributor (§13, item 4; retail USB-C to MIPI boards for displays carry DSI firmware and do not fit), connect the iPhone, read the chip over I2C from the Orange Pi's 40-pin header | USB-C to HDMI adapter + TC358743/LT6911C (the path Aiden and JetKVM already run) |
+| T3 | Can the RV1106 receive 1080p60 from the LT7911D? (port the `lt7911d.c` driver from BSP 5.10 to the SDK kernel) | Luckfox Pico (§13, row 9) + LT7911D board | use an HDMI bridge as in T2 |
+| T4 | Is the low-delay H.264 latency on the RV1106 ≤ 60 ms? | measure with a clock on the iPhone screen, photographing both screens | tune GOP, slicing, the WebRTC jitter buffer |
+| T5 | Power: charging the iPhone while mirroring, and the LT7911D pass-through current | measure current while the iPhone charges + mirrors | a separate power circuit supplying 5 V/3 A to the iPhone |
+| T6 | Does turning off animations (Reduce Motion) make the pointer reach the target faster? | jump the pointer and time its arrival in the captured video, with and without Reduce Motion | keep a fixed settle time in the `ihcd` touch engine, set from the measurement |
+| T7 | Can a portrait EDID remove the black borders? | set a portrait EDID on the Orange Pi's HDMI IN port | crop with RGA |
 
-Rủi ro đã biết và chấp nhận được: app có DRM hiện màn đen trên đường hình; 16e, 17e và Air không xuất hình.
-
----
-
-## 12. Lộ trình
-
-1. **Giai đoạn 1, board HID (1–2 tuần, dưới $10):**
-   - board phát triển nanoCH32V305, firmware v0 gồm `usb_phone`, `link` qua USB FS, `sched` và `telemetry`;
-   - backend `mcu` trong `ihc`;
-   - làm T1, T6;
-   - so với gadget của Orange Pi và với CH9329.
-
-   Kết quả là một con thay CH9329 dùng được ngay với Orange Pi hoặc PC.
-2. **Giai đoạn 2, box ghép từ module (2–4 tuần):**
-   - Luckfox Pico (RV1106) + module HDMI-sang-CSI + adapter USB-C sang HDMI + board HID;
-   - dịch vụ hình H.264 WebRTC và dịch vụ điều khiển;
-   - làm T4;
-   - song song thử board LT7911D (T2, T3).
-3. **Giai đoạn 3, PCB v1 phương án B (4–8 tuần):**
-   - Core1106 + LT7911D + CH32V305 + nguồn + RJ45 + Wi-Fi;
-   - vỏ, đèn trạng thái, OTA, tính năng cắm là chạy;
-   - làm T5.
-4. **Giai đoạn 4, tuỳ nhu cầu:**
-   - bản dock (A) cho trại máy dùng PC;
-   - box RK3576 cho 2 iPhone.
+Known, acceptable risks: apps with DRM show a black screen on the video path; the 16e, 17e and Air do not output
+video.
 
 ---
 
-## 13. Danh sách mua (đã chốt)
+## 12. Roadmap
 
-Mỗi hạng mục chỉ chọn một thứ. Đồ đã có dùng lại: Orange Pi 5 Plus, hub UGREEN Revodok 105, iPhone 15.
+1. **Stage 1, HID board (1–2 weeks, under $10):**
+   - CH32V307V-EVT-R1 evaluation board (§13), firmware v0 with `usb_phone`, `link` over USB FS, `sched` and
+     `telemetry`;
+   - `mcu` HID sink in `ihcd`;
+   - run T1, T6;
+   - compare with the Orange Pi's Linux gadget (and with the CH9329 figures in §2–§3).
 
-**Đợt 1: mua ngay (giai đoạn 1–2, thí nghiệm T1–T7)**
+   The result is an HID MCU that `ihcd` drives on the Orange Pi or a Linux PC, in the role the CH9329 cable once
+   had as the fallback.
+2. **Stage 2, box assembled from modules (2–4 weeks):**
+   - Luckfox Pico (RV1106) + HDMI-to-CSI module + USB-C to HDMI adapter + HID board;
+   - `ihcd` built for linux/arm (GOARM=7) with the H.264 WebRTC video path;
+   - run T4;
+   - in parallel, test the LT7911D board (T2, T3).
+3. **Stage 3, PCB v1 of Option B (4–8 weeks):**
+   - Core1106 + LT7911D + CH32V305 + power + RJ45 + Wi-Fi;
+   - case, status LED, OTA, plug-and-play features;
+   - run T5.
+4. **Stage 4, as needed:**
+   - dock version (A) for phone farms that use PCs;
+   - RK3576 box for 2 iPhones.
 
-| # | Món | SL | Giá (USD) | Mua ở | Để làm gì, vì sao chọn |
+---
+
+## 13. Shopping list (final)
+
+One choice per item only. Hardware already on hand is reused: Orange Pi 5 Plus, UGREEN Revodok 105 hub, iPhone 15.
+
+**Batch 1: buy now (stages 1–2, experiments T1–T7)**
+
+| # | Item | Qty | Price (USD) | Where to buy | Purpose, why chosen |
 |---|---|---|---|---|---|
-| 1 | WCH **CH32V307V-EVT-R1** | 2 | ~8,7/cái | LCSC C2943980 | Board MCU HID. Có cả cổng USB High-Speed (480 Mbit/s, PHY sẵn) lẫn Full-Speed, đều là Type-C, và mạch nạp WCH-LinkE ngay trên board. Cùng khối USB với CH32V305 nên firmware chuyển sang 1:1. Một cái để phát triển, một cái cho máy thứ hai hoặc dự phòng. |
-| 2 | Great Scott Gadgets **Cynthion** (có vỏ nhôm) | 1 | ~200–210 | Crowd Supply, Adafruit, Hak5 | Máy phân tích USB 2.0 High-Speed. Thấy chính xác khi nào iPhone poll (T1), descriptor, và thời điểm của từng báo cáo. Loại HS tốt nhất trong tầm giá, phần mềm Packetry mở. |
-| 3 | **JetKVM** (bản gốc, RV1106G3, bản 2026 có HDMI cỡ lớn) | 1 | 103 | jetkvm.com | Nền RV1106 + TC358743 dựng sẵn, đã chạy 1080p60. Có chế độ developer (SSH) và bộ build mở `rv1106-system`. Dùng để dựng và đo đường H.264 low-delay cùng dịch vụ điều khiển của mình (T4) mà không phải đi dây CSI. Không mua JetKVM Mini vì dùng ESP32. |
-| 4 | Board đánh giá **LT7911D** nạp sẵn firmware CSI + 5 chip LT7911D | 1 + 5 | chip ~4,9; board chưa rõ | đại lý Lontium chính thức (龙迅代理) | Thí nghiệm T2: DP Alt Mode + PD với iPhone. Yêu cầu: Type-C DP Alt Mode sink, sạc pass-through (CC kép), MIPI CSI-2 4 lane, 1080p60 và 4K30, kèm firmware, tài liệu thanh ghi, sơ đồ tham chiếu. Không có hàng bán lẻ: driver `lt7911d` không nạp firmware, còn module bán cho kính VR/màn hình là firmware DSI. Kernel Armbian của Orange Pi đã có sẵn driver `lt7911d`, nên đọc thanh ghi qua I2C trên header 40 chân là thử được. |
-| 5 | ChargerLAB **POWER-Z KM003C** | 1 | ~110 | power-z.com, Amazon | Ghi lại bản tin PD hai chiều (gồm cả bước vào DP Alt Mode) và dòng sạc. Dùng cho T2 và T5. |
-| 6 | DreamSourceLab **DSLogic Plus** | 1 | ~149 | dreamsourcelab.com, Amazon | Logic analyzer 16 kênh, 400 MHz. Soi I2C của LT7911D, link SPI/UART giữa MCU và SoC, và độ chính xác timer của MCU (bật chân GPIO ở mỗi IN-complete). |
-| 7 | Cáp **Apple Thunderbolt 4 (USB-C) Pro**, 1 m | 1 | 69 | Apple | Nối iPhone với board LT7911D. Cáp tặng kèm iPhone chỉ là USB 2.0, không có lane DP. Cáp này chắc chắn chạy DP Alt Mode với iPhone. |
-| 8 | Cáp USB-A → USB-C có dữ liệu, 0,3 m | 2 | ~5 | bất kỳ | Nối cổng USB-A của hub với board MCU (iPhone là host). |
+| 1 | WCH **CH32V307V-EVT-R1** | 2 | ~8.7 each | LCSC C2943980 | HID MCU board. Has both a High-Speed USB port (480 Mbit/s, built-in PHY) and a Full-Speed port, both Type-C, plus an on-board WCH-LinkE programmer. Same USB block as the CH32V305, so the firmware carries over 1:1. One for development, one for a second device or as a spare. |
+| 2 | Great Scott Gadgets **Cynthion** (with aluminium case) | 1 | ~200–210 | Crowd Supply, Adafruit, Hak5 | USB 2.0 High-Speed analyser. Shows exactly when the iPhone polls (T1), the descriptors, and the timing of each report. The best HS analyser in its price range; the Packetry software is open source. |
+| 3 | **JetKVM** (original, RV1106G3, 2026 version with full-size HDMI) | 1 | 103 | jetkvm.com | A ready-built RV1106 + TC358743 platform that already runs 1080p60. Has a developer mode (SSH) and the open `rv1106-system` build. Used to build and measure the low-delay H.264 path together with `ihcd` (T4) without wiring CSI. Not the JetKVM Mini, which uses an ESP32. |
+| 4 | **LT7911D** evaluation board with CSI firmware loaded + 5 LT7911D chips | 1 + 5 | chip ~4.9; board unknown | official Lontium distributor (龙迅代理) | Experiment T2: DP Alt Mode + PD with the iPhone. Requirements: Type-C DP Alt Mode sink, pass-through charging (dual CC), 4-lane MIPI CSI-2, 1080p60 and 4K30, with firmware, register documentation and a reference schematic. Not available at retail: the `lt7911d` driver does not load firmware, and the modules sold for VR headsets and displays carry DSI firmware. The Orange Pi's Armbian kernel already has the `lt7911d` driver, so reading registers over I2C on the 40-pin header is enough for a first test. |
+| 5 | ChargerLAB **POWER-Z KM003C** | 1 | ~110 | power-z.com, Amazon | Records PD messages in both directions (including DP Alt Mode entry) and the charging current. For T2 and T5. |
+| 6 | DreamSourceLab **DSLogic Plus** | 1 | ~149 | dreamsourcelab.com, Amazon | 16-channel, 400 MHz logic analyser. Probes the LT7911D's I2C, the SPI/UART link between MCU and SoC, and the accuracy of the MCU timer (toggle a GPIO pin on each IN-complete). |
+| 7 | **Apple Thunderbolt 4 (USB-C) Pro** cable, 1 m | 1 | 69 | Apple | Connects the iPhone to the LT7911D board. The cable that ships with the iPhone is USB 2.0 only, with no DP lanes. This cable is known to run DP Alt Mode with the iPhone. |
+| 8 | USB-A → USB-C data cable, 0.3 m | 2 | ~5 | any | Connects the hub's USB-A port to the MCU board (the iPhone is the host). |
+| 9 | **Luckfox Pico** board (RV1106) | 1 | [Unknown] | Waveshare, Luckfox | RV1106 board with a free CSI input for T3 (LT7911D board → RV1106) and the stage 2 box. The JetKVM (row 3) is not used for T3: its RV1106 already takes video from its own TC358743. |
 
-Cộng đợt 1: khoảng $700–800 (chưa tính board đánh giá LT7911D).
+Batch 1 total, summed from the rows above: about **$683–693**, of which $24.50 is the five LT7911D chips (counting
+the cables in row 8 at ~$5 each). This does not count the LT7911D evaluation board and the Luckfox Pico (prices
+unknown), shipping or tax.
 
-**Dụng cụ hàn (nếu chưa có), dùng cho giai đoạn 3**
+**Soldering tools (if not already on hand), for stage 3**
 
-| Món | Giá (USD) | Vì sao |
+| Item | Price (USD) | Why |
 |---|---|---|
-| Trạm hàn **Hakko FX-951** | ~250–300 | Chuẩn chuyên nghiệp, mũi đa dạng; kéo chì LQFP64 0,5 mm dễ |
-| Máy khò **Quick 861DW** | ~300 | Hàn QFN-64 có pad nhiệt (LT7911D) đều nhiệt |
-| Flux **Amtech NC-559-V2-TF** (hàng chính hãng) | ~25 | Flux chuẩn cho QFN/LQFP |
-| Kem hàn **Chip Quik SMD291AX10** | ~20 | Dùng với stencil cho pad QFN |
-| Kính hiển vi soi nổi **AmScope SE400-Z** | ~250 | Kiểm tra cầu chì chân 0,5 mm và pad QFN |
+| **Hakko FX-951** soldering station | ~250–300 | Professional standard, wide choice of tips; drag-soldering LQFP64 0.5 mm is easy |
+| **Quick 861DW** hot-air station | ~300 | Even heat for soldering QFN-64 with a thermal pad (LT7911D) |
+| **Amtech NC-559-V2-TF** flux (genuine) | ~25 | Standard flux for QFN/LQFP |
+| **Chip Quik SMD291AX10** solder paste | ~20 | Used with a stencil for QFN pads |
+| **AmScope SE400-Z** stereo microscope | ~250 | Inspect solder bridges on 0.5 mm pins and QFN pads |
 
-**Đợt 2: chỉ mua khi T1–T3 đạt (PCB v1, phương án B)**
+**Batch 2: buy only if T1–T3 pass (PCB v1, Option B)**
 
-| Món | SL | Giá (USD) | Mua ở |
+| Item | Qty | Price (USD) | Where to buy |
 |---|---|---|---|
-| Luckfox **Core1106** (RV1106G3, 256 MB) | 3 | 16–27/cái | Waveshare, Luckfox |
-| **CH32V305RBT6** | 10 | ~1,33/cái | LCSC |
-| LT7911D (nạp firmware CSI) | 5 | ~4,9/cái | đại lý Lontium (lấy luôn ở đợt 1) |
-| PCB 4 lớp có kiểm soát trở kháng + stencil, 5–10 bo | 1 lô | ước tính 50–150 | JLCPCB |
-| Linh kiện còn lại (USB-C, CH224K, nguồn, RJ45, Wi-Fi SDIO) | theo BOM | ~10–15/bo | LCSC, chốt khi vẽ mạch |
+| Luckfox **Core1106** (RV1106G3, 256 MB) | 3 | 16–27 each | Waveshare, Luckfox |
+| **CH32V305RBT6** | 10 | ~1.33 each | LCSC |
+| LT7911D (CSI firmware loaded) | 5 | already paid in batch 1 | the same five chips as batch 1, row 4; listed here because they go on the v1 boards, not a second purchase |
+| 4-layer impedance-controlled PCB + stencil, 5–10 boards | 1 lot | estimate 50–150 | JLCPCB |
+| Remaining parts (USB-C, CH224K, power, RJ45, SDIO Wi-Fi) | per BOM | ~10–15 per board | LCSC, finalised when the schematic is drawn |
 
 ---
 
-## Nguồn
+## Sources
 
-**HID và MCU**
+**HID and MCU**
 - CH32V20x/30x datasheet V3.9: https://raw.githubusercontent.com/ch32-riscv-ug/CH32V307/main/datasheet_en/CH32V20x_30xDS0.PDF
 - TinyUSB: https://github.com/hathach/tinyusb (issue #1705)
 - openwch/ch32v307: https://github.com/openwch/ch32v307
-- Giao thức CH9329F V1.3 (bản dịch): https://github.com/Socolin/KVM-Switch (`src/legacy/ch9329.md`)
+- CH9329F protocol V1.3 (translation): https://github.com/Socolin/KVM-Switch (`src/legacy/ch9329.md`)
 
-**Đường hình và PD**
-- Apple, hình qua USB-C: https://support.apple.com/en-us/105099
-- Apple, iPhone không có DP (16e, 17e, Air): https://support.apple.com/en-us/122208
+**Video path and PD**
+- Apple, video over USB-C: https://support.apple.com/en-us/105099
+- Apple, iPhones without DP (16e, 17e, Air): https://support.apple.com/en-us/122208
 - Apple, HDCP: https://support.apple.com/en-us/108399
 - Apple USB-C Digital AV Multiport Adapter: https://www.apple.com/shop/product/mw5m3am/a/usb-c-digital-av-multiport-adapter
-- Tốc độ USB trên iPhone 15: https://appleinsider.com/articles/23/09/21/usb-c-on-iphone-15-everything-you-need-to-know
+- USB speeds on the iPhone 15: https://appleinsider.com/articles/23/09/21/usb-c-on-iphone-15-everything-you-need-to-know
 - Lontium LT7911D: https://www.lontiumsemi.com/UploadFiles/2022-10/LT7911D_Brief_R1.3.pdf
 - Lontium LT8711HE: https://www.lontiumsemi.com/UploadFiles/pdf/LT8711HE_Product_Brief.pdf
 - Lontium LT8711UXD: https://www.lontiumsemi.com/UploadFiles/2021-07/LT8711UXD_U1_Brief_Draft1.pdf
-- Driver cầu nối trong Rockchip BSP: https://github.com/rockchip-linux/kernel/tree/develop-5.10/drivers/media/i2c
-- Driver LT6911UXC của InES: https://github.com/InES-HPMM/Lontium_lt6911uxc
-- Công cụ cho MS2130/MS2131: https://github.com/BertoldVdb/ms-tools
-- Độ trễ MS2130: https://github.com/awawa-dev/HyperHDR/discussions/499
+- Bridge chip drivers in the Rockchip BSP: https://github.com/rockchip-linux/kernel/tree/develop-5.10/drivers/media/i2c
+- InES LT6911UXC driver: https://github.com/InES-HPMM/Lontium_lt6911uxc
+- Tools for the MS2130/MS2131: https://github.com/BertoldVdb/ms-tools
+- MS2130 latency: https://github.com/awawa-dev/HyperHDR/discussions/499
 - Infineon pdaltmode: https://github.com/Infineon/pdaltmode
 - Chromium EC servo_v4: https://github.com/coreboot/chrome-ec/blob/master/board/servo_v4/usb_pd_policy.c
 
-**SoC và sản phẩm tham khảo**
+**SoCs and reference products**
 - JetKVM: https://github.com/jetkvm/kvm
 - NanoKVM: https://github.com/sipeed/NanoKVM
 - NanoKVM-Pro: https://github.com/sipeed/NanoKVM-Pro
 - GL.iNet Comet: https://github.com/gl-inet/glkvm
 - Luckfox PicoKVM: https://github.com/luckfox-eng29/kvm
-- Aiden (chỉ đọc để tham khảo): https://github.com/AidenAI-IO/aiden-firmware
-- Độ trễ PiKVM: https://github.com/pikvm/pikvm/blob/master/docs/latency.md
-- Tài liệu Rockchip: https://github.com/DeciHD/rockchip_docs
-- Phần cứng Sophgo SG200X: https://github.com/sophgo/sophgo-hardware/tree/master/SG200X
+- Aiden (read for reference only): https://github.com/AidenAI-IO/aiden-firmware
+- PiKVM latency: https://github.com/pikvm/pikvm/blob/master/docs/latency.md
+- Rockchip documents: https://github.com/DeciHD/rockchip_docs
+- Sophgo SG200X hardware: https://github.com/sophgo/sophgo-hardware/tree/master/SG200X
 - Luckfox Core1106: https://www.waveshare.com/core1106.htm
 - Luckfox Pico Zero: https://www.waveshare.com/luckfox-pico-zero.htm
-- Bài thử các IP-KVM của Jeff Geerling: https://www.jeffgeerling.com/blog/2026/i-tested-every-ip-kvm/
+- Jeff Geerling's test of IP-KVMs: https://www.jeffgeerling.com/blog/2026/i-tested-every-ip-kvm/
 
-**Danh sách mua**
-- CH32V307V-EVT-R1 trên LCSC: https://www.lcsc.com/product-detail/C2943980.html
-- CH32V307V-EVT-R1 (tài liệu Zephyr, cổng USB và WCH-LinkE): https://docs.zephyrproject.org/latest/boards/wch/ch32v307v_evt_r1/doc/index.html
+**Shopping list**
+- CH32V307V-EVT-R1 on LCSC: https://www.lcsc.com/product-detail/C2943980.html
+- CH32V307V-EVT-R1 (Zephyr docs, USB ports and WCH-LinkE): https://docs.zephyrproject.org/latest/boards/wch/ch32v307v_evt_r1/doc/index.html
 - Cynthion: https://greatscottgadgets.com/cynthion/
-- JetKVM, chế độ developer: https://jetkvm.com/docs/advanced-usage/developing
-- JetKVM, phần cứng và giá 2026: https://jetkvm.com/blog/new-internals-new-ports-price-update
+- JetKVM, developer mode: https://jetkvm.com/docs/advanced-usage/developing
+- JetKVM, 2026 hardware and prices: https://jetkvm.com/blog/new-internals-new-ports-price-update
 - POWER-Z KM003C: https://www.power-z.com/products/chargerlab-power-z-km003c
 - DSLogic Plus: https://www.dreamsourcelab.com/shop/logic-analyzer/dslogic-plus/
-- Driver `lt7911d` trong Rockchip BSP: https://github.com/rockchip-linux/kernel/tree/develop-5.10/drivers/media/i2c
+- `lt7911d` driver in the Rockchip BSP: https://github.com/rockchip-linux/kernel/tree/develop-5.10/drivers/media/i2c

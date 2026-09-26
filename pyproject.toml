@@ -9,6 +9,7 @@ dependencies = ["httpx"]
 [project.optional-dependencies]
 discovery = ["zeroconf"]  # Farm.discover(): find boxes on the local network
 dev = ["iphone-hid[discovery]", "pytest", "pytest-timeout", "ruff"]
+demo = ["playwright", "websockets", "imageio-ffmpeg"]  # scripts/record_demo.py: the demo videos
 
 [project.scripts]
 ihc = "ihc.cli:main"

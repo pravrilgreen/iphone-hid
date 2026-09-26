@@ -33,8 +33,9 @@ Use the board's Ubuntu or Debian image. The Orange Pi image turns the HDMI input
 kernel 6.1) has the driver built in but leaves the HDMI input off in the device tree, and ships the
 `rk3588-hdmirx` overlay that turns it on.
 
-`ihcd check` (after installing) reads the device tree, the kernel and the boot scripts and says what
-this board needs. The two usual cases on Armbian:
+`ihcd doctor` (after installing) reads the device tree, the kernel and the boot scripts and says what
+this board needs; `sudo ihcd doctor --fix-boot` makes the change itself, keeping a copy of the file it
+edits. The two usual cases on Armbian:
 
 - **Armbian 24.11 or later:** add `rk3588-hdmirx` to the `overlays=` line of `/boot/armbianEnv.txt`
   (one line, names separated by spaces), then reboot.
@@ -84,8 +85,34 @@ IHCD_ARGS="--settle 120ms"              # wait longer before a press that follow
 ## Check it
 
 ```sh
-ihcd check                 # USB device controller, gadget, HDMI input and its signal
-ihcd gadget status         # "state": "configured" once the iPhone has taken the gadget
+ihcd doctor                # every part: gadget support, USB device port, gadget, iPhone, HDMI input,
+                           # picture, services, API, token; each problem with its fix
+sudo ihcd doctor --fix     # fix what can be fixed now: modules, USB role, other gadgets, the gadget,
+                           # node permissions, the services
+sudo ihcd doctor --fix-boot  # also turn the HDMI input on in the boot configuration (keeps a backup;
+                             # reboot after)
+```
+
+The installer runs `ihcd doctor --fix` at the end. `ihcd doctor --json` gives the same results for
+scripts. It exits with status 1 while a problem remains.
+
+A healthy box looks like this (addresses and versions differ):
+
+```
+  ok    Board             Orange Pi 5 Plus (arm64, kernel 6.1.115-vendor-rk35xx)
+  ok    Gadget support    USB gadget framework loaded, HID function available
+  ok    USB device port   device controller fc000000.usb
+  ok    Other gadgets     none
+  ok    Gadget            profile RA on fc000000.usb: keyboard, consumer, mouse, absolute
+  ok    HID nodes         4 nodes, readable and writable by the service
+  ok    iPhone            connected: the iPhone has taken the touch pointer and keyboard
+  ok    HDMI input        /dev/video0
+  ok    Picture           receiving 1920x1080p60
+  ok    Service           ihcd and ihcd-gadget enabled and running
+  ok    Console and API   answers on port 8000: http://192.168.1.20:8000
+  ok    API token         readable by the service only (sudo cat /var/lib/ihc/token)
+
+All good: the box is ready.
 ```
 
 Then run the [hardware check](hardware-check.md) on the iPhone: the pointer, the buttons, the
@@ -96,11 +123,11 @@ programs do not drive it at once.
 
 | Symptom | Cause and fix |
 |---|---|
-| `ihcd check` finds no USB device controller | The image's device tree keeps the USB-C port in host mode. The Orange Pi image and Armbian's vendor image allow device mode on the Type-C port next to the USB 3 ports |
-| `ihcd gadget up` says the controller is used by another gadget | The image runs its own gadget, usually ADB. `ihcd gadget status` names it: unbind it, then `sudo systemctl restart ihcd-gadget` |
+| `ihcd doctor`: no USB device controller | The port is in host mode. `--fix` switches a USB role switch to device mode; a device tree that fixes the port in host mode needs the Orange Pi image or Armbian's vendor image, which allow device mode on the Type-C port next to the USB 3 ports |
+| `ihcd doctor`: the controller is used by another gadget | The image runs its own gadget, usually ADB. `--fix` unbinds it and sets the box's gadget up; doctor names the service that makes it at boot, to disable |
 | The gadget stays at `not attached` | Wrong cable or port: USB-A to USB-C, into the Type-C port next to the USB 3 ports |
 | The console says **Not connected** | The iPhone is locked or waits for **Allow** for the accessory. Unlock it and allow it |
 | The console says **Asleep** | Auto-Lock put the phone to sleep. Press **Wake** (or the side button of the drawn phone), and set Auto-Lock to Never ([iPhone setup](iphone-setup.md)) |
-| No HDMI input in `ihcd check` | The HDMI input is off in the device tree: `ihcd check` says which overlay step this board needs |
+| `ihcd doctor`: no HDMI input | The HDMI input is off in the device tree: doctor says which overlay step this board needs, and `--fix-boot` makes it |
 | **No picture** while the HDMI input exists | The phone is locked, or the hub gets no picture from it: unlock it, replug the hub |
 | The pointer does not move | AssistiveTouch is off, or the phone kept an older descriptor: `sudo ihcd gadget up --replace --profile A`, then `--profile RA` again |
