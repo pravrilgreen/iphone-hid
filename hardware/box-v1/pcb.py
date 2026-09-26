@@ -743,8 +743,13 @@ def stitch_gnd(board, step=3.0):
 
 
 def plane(board):
-    """L2: the solid GND reference plane (the only copper zone during routing)."""
-    _zone(board, pcbnew.In1_Cu, _nets(board)["GND"], FULL, 0, "GND reference plane")
+    """Zones present during routing (the router sees them as planes of their net): L2, the solid GND
+    reference plane; on L3, the 5V_SYS pour from the U103 output side, under the module's bottom
+    edge and up the corridor between the module and the RJ45 to the module's supply pads."""
+    nets = _nets(board)
+    _zone(board, pcbnew.In1_Cu, nets["GND"], FULL, 0, "GND reference plane")
+    _zone(board, pcbnew.In2_Cu, nets["5V_SYS"], [(57.0, 40.4), (73.4, 40.4), (73.4, 9.0), (70.4, 9.0),
+                                                 (70.4, 38.0), (57.0, 38.0)], 1, "5V_SYS")
 
 
 FULL = [(0.3, 0.3), (W - 0.3, 0.3), (W - 0.3, H - 0.3), (0.3, H - 0.3)]
@@ -772,8 +777,8 @@ def _zone(board, layer, net, pts, prio=0, name=""):
 
 
 def zones(board):
-    """After routing: GND pours on L1, L3 and L4; 5V_SYS pour on L3 up the module's right side;
-    VBUS_IN pour on L1 from the power receptacle to the fuse (its tracks leave the pads at 0.3 mm)."""
+    """After routing: GND pours on L1, L3 (around the 5V_SYS pour) and L4; VBUS_IN pour on L1 from
+    the power receptacle to the fuse (its tracks leave the pads at 0.3 mm)."""
     nets = _nets(board)
     fp = {f.GetReference(): f for f in board.GetFootprints()}
     vb = [board_xy(p.GetPosition()) for p in fp["J101"].Pads() if p.GetNetname() == "VBUS_IN"]
@@ -784,9 +789,6 @@ def zones(board):
     _zone(board, pcbnew.F_Cu, nets["GND"], FULL, 0, "GND top")
     _zone(board, pcbnew.B_Cu, nets["GND"], FULL, 0, "GND bottom")
     _zone(board, pcbnew.In2_Cu, nets["GND"], FULL, 0, "GND inner")
-    # 5V_SYS: from the U103 inductor up the corridor between the module and the RJ45 to its supply pads
-    _zone(board, pcbnew.In2_Cu, nets["5V_SYS"], [(58.0, 38.2), (73.4, 38.2), (73.4, 9.0), (70.4, 9.0), (70.4, 37.9),
-                                   (70.3, 38.0), (58.0, 38.0)], 1, "5V_SYS")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -939,7 +941,7 @@ def fanout_gnd(board):
                 dirs = [(ux, uy), (1, 0), (-1, 0), (0, 1), (0, -1), (0.707, 0.707), (-0.707, 0.707),
                         (0.707, -0.707), (-0.707, -0.707)]
                 cands = []
-                for step in (0.0, 0.3, 0.6, 1.0, 1.5):
+                for step in (0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0):
                     for dx, dy in dirs:
                         cands.append((px + dx * (hw + via_d / 2 + gap + step) if dx else px,
                                       py + dy * (hh + via_d / 2 + gap + step) if dy else py))
@@ -1303,6 +1305,8 @@ def main():
     if args.route:
         autoroute(board, fps, args.passes)
     elif args.ses:
+        # the fan-out is fixed in the DSN, so the session does not carry it: make it again (same result)
+        print("GND fan-out vias:", fanout_gnd(board), flush=True)
         import_ses(board, args.ses)
     if args.route or args.ses:
         moved, stuck = fix_hole_spacing(board)

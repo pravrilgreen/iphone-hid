@@ -522,7 +522,8 @@ NETCLASS_PATTERNS = (
     [("DIFF_100R", p) for p in ("SS_*", "CSI_*", "LT_AUX_*", "PHONE_SBU*", "ETH_TX*", "ETH_RX*")] +
     [("USB_90R", p) for p in ("PHONE_USB_D*", "PC_USB_D*", "MCU_FS_D*")] +
     [("PWR_3A_FINE", p) for p in ("PHONE_VBUS", "VBUS_IN")] +
-    [("PWR_3A", p) for p in ("VIN", "5V2_PHONE", "PSW_*", "5V_SYS", "U102_SW", "U103_SW", "PCPWR_A")] +
+    [("PWR_3A", p) for p in ("VIN", "5V2_PHONE", "PSW_IN", "PSW_S", "PSW_OUT", "5V_SYS", "U102_SW", "U103_SW",
+                             "PCPWR_A")] +
     [("PWR_FINE", p) for p in ("3V3", "1V2", "3V3_LT", "1V2_LT_A", "VDDA_MCU", "VCC_3V3_MOD", "GND",
                                "PC_VBUS")] +
     [("PWR_1A", p) for p in ("U104_SW", "U105_SW")]

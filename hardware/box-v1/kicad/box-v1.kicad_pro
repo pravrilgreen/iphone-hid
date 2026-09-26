@@ -188,7 +188,15 @@
       },
       {
         "netclass": "PWR_3A",
-        "pattern": "PSW_*"
+        "pattern": "PSW_IN"
+      },
+      {
+        "netclass": "PWR_3A",
+        "pattern": "PSW_S"
+      },
+      {
+        "netclass": "PWR_3A",
+        "pattern": "PSW_OUT"
       },
       {
         "netclass": "PWR_3A",

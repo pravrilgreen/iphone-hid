@@ -1546,8 +1546,9 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
 6. **GND and pours:** L2 is a solid GND plane. Before routing, every GND pad on L1 gets a via to the plane beside
    it, or a short track to a through-hole GND pad of the same part; these are fixed, so the router cannot remove
    them. After routing, GND stitching vias fill a 3 mm grid wherever they clear other copper, and GND pours cover
-   L1, L3 and L4. L3 also carries a 5V_SYS pour up the corridor between the module and the RJ45 (§11), and L1 a
-   VBUS_IN pour from the power receptacle J101 to the fuse F101.
+   L1, L3 and L4. L3 also carries a 5V_SYS pour, present during routing so that the router uses it: from the
+   U103 side along the module's bottom edge and up the corridor between the module and the RJ45 to the module's
+   supply pads (§11). L1 has a VBUS_IN pour from the power receptacle J101 to the fuse F101.
 7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself). The
    LT7911D's pads and its nets (the DP lanes `SS_*`, AUX, SBU and the CSI lanes) are left out: they wait for the
    pin table (H1). The DP and CSI lanes must be routed by hand anyway (§5: length and skew limits, no vias on DP).
