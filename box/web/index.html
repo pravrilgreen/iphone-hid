@@ -8,43 +8,70 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- The console's icons: 24 x 24, drawn with a 1.8 stroke in the current colour. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5v9a1 1 0 0 0 1 1h3.5v-5.5h3v5.5H17a1 1 0 0 0 1-1v-9"/></symbol>
+  <symbol id="i-switcher" viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="10" height="13" rx="2"/><path d="M16.5 6.5h.5a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1-2.5 2.5h-.5"/><path d="M6.5 3.5h4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></symbol>
+  <symbol id="i-vol-down" viewBox="0 0 24 24"><path d="M3.5 9.5h3.5L11 6v12l-4-3.5H3.5z"/><path d="M15 12h5.5"/></symbol>
+  <symbol id="i-vol-up" viewBox="0 0 24 24"><path d="M3.5 9.5h3.5L11 6v12l-4-3.5H3.5z"/><path d="M15 12h5.5M17.75 9.25v5.5"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M3.5 9.5h3.5L11 6v12l-4-3.5H3.5z"/><path d="m15.5 9.5 5 5M20.5 9.5l-5 5"/></symbol>
+  <symbol id="i-play-pause" viewBox="0 0 24 24"><path d="M4 6.5v11l7.5-5.5z"/><path d="M15.5 6.5v11M20 6.5v11"/></symbol>
+  <symbol id="i-esc" viewBox="0 0 24 24"><path d="M11 4.6a7.5 7.5 0 1 1-6.4 6.4"/><path d="M12 12 4.5 4.5M4.5 9V4.5H9"/></symbol>
+  <symbol id="i-tab" viewBox="0 0 24 24"><path d="M3.5 12h13M12.5 7.5l4.5 4.5-4.5 4.5M20.5 6v12"/></symbol>
+  <symbol id="i-backspace" viewBox="0 0 24 24"><path d="M9 5.5h10a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H9L3 12z"/><path d="m11.5 9.5 5 5M16.5 9.5l-5 5"/></symbol>
+  <symbol id="i-return" viewBox="0 0 24 24"><path d="M19.5 5v6.5a2.5 2.5 0 0 1-2.5 2.5H5"/><path d="M9 10l-4 4 4 4"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M19.5 12h-15M10 6.5 4.5 12l5.5 5.5"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19.5v-15M6.5 10 12 4.5l5.5 5.5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4.5v15M6.5 14l5.5 5.5 5.5-5.5"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M4.5 12h15M14 6.5l5.5 5.5-5.5 5.5"/></symbol>
+  <symbol id="i-command" viewBox="0 0 24 24"><path d="M9 9V7a2.5 2.5 0 1 0-2.5 2.5H9zm0 0h6m-6 0v6m6-6V7a2.5 2.5 0 1 1 2.5 2.5H15zm0 0v6m0 0H9m6 0v2a2.5 2.5 0 1 0 2.5-2.5H15zm-6 0H6.5A2.5 2.5 0 1 0 9 17z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 11.5 20 4l-5 16-3.5-6.5z"/><path d="M11.5 13.5 20 4"/></symbol>
+  <symbol id="i-portrait" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M10.5 5.5h3"/></symbol>
+  <symbol id="i-landscape" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M5.5 10.5v3"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2.5L9 5h6l1.5 2H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="12.8" r="3.3"/></symbol>
+  <symbol id="i-login" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M9.5 7.5 14 12l-4.5 4.5M14 12H3.5"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8.5 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M11.5 10V8.5a1.5 1.5 0 0 1 3 0V11"/><path d="M14.5 10.5a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-.8a6 6 0 0 1-4.9-2.5L3.6 15a1.5 1.5 0 0 1 2.3-1.9L8.5 15"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></symbol>
+  <symbol id="i-guide" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.6 2.3c-.7.3-1.2.9-1.2 1.7v.4"/><path d="M12 17.2v.1"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12.5h4l2.5-6 5 11 2.5-5h4"/></symbol>
+  <symbol id="i-hub" viewBox="0 0 24 24"><rect x="5" y="8" width="16" height="8" rx="2.5"/><path d="M5 12H2.5"/><path d="M9 12h1.5M13 12h1.5M17 12h.5"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3.5 20 8v8l-8 4.5L4 16V8z"/><path d="M4 8l8 4.5L20 8M12 12.5v8"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M5 3.5 18.5 10l-6 1.8-2.6 6z"/><path d="m13 12.5 5 5"/></symbol>
+</svg>
+
 <header class="bar">
   <div class="ident">
     <h1 id="device-name">iPhone</h1>
     <span class="state" id="state" data-state="connecting">Connecting</span>
     <p class="state-msg" id="state-msg"></p>
   </div>
-  <dl class="meters" aria-label="Performance">
-    <div><dt>Touch</dt><dd id="m-touch">–</dd></div>
-    <div><dt>Picture</dt><dd id="m-video">–</dd></div>
-    <div><dt>Round trip</dt><dd id="m-rtt">–</dd></div>
-  </dl>
+  <div class="bar-end">
+    <dl class="meters" aria-label="Performance">
+      <div><dt>Touch</dt><dd id="m-touch">–</dd></div>
+      <div><dt>Picture</dt><dd id="m-video">–</dd></div>
+      <div><dt>Round trip</dt><dd id="m-rtt">–</dd></div>
+    </dl>
+    <button class="icon" id="guide-open" aria-label="Set-up and use" data-tip="Set-up and use"><svg class="i"><use href="#i-guide"/></svg></button>
+  </div>
 </header>
 
 <main class="bench">
   <section class="stage" id="stage" aria-label="Phone">
     <div class="device" id="device">
-      <button class="hw hw-vol-up" data-button="volume_up" title="Volume up" aria-label="Volume up"></button>
-      <button class="hw hw-vol-down" data-button="volume_down" title="Volume down" aria-label="Volume down"></button>
-      <button class="hw hw-side" data-act="wake" title="Wake the phone" aria-label="Wake the phone"></button>
+      <button class="hw hw-vol-up" data-button="volume_up" data-tip="Volume up" aria-label="Volume up"></button>
+      <button class="hw hw-vol-down" data-button="volume_down" data-tip="Volume down" aria-label="Volume down"></button>
+      <button class="hw hw-side" data-act="wake" data-tip="Wake" aria-label="Wake the phone"></button>
       <div class="bezel" id="bezel">
         <canvas id="screen" tabindex="0" aria-label="Phone screen. Click or drag to touch, scroll to scroll, type while it is focused."></canvas>
         <p class="screen-note" id="screen-note">Waiting for the picture</p>
       </div>
     </div>
     <div class="nav-keys" role="group" aria-label="Phone buttons">
-      <button data-button="home">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="4" width="10" height="16" rx="3"/><path d="M10.5 17h3"/></svg>
-        Home
-      </button>
-      <button data-button="app_switcher">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="9" height="13" rx="2"/><path d="M16 6.5h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1"/></svg>
-        App Switcher
-      </button>
-      <button data-button="spotlight">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="M15 15l4.5 4.5"/></svg>
-        Search
-      </button>
+      <button class="icon big" data-button="home" aria-label="Home" data-tip="Home"><svg class="i"><use href="#i-home"/></svg></button>
+      <button class="icon big" data-button="app_switcher" aria-label="App Switcher" data-tip="App Switcher"><svg class="i"><use href="#i-switcher"/></svg></button>
+      <button class="icon big" data-button="spotlight" aria-label="Search" data-tip="Search"><svg class="i"><use href="#i-search"/></svg></button>
     </div>
     <p class="hint" id="hint">Click to tap, drag to swipe, scroll to scroll. Click the screen, then type.</p>
   </section>
@@ -52,9 +79,9 @@
   <aside class="panel">
     <section>
       <h2>Type</h2>
-      <form id="type-form" autocomplete="off">
-        <textarea id="type-text" rows="2" spellcheck="false" placeholder="Text for the phone"></textarea>
-        <button type="submit" class="primary">Type on phone</button>
+      <form id="type-form" class="compose" autocomplete="off">
+        <textarea id="type-text" rows="2" spellcheck="false" placeholder="Text for the phone" aria-label="Text for the phone"></textarea>
+        <button type="submit" class="icon primary" aria-label="Type on the phone" data-tip="Type on the phone"><svg class="i"><use href="#i-send"/></svg></button>
       </form>
       <p class="note">Plain ASCII. The phone needs the U.S. hardware keyboard layout.</p>
     </section>
@@ -62,18 +89,18 @@
     <section>
       <h2>Keys</h2>
       <div class="keys">
-        <button data-combo="esc">Esc</button>
-        <button data-combo="tab">Tab</button>
-        <button data-combo="backspace" aria-label="Delete">Delete</button>
-        <button data-combo="enter">Return</button>
-        <button data-combo="left" aria-label="Left arrow">←</button>
-        <button data-combo="up" aria-label="Up arrow">↑</button>
-        <button data-combo="down" aria-label="Down arrow">↓</button>
-        <button data-combo="right" aria-label="Right arrow">→</button>
+        <button class="icon" data-combo="esc" aria-label="Escape" data-tip="Escape"><svg class="i"><use href="#i-esc"/></svg></button>
+        <button class="icon" data-combo="tab" aria-label="Tab" data-tip="Tab"><svg class="i"><use href="#i-tab"/></svg></button>
+        <button class="icon" data-combo="backspace" aria-label="Delete" data-tip="Delete"><svg class="i"><use href="#i-backspace"/></svg></button>
+        <button class="icon" data-combo="enter" aria-label="Return" data-tip="Return"><svg class="i"><use href="#i-return"/></svg></button>
+        <button class="icon" data-combo="left" aria-label="Left arrow" data-tip="Left"><svg class="i"><use href="#i-left"/></svg></button>
+        <button class="icon" data-combo="up" aria-label="Up arrow" data-tip="Up"><svg class="i"><use href="#i-up"/></svg></button>
+        <button class="icon" data-combo="down" aria-label="Down arrow" data-tip="Down"><svg class="i"><use href="#i-down"/></svg></button>
+        <button class="icon" data-combo="right" aria-label="Right arrow" data-tip="Right"><svg class="i"><use href="#i-right"/></svg></button>
       </div>
       <form id="combo-form" class="inline" autocomplete="off">
         <input id="combo" spellcheck="false" placeholder="Shortcut, e.g. cmd+space" aria-label="Keyboard shortcut">
-        <button type="submit">Press</button>
+        <button type="submit" class="icon" aria-label="Press the shortcut" data-tip="Press the shortcut"><svg class="i"><use href="#i-command"/></svg></button>
       </form>
       <details class="note">
         <summary>Key names</summary>
@@ -88,23 +115,23 @@
 
     <section>
       <h2>Media</h2>
-      <div class="keys keys-3">
-        <button data-button="volume_down">Volume −</button>
-        <button data-button="volume_up">Volume +</button>
-        <button data-button="mute">Mute</button>
-        <button data-button="play_pause">Play/Pause</button>
+      <div class="keys">
+        <button class="icon" data-button="volume_down" aria-label="Volume down" data-tip="Volume down"><svg class="i"><use href="#i-vol-down"/></svg></button>
+        <button class="icon" data-button="volume_up" aria-label="Volume up" data-tip="Volume up"><svg class="i"><use href="#i-vol-up"/></svg></button>
+        <button class="icon" data-button="mute" aria-label="Mute" data-tip="Mute"><svg class="i"><use href="#i-mute"/></svg></button>
+        <button class="icon" data-button="play_pause" aria-label="Play or pause" data-tip="Play / pause"><svg class="i"><use href="#i-play-pause"/></svg></button>
       </div>
     </section>
 
     <section>
       <h2>Screen</h2>
-      <p class="note">The phone mirrors in:</p>
-      <div class="seg" role="radiogroup" aria-label="The phone mirrors in">
-        <button role="radio" data-landscape="false" aria-checked="true">Portrait</button>
-        <button role="radio" data-landscape="true" aria-checked="false">Landscape</button>
+      <div class="screen-row">
+        <div class="seg" role="radiogroup" aria-label="The phone mirrors in">
+          <button class="icon" role="radio" data-landscape="false" aria-checked="true" aria-label="The phone mirrors in portrait" data-tip="Mirrors in portrait"><svg class="i"><use href="#i-portrait"/></svg></button>
+          <button class="icon" role="radio" data-landscape="true" aria-checked="false" aria-label="The phone mirrors in landscape" data-tip="Mirrors in landscape: when an app turns the picture sideways"><svg class="i"><use href="#i-landscape"/></svg></button>
+        </div>
+        <button class="icon" id="shot" aria-label="Save a screenshot" data-tip="Save a screenshot"><svg class="i"><use href="#i-camera"/></svg></button>
       </div>
-      <p class="note">Switch to Landscape when an app turns the phone's picture sideways.</p>
-      <button id="shot" class="wide">Save screenshot</button>
     </section>
 
     <section>
@@ -122,18 +149,36 @@
 
 <div class="banner" id="banner" role="alert" hidden>
   <span id="banner-text"></span>
-  <button id="banner-action"></button>
+  <button class="icon" id="banner-action" aria-label="Take over" data-tip="Take over"><svg class="i"><use href="#i-hand"/></svg></button>
 </div>
 <p class="toast" id="toast" role="status" hidden></p>
+<div class="tip" id="tip" role="tooltip" hidden></div>
 
 <dialog id="token-dialog">
   <form id="token-form" method="dialog" autocomplete="off">
     <h2>Box token</h2>
     <p>This box needs its API token. On the box: <code>sudo cat /var/lib/ihc/token</code>. This browser keeps it.</p>
     <p class="error" id="token-error"></p>
-    <input id="token-input" type="password" spellcheck="false" aria-label="Token">
-    <button type="submit" class="primary">Connect</button>
+    <div class="inline">
+      <input id="token-input" type="password" spellcheck="false" aria-label="Token">
+      <button type="submit" class="icon primary" aria-label="Connect" data-tip="Connect"><svg class="i"><use href="#i-login"/></svg></button>
+    </div>
   </form>
+</dialog>
+
+<dialog id="guide" class="guide" aria-labelledby="guide-title">
+  <header class="guide-head">
+    <h2 id="guide-title">This box now</h2>
+    <div class="seg tabs" role="tablist" aria-label="Guide">
+      <button class="icon" role="tab" data-tab="now" aria-label="This box now" data-tip="This box now"><svg class="i"><use href="#i-pulse"/></svg></button>
+      <button class="icon" role="tab" data-tab="hub" aria-label="Wiring with a USB-C hub" data-tip="Wiring with a USB-C hub"><svg class="i"><use href="#i-hub"/></svg></button>
+      <button class="icon" role="tab" data-tab="box" aria-label="Wiring the purpose-built box" data-tip="The purpose-built box"><svg class="i"><use href="#i-box"/></svg></button>
+      <button class="icon" role="tab" data-tab="use" aria-label="Using the console" data-tip="Using the console"><svg class="i"><use href="#i-pointer"/></svg></button>
+    </div>
+    <button class="icon" id="guide-close" aria-label="Close" data-tip="Close"><svg class="i"><use href="#i-close"/></svg></button>
+  </header>
+  <div class="guide-art" id="guide-art" role="tabpanel"></div>
+  <ul class="checks" id="guide-checks"></ul>
 </dialog>
 <script src="app.js"></script>
 </body>

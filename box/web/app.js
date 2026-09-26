@@ -75,10 +75,51 @@ function banner(text, actionLabel, action) {
   if (!text) { b.hidden = true; return; }
   $("banner-text").textContent = text;
   const btn = $("banner-action");
-  btn.textContent = actionLabel;
-  btn.onclick = () => { b.hidden = true; action(); };
+  btn.setAttribute("aria-label", actionLabel);
+  btn.dataset.tip = actionLabel;
+  btn.onclick = () => { b.hidden = true; tip.hide(); action(); };
   b.hidden = false;
 }
+
+// icon returns a button with one of the console's icons; its label is its tooltip.
+function iconButton(icon, label, onclick) {
+  const b = document.createElement("button");
+  b.className = "icon small";
+  b.setAttribute("aria-label", label);
+  b.dataset.tip = label;
+  b.innerHTML = `<svg class="i"><use href="#i-${icon}"/></svg>`;
+  b.onclick = onclick;
+  return b;
+}
+
+/* ---------------------------------------------------------------- tooltips --------------------------- */
+
+// One tooltip for every [data-tip] control, placed in the page so a scrolling panel cannot clip it.
+const tip = {
+  el: null, target: null,
+  wire() {
+    this.el = $("tip");
+    const show = (ev) => {
+      const t = ev.target.closest && ev.target.closest("[data-tip]");
+      if (t && t !== this.target) this.show(t);
+    };
+    document.addEventListener("pointerover", (ev) => { if (ev.pointerType === "mouse") show(ev); });
+    document.addEventListener("focusin", (ev) => { if (ev.target.matches(":focus-visible")) show(ev); });
+    document.addEventListener("pointerout", (ev) => { if (this.target && !this.target.contains(ev.relatedTarget)) this.hide(); });
+    document.addEventListener("focusout", () => this.hide());
+    document.addEventListener("pointerdown", () => this.hide(), true);
+  },
+  show(t) {
+    this.target = t;
+    this.el.textContent = t.dataset.tip;
+    this.el.hidden = false;
+    const r = t.getBoundingClientRect(), w = this.el.offsetWidth, h = this.el.offsetHeight;
+    const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    const y = r.top - h - 8 >= 8 ? r.top - h - 8 : r.bottom + 8;
+    this.el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  },
+  hide() { this.target = null; if (this.el) this.el.hidden = true; },
+};
 
 const COARSE = matchMedia("(pointer: coarse)").matches;
 const HINT = COARSE ? "Touch to tap, drag to swipe. Use Type for text."
@@ -131,12 +172,9 @@ const phone = {
     el.textContent = STATES[state] || state;
     const msg = $("state-msg");
     msg.textContent = message || "";
-    if (state === "asleep") {
-      const b = document.createElement("button");
-      b.textContent = "Wake";
-      b.onclick = () => actions.run("wake");
-      msg.appendChild(b);
-    }
+    if (state === "asleep") msg.appendChild(iconButton("sun", "Wake the phone", () => actions.run("wake", {}, "Woke the phone").catch(() => {})));
+    if (["no_usb", "asleep", "no_video", "offline"].includes(state)) msg.appendChild(iconButton("guide", "Show what to check", () => guide.open("now")));
+    guide.update();
   },
 
   onStatus(st) {
@@ -187,6 +225,83 @@ function fmtUptime(s) {
   if (s < 86400) return `${(s / 3600).toFixed(1)} h`;
   return `${Math.round(s / 86400)} days`;
 }
+
+/* ---------------------------------------------------------------- guide --------------------------------- */
+
+// The set-up and use guide: animated drawings (guide/*.svg, also used by the documentation) and, on
+// the "now" tab, the hub drawing coloured by this box's state with what to check.
+const guide = {
+  tab: "now", art: {},
+  titles: { now: "This box now", hub: "Wiring with a USB-C hub", box: "The purpose-built box", use: "Using the console" },
+  files: { now: "hub", hub: "hub", box: "box", use: "use" },
+
+  wire() {
+    $("guide-open").addEventListener("click", () => this.open(this.tab));
+    $("guide-close").addEventListener("click", () => $("guide").close());
+    $("guide").addEventListener("click", (e) => { if (e.target === $("guide")) $("guide").close(); });
+    for (const b of document.querySelectorAll("[data-tab]")) b.addEventListener("click", () => this.show(b.dataset.tab));
+  },
+
+  open(tab) {
+    tip.hide();
+    if (!$("guide").open) $("guide").showModal();
+    this.show(tab);
+  },
+
+  async show(tab) {
+    this.tab = tab;
+    $("guide-title").textContent = this.titles[tab];
+    for (const b of document.querySelectorAll("[data-tab]")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
+    const file = this.files[tab];
+    if (!this.art[file]) {
+      try {
+        const r = await fetch(`guide/${file}.svg`);
+        this.art[file] = await r.text();
+      } catch (e) { this.art[file] = ""; }
+    }
+    if (this.tab !== tab) return;
+    $("guide-art").innerHTML = this.art[file]; // drawn anew: the wiring animation plays again
+    this.update();
+  },
+
+  // update colours the "now" drawing by the box's state and lists what to check
+  update() {
+    if (!$("guide").open || this.tab !== "now") { $("guide-checks").hidden = true; return; }
+    const st = phone.status || {}, state = $("state").dataset.state;
+    const svg = $("guide-art").querySelector("svg");
+    const usb = state === "offline" ? "" : st.state === "asleep" ? "asleep" : st.usb && st.usb.connected ? "ok" : "none";
+    const video = state === "offline" ? "" : st.video && st.video.state === "ok" ? "ok" : "none";
+    if (svg) {
+      svg.setAttribute("data-usb", usb);
+      svg.setAttribute("data-video", video);
+      svg.setAttribute("data-net", state === "offline" ? "down" : "ok");
+    }
+    const checks = [];
+    if (state === "offline") {
+      checks.push(["bad", "The box does not answer", "Check its power and its Ethernet cable (6). The console reconnects by itself."]);
+    } else {
+      checks.push(["ok", "The box answers", `${st.version || ""}`]);
+      if (usb === "ok") checks.push(["ok", "The iPhone takes touch and keys", "USB connected"]);
+      else if (usb === "asleep") checks.push(["warn", "The iPhone is asleep", "Press Wake next to the state, and set Auto-Lock to Never on the iPhone."]);
+      else checks.push(["bad", "The iPhone does not take touch and keys",
+        "Check the hub's USB-A into the board's Type-C port (4) with a data cable, the iPhone in the hub (1). Unlock the iPhone and tap Allow for the accessory."]);
+      if (video === "ok") checks.push(["ok", "The picture comes in", `${st.video.width}×${st.video.height} at ${Math.round(st.video.fps)} fps`]);
+      else checks.push(["bad", "No picture", "Check the hub's HDMI into the board's HDMI IN (3) and the charger in the hub (2). Unlock the iPhone."]);
+      checks.push(control.locked ? ["warn", "Another operator controls the phone", "Take over from the banner to control it here."]
+        : ["ok", "You control the phone", ""]);
+    }
+    const ul = $("guide-checks");
+    ul.hidden = false;
+    ul.replaceChildren(...checks.map(([level, title, detail]) => {
+      const li = document.createElement("li");
+      li.dataset.level = level;
+      li.innerHTML = `<span class="dot"></span><strong></strong><span class="detail"></span>`;
+      li.querySelector("strong").textContent = title;
+      li.querySelector(".detail").textContent = detail;
+      return li;
+    }));
+  },
+};
 
 /* ---------------------------------------------------------------- layout -------------------------------- */
 
@@ -567,6 +682,8 @@ function wirePanel() {
 /* ---------------------------------------------------------------- start --------------------------------------- */
 
 $("hint").textContent = HINT;
+tip.wire();
+guide.wire();
 touch.wire();
 keyboard.wire();
 wirePanel();

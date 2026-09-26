@@ -97,7 +97,7 @@ live.
 Phones: iPhone 15 and later with USB-C, except iPhone 16e, iPhone 17e and iPhone Air, which have no
 video output. Each box drives one phone; a lab runs one box per phone.
 
-![Wiring: the iPhone connects to the hub with one cable; the hub's HDMI goes to the board's HDMI IN, its USB-A port to the board's Type-C USB 3 port](docs/images/diagram-wiring-box.png)
+![Wiring, step by step: 1 the iPhone into the hub, 2 a charger into the hub's power input, 3 the hub's HDMI into the board's HDMI IN, 4 the hub's USB-A into the board's Type-C port, 5 the board's power, 6 Ethernet. The picture flows from the iPhone to the network, touch and keys back, power from the charger.](box/web/guide/hub.svg)
 
 ## Install
 
@@ -123,7 +123,11 @@ Switcher. Step by step: [iPhone setup](docs/guide/iphone-setup.md). The
 **In the browser.** Hover moves the phone's pointer; click taps; drag swipes, scrolls lists or moves
 icons; the wheel scrolls. Click the screen, then type: the keyboard goes to the phone, and
 Cmd/Ctrl+V types the clipboard. The volume keys and the side button on the drawn phone press the
-real ones; Home, App Switcher and Search sit under it.
+real ones; Home, App Switcher and Search sit under it. The guide button (top right) shows these
+drawings in the console, and the box's own state on the wiring: a cable at fault blinks, with what
+to check.
+
+![Hover moves the pointer, a click taps, a drag swipes and lists keep their speed, the wheel scrolls, typing types on the phone](box/web/guide/use.svg)
 
 **From code.**
 
@@ -153,7 +157,7 @@ at `/api/openapi.json` on every box and in the [API reference](docs/dev/api.md).
 | Stage | Status |
 |---|---|
 | Orange Pi 5 Plus box: touch, keyboard, buttons, screen, API, console | Software done and tested against the simulated iPhone; the absolute pointer confirmed on an iPhone 15; the hardware check of `ihcd` pending |
-| Purpose-built box: the iPhone's USB-C straight into an LT7911D bridge, a CH32V305 USB controller, an RV1106 SoC running `ihcd` | Schematic designed to pin level: [hardware/box-v1](hardware/box-v1/README.md) (KiCad 8, sheets, BOM, checks); the LT7911D pinout awaits the vendor datasheet. Study: [custom box](docs/research/custom-box.md) |
+| Purpose-built box: the iPhone's USB-C straight into an LT7911D bridge, a CH32V305 USB controller, an RV1106 SoC running `ihcd` ([how it is wired](box/web/guide/box.svg)) | Schematic designed to pin level: [hardware/box-v1](hardware/box-v1/README.md) (KiCad 8, sheets, BOM, checks); the LT7911D pinout awaits the vendor datasheet. Study: [custom box](docs/research/custom-box.md) |
 
 ## Repository
 

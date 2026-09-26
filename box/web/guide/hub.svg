@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-labelledby="g-hub-title g-hub-desc" font-family="Barlow, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title id="g-hub-title">Wiring a box with a USB-C hub</title>
+<desc id="g-hub-desc">1: the iPhone into the hub. 2: a charger into the hub's power input. 3: the hub's HDMI into the board's HDMI IN. 4: the hub's USB-A into the board's Type-C port. 5: the board's power supply. 6: Ethernet to the network, where the browser or the test framework is. The picture flows from the iPhone to the board and the network; touch and keys flow back to the iPhone; the charger powers the hub and the iPhone.</desc>
+<style>
+  .g-cable { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .g-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: g-draw 0.9s ease-out forwards; }
+  .g-badge { opacity: 0; transform-box: fill-box; transform-origin: center; animation: g-pop 0.35s ease-out forwards; }
+  .g-s1 { animation-delay: 0.3s; } .g-s2 { animation-delay: 1.1s; } .g-s3 { animation-delay: 1.9s; }
+  .g-s4 { animation-delay: 2.7s; } .g-s5 { animation-delay: 3.5s; } .g-s6 { animation-delay: 4.3s; }
+  .g-flow { fill: none; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.001 9; opacity: 0;
+    animation: g-flow 1.4s linear 5.2s infinite, g-show 0.5s ease-out 5.2s forwards; }
+  .g-back { animation-direction: reverse, normal; }
+  .g-video { stroke: #7cc4f0; } .g-touch { stroke: #7ccf95; } .g-power { stroke: #e8c168; }
+  .g-label { font-size: 14px; fill: #f4f1ec; font-weight: 500; }
+  .g-sub { font-size: 12.5px; fill: #a7b4b8; }
+  .g-num { font-size: 13px; font-weight: 700; fill: #1d2a2f; }
+  .g-pointer { animation: g-wander 6s ease-in-out infinite; }
+  .g-alert { display: none; }
+  @keyframes g-draw { to { stroke-dashoffset: 0; } }
+  @keyframes g-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+  @keyframes g-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }
+  @keyframes g-show { to { opacity: 1; } }
+  @keyframes g-wander { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(34px, 52px); } 60% { transform: translate(-14px, 96px); } }
+  @keyframes g-blink { 50% { opacity: 0.25; } }
+  /* live state, set on the svg element by the console: data-usb, data-video, data-net */
+  svg[data-usb="none"] .g-link-usb, svg[data-video="none"] .g-link-video, svg[data-net="down"] .g-link-net {
+    stroke: #f08a7e; stroke-dasharray: 10 8; animation: g-blink 1s steps(2) infinite; }
+  svg[data-usb="asleep"] .g-link-usb { stroke: #e8c168; }
+  svg[data-usb="none"] .g-touch, svg[data-usb="asleep"] .g-touch, svg[data-video="none"] .g-video,
+  svg[data-net="down"] .g-flow { display: none; }
+  svg[data-usb="none"] .g-alert-usb, svg[data-usb="asleep"] .g-alert-sleep, svg[data-video="none"] .g-alert-video,
+  svg[data-net="down"] .g-alert-net { display: inline; animation: g-blink 1.2s ease-in-out infinite; }
+  svg[data-usb="asleep"] .g-screen { opacity: 0.18; }
+  svg[data-usb="asleep"] .g-zzz { display: inline; }
+  .g-zzz { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .g-draw { animation: none; stroke-dashoffset: 0; } .g-badge { animation: none; opacity: 1; }
+    .g-flow { animation: none; opacity: 1; } .g-pointer { animation: none; }
+  }
+</style>
+<defs>
+  <pattern id="g-hub-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+    <path d="M24 0H0V24" fill="none" stroke="#2f434a" stroke-width="1"/>
+  </pattern>
+  <linearGradient id="g-hub-ti" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d8d2c7"/><stop offset="0.5" stop-color="#b3ab9e"/><stop offset="1" stop-color="#8f887d"/>
+  </linearGradient>
+  <linearGradient id="g-hub-wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4c57d8"/><stop offset="0.6" stop-color="#7a4fc9"/><stop offset="1" stop-color="#b45aa0"/>
+  </linearGradient>
+  <linearGradient id="g-hub-alu" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#565d64"/><stop offset="1" stop-color="#34393e"/>
+  </linearGradient>
+  <linearGradient id="g-hub-pcb" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#1f4a3e"/><stop offset="1" stop-color="#173a31"/>
+  </linearGradient>
+</defs>
+
+<rect width="1040" height="610" rx="24" fill="#26363c"/>
+<rect width="1040" height="610" rx="24" fill="url(#g-hub-grid)"/>
+<text x="40" y="54" font-size="26" font-weight="600" fill="#f4f1ec">With a USB-C hub</text>
+<text x="40" y="80" class="g-sub" font-size="15">Orange Pi 5 Plus, a hub and one cable to the iPhone</text>
+<g transform="translate(700 40)">
+  <circle cx="8" cy="10" r="5" fill="#7cc4f0"/><text x="20" y="15" class="g-sub">picture</text>
+  <circle cx="92" cy="10" r="5" fill="#7ccf95"/><text x="104" y="15" class="g-sub">touch and keys</text>
+  <circle cx="224" cy="10" r="5" fill="#e8c168"/><text x="236" y="15" class="g-sub">power</text>
+</g>
+
+<!-- cables, under the devices -->
+<path class="g-cable g-draw g-s1 g-link-usb" pathLength="1" d="M135 452 C135 510 250 512 268 440 C280 392 280 352 318 352" stroke="#8d949a" stroke-width="7"/>
+<path class="g-cable g-draw g-s2" pathLength="1" d="M404 470 V392" stroke="#dcd9d3" stroke-width="6"/>
+<path class="g-cable g-draw g-s3 g-link-video" pathLength="1" d="M492 336 C536 336 520 212 566 212" stroke="#15181b" stroke-width="9"/>
+<path class="g-cable g-draw g-s4 g-link-usb" pathLength="1" d="M492 364 C540 364 522 272 566 272" stroke="#8d949a" stroke-width="7"/>
+<path class="g-cable g-draw g-s5" pathLength="1" d="M740 470 V378" stroke="#15181b" stroke-width="6"/>
+<path class="g-cable g-draw g-s6 g-link-net" pathLength="1" d="M832 248 C866 248 870 262 900 262" stroke="#d9b64a" stroke-width="6"/>
+
+<!-- what flows where -->
+<path class="g-flow g-video" pathLength="100" d="M135 446 C135 504 250 506 262 434 C274 386 280 346 318 346"/>
+<path class="g-flow g-touch g-back" pathLength="100" d="M142 452 C142 516 256 518 274 446 C286 398 282 358 318 358"/>
+<path class="g-flow g-power g-back" pathLength="100" d="M128 452 C128 504 244 506 262 440 C274 392 274 364 318 364"/>
+<path class="g-flow g-power" pathLength="100" d="M404 470 V392"/>
+<path class="g-flow g-video" pathLength="100" d="M492 336 C536 336 520 212 566 212"/>
+<path class="g-flow g-touch g-back" pathLength="100" d="M492 364 C540 364 522 272 566 272"/>
+<path class="g-flow g-video" pathLength="100" d="M832 244 C866 244 870 258 900 258"/>
+<path class="g-flow g-touch g-back" pathLength="100" d="M832 252 C866 252 870 266 900 266"/>
+<path class="g-flow g-power" pathLength="100" d="M740 470 V378"/>
+
+<!-- iPhone -->
+<g transform="translate(60 144)">
+  <rect width="150" height="306" rx="30" fill="url(#g-hub-ti)"/>
+  <rect x="6" y="6" width="138" height="294" rx="25" fill="#0b0b0c"/>
+  <g class="g-screen">
+    <rect x="12" y="12" width="126" height="282" rx="20" fill="url(#g-hub-wall)"/>
+    <g fill-opacity="0.95">
+      <rect x="24" y="52" width="20" height="20" rx="5" fill="#8e8e93"/><rect x="53" y="52" width="20" height="20" rx="5" fill="#ffcc00"/>
+      <rect x="82" y="52" width="20" height="20" rx="5" fill="#ff9500"/><rect x="111" y="52" width="20" height="20" rx="5" fill="#0a84ff"/>
+      <rect x="24" y="84" width="20" height="20" rx="5" fill="#30b0c7"/><rect x="53" y="84" width="20" height="20" rx="5" fill="#34c759"/>
+      <rect x="82" y="84" width="20" height="20" rx="5" fill="#1c1c1e"/><rect x="111" y="84" width="20" height="20" rx="5" fill="#5ac8fa"/>
+      <rect x="24" y="116" width="20" height="20" rx="5" fill="#ff2d55"/><rect x="53" y="116" width="20" height="20" rx="5" fill="#636366"/>
+      <rect x="82" y="116" width="20" height="20" rx="5" fill="#ff3b30"/><rect x="111" y="116" width="20" height="20" rx="5" fill="#000"/>
+    </g>
+    <rect x="20" y="250" width="110" height="32" rx="11" fill="#fff" fill-opacity="0.2"/>
+    <g class="g-pointer"><circle cx="78" cy="140" r="8" fill="#fff" fill-opacity="0.6" stroke="#000" stroke-opacity="0.25"/></g>
+  </g>
+  <rect x="52" y="20" width="46" height="13" rx="6.5" fill="#000"/>
+  <g class="g-zzz" fill="#e8c168" font-weight="700"><text x="60" y="170" font-size="26">z</text><text x="80" y="150" font-size="18">z</text><text x="94" y="134" font-size="13">z</text></g>
+  <rect x="62" y="302" width="26" height="5" rx="2" fill="#4a4f55"/>
+</g>
+<text x="135" y="130" text-anchor="middle" class="g-label">iPhone 15 or later</text>
+
+<!-- USB-C hub -->
+<g transform="translate(318 320)">
+  <rect width="176" height="68" rx="15" fill="url(#g-hub-alu)" stroke="#626a71"/>
+  <text x="88" y="40" text-anchor="middle" font-size="14" fill="#dfe3e6" font-weight="600">USB-C hub</text>
+  <path d="M174 8h9l-2 16h-7z" fill="#15181b" stroke="#8b9399"/>
+  <rect x="173" y="38" width="9" height="14" rx="1.5" fill="#1b4f8f" stroke="#8b9399"/>
+  <rect x="78" y="66" width="18" height="6" rx="3" fill="#15181b" stroke="#8b9399"/>
+</g>
+<text x="406" y="306" text-anchor="middle" class="g-sub">HDMI, USB-A, USB-C power in</text>
+
+<!-- charger -->
+<g transform="translate(350 470)">
+  <rect width="108" height="56" rx="12" fill="#ecebe7"/>
+  <path d="M60 14 46 31h11l-5 13 15-19H56l4-11z" fill="#1d2a2f"/>
+</g>
+<text x="472" y="502" class="g-label">Charger, 30 W+</text>
+
+<!-- Orange Pi 5 Plus -->
+<g transform="translate(566 150)">
+  <rect width="262" height="226" rx="14" fill="url(#g-hub-pcb)" stroke="#2f6353"/>
+  <g fill="#26363c" stroke="#c9b37e" stroke-width="2">
+    <circle cx="14" cy="14" r="6"/><circle cx="248" cy="14" r="6"/><circle cx="14" cy="212" r="6"/><circle cx="248" cy="212" r="6"/>
+  </g>
+  <rect x="110" y="70" width="78" height="78" rx="8" fill="#9aa3a8"/>
+  <g stroke="#7d868b" stroke-width="3"><path d="M120 80v58M132 80v58M144 80v58M156 80v58M168 80v58M180 80v58"/></g>
+  <rect x="206" y="80" width="30" height="22" rx="3" fill="#15181b"/><rect x="206" y="112" width="30" height="22" rx="3" fill="#15181b"/>
+  <rect x="-10" y="52" width="16" height="20" rx="2" fill="#15181b" stroke="#8b9399"/>
+  <text x="14" y="67" font-size="12" fill="#cfe3d8" font-weight="600">HDMI IN</text>
+  <rect x="-8" y="115" width="13" height="14" rx="5" fill="#15181b" stroke="#8b9399"/>
+  <text x="14" y="126" font-size="12" fill="#cfe3d8" font-weight="600">Type-C, USB 3</text>
+  <rect x="167" y="222" width="14" height="10" rx="4" fill="#15181b" stroke="#8b9399"/>
+  <text x="190" y="216" font-size="12" fill="#cfe3d8">power</text>
+  <rect x="256" y="84" width="16" height="28" rx="2" fill="#d8d2c7" stroke="#8b9399"/>
+  <text x="244" y="170" font-size="12" fill="#cfe3d8" text-anchor="end">Ethernet</text>
+  <text x="96" y="194" text-anchor="middle" font-size="14" fill="#e3efe8" font-weight="600">Orange Pi 5 Plus</text>
+</g>
+
+<!-- board power supply -->
+<g transform="translate(688 470)"><rect width="104" height="50" rx="10" fill="#15181b" stroke="#3a4046"/>
+  <text x="52" y="31" text-anchor="middle" font-size="13" fill="#cfd3d6" font-weight="600">5 V, 4 A</text></g>
+
+<!-- network: browser or test framework -->
+<g transform="translate(900 200)">
+  <rect width="116" height="76" rx="7" fill="#11181b" stroke="#50626a" stroke-width="2"/>
+  <rect x="8" y="8" width="100" height="60" rx="3" fill="#2e3f46"/>
+  <rect x="18" y="14" width="24" height="48" rx="5" fill="#bdb6aa"/><rect x="21" y="17" width="18" height="42" rx="3" fill="#4c57d8"/>
+  <rect x="52" y="16" width="48" height="8" rx="2" fill="#44585f"/><rect x="52" y="30" width="48" height="8" rx="2" fill="#44585f"/>
+  <rect x="52" y="44" width="30" height="8" rx="2" fill="#44585f"/>
+  <path d="M-10 80h136l-10 12H0z" fill="#50626a"/>
+</g>
+<text x="958" y="320" text-anchor="middle" class="g-label">Your network</text>
+<text x="958" y="338" text-anchor="middle" class="g-sub">browser, test framework</text>
+
+<!-- steps -->
+<g class="g-badge g-s1"><circle cx="232" cy="496" r="12" fill="#f4f1ec"/><text x="232" y="501" text-anchor="middle" class="g-num">1</text></g>
+<g class="g-badge g-s2"><circle cx="404" cy="430" r="12" fill="#f4f1ec"/><text x="404" y="435" text-anchor="middle" class="g-num">2</text></g>
+<g class="g-badge g-s3"><circle cx="530" cy="262" r="12" fill="#f4f1ec"/><text x="530" y="267" text-anchor="middle" class="g-num">3</text></g>
+<g class="g-badge g-s4"><circle cx="528" cy="324" r="12" fill="#f4f1ec"/><text x="528" y="329" text-anchor="middle" class="g-num">4</text></g>
+<g class="g-badge g-s5"><circle cx="740" cy="424" r="12" fill="#f4f1ec"/><text x="740" y="429" text-anchor="middle" class="g-num">5</text></g>
+<g class="g-badge g-s6"><circle cx="866" cy="232" r="12" fill="#f4f1ec"/><text x="866" y="237" text-anchor="middle" class="g-num">6</text></g>
+
+<!-- the steps, in order -->
+<g transform="translate(44 556)" class="g-sub" font-size="13.5">
+  <rect x="-20" y="-22" width="992" height="44" rx="12" fill="#1e2b30"/>
+  <g transform="translate(0 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">1</text><text x="17" y="5">iPhone → hub</text></g>
+  <g transform="translate(160 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">2</text><text x="17" y="5">charger → hub</text></g>
+  <g transform="translate(316 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">3</text><text x="17" y="5">hub HDMI → HDMI IN</text></g>
+  <g transform="translate(504 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">4</text><text x="17" y="5">hub USB-A → Type-C</text></g>
+  <g transform="translate(696 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">5</text><text x="17" y="5">board power</text></g>
+  <g transform="translate(850 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">6</text><text x="17" y="5">Ethernet</text></g>
+</g>
+
+<!-- live faults -->
+<g class="g-alert g-alert-usb"><circle cx="300" cy="420" r="15" fill="#f08a7e"/><text x="300" y="426" text-anchor="middle" font-size="18" font-weight="800" fill="#26363c">!</text></g>
+<g class="g-alert g-alert-sleep"><circle cx="210" cy="160" r="15" fill="#e8c168"/><text x="210" y="166" text-anchor="middle" font-size="16" font-weight="800" fill="#26363c">z</text></g>
+<g class="g-alert g-alert-video"><circle cx="538" cy="196" r="15" fill="#f08a7e"/><text x="538" y="202" text-anchor="middle" font-size="18" font-weight="800" fill="#26363c">!</text></g>
+<g class="g-alert g-alert-net"><circle cx="866" cy="290" r="15" fill="#f08a7e"/><text x="866" y="296" text-anchor="middle" font-size="18" font-weight="800" fill="#26363c">!</text></g>
+</svg>

@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-labelledby="g-box-title g-box-desc" font-family="Barlow, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title id="g-box-title">Wiring the purpose-built box</title>
+<desc id="g-box-desc">1: the iPhone into the box with one USB-C cable. 2: a charger into the box's power input. 3: Ethernet to the network. The box takes the iPhone's picture and charges it over the same cable, and sends touch and keys back.</desc>
+<style>
+  .g-cable { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .g-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: g-draw 0.9s ease-out forwards; }
+  .g-badge { opacity: 0; transform-box: fill-box; transform-origin: center; animation: g-pop 0.35s ease-out forwards; }
+  .g-s1 { animation-delay: 0.3s; } .g-s2 { animation-delay: 1.1s; } .g-s3 { animation-delay: 1.9s; }
+  .g-flow { fill: none; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.001 9; opacity: 0;
+    animation: g-flow 1.4s linear 2.9s infinite, g-show 0.5s ease-out 2.9s forwards; }
+  .g-back { animation-direction: reverse, normal; }
+  .g-video { stroke: #7cc4f0; } .g-touch { stroke: #7ccf95; } .g-power { stroke: #e8c168; }
+  .g-label { font-size: 14px; fill: #f4f1ec; font-weight: 500; }
+  .g-sub { font-size: 12.5px; fill: #a7b4b8; }
+  .g-num { font-size: 13px; font-weight: 700; fill: #1d2a2f; }
+  .g-pointer { animation: g-wander 6s ease-in-out infinite; }
+  .g-led { animation: g-glow 2.4s ease-in-out 2.9s infinite; }
+  @keyframes g-draw { to { stroke-dashoffset: 0; } }
+  @keyframes g-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+  @keyframes g-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }
+  @keyframes g-show { to { opacity: 1; } }
+  @keyframes g-wander { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(34px, 52px); } 60% { transform: translate(-14px, 96px); } }
+  @keyframes g-glow { 50% { opacity: 0.45; } }
+  @media (prefers-reduced-motion: reduce) {
+    .g-draw { animation: none; stroke-dashoffset: 0; } .g-badge { animation: none; opacity: 1; }
+    .g-flow { animation: none; opacity: 1; } .g-pointer, .g-led { animation: none; }
+  }
+</style>
+<defs>
+  <pattern id="g-box-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+    <path d="M24 0H0V24" fill="none" stroke="#2f434a" stroke-width="1"/>
+  </pattern>
+  <linearGradient id="g-box-ti" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d8d2c7"/><stop offset="0.5" stop-color="#b3ab9e"/><stop offset="1" stop-color="#8f887d"/>
+  </linearGradient>
+  <linearGradient id="g-box-wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4c57d8"/><stop offset="0.6" stop-color="#7a4fc9"/><stop offset="1" stop-color="#b45aa0"/>
+  </linearGradient>
+  <linearGradient id="g-box-alu" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#c9ccce"/><stop offset="0.5" stop-color="#9ea3a7"/><stop offset="1" stop-color="#7c8186"/>
+  </linearGradient>
+  <linearGradient id="g-box-top" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#d9dcde"/><stop offset="1" stop-color="#b9bdc0"/>
+  </linearGradient>
+</defs>
+
+<rect width="1040" height="610" rx="24" fill="#26363c"/>
+<rect width="1040" height="610" rx="24" fill="url(#g-box-grid)"/>
+<text x="40" y="54" font-size="26" font-weight="600" fill="#f4f1ec">With the purpose-built box</text>
+<text x="40" y="80" class="g-sub" font-size="15">One cable to the iPhone: picture, touch and charging. In design (hardware/box-v1)</text>
+<g transform="translate(700 40)">
+  <circle cx="8" cy="10" r="5" fill="#7cc4f0"/><text x="20" y="15" class="g-sub">picture</text>
+  <circle cx="92" cy="10" r="5" fill="#7ccf95"/><text x="104" y="15" class="g-sub">touch and keys</text>
+  <circle cx="224" cy="10" r="5" fill="#e8c168"/><text x="236" y="15" class="g-sub">power</text>
+</g>
+
+<!-- cables -->
+<path class="g-cable g-draw g-s1" pathLength="1" d="M135 452 C135 520 290 500 330 420 C352 376 360 330 402 330" stroke="#8d949a" stroke-width="7"/>
+<path class="g-cable g-draw g-s2" pathLength="1" d="M540 470 V410" stroke="#dcd9d3" stroke-width="6"/>
+<path class="g-cable g-draw g-s3" pathLength="1" d="M700 318 C780 318 800 262 880 262" stroke="#d9b64a" stroke-width="6"/>
+
+<!-- flows -->
+<path class="g-flow g-video" pathLength="100" d="M128 452 C128 512 284 494 322 416 C344 372 354 322 402 322"/>
+<path class="g-flow g-touch g-back" pathLength="100" d="M142 452 C142 528 296 506 338 424 C360 380 366 338 402 338"/>
+<path class="g-flow g-power g-back" pathLength="100" d="M135 458 C135 520 290 500 330 426 C352 382 360 336 402 330"/>
+<path class="g-flow g-power" pathLength="100" d="M540 470 V410"/>
+<path class="g-flow g-video" pathLength="100" d="M700 312 C780 312 800 256 880 256"/>
+<path class="g-flow g-touch g-back" pathLength="100" d="M700 324 C780 324 800 268 880 268"/>
+
+<!-- iPhone -->
+<g transform="translate(60 144)">
+  <rect width="150" height="306" rx="30" fill="url(#g-box-ti)"/>
+  <rect x="6" y="6" width="138" height="294" rx="25" fill="#0b0b0c"/>
+  <rect x="12" y="12" width="126" height="282" rx="20" fill="url(#g-box-wall)"/>
+  <g fill-opacity="0.95">
+    <rect x="24" y="52" width="20" height="20" rx="5" fill="#8e8e93"/><rect x="53" y="52" width="20" height="20" rx="5" fill="#ffcc00"/>
+    <rect x="82" y="52" width="20" height="20" rx="5" fill="#ff9500"/><rect x="111" y="52" width="20" height="20" rx="5" fill="#0a84ff"/>
+    <rect x="24" y="84" width="20" height="20" rx="5" fill="#30b0c7"/><rect x="53" y="84" width="20" height="20" rx="5" fill="#34c759"/>
+    <rect x="82" y="84" width="20" height="20" rx="5" fill="#1c1c1e"/><rect x="111" y="84" width="20" height="20" rx="5" fill="#5ac8fa"/>
+    <rect x="24" y="116" width="20" height="20" rx="5" fill="#ff2d55"/><rect x="53" y="116" width="20" height="20" rx="5" fill="#636366"/>
+    <rect x="82" y="116" width="20" height="20" rx="5" fill="#ff3b30"/><rect x="111" y="116" width="20" height="20" rx="5" fill="#000"/>
+  </g>
+  <rect x="20" y="250" width="110" height="32" rx="11" fill="#fff" fill-opacity="0.2"/>
+  <g class="g-pointer"><circle cx="78" cy="140" r="8" fill="#fff" fill-opacity="0.6" stroke="#000" stroke-opacity="0.25"/></g>
+  <rect x="52" y="20" width="46" height="13" rx="6.5" fill="#000"/>
+  <rect x="62" y="302" width="26" height="5" rx="2" fill="#4a4f55"/>
+</g>
+<text x="135" y="130" text-anchor="middle" class="g-label">iPhone 15 or later</text>
+
+<!-- the box: an aluminium enclosure seen from the front and above -->
+<g transform="translate(402 250)">
+  <path d="M18 0h262l20 22H38z" fill="url(#g-box-top)"/>
+  <rect x="0" y="22" width="300" height="140" rx="14" fill="url(#g-box-alu)" stroke="#6d7277"/>
+  <rect x="0" y="22" width="300" height="140" rx="14" fill="none" stroke="#e6e8e9" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="150" y="80" text-anchor="middle" font-size="18" font-weight="600" fill="#26363c">iphone-hid box</text>
+  <text x="150" y="102" text-anchor="middle" font-size="12" fill="#3b4a50">USB-C video bridge, USB HID, Linux SoC</text>
+  <g transform="translate(118 122)">
+    <circle cx="0" cy="0" r="5" fill="#7ccf95" class="g-led"/><circle cx="32" cy="0" r="5" fill="#26363c" fill-opacity="0.35"/>
+    <circle cx="64" cy="0" r="5" fill="#26363c" fill-opacity="0.35"/>
+  </g>
+  <rect x="-6" y="72" width="10" height="16" rx="4" fill="#15181b" stroke="#50565c"/>
+  <rect x="131" y="158" width="18" height="8" rx="3.5" fill="#15181b" stroke="#50565c"/>
+  <rect x="294" y="58" width="14" height="22" rx="2" fill="#15181b" stroke="#50565c"/>
+  <rect x="296" y="104" width="10" height="14" rx="4" fill="#15181b" stroke="#50565c"/>
+</g>
+<text x="390" y="312" text-anchor="end" class="g-sub">iPhone</text>
+<text x="720" y="296" class="g-sub">Ethernet</text>
+<text x="720" y="376" class="g-sub">USB-C to a PC (set-up)</text>
+<text x="560" y="438" class="g-sub">power in</text>
+
+<!-- charger -->
+<g transform="translate(486 470)">
+  <rect width="108" height="56" rx="12" fill="#ecebe7"/>
+  <path d="M60 14 46 31h11l-5 13 15-19H56l4-11z" fill="#1d2a2f"/>
+</g>
+<text x="608" y="502" class="g-label">Charger, 30 W+</text>
+
+<!-- network -->
+<g transform="translate(880 220)">
+  <rect width="116" height="76" rx="7" fill="#11181b" stroke="#50626a" stroke-width="2"/>
+  <rect x="8" y="8" width="100" height="60" rx="3" fill="#2e3f46"/>
+  <rect x="18" y="14" width="24" height="48" rx="5" fill="#bdb6aa"/><rect x="21" y="17" width="18" height="42" rx="3" fill="#4c57d8"/>
+  <rect x="52" y="16" width="48" height="8" rx="2" fill="#44585f"/><rect x="52" y="30" width="48" height="8" rx="2" fill="#44585f"/>
+  <rect x="52" y="44" width="30" height="8" rx="2" fill="#44585f"/>
+  <path d="M-10 80h136l-10 12H0z" fill="#50626a"/>
+</g>
+<text x="938" y="340" text-anchor="middle" class="g-label">Your network</text>
+<text x="938" y="358" text-anchor="middle" class="g-sub">browser, test framework</text>
+
+<!-- steps -->
+<g class="g-badge g-s1"><circle cx="300" cy="470" r="12" fill="#f4f1ec"/><text x="300" y="475" text-anchor="middle" class="g-num">1</text></g>
+<g class="g-badge g-s2"><circle cx="540" cy="444" r="12" fill="#f4f1ec"/><text x="540" y="449" text-anchor="middle" class="g-num">2</text></g>
+<g class="g-badge g-s3"><circle cx="792" cy="288" r="12" fill="#f4f1ec"/><text x="792" y="293" text-anchor="middle" class="g-num">3</text></g>
+<g transform="translate(44 556)" class="g-sub" font-size="13.5">
+  <rect x="-20" y="-22" width="992" height="44" rx="12" fill="#1e2b30"/>
+  <g><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">1</text><text x="17" y="5">iPhone → box, one USB-C cable</text></g>
+  <g transform="translate(300 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">2</text><text x="17" y="5">charger → box: powers the box, charges the iPhone</text></g>
+  <g transform="translate(700 0)"><circle r="10" fill="#f4f1ec"/><text y="4.5" text-anchor="middle" class="g-num" font-size="12">3</text><text x="17" y="5">Ethernet</text></g>
+</g>
+</svg>

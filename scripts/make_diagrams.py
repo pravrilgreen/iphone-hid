@@ -145,29 +145,9 @@ def overview():
     c.save("diagram-overview.png")
 
 
-def wiring_box():
-    c = Canvas(1000, 570)
-    c.box(350, 20, 300, 70, ["iPhone 15 or later", "USB-C"], "phone")
-    c.box(330, 170, 340, 80, ["USB-C hub", "HDMI out, USB-A, PD charging in"], "hw")
-    c.box(40, 185, 200, 50, ["30 W charger"], "people", size=15)
-    c.group(60, 330, 880, 150, "Orange Pi 5 Plus", align="right")
-    c.box(100, 380, 230, 70, ["HDMI IN", "sees the screen"], "host", size=15)
-    c.box(385, 380, 230, 70, ["Type-C USB 3 / DP", "touch and keyboard"], "host", size=15)
-    c.box(670, 380, 230, 70, ["Power Type-C", "5 V / 4 A supply"], "host", size=15)
-    c.box(385, 510, 230, 50, ["Ethernet: API and console"], "people", size=15)
-    c.arrow([(500, 92), (500, 168)], "one cable: video out,\ntouch and keys in, power", at=(500, 130), width=3,
-            both=True)
-    c.arrow([(240, 210), (330, 210)], "power", at=(285, 190))
-    c.arrow([(420, 250), (420, 290), (215, 290), (215, 380)], "HDMI", at=(300, 290))
-    c.arrow([(580, 250), (580, 290), (500, 290), (500, 380)], "USB-A to USB-C cable", at=(640, 290))
-    c.arrow([(500, 480), (500, 510)], head=False, width=3)
-    c.save("diagram-wiring-box.png")
-
-
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     overview()
-    wiring_box()
     return 0
 
 
