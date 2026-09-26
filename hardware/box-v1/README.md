@@ -1551,9 +1551,13 @@ change to the circuit is a change to `netlist.py` followed by a new run. What it
    fits. L3 also carries a 5V_SYS pour, present during routing so that the router uses it: from the
    U103 side along the module's bottom edge and up the corridor between the module and the RJ45 to the module's
    supply pads (§11). L1 has a VBUS_IN pour from the power receptacle J101 to the fuse F101.
-7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself). The
+7. **Routing** with Freerouting 1.9.0 (Specctra DSN out, session file back in, read by `pcb.py` itself), in two
+   stages. The second stage takes the nets KiCad still finds unconnected after the first, fixes every track
+   already there and routes the missing connections at 0.3 mm: typically the enable and sense branches of a
+   supply (microamps, but in the supply's wide class) that cannot reach an 0402 pad at full width. The
    LT7911D's pads and its nets (the DP lanes `SS_*`, AUX, SBU and the CSI lanes) are left out: they wait for the
    pin table (H1). The DP and CSI lanes must be routed by hand anyway (§5: length and skew limits, no vias on DP).
+   `--ses FILE [FILE2]` rebuilds the board from saved sessions without routing again.
 8. **Zone fill and DRC** with KiCad's own engine → `kicad/drc.rpt`; `--render DIR` writes SVG views with
    `kicad-cli`.
 
